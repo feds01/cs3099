@@ -1,0 +1,15 @@
+{
+  "name": "project-code",
+  "version": "1.0.0",
+  "description": "CS3099 Project sources.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.cs.st-andrews.ac.uk:cs3099group06/project-code.git"
+  },
+  "author": "",
+  "license": "MIT"
+}
