@@ -7,12 +7,14 @@ const LogLevels = {
         error: 0,
         warn: 1,
         info: 2,
+        http: 2,
         debug: 3
     },
     colors: {
         error: 'bold red',
         warn: 'yellow',
         info: 'blue',
+        http: "magenta",
         debug: 'green',
     }
 };
@@ -40,7 +42,7 @@ const eventFormat = printf(({level, message, timestamp, ...metadata}) => {
     return msg
 });
 
-const logger = createLogger({
+const Logger = createLogger({
     level: 'info',
     levels: LogLevels.levels,
     format: combine(
@@ -56,4 +58,4 @@ const logger = createLogger({
 
 winston.addColors(LogLevels.colors);
 
-export default logger;
+export default Logger;

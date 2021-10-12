@@ -39,6 +39,7 @@
         "mongoose": "^6.0.10",
         "morgan": "^1.10.0",
         "node-fetch": "^3.0.0",
-        "winston": "^3.3.3"
+        "winston": "^3.3.3",
+        "zod": "^3.9.8"
     }
 }

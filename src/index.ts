@@ -1,30 +1,24 @@
 require('dotenv').config(); // Import our environment variables
 
-import morgan from 'morgan';
 import helmet from "helmet";
 import mongoose from 'mongoose';
-import express, { Application, Request, Response } from "express";
+import { createServer } from 'http';
+import { AddressInfo } from 'net';
+import express, { Application } from "express";
 
-import logger from "./logFormatter";
+import Logger from "./common/logger";
 import userRouter from './routes/user';
 import reviewsRouter from './routes/reviews';
 import submissionsRouter from './routes/submissions';
-import { createServer } from 'http';
-import { AddressInfo } from 'net';
+import morganMiddleware from './config/morganMiddleware'
 
 // Create the express application
 const app: Application = express();
 
-// Use helmet
+// Setup express middleware
 app.use(helmet());
-
-// Use morgan if we're on development
-if (process.env.NODE_ENV !== 'production') {
-  app.use(morgan('dev'));  // Logging for network requests
-}
-
-// Body parsing Middleware
-app.use(express.json());
+app.use(morganMiddleware);
+app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
 
 // Setup the specific API routes
@@ -43,20 +37,20 @@ app.use((req, res, next) => {
 const server = createServer(app);
 
 //start our server
-server.listen(process.env.PORT || 3000, () => {
+server.listen(process.env.PORT || 5000, () => {
   const port = (server.address() as AddressInfo).port;
 
-  logger.info(`Server started on ${port}! (environment: ${process.env.NODE_ENV || "dev"})`);
-  logger.info("Attempting connection with MongoDB service");
+  Logger.info(`Server started on ${port}! (environment: ${process.env.NODE_ENV || "dev"})`);
+  Logger.info("Attempting connection with MongoDB service");
 
   mongoose.connect(process.env.MONGODB_CONNECTION_URI!, {
     connectTimeoutMS: 30000,
   }, (err: any) => {
     if (err) {
-      logger.error(`Failed to connect to MongoDB: ${err.message}`);
+      Logger.error(`Failed to connect to MongoDB: ${err.message}`);
       process.exit(1);
     }
 
-    logger.info('Established connection with MongoDB service');
+    Logger.info('Established connection with MongoDB service');
   });
 });
