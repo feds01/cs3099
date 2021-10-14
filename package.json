@@ -1,15 +1,45 @@
 {
-  "name": "project-code",
-  "version": "1.0.0",
-  "description": "CS3099 Project sources.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git@gitlab.cs.st-andrews.ac.uk:cs3099group06/project-code.git"
-  },
-  "author": "",
-  "license": "MIT"
+    "name": "project-code",
+    "version": "1.0.0",
+    "description": "CS3099 Project sources.",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "tsc & node .",
+        "dev": "ts-node-dev ./src/index.ts"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@gitlab.cs.st-andrews.ac.uk:cs3099group06/project-code.git"
+    },
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "@types/bcryptjs": "^2.4.2",
+        "@types/express": "^4.17.13",
+        "@types/jsonwebtoken": "^8.5.5",
+        "@types/morgan": "^1.9.3",
+        "@types/node": "^16.10.3",
+        "@typescript-eslint/eslint-plugin": "^5.0.0",
+        "@typescript-eslint/parser": "^5.0.0",
+        "eslint": "^7.32.0",
+        "eslint-config-airbnb-base": "^14.2.1",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-plugin-import": "^2.25.1",
+        "eslint-plugin-prettier": "^4.0.0",
+        "prettier": "^2.4.1",
+        "ts-node-dev": "^1.1.8"
+    },
+    "dependencies": {
+        "bcryptjs": "^2.4.3",
+        "dotenv": "^10.0.0",
+        "express": "^4.17.1",
+        "helmet": "^4.6.0",
+        "jsonwebtoken": "^8.5.1",
+        "mongoose": "^6.0.10",
+        "morgan": "^1.10.0",
+        "node-fetch": "^3.0.0",
+        "winston": "^3.3.3",
+        "zod": "^3.9.8"
+    }
 }
