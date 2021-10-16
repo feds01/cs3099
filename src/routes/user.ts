@@ -254,7 +254,30 @@ router.post("/login", async (req, res) => {
 * information about the user.
 *
 * */
-router.get("/", ownerAuth, async (req, res) => {
+router.get("/:id", ownerAuth, async (req, res) => {
+    const id = req.params.id;
+    
+    const user = await User.findById({_id: id});
+
+    // If the user wasn't found, then return a not found status.
+    if (!user) {
+        return res.status(404).json({
+            status: false,
+            message: error.NON_EXISTENT_USER,
+        });
+    }
+
+
+    // TODO: setup a mapping of a User Document to a User response type. This is mainly so we don't
+    // have to manually type out each field, selecting particular ones we want to return all over the 
+    // place.
+    return res.status(200).json({
+        status: true,
+        user: {
+            username: user.username,
+            email: user.email,
+        },
+    })
 });
 
 
@@ -286,7 +309,7 @@ router.get("/", ownerAuth, async (req, res) => {
 * @return sends a response to client if user successfully updated, with the new updated user
 * information.
 * */
-router.patch("/", ownerAuth, async (req, res) => {
+router.patch("/:id", ownerAuth, async (req, res) => {
 });
 
 /**
@@ -305,7 +328,26 @@ router.patch("/", ownerAuth, async (req, res) => {
  *
  * @return sends a response to client if user was successfully deleted or not.
  * */
-router.delete("/", ownerAuth, async (req, res) => {
+
+router.delete("/:id", ownerAuth, async (req, res) => {
+    const id = req.params.id;
+
+    // find all the games that are owned by the current player.
+    return User.findOneAndDelete({_id: id}, {}, (err) => {
+        if (err) {
+            console.log(err);
+
+            return res.status(500).json({
+                status: true,
+                message: error.INTERNAL_SERVER_ERROR,
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: "Successfully deleted user account."
+        });
+    });
 });
 
 export default router;
