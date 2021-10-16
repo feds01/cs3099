@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import User from './../models/User';
 import * as error from "./../common/errors";
 import { createTokens, refreshTokens, ownerAuth } from "../auth";
-import { IUserRegisterRequestSchema } from '../validators/user';
+import { IUserRegisterRequestSchema, IUserLoginRequestSchema, IUserLoginRequest } from '../validators/user';
 import { ZodError } from 'zod';
 
 const router = express.Router();
@@ -46,8 +46,6 @@ const router = express.Router();
  * @return response to client if user was created and added to the system.
  * */
 router.post('/register', async (req, res) => {
-    // let {email, password, name} = req.body;
-
     try {
         const { email, password, username } = await IUserRegisterRequestSchema.parseAsync(req.body);
 
@@ -144,6 +142,91 @@ router.post('/register', async (req, res) => {
  *
  * */
 router.post("/login", async (req, res) => {
+    let response: IUserLoginRequest;
+
+    try {
+        response = await IUserLoginRequestSchema.parseAsync(req.body);
+    } catch (e) {
+        if (e instanceof ZodError) {
+            return res.status(400).json({
+                status: false,
+                message: error.BAD_REQUEST,
+                errors: e.errors,
+            });
+        } else {
+            console.log(e);
+            return res.status(500).json({
+                status: false,
+                message: error.INTERNAL_SERVER_ERROR,
+            });
+        }
+    }
+
+    const { username, email, password } = response;
+
+    // Use both fields to look for the login 
+    const searchQuery = {
+        $or: [
+            ...(username ? [{ username }] : []),
+            ...(email ? [{ email }] : []),
+        ]
+    }
+
+    const result = await User.findOne(searchQuery).exec();
+
+    // Important to send an authentication failure request, rather than a
+    // username not found. This could lead to a brute force attack to retrieve
+    // all existent user names.
+    if (result) {
+        bcrypt.compare(password, result.password, async (err, response) => {
+            if (err) {
+                // Log the error in the server console & respond to the client with an
+                // INTERNAL_SERVER_ERROR, since this was an unexpected exception.
+                console.error(err);
+
+                return res.status(500).json({
+                    status: false,
+                    message: error.INTERNAL_SERVER_ERROR
+                });
+            }
+
+            // If the sent over password matches the hashed password within the database, generate the
+            // 'x-token' and 'x-refresh-token' JWT's . Also, update the 'last_login' timestamp and record
+            // an entry for the user logging in into the system.
+            if (response) {
+                const { token, refreshToken } = await createTokens({
+                    email: result.email,
+                    name: result.username,
+                    id: result._id
+                });
+
+                // set the tokens in the response headers
+                res.set("Access-Control-Expose-Headers", "x-token, x-refresh-token");
+                res.set("x-token", token);
+                res.set("x-refresh-token", refreshToken);
+
+                return res.status(302).json({
+                    status: true,
+                    message: "Authentication successful",
+                    username: result.username, email: result.email,
+                    token, refreshToken
+                });
+            } else {
+                // password did not match the stored hashed password within the database
+                return res.status(401).json({
+                    status: false,
+                    message: error.BAD_REQUEST,
+                    extra: error.MISMATCHING_LOGIN
+                });
+            }
+        });
+    } else {
+        return res.status(401).json({
+            status: false,
+            message: error.AUTHENTICATION_FAILED,
+            extra: error.MISMATCHING_LOGIN
+        });
+    }
 });
 
 /**
