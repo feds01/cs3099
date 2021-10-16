@@ -6,19 +6,39 @@ import { createServer } from 'http';
 import { AddressInfo } from 'net';
 import express, { Application } from "express";
 
+// Import relevant modules to Swagger UI
+import Swagger from "swagger-jsdoc";
+import SwaggerUI from "swagger-ui-express";
+
+
 import Logger from "./common/logger";
 import userRouter from './routes/user';
 import reviewsRouter from './routes/reviews';
 import submissionsRouter from './routes/submissions';
-import morganMiddleware from './config/morganMiddleware'
+import morganMiddleware from './config/morganMiddleware';
+import * as SwaggerOptions from "./../swagger.json";
 
 // Create the express application
 const app: Application = express();
 
+// Add swagger to the Express app
+const options = {
+  definition: SwaggerOptions,
+  apis: ['./routes/user.ts', './routes/reviews.ts', './routes/submissions.ts'],
+};
+
+const specs = Swagger(options);
+
+app.use(
+  "/docs",
+  SwaggerUI.serve,
+  SwaggerUI.setup(specs)
+);
+
 // Setup express middleware
 app.use(helmet());
 app.use(morganMiddleware);
-app.use(express.json()); 
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Setup the specific API routes
