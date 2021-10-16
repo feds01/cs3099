@@ -8,18 +8,17 @@
  *
  */
 
-import express from "express";
-import jwt from "jsonwebtoken";
+import express from 'express';
+import jwt from 'jsonwebtoken';
 
-import User from "./models/User";
-import { Token } from "./types/auth";
-import * as error from "./common/errors";
+import User from './models/User';
+import { Token } from './types/auth';
+import * as error from './common/errors';
 
 type TokenPayload = {
-    token: string,
-    refreshToken: string,
-}
-
+    token: string;
+    refreshToken: string;
+};
 
 /**
  * A utility function to unpack the passed over authentication token. It will attempt
@@ -28,7 +27,7 @@ type TokenPayload = {
  * the token is accessible by using 'req.token'.
  */
 export async function getTokensFromHeader(req: express.Request, res: express.Response): Promise<Token<any> | null> {
-    const token: string | string[] | undefined = req.headers["x-token"];
+    const token: string | string[] | undefined = req.headers['x-token'];
 
     try {
         // Decode the sent over JWT key using our secret key stored in the process' runtime.
@@ -36,7 +35,7 @@ export async function getTokensFromHeader(req: express.Request, res: express.Res
         // not interpret the validity of the request.
         return jwt.verify(<string>token, process.env.JWT_SECRET_KEY!) as Token<any>;
     } catch (e) {
-        const refreshToken = req.headers["x-refresh-token"];
+        const refreshToken = req.headers['x-refresh-token'];
         if (!refreshToken) return null;
 
         let newTokens;
@@ -49,9 +48,9 @@ export async function getTokensFromHeader(req: express.Request, res: express.Res
 
         // if new tokens were provided, update the access and refresh tokens
         if (newTokens.token && newTokens.refreshToken) {
-            res.set("Access-Control-Expose-Headers", "x-token, x-refresh-token");
-            res.set("x-token", newTokens.token);
-            res.set("x-refresh-token", newTokens.refreshToken);
+            res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
+            res.set('x-token', newTokens.token);
+            res.set('x-refresh-token', newTokens.refreshToken);
 
             // pass on the metadata which was decoded from the JWT
             return jwt.verify(newTokens.token, process.env.JWT_SECRET_KEY!) as Token<any>;
@@ -91,26 +90,18 @@ export async function refreshTokens(refreshToken: string): Promise<TokenPayload>
  * @returns an object comprised of the token and refresh token.
  * */
 export const createTokens = async (payload: {}): Promise<TokenPayload> => {
-    const token = await jwt.sign(
-        { data: { ...payload } },
-        process.env.JWT_SECRET_KEY!,
-        {
-            expiresIn: "1h"
-        },
-    );
+    const token = await jwt.sign({ data: { ...payload } }, process.env.JWT_SECRET_KEY!, {
+        expiresIn: '1h',
+    });
 
     // sign the refresh-token
-    const refreshToken = await jwt.sign(
-        { data: { ...payload } },
-        process.env.JWT_REFRESH_SECRET_KEY!,
-        {
-            expiresIn: "7d",
-        },
-    );
+    const refreshToken = await jwt.sign({ data: { ...payload } }, process.env.JWT_REFRESH_SECRET_KEY!, {
+        expiresIn: '7d',
+    });
 
     // return the tokens as a resolved promise
     return { token, refreshToken };
-}
+};
 
 export async function withAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
     const userToken = await getTokensFromHeader(req, res); // unpack JWT token
@@ -122,19 +113,16 @@ export async function withAuth(req: express.Request, res: express.Response, next
 
         if (existingUser) req.token = userToken;
     } else if (userToken) {
-
         // Looks like this could be a stale token, probably from a previous
         // anonymous game, therefore we should notify the client to discard it.
         return res.status(400).json({
             status: false,
-            error: { token: "stale" }
+            error: { token: 'stale' },
         });
-
     }
 
     next();
 }
-
 
 export async function ownerAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
     const token = await getTokensFromHeader(req, res); // unpack JWT token
@@ -146,7 +134,7 @@ export async function ownerAuth(req: express.Request, res: express.Response, nex
         return res.status(401).json({
             status: false,
             message: error.AUTHENTICATION_FAILED,
-            extra: "Missing request headers."
+            extra: 'Missing request headers.',
         });
     }
 
@@ -157,7 +145,7 @@ export async function ownerAuth(req: express.Request, res: express.Response, nex
             return res.status(404).json({
                 status: false,
                 message: error.NON_EXISTENT_USER,
-                extra: "User doesn't exist."
+                extra: "User doesn't exist.",
             });
         } else {
             req.token = token;
@@ -167,7 +155,7 @@ export async function ownerAuth(req: express.Request, res: express.Response, nex
         return res.status(401).json({
             status: false,
             message: error.UNAUTHORIZED,
-            extra: "Invalid request headers."
+            extra: 'Invalid request headers.',
         });
     }
 }

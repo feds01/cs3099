@@ -1,11 +1,20 @@
 import express from 'express';
 
 import bcrypt from 'bcryptjs';
-import User from './../models/User';
-import * as error from "./../common/errors";
-import { createTokens, refreshTokens, ownerAuth } from "../auth";
-import { IUserRegisterRequestSchema, IUserLoginRequestSchema, IUserLoginRequest } from '../validators/user';
+import mongoose from 'mongoose';
 import { ZodError } from 'zod';
+import User from '../models/User';
+import Logger from '../common/logger';
+import * as error from '../common/errors';
+import { createTokens, ownerAuth } from '../auth';
+import {
+    IUserRegisterRequestSchema,
+    IUserPatchRequestSchema,
+    IUserPatchRequest,
+    IUserLoginRequestSchema,
+    IUserLoginRequest,
+} from '../validators/user';
+import paramValidator from '../validators/requests';
 
 const router = express.Router();
 
@@ -46,59 +55,75 @@ const router = express.Router();
  * @return response to client if user was created and added to the system.
  * */
 router.post('/register', async (req, res) => {
+    let response: IUserLoginRequest;
+
     try {
-        const { email, password, username } = await IUserRegisterRequestSchema.parseAsync(req.body);
-
-        // generate the salt for the new user account;
-        const salt = await bcrypt.genSalt();
-
-        return bcrypt.hash(password, salt, async (err, hash) => {
-            if (err) throw (err);
-
-            // create the user object and save it to the table
-            const newUser = new User({ email, password: hash, username });
-
-            try {
-                const savedUser = await newUser.save();
-
-                const { token, refreshToken } = await createTokens({ email, username, id: savedUser._id });
-
-                // set the tokens in the response headers
-                res.set("Access-Control-Expose-Headers", "x-token, x-refresh-token");
-                res.set("x-token", token);
-                res.set("x-refresh-token", refreshToken);
-
-                return res.status(201).json({
-                    status: true,
-                    message: "Successfully created new user account.",
-                    username, email,
-                    token, refreshToken
-                });
-            } catch (e) {
-                console.log(e);
-
-                return res.status(500).json({
-                    status: false,
-                    message: error.INTERNAL_SERVER_ERROR
-                })
-            }
-        });
-
-    } catch (e) {
+        response = await IUserRegisterRequestSchema.parseAsync(req.body);
+    } catch (e: any) {
         if (e instanceof ZodError) {
             return res.status(400).json({
                 status: false,
                 message: error.BAD_REQUEST,
                 errors: e.errors,
             });
-        } else {
-            console.log(e);
+        }
+
+        Logger.error(e);
+        return res.status(500).json({
+            status: false,
+            message: error.INTERNAL_SERVER_ERROR,
+        });
+    }
+
+    const { password, email, username } = response;
+
+    // generate the salt for the new user account;
+    const salt = await bcrypt.genSalt();
+
+    return bcrypt.hash(password, salt, async (err, hash) => {
+        if (err) {
+            Logger.error(err);
+
             return res.status(500).json({
                 status: false,
                 message: error.INTERNAL_SERVER_ERROR,
             });
         }
-    }
+
+        // create the user object and save it to the table
+        const newUser = new User({ email, password: hash, username });
+
+        try {
+            const savedUser = await newUser.save();
+
+            const { token, refreshToken } = await createTokens({
+                email,
+                username,
+                id: savedUser._id,
+            });
+
+            // set the tokens in the response headers
+            res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
+            res.set('x-token', token);
+            res.set('x-refresh-token', refreshToken);
+
+            return res.status(201).json({
+                status: true,
+                message: 'Successfully created new user account.',
+                username,
+                email,
+                token,
+                refreshToken,
+            });
+        } catch (e) {
+            Logger.error(e);
+
+            return res.status(500).json({
+                status: false,
+                message: error.INTERNAL_SERVER_ERROR,
+            });
+        }
+    });
 });
 
 /**
@@ -141,7 +166,7 @@ router.post('/register', async (req, res) => {
  * @return sends a response to client if user successfully (or not) logged in.
  *
  * */
-router.post("/login", async (req, res) => {
+router.post('/login', async (req, res) => {
     let response: IUserLoginRequest;
 
     try {
@@ -153,24 +178,21 @@ router.post("/login", async (req, res) => {
                 message: error.BAD_REQUEST,
                 errors: e.errors,
             });
-        } else {
-            console.log(e);
-            return res.status(500).json({
-                status: false,
-                message: error.INTERNAL_SERVER_ERROR,
-            });
         }
+
+        Logger.error(e);
+        return res.status(500).json({
+            status: false,
+            message: error.INTERNAL_SERVER_ERROR,
+        });
     }
 
     const { username, email, password } = response;
 
-    // Use both fields to look for the login 
+    // Use both fields to look for the login
     const searchQuery = {
-        $or: [
-            ...(username ? [{ username }] : []),
-            ...(email ? [{ email }] : []),
-        ]
-    }
+        $or: [...(username ? [{ username }] : []), ...(email ? [{ email }] : [])],
+    };
 
     const result = await User.findOne(searchQuery).exec();
 
@@ -182,11 +204,11 @@ router.post("/login", async (req, res) => {
             if (err) {
                 // Log the error in the server console & respond to the client with an
                 // INTERNAL_SERVER_ERROR, since this was an unexpected exception.
-                console.error(err);
+                Logger.error(err);
 
                 return res.status(500).json({
                     status: false,
-                    message: error.INTERNAL_SERVER_ERROR
+                    message: error.INTERNAL_SERVER_ERROR,
                 });
             }
 
@@ -197,119 +219,172 @@ router.post("/login", async (req, res) => {
                 const { token, refreshToken } = await createTokens({
                     email: result.email,
                     name: result.username,
-                    id: result._id
+                    id: result._id,
                 });
 
                 // set the tokens in the response headers
-                res.set("Access-Control-Expose-Headers", "x-token, x-refresh-token");
-                res.set("x-token", token);
-                res.set("x-refresh-token", refreshToken);
+                res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
+                res.set('x-token', token);
+                res.set('x-refresh-token', refreshToken);
 
                 return res.status(302).json({
                     status: true,
-                    message: "Authentication successful",
-                    username: result.username, email: result.email,
-                    token, refreshToken
-                });
-            } else {
-                // password did not match the stored hashed password within the database
-                return res.status(401).json({
-                    status: false,
-                    message: error.BAD_REQUEST,
-                    extra: error.MISMATCHING_LOGIN
+                    message: 'Authentication successful',
+                    user: User.project(result),
+                    token,
+                    refreshToken,
                 });
             }
+            // password did not match the stored hashed password within the database
+            return res.status(401).json({
+                status: false,
+                message: error.BAD_REQUEST,
+                extra: error.MISMATCHING_LOGIN,
+            });
         });
     } else {
         return res.status(401).json({
             status: false,
             message: error.AUTHENTICATION_FAILED,
-            extra: error.MISMATCHING_LOGIN
+            extra: error.MISMATCHING_LOGIN,
         });
     }
 });
 
 /**
-* @version v1.0.0
-* @method GET
-* @url /api/user
-* @example
-* https://af268.cs.st-andrews.ac.uk/api/user
-* 
-* >>> response:
-* {
-*  "status": "ok",
-*  "user": {
-*      "name": "william"
-*      ...
-*  }
-* }
-*
-* @description This route is used to fetch information about a user account, the route
-* will accept a token in the header of the request to authenticate the request.
-*
-* @error {UNAUTHORIZED} if the request does not contain a token or refreshToken
-*
-* @return sends a response to client if user successfully (or not) logged in. The response contains
-* information about the user.
-*
-* */
-router.get("/:id", ownerAuth, async (req, res) => {
-    const id = req.params.id;
-    
-    const user = await User.findById({_id: id});
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user
+ *
+ * >>> response:
+ * {
+ *  "status": "ok",
+ *  "user": {
+ *      "name": "william"
+ *      ...
+ *  }
+ * }
+ *
+ * @description This route is used to fetch information about a user account, the route
+ * will accept a token in the header of the request to authenticate the request.
+ *
+ * @error {UNAUTHORIZED} if the request does not contain a token or refreshToken
+ *
+ * @return sends a response to client if user successfully (or not) logged in. The response contains
+ * information about the user.
+ *
+ * */
+router.get('/:id', paramValidator, ownerAuth, async (req, res) => {
+    const { id } = req.params;
 
-    // If the user wasn't found, then return a not found status.
-    if (!user) {
-        return res.status(404).json({
+    User.findById(id, {}, {}, (err, user) => {
+        // If the user wasn't found, then return a not found status.
+        if (!user) {
+            return res.status(404).json({
+                status: false,
+                message: 'No user with given id exists',
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            user: User.project(user),
+        });
+    });
+});
+
+/**
+ * @version v1.0.0
+ * @method PATCH
+ * @url /api/user
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user
+ * >>> body:
+ * {
+ *  "name": "william"
+ * }
+ *
+ * >>> response:
+ * {
+ *  "message": "Successfully updated user information",
+ *  ...,
+ *  "user": {
+ *      "name": "william"
+ *      ...
+ *  }
+ * }
+ *
+ * @description This route is used to update information of a user account.
+ *
+ * @error {UNAUTHORIZED} if the request does not contain a token.
+ *
+ * @return sends a response to client if user successfully updated, with the new updated user
+ * information.
+ * */
+router.patch('/:id', paramValidator, ownerAuth, async (req, res) => {
+    const { id } = req.params;
+
+    let response: IUserPatchRequest;
+
+    try {
+        response = await IUserPatchRequestSchema.parseAsync(req.body);
+    } catch (e) {
+        if (e instanceof ZodError) {
+            return res.status(400).json({
+                status: false,
+                message: error.BAD_REQUEST,
+                errors: e.errors,
+            });
+        }
+        Logger.error(e);
+
+        return res.status(500).json({
             status: false,
-            message: error.NON_EXISTENT_USER,
+            message: error.INTERNAL_SERVER_ERROR,
         });
     }
 
+    const update = { $set: { ...response } };
+    const queryOptions = { new: true }; // new as in return the updated document
 
-    // TODO: setup a mapping of a User Document to a User response type. This is mainly so we don't
-    // have to manually type out each field, selecting particular ones we want to return all over the 
-    // place.
-    return res.status(200).json({
-        status: true,
-        user: {
-            username: user.username,
-            email: user.email,
-        },
-    })
-});
+    // So take the fields that are to be updated into the set request, it's okay to this because
+    // we validated the request previously and we should be able to add all of the fields into the
+    // database. If the user tries to update the username or an email that's already in use, mongo
+    // will return an error because these fields have to be unique.
+    User.findOneAndUpdate({ _id: id }, update, queryOptions, (err, newUser) => {
+        if (err) {
+            if (err instanceof mongoose.Error.ValidationError) {
+                return res.status(400).json({
+                    status: false,
+                    message: error.BAD_REQUEST,
+                    extra: err.errors,
+                });
+            }
 
+            // Something went wrong...
+            Logger.error(err);
+            return res.status(500).json({
+                status: false,
+                message: error.INTERNAL_SERVER_ERROR,
+            });
+        }
 
-/**
-* @version v1.0.0
-* @method PATCH
-* @url /api/user
-* @example
-* https://af268.cs.st-andrews.ac.uk/api/user
-* >>> body:
-* {
-*  "name": "william"
-* }
-* 
-* >>> response:
-* {
-*  "message": "Successfully updated user information",
-*  ...,
-*  "user": {
-*      "name": "william"
-*      ...
-*  }
-* }
-*
-* @description This route is used to update information of a user account.
-*
-* @error {UNAUTHORIZED} if the request does not contain a token.
-*
-* @return sends a response to client if user successfully updated, with the new updated user
-* information.
-* */
-router.patch("/:id", ownerAuth, async (req, res) => {
+        // If we couldn't find the user.
+        if (!newUser) {
+            return res.status(404).json({
+                status: false,
+                message: error.NON_EXISTENT_USER,
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Successfully updated user details.',
+            user: User.project(newUser),
+        });
+    });
 });
 
 /**
@@ -329,13 +404,13 @@ router.patch("/:id", ownerAuth, async (req, res) => {
  * @return sends a response to client if user was successfully deleted or not.
  * */
 
-router.delete("/:id", ownerAuth, async (req, res) => {
-    const id = req.params.id;
+router.delete('/:id', paramValidator, ownerAuth, async (req, res) => {
+    const { id } = req.params;
 
     // find all the games that are owned by the current player.
-    return User.findOneAndDelete({_id: id}, {}, (err) => {
+    return await User.findOneAndDelete({ _id: id }, {}, (err) => {
         if (err) {
-            console.log(err);
+            Logger.error(err);
 
             return res.status(500).json({
                 status: true,
@@ -345,7 +420,7 @@ router.delete("/:id", ownerAuth, async (req, res) => {
 
         return res.status(200).json({
             status: true,
-            message: "Successfully deleted user account."
+            message: 'Successfully deleted user account.',
         });
     });
 });
