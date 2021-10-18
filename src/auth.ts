@@ -149,6 +149,10 @@ export async function ownerAuth(req: express.Request, res: express.Response, nex
             });
         } else {
             req.token = token;
+
+            // TODO: permissions: here we should check that the request is valid in the current scope.
+            // roles, permissions on resources (scoped)
+
             next(); // the request was fine and is authenticated.
         }
     } else {

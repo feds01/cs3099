@@ -42,6 +42,9 @@ const theme = createTheme({
           '"Segoe UI Emoji"',
           '"Segoe UI Symbol"',
         ].join(','),
+        button: {
+            textTransform: 'none'
+          }
       },
       breakpoints: {
         values: {
@@ -68,6 +71,7 @@ function App() {
     useEffect(() => {
         async function onLoad() {
             try {
+                // TODO: token's exist?
             } catch (e: any) {
                 setAuthState({ state: 'error', error: e });
             }

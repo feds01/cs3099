@@ -9,7 +9,7 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$@!%&*?])[A-Za-z\d
 
 export const IUserLoginRequestSchema = z
     .object({
-        username: z.string().min(1).max(50).optional(),
+        username: z.string().nonempty().max(50).optional(),
         email: z.string().email().optional(),
         password: z.string().nonempty(),
     })

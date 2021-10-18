@@ -2,10 +2,10 @@ import React from 'react';
 import { Box } from '@mui/system';
 import { AuthState } from '../../types/auth';
 
-import LoginCover from './../../static/images/login.svg';
-import { Typography } from '@mui/material';
-import LoginForm from '../../components/LoginForm';
 import { Link } from 'react-router-dom';
+import Typography from '@mui/material/Typography';
+import LoginForm from '../../components/LoginForm';
+import LoginCover from './../../static/images/login.svg';
 
 interface Props {
     authState: AuthState<Error>;
@@ -27,7 +27,8 @@ function Login(props: Props) {
                     backgroundSize: 'cover',
                     width: {
                         xs: 0,
-                        sm: '40%',
+                        sm: '35%',
+                        md: '50%'
                     },
                     height: '100%',
                 }}

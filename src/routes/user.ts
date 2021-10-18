@@ -277,7 +277,7 @@ router.post('/login', async (req, res) => {
  *
  * */
 router.get('/:id', paramValidator, ownerAuth, async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.params; // const id = req.params.id;
 
     User.findById(id, {}, {}, (err, user) => {
         // If the user wasn't found, then return a not found status.

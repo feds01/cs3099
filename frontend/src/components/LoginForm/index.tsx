@@ -1,13 +1,12 @@
 import React, { ReactElement } from 'react';
-
 import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import TextField from '@mui/material/TextField';
+import { zodResolver } from '@hookform/resolvers/zod';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 interface Props {}
@@ -31,6 +30,8 @@ export default function LoginForm({}: Props): ReactElement {
 
     const onSubmit: SubmitHandler<ILoginForm> = (data) => {
         console.log(data);
+        // TODO: make a post request to REST API to get tokens.
+        // TODO: set the tokens into localstorage
     };
 
     return (
