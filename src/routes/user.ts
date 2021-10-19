@@ -408,7 +408,7 @@ router.delete('/:id', paramValidator, ownerAuth, async (req, res) => {
     const { id } = req.params;
 
     // find all the games that are owned by the current player.
-    return await User.findOneAndDelete({ _id: id }, {}, (err) => {
+    User.findOneAndDelete({ _id: id }, {}, (err) => {
         if (err) {
             Logger.error(err);
 
