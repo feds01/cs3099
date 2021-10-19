@@ -1,13 +1,24 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
+enum IUserRole {
+    Default = 'default',
+    Moderator = 'moderator',
+    Administrator = 'administrator'
+}
+
 export interface IUser {
     email: string;
     username: string;
     password: string;
-    // image: boolean,
+    firstName: string;
+    lastName: string;
+    profilePictureUrl?: string;
+    role: IUserRole;
+    about?: string;
+    externalId?: string;
 }
 
-interface IUserDocument extends IUser, Document {}
+interface IUserDocument extends IUser, Document { }
 
 interface IUserModel extends Model<IUserDocument> {
     project: (user: IUser) => Partial<IUser>;
@@ -16,8 +27,14 @@ interface IUserModel extends Model<IUserDocument> {
 const UserSchema = new Schema<IUser, IUserModel, IUser>(
     {
         email: { type: String, required: true, unique: true },
-        username: { type: String, required: false, unique: true },
+        username: { type: String, required: true, unique: true },
+        firstName: { type: String, required: true, minLength: 1 },
+        lastName: { type: String, required: true, minLength: 1 },
         password: { type: String, required: true, minLength: 12 },
+        profilePictureUrl: { type: String },
+        about: { type: String },
+        externalId: { type: String },
+        role: {type: String, enum: IUserRole, default: IUserRole.Default }
     },
     { timestamps: true },
 );
@@ -30,10 +47,16 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
  * @returns A partial user object with selected fields that are to be projected.
  */
 UserSchema.statics.project = function (user: IUserDocument) {
+    const {profilePictureUrl, about} = user;
+
     return {
         id: user._id,
         email: user.email,
         username: user.username,
+        firstName: user.firstName,
+        lastName: user.firstName,
+        ...(profilePictureUrl && {profilePictureUrl}),
+        ...(about && {about})
     };
 };
 
