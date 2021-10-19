@@ -1,20 +1,40 @@
-import mongoose, {Document, Schema} from 'mongoose';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
-export interface IUser extends Document {
-    email: string,
-    username: string,
-    password: string,
+export interface IUser {
+    email: string;
+    username: string;
+    password: string;
     // image: boolean,
-    createdAt: number,
 }
 
+interface IUserDocument extends IUser, Document {}
 
-const UserSchema = new Schema({
-    // image: {type: Boolean, required: false, default: false},
-    email: { type: String, required: true, unique: true},
-    username: {type: String, required: false, unique: true},
-    password: {type: String, required: true, minLength: 12},
-    createdAt: {type: Date, required: false, default: Date.now},
-});
+interface IUserModel extends Model<IUserDocument> {
+    project: (user: IUser) => Partial<IUser>;
+}
 
-export default mongoose.model<IUser>('user', UserSchema);
+const UserSchema = new Schema<IUser, IUserModel, IUser>(
+    {
+        email: { type: String, required: true, unique: true },
+        username: { type: String, required: false, unique: true },
+        password: { type: String, required: true, minLength: 12 },
+    },
+    { timestamps: true },
+);
+
+/**
+ * Function to project a user document so that it can be returned as a
+ * response in the API.
+ *
+ * @param user The user Document that is to be projected.
+ * @returns A partial user object with selected fields that are to be projected.
+ */
+UserSchema.statics.project = function (user: IUserDocument) {
+    return {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+    };
+};
+
+export default mongoose.model<IUser, IUserModel>('user', UserSchema);
