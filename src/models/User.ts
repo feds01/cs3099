@@ -47,10 +47,16 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
  * @returns A partial user object with selected fields that are to be projected.
  */
 UserSchema.statics.project = function (user: IUserDocument) {
+    const {profilePictureUrl, about} = user;
+
     return {
         id: user._id,
         email: user.email,
         username: user.username,
+        firstName: user.firstName,
+        lastName: user.firstName,
+        ...(profilePictureUrl && {profilePictureUrl}),
+        ...(about && {about})
     };
 };
 

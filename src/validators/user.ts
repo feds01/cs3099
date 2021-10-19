@@ -23,6 +23,8 @@ export const IUserRegisterRequestSchema = z.object({
     firstName: z.string().nonempty().max(32),
     lastName: z.string().nonempty().max(32),
     password: z.string().regex(PASSWORD_REGEX),
+    about: z.string(),
+    profilePictureUrl: z.string().url()
 });
 
 export type IUserRegisterRequest = z.infer<typeof IUserRegisterRequestSchema>;
