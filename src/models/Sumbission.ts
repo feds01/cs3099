@@ -15,6 +15,11 @@ interface ISubmissionModel extends Model<ISubmissionDocument> {
 
 const SubmissionSchema = new Schema<ISubmission, ISubmissionModel, ISubmission>(
     {
+        revision: {type: String, required: true},
+        title: {type: String, required: true},
+        introduction: {type: String, required: true},
+        owner: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true},
+        collaborators: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}]
     },
     { timestamps: true },
 );
