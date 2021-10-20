@@ -3,7 +3,7 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 enum IUserRole {
     Default = 'default',
     Moderator = 'moderator',
-    Administrator = 'administrator'
+    Administrator = 'administrator',
 }
 
 export interface IUser {
@@ -18,7 +18,7 @@ export interface IUser {
     externalId?: string;
 }
 
-interface IUserDocument extends IUser, Document { }
+interface IUserDocument extends IUser, Document {}
 
 interface IUserModel extends Model<IUserDocument> {
     project: (user: IUser) => Partial<IUser>;
@@ -34,7 +34,7 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
         profilePictureUrl: { type: String },
         about: { type: String },
         externalId: { type: String },
-        role: {type: String, enum: IUserRole, default: IUserRole.Default }
+        role: { type: String, enum: IUserRole, default: IUserRole.Default },
     },
     { timestamps: true },
 );
@@ -47,7 +47,7 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
  * @returns A partial user object with selected fields that are to be projected.
  */
 UserSchema.statics.project = function (user: IUserDocument) {
-    const {profilePictureUrl, about} = user;
+    const { profilePictureUrl, about } = user;
 
     return {
         id: user._id,
@@ -55,8 +55,8 @@ UserSchema.statics.project = function (user: IUserDocument) {
         username: user.username,
         firstName: user.firstName,
         lastName: user.firstName,
-        ...(profilePictureUrl && {profilePictureUrl}),
-        ...(about && {about})
+        ...(profilePictureUrl && { profilePictureUrl }),
+        ...(about && { about }),
     };
 };
 
