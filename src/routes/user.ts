@@ -78,77 +78,77 @@ router.post('/register', async (req, res) => {
     const { password, email, username } = response;
 
     // Check if username or email is already in use
-    const searchQuery = {
+    
+    const searchQueryUser = {           
         $or: [...(username ? [{ username }] : []), ...(email ? [{ email }] : [])],
     };
 
-    const result = await User.findOne(searchQuery).exec();
+    const resultUser = await User.findOne(searchQueryUser).exec();
 
-    if (!result){
-        // generate the salt for the new user account;
-        const salt = await bcrypt.genSalt();
-
-        return bcrypt.hash(password, salt, async (err, hash) => {
-            if (err) {
-                Logger.error(err);
-
-                return res.status(500).json({
-                    status: false,
-                    message: error.INTERNAL_SERVER_ERROR,
-                });
-            }
-
-            // create the user object and save it to the table
-            const newUser = new User({ email, password: hash, username });
-
-            try {
-                const savedUser = await newUser.save();
-
-                const { token, refreshToken } = await createTokens({
-                    email,
-                    username,
-                    id: savedUser._id,
-                });
-
-                // set the tokens in the response headers
-                res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
-                res.set('x-token', token);
-                res.set('x-refresh-token', refreshToken);
-
-                return res.status(201).json({
-                    status: true,
-                    message: 'Successfully created new user account.',
-                    username,
-                    email,
-                    token,
-                    refreshToken,
-                });
-            } catch (e) {
-                Logger.error(e);
-
-                return res.status(500).json({
-                    status: false,
-                    message: error.INTERNAL_SERVER_ERROR,
-                });
-            }
-        });
-    } else {
-        if (result.username){
+    if (resultUser){
+        if (resultUser.username==username){
             return res.status(409).json({
                 status: false,
                 message: error.REGISTRATION_FAILED,
                 extra: error.USER_EXISTS,
             });
-        }
-        if(result.email){
+        } 
+        if (resultUser.email==email){
             return res.status(409).json({
                 status: false,
                 message: error.REGISTRATION_FAILED,
                 extra: error.MAIL_EXISTS,
             });
-        }
+        } 
     }
 
+    // generate the salt for the new user account;
+    const salt = await bcrypt.genSalt();
+
+    return bcrypt.hash(password, salt, async (err, hash) => {
+        if (err) {
+            Logger.error(err);
+
+            return res.status(500).json({
+                status: false,
+                message: error.INTERNAL_SERVER_ERROR,
+            });
+        }
+
+        // create the user object and save it to the table
+        const newUser = new User({...response, password: hash});
+
+        try {
+            const savedUser = await newUser.save();
+
+            const { token, refreshToken } = await createTokens({
+                email,
+                username,
+                id: savedUser._id,
+            });
+
+            // set the tokens in the response headers
+            res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
+            res.set('x-token', token);
+            res.set('x-refresh-token', refreshToken);
+
+            return res.status(201).json({
+                status: true,
+                message: 'Successfully created new user account.',
+                username,
+                email,
+                token,
+                refreshToken,
+            });
+        } catch (e) {
+            Logger.error(e);
+
+            return res.status(500).json({
+                status: false,
+                message: error.INTERNAL_SERVER_ERROR,
+            });
+        }
+    });
     
 });
 
