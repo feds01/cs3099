@@ -8,8 +8,7 @@ import TextField from '@mui/material/TextField';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-
-interface Props {}
+import { User } from '../../lib/api/models';
 
 const LoginSchema = z.object({
     email: z.string().email(),
@@ -18,6 +17,10 @@ const LoginSchema = z.object({
 });
 
 type ILoginForm = z.infer<typeof LoginSchema>;
+
+interface Props {
+    onSuccess: (session: User, token: string, refreshToken: string) => void;
+}
 
 export default function LoginForm({}: Props): ReactElement {
     const {

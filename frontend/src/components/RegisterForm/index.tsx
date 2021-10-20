@@ -6,6 +6,7 @@ import TextField from '@mui/material/TextField';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import Grid from '@mui/material/Grid';
+import { User } from '../../lib/api/models';
 
 /**
  * This is the password regex. It specifies that the password must be between the length
@@ -13,8 +14,6 @@ import Grid from '@mui/material/Grid';
  * character, and a digit.
  */
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$@!%&*?])[A-Za-z\d#$@!%&*?]{8,30}$/;
-
-interface Props {}
 
 const RegisterSchema = z
     .object({
@@ -39,6 +38,10 @@ const RegisterSchema = z
     });
 
 type IRegisterForm = z.infer<typeof RegisterSchema>;
+
+interface Props {
+    onSuccess: (session: User, token: string, refreshToken: string) => void;
+}
 
 export default function RegisterForm(props: Props): ReactElement {
     const {

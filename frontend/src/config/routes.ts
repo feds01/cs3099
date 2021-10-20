@@ -1,12 +1,12 @@
-import { RouteProps } from "react-router";
+import { RouteProps } from 'react-router';
 
-import HomeRoute from "./../routes/Home";
-import ProfileRoute from "./../routes/Profile";
+import HomeRoute from './../routes/Home';
+import ProfileRoute from './../routes/Profile';
 
 type Extends<T, U extends T> = U;
 
 type RoutesShape = {
-    [key: string]: RouteProps
+    [key: string]: RouteProps;
 };
 
 export type Routes = Extends<RoutesShape, typeof routes>;
@@ -19,5 +19,5 @@ export const routes = {
     '/profile': {
         exact: true,
         component: ProfileRoute,
-    }
+    },
 };

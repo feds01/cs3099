@@ -1,18 +1,31 @@
-import React from 'react'
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
+import React from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
-import { Link } from 'react-router-dom';
-import { AuthState } from '../../types/auth'
+import { User } from '../../lib/api/models';
+import { Link, useHistory, useLocation } from 'react-router-dom';
 import AuthCover from './../../static/images/login.svg';
 import RegisterForm from '../../components/RegisterForm';
+import { dispatchAuth } from '../../hooks/auth';
 
-interface Props {
-    authState: AuthState<Error>;
-    setAuthState: (state: AuthState<Error>) => void;
+interface LocationState {
+    from: { pathname: string };
 }
 
-export default function Register(_props: Props) {
+export default function Register() {
+    const authDispatcher = dispatchAuth();
+
+    // extract the 'from' part of the redirect if it's present. We use this path
+    // to redirect the user back to where they tried to go.
+    const location = useLocation<LocationState>();
+    const history = useHistory();
+    let { from } = location.state || { from: { pathname: '/' } };
+
+    const handleSuccess = (session: User, token: string, refreshToken: string) => {
+        authDispatcher({ type: 'login', session, token, refreshToken });
+        history.push(from.pathname);
+    };
+
     return (
         <Box
             sx={{
@@ -41,7 +54,7 @@ export default function Register(_props: Props) {
                     flexDirection: 'column',
                     justifyContent: 'center',
                     paddingLeft: 2,
-                    paddingRight: 2
+                    paddingRight: 2,
                 }}
             >
                 <Typography sx={{ marginBottom: 8 }} variant={'h4'}>
@@ -51,12 +64,11 @@ export default function Register(_props: Props) {
                 <Typography variant={'caption'}>
                     Publish scientific works, papers, review and checkout the most recent works in astronomy today.
                 </Typography>
-                <RegisterForm />
+                <RegisterForm onSuccess={handleSuccess} />
                 <Typography variant="body1">
                     Already have an account yet? <Link to="/login">Log in</Link>
                 </Typography>
             </Box>
         </Box>
-    )
+    );
 }
-
