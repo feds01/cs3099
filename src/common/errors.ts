@@ -19,9 +19,12 @@ export function isExpressError(err: unknown): err is ExpressError {
 }
 
 // User Accounts API request errors
+export const USER_EXISTS = "Username already in use.";
+export const MAIL_EXISTS = "Email already in use.";
 export const MISMATCHING_LOGIN = "password or email fields incorrect/don't match.";
 export const BAD_REQUEST = 'The API request is malformed or invalid';
 export const UNAUTHORIZED = "User doesn't have permissions to perform this action.";
+export const REGISTRATION_FAILED = 'Registration failed';
 export const AUTHENTICATION_FAILED = 'Authentication failed';
 export const NON_EXISTENT_USER = 'No user with the given username exists';
 
