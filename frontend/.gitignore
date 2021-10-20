@@ -11,6 +11,9 @@
 # production
 /build
 
+# generated API output
+/src/lib/api/*
+
 # misc
 .DS_Store
 .env.local

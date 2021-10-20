@@ -9,7 +9,8 @@
         "dev": "ts-node-dev ./src/index.ts",
         "test": "jest --collect-coverage --ci",
         "lint": "eslint src/*/**",
-        "fmt": "prettier --write ."
+        "fmt": "prettier --write .",
+        "generate-client": "orval"
     },
     "repository": {
         "type": "git",
@@ -23,7 +24,6 @@
         "@types/jsonwebtoken": "^8.5.5",
         "@types/morgan": "^1.9.3",
         "@types/node": "^16.10.3",
-        "@types/swagger-jsdoc": "^6.0.1",
         "@types/swagger-ui-express": "^4.1.3",
         "@typescript-eslint/eslint-plugin": "^5.0.0",
         "@typescript-eslint/parser": "^5.0.0",
