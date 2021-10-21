@@ -7,6 +7,6 @@
  */
 
 export type InternalServerErrorResponse = {
-  status: boolean;
-  message: string;
+    status: boolean;
+    message: string;
 };

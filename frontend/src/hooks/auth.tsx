@@ -85,14 +85,13 @@ const initAuth = (state: AuthState): AuthState => {
                 const parsedSession = SessionSchema.parse(jsonSession);
                 state.session = parsedSession;
             }
-
         } catch (e) {
             console.log('Session in localStorage was invalid');
         }
     }
 
     return state;
-}
+};
 
 export const AuthProvider: FC = ({ children }) => {
     const [state, dispatch] = useReducer(authReducer, initialState, initAuth);

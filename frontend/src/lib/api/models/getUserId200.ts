@@ -8,6 +8,6 @@
 import type { User } from './user';
 
 export type GetUserId200 = {
-  status?: boolean;
-  user?: User;
+    status?: boolean;
+    user?: User;
 };

@@ -25,7 +25,7 @@ export default function PasswordField(fields: TextFieldProps): ReactElement {
                         </InputAdornment>
                     ),
                 }}
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
             />
         </div>
     );

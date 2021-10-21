@@ -8,8 +8,8 @@
 import type { User } from './user';
 
 export interface UserAuthResponse {
-  status?: boolean;
-  token: string;
-  refreshToken: string;
-  user: User;
+    status?: boolean;
+    token: string;
+    refreshToken: string;
+    user: User;
 }

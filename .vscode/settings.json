@@ -1,8 +1,4 @@
 {
     "git.ignoreLimitWarning": true,
-    "cSpell.words": [
-        "hookform",
-        "Iamus",
-        "preconnect"
-    ]
+    "cSpell.words": ["hookform", "Iamus", "preconnect"]
 }

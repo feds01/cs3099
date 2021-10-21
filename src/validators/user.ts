@@ -17,10 +17,10 @@ export const IUserLoginRequestSchema = z
 
         // Use the email instead of the provided username
         if (email.success) {
-            return {...val, isEmail: true}
+            return { ...val, isEmail: true };
         }
 
-        return {...val, isEmail: false};
+        return { ...val, isEmail: false };
     });
 
 export type IUserLoginRequest = z.infer<typeof IUserLoginRequestSchema>;
@@ -32,7 +32,7 @@ export const IUserRegisterRequestSchema = z.object({
     lastName: z.string().nonempty().max(32),
     password: z.string().regex(PASSWORD_REGEX),
     about: z.string().optional(),
-    profilePictureUrl: z.string().url().optional()
+    profilePictureUrl: z.string().url().optional(),
 });
 
 export type IUserRegisterRequest = z.infer<typeof IUserRegisterRequestSchema>;

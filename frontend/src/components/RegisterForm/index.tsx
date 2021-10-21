@@ -191,9 +191,7 @@ export default function RegisterForm({ onSuccess }: Props): ReactElement {
                             name="password"
                             control={control}
                             defaultValue=""
-                            render={({
-                                field: { ref: inputRef, ...values},
-                            }) => (
+                            render={({ field: { ref: inputRef, ...values } }) => (
                                 <PasswordField
                                     {...values}
                                     inputRef={inputRef}

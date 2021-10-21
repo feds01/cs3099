@@ -76,20 +76,13 @@ function App() {
                             <AppliedRoute exact path={'/login'} component={LoginRoute} />
                             <AppliedRoute exact path={'/register'} component={RegisterRoute} />
                             <Route>
-                                <Box sx={{ display: 'flex' }}>
+                                <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
                                     <CssBaseline />
-                                    <Sidebar drawerWidth={drawerWidth} />
-                                    <PageLayout>
-                                        {Object.keys(routeConfig.routes).map((path) => {
-                                            return (
-                                                <PrivateRoute
-                                                    key={path}
-                                                    path={path}
-                                                    {...routeConfig.routes[path as keyof routeConfig.Routes]}
-                                                />
-                                            );
+                                    <Route>
+                                        {Object.entries(routeConfig.routes).map(([path, config]) => {
+                                            return <PrivateRoute key={path} path={path} {...config} />;
                                         })}
-                                    </PageLayout>
+                                    </Route>
                                 </Box>
                             </Route>
                         </Switch>

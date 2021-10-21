@@ -14,10 +14,20 @@ export type Routes = Extends<RoutesShape, typeof routes>;
 export const routes = {
     '/': {
         exact: true,
+        title: 'Home',
+        selfGoverningLayout: false,
         component: HomeRoute,
+    },
+    '/profile/me': {
+        exact: true,
+        title: 'Home',
+        selfGoverningLayout: true,
+        component: ProfileRoute,
     },
     '/profile': {
         exact: true,
+        title: 'Profile',
+        selfGoverningLayout: false,
         component: ProfileRoute,
     },
 };

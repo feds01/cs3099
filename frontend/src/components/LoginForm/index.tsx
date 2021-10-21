@@ -36,16 +36,16 @@ export default function LoginForm({ onSuccess }: Props): ReactElement {
     } = useForm<ILoginForm>({
         resolver: zodResolver(LoginSchema),
         defaultValues: {
-            rememberLogin: true
-        }
+            rememberLogin: true,
+        },
     });
 
     const { isLoading, isError, data: response, error, mutateAsync } = usePostUserLogin();
 
     // TODO: try and do this in onSubmit instead of using an effect.
     useEffect(() => {
-        if (!isLoading && typeof response !== "undefined") {
-            const rememberLogin = getValues("rememberLogin");
+        if (!isLoading && typeof response !== 'undefined') {
+            const rememberLogin = getValues('rememberLogin');
 
             onSuccess(response.user, response.token, response.refreshToken, rememberLogin);
         }
@@ -137,14 +137,14 @@ export default function LoginForm({ onSuccess }: Props): ReactElement {
                     <Link to="/auth/forgot-password">Forgot Password?</Link>
                 </Box>
                 <Button type={'submit'} disabled={isLoading} variant="contained" color="primary" fullWidth>
-                    {!isLoading ? 'Sign in' : <CircularProgress variant="determinate"  color="inherit" size={14} />}
+                    {!isLoading ? 'Sign in' : <CircularProgress variant="determinate" color="inherit" size={14} />}
                 </Button>
             </Box>
             {isError && (
                 <Alert severity="error">
-                <AlertTitle>Error</AlertTitle>
-                <strong>{error!.message || "Something went wrong"}</strong>
-              </Alert>
+                    <AlertTitle>Error</AlertTitle>
+                    <strong>{error!.message || 'Something went wrong'}</strong>
+                </Alert>
             )}
         </form>
     );

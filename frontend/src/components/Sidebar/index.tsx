@@ -23,7 +23,7 @@ export default function Sidebar({ drawerWidth }: Props): ReactElement {
         >
             <Toolbar />
             <Divider />
-           Sidebar
+            Sidebar
         </Drawer>
     );
 }

@@ -38,11 +38,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "*");
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', '*');
 
     next();
-})
+});
 
 // Setup the specific API routes
 app.use('/user', userRouter);

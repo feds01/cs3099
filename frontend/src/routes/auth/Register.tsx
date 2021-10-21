@@ -22,7 +22,7 @@ export default function Register() {
     let { from } = location.state || { from: { pathname: '/' } };
 
     const handleSuccess = (session: User, token: string, refreshToken: string) => {
-        authDispatcher({ type: 'login', rememberUser: false,  data: {session, token, refreshToken }});
+        authDispatcher({ type: 'login', rememberUser: true, data: { session, token, refreshToken } });
         history.push(from.pathname);
     };
 
