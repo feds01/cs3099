@@ -10,16 +10,15 @@ export interface ISubmission {
 
 interface ISubmissionDocument extends ISubmission, Document {}
 
-interface ISubmissionModel extends Model<ISubmissionDocument> {
-}
+interface ISubmissionModel extends Model<ISubmissionDocument> {}
 
 const SubmissionSchema = new Schema<ISubmission, ISubmissionModel, ISubmission>(
     {
-        revision: {type: String, required: true},
-        title: {type: String, required: true},
-        introduction: {type: String, required: true},
-        owner: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true},
-        collaborators: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}]
+        revision: { type: String, required: true },
+        title: { type: String, required: true },
+        introduction: { type: String, required: true },
+        owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     },
     { timestamps: true },
 );

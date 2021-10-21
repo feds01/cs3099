@@ -77,6 +77,31 @@ router.post('/register', async (req, res) => {
 
     const { password, email, username } = response;
 
+    // Check if username or email is already in use
+
+    const searchQueryUser = {
+        $or: [{username}, {email}],
+    };
+
+    const resultUser = await User.findOne(searchQueryUser).exec();
+
+    if (resultUser) {
+        if (resultUser.username == username) {
+            return res.status(409).json({
+                status: false,
+                message: error.REGISTRATION_FAILED,
+                extra: error.USER_EXISTS,
+            });
+        }
+        if (resultUser.email == email) {
+            return res.status(409).json({
+                status: false,
+                message: error.REGISTRATION_FAILED,
+                extra: error.MAIL_EXISTS,
+            });
+        }
+    }
+
     // generate the salt for the new user account;
     const salt = await bcrypt.genSalt();
 
@@ -91,7 +116,7 @@ router.post('/register', async (req, res) => {
         }
 
         // create the user object and save it to the table
-        const newUser = new User({ email, password: hash, username });
+        const newUser = new User({ ...response, password: hash });
 
         try {
             const savedUser = await newUser.save();
@@ -423,6 +448,90 @@ router.delete('/:id', paramValidator, ownerAuth, async (req, res) => {
             message: 'Successfully deleted user account.',
         });
     });
+});
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/userExists
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user/userExists
+ *
+ * >>> response:
+ * {
+ *  "status": "true",
+ *  "message": "Username exists"
+ * }
+ *
+ * @description This route is used to determine if a username is already in use, the route
+ * will accept a token in the header of the request to authenticate the request.
+ *
+ * @error {UNAUTHORIZED} if the request does not contain a token or refreshToken
+ *
+ * @return sends a response to client if user successfully (or not) logged in. The response contains
+ * whether username is in use.
+ *
+ * */
+ router.get('/userExists/:username', ownerAuth, async (req, res) => {
+    const { username } = req.params; // const id = req.params.id;
+
+    const result = await User.findOne({username}).exec();
+
+        // If the user wasn't found, then return a not found status.
+        if (!result) {
+            return res.status(404).json({
+                status: false,
+                message: 'No user with given username exists',
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Username exists',
+        });
+
+});
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/emailExists
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user/emailExists
+ *
+ * >>> response:
+ * {
+ *  "status": "true",
+ *  "message": "Email exists"
+ * }
+ *
+ * @description This route is used to determine if an email address is already in use, the route
+ * will accept a token in the header of the request to authenticate the request.
+ *
+ * @error {UNAUTHORIZED} if the request does not contain a token or refreshToken
+ *
+ * @return sends a response to client if user successfully (or not) logged in. The response contains
+ * whether the email is in use.
+ *
+ * */
+ router.get('/emailExists/:email', ownerAuth, async (req, res) => {
+    const { email } = req.params; // const id = req.params.id;
+
+    const result = await User.findOne({email}).exec();
+
+        // If the email wasn't found, then return a not found status.
+        if (!result) {
+            return res.status(404).json({
+                status: false,
+                message: 'Email address not in use',
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Email exists',
+        });
+
 });
 
 export default router;

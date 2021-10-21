@@ -1,9 +1,9 @@
-import React from 'react'
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
+import React from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 import { Link } from 'react-router-dom';
-import { AuthState } from '../../types/auth'
+import { AuthState } from '../../types/auth';
 import AuthCover from './../../static/images/login.svg';
 import RegisterForm from '../../components/RegisterForm';
 
@@ -41,7 +41,7 @@ export default function Register(_props: Props) {
                     flexDirection: 'column',
                     justifyContent: 'center',
                     paddingLeft: 2,
-                    paddingRight: 2
+                    paddingRight: 2,
                 }}
             >
                 <Typography sx={{ marginBottom: 8 }} variant={'h4'}>
@@ -57,6 +57,5 @@ export default function Register(_props: Props) {
                 </Typography>
             </Box>
         </Box>
-    )
+    );
 }
-

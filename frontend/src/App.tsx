@@ -22,47 +22,47 @@ const drawerWidth = 240;
 const theme = createTheme({
     palette: {
         primary: {
-            main: "#0076FF"
+            main: '#0076FF',
         },
         secondary: {
-            main: "#37123C"
-        }
+            main: '#37123C',
+        },
     },
     typography: {
         fontFamily: [
-          'Noto Sans',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          '"Segoe UI"',
-          'Roboto',
-          '"Helvetica Neue"',
-          'Arial',
-          'sans-serif',
-          '"Apple Color Emoji"',
-          '"Segoe UI Emoji"',
-          '"Segoe UI Symbol"',
+            'Noto Sans',
+            '-apple-system',
+            'BlinkMacSystemFont',
+            '"Segoe UI"',
+            'Roboto',
+            '"Helvetica Neue"',
+            'Arial',
+            'sans-serif',
+            '"Apple Color Emoji"',
+            '"Segoe UI Emoji"',
+            '"Segoe UI Symbol"',
         ].join(','),
         button: {
-            textTransform: 'none'
-          }
-      },
-      breakpoints: {
+            textTransform: 'none',
+        },
+    },
+    breakpoints: {
         values: {
             xs: 0,
             sm: 600,
             md: 900,
             lg: 1200,
             xl: 1536,
-        }
-      },
-      components: {
+        },
+    },
+    components: {
         MuiButton: {
             defaultProps: {
                 disableRipple: true,
-                disableElevation: true
-            }
-        }
-      }
+                disableElevation: true,
+            },
+        },
+    },
 });
 
 function App() {
@@ -84,11 +84,10 @@ function App() {
         <ThemeProvider theme={theme}>
             <Router>
                 <Switch>
-                    <AppliedRoute exact path={'/login'} appProps={{ authState, setAuthState }} component={LoginRoute} />
+                    <AppliedRoute exact path={'/login'} component={LoginRoute} />
                     <AppliedRoute
                         exact
                         path={'/register'}
-                        appProps={{ authState, setAuthState }}
                         component={RegisterRoute}
                     />
                     <Route>

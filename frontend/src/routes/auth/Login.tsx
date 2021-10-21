@@ -28,7 +28,7 @@ function Login(props: Props) {
                     width: {
                         xs: 0,
                         sm: '35%',
-                        md: '50%'
+                        md: '50%',
                     },
                     height: '100%',
                 }}
@@ -42,7 +42,7 @@ function Login(props: Props) {
                     flexDirection: 'column',
                     justifyContent: 'center',
                     paddingLeft: 2,
-                    paddingRight: 2
+                    paddingRight: 2,
                 }}
             >
                 <Typography sx={{ marginBottom: 8 }} variant={'h4'}>
