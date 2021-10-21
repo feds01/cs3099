@@ -7,7 +7,7 @@ interface Props {
 export default function PageLayout({ children }: Props): ReactElement {
     return (
         <div>
-            page layout!    
+            page layout!
             <div>{children}</div>
         </div>
     );

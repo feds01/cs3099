@@ -77,6 +77,31 @@ router.post('/register', async (req, res) => {
 
     const { password, email, username } = response;
 
+    // Check if username or email is already in use
+
+    const searchQueryUser = {
+        $or: [{username}, {email}],
+    };
+
+    const resultUser = await User.findOne(searchQueryUser).exec();
+
+    if (resultUser) {
+        if (resultUser.username == username) {
+            return res.status(409).json({
+                status: false,
+                message: error.REGISTRATION_FAILED,
+                extra: error.USER_EXISTS,
+            });
+        }
+        if (resultUser.email == email) {
+            return res.status(409).json({
+                status: false,
+                message: error.REGISTRATION_FAILED,
+                extra: error.MAIL_EXISTS,
+            });
+        }
+    }
+
     // generate the salt for the new user account;
     const salt = await bcrypt.genSalt();
 
@@ -91,7 +116,7 @@ router.post('/register', async (req, res) => {
         }
 
         // create the user object and save it to the table
-        const newUser = new User({ email, password: hash, username });
+        const newUser = new User({ ...response, password: hash });
 
         try {
             const savedUser = await newUser.save();
