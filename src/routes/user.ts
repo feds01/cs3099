@@ -6,13 +6,15 @@ import { ZodError } from 'zod';
 import User from '../models/User';
 import Logger from '../common/logger';
 import * as error from '../common/errors';
-import { createTokens, ownerAuth } from '../auth';
+import { createTokens, ownerAuth, adminAuth } from '../auth';
 import {
     IUserRegisterRequestSchema,
     IUserPatchRequestSchema,
     IUserPatchRequest,
     IUserLoginRequestSchema,
     IUserLoginRequest,
+    IUserRoleRequestSchema,
+    IUserRoleRequest
 } from '../validators/user';
 import paramValidator from '../validators/requests';
 
@@ -449,5 +451,127 @@ router.delete('/:id', paramValidator, ownerAuth, async (req, res) => {
         });
     });
 });
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/<id>/role
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user/<616f115feb505663f8bce3e2>/role
+ * >>> response: {
+ *  "status": "true", 
+ *  "role": "default" // TO CHECK
+ * }
+ *
+ * @description This route is used to get the role of a user.
+ *
+ * @error {UNAUTHORIZED} if the request is not sent by an administrator.
+ *
+ * @return sends the role of the specified user.
+ * */
+router.get('/:id/role', paramValidator, adminAuth, async (req, res) => {
+    const { id } = req.params; // const id = req.params.id;
+
+    User.findById(id, {}, {}, (err, user) => {
+        // If the user wasn't found, then return a not found status.
+        if (!user) {
+            return res.status(404).json({
+                status: false,
+                message: 'No user with given id exists',
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            role: user.role
+        });
+    });
+});
+
+/**
+ * @version v1.0.0
+ * @method PATCH
+ * @url /api/user/<id>/role
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user/<616f115feb505663f8bce3e2>/role
+ * >>> body:
+ * {
+ *  "role": "moderator"
+ * }
+ *
+ * >>> response:
+ * {
+ *  "message": "Successfully updated user role",
+ *  "user": {
+ *      "role": "moderator"
+ *  }
+ * }
+ *
+ * @description This route is used to allow administrator to update any user's role.
+ *
+ * @error {UNAUTHORIZED} if the request is not sent by an administrator.
+ *
+ * @return sends a response to client if user role successfully updated, with the new updated user role
+ * information.
+ * */
+ router.patch('/:id/role', paramValidator, adminAuth, async (req, res) => {
+    const { id } = req.params;
+
+    let response: IUserRoleRequest;
+
+    try {
+        response = await IUserRoleRequestSchema.parseAsync(req.body);
+    } catch (e) {
+        if (e instanceof ZodError) {
+            return res.status(400).json({
+                status: false,
+                message: error.BAD_REQUEST,
+                errors: e.errors,
+            });
+        }
+        Logger.error(e);
+
+        return res.status(500).json({
+            status: false,
+            message: error.INTERNAL_SERVER_ERROR,
+        });
+    }
+
+    const update = { $set: { ...response } };
+    const queryOptions = { new: true }; // new as in return the updated document 
+
+    User.findOneAndUpdate({ _id: id }, update, queryOptions, (err, newUser) => {
+        if (err) {
+            if (err instanceof mongoose.Error.ValidationError) {
+                return res.status(400).json({
+                    status: false,
+                    message: error.BAD_REQUEST,
+                    extra: err.errors,
+                });
+            }
+
+            // Something went wrong...
+            Logger.error(err);
+            return res.status(500).json({
+                status: false,
+                message: error.INTERNAL_SERVER_ERROR,
+            });
+        }
+
+        // If we couldn't find the user.
+        if (!newUser) {
+            return res.status(404).json({
+                status: false,
+                message: 'No user with given id exists',
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Successfully updated user role.',
+            role: newUser.role
+        });
+    });
+ });
 
 export default router;

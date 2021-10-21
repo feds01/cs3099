@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { IUserRole } from '../models/User';
+
 /**
  * This is the password regex. It specifies that the password must be between the length
  * of 8 to 30 characters, whilst including at least one special character, one uppercase
@@ -34,3 +36,9 @@ export const IUserPatchRequestSchema = IUserRegisterRequestSchema.omit({
 }).partial();
 
 export type IUserPatchRequest = z.infer<typeof IUserPatchRequestSchema>;
+
+export const IUserRoleRequestSchema = z.object({
+    role: z.nativeEnum(IUserRole),
+});
+
+export type IUserRoleRequest = z.infer<typeof IUserRoleRequestSchema>;
