@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect } from 'react';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -16,7 +16,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import PasswordField from '../PasswordField';
 
 const LoginSchema = z.object({
-    username: z.string().email(),
+    username: z.string(),
     password: z.string().nonempty(),
     rememberLogin: z.boolean(),
 });
@@ -24,7 +24,7 @@ const LoginSchema = z.object({
 type ILoginForm = z.infer<typeof LoginSchema>;
 
 interface Props {
-    onSuccess: (session: User, token: string, refreshToken: string) => void;
+    onSuccess: (session: User, token: string, refreshToken: string, rememberUser: boolean) => void;
 }
 
 export default function LoginForm({ onSuccess }: Props): ReactElement {
@@ -32,23 +32,26 @@ export default function LoginForm({ onSuccess }: Props): ReactElement {
         control,
         handleSubmit,
         formState: { errors },
+        getValues,
     } = useForm<ILoginForm>({
         resolver: zodResolver(LoginSchema),
+        defaultValues: {
+            rememberLogin: true
+        }
     });
 
-    const { isLoading, isError, data: response, error, mutate } = usePostUserLogin();
+    const { isLoading, isError, data: response, error, mutateAsync } = usePostUserLogin();
 
-    const onSubmit: SubmitHandler<ILoginForm> = async (data) => {
-        // Check here if an error occurred, otherwise call the onSuccess function...
-        await mutate({ data });
+    // TODO: try and do this in onSubmit instead of using an effect.
+    useEffect(() => {
+        if (!isLoading && typeof response !== "undefined") {
+            const rememberLogin = getValues("rememberLogin");
 
-        if (isError) {
-            console.log(error);
-        } else if (response) {
-            console.log("here!")
-            onSuccess(response.user, response.token, response.refreshToken);
+            onSuccess(response.user, response.token, response.refreshToken, rememberLogin);
         }
-    };
+    }, [isLoading]);
+
+    const onSubmit: SubmitHandler<ILoginForm> = async (data) => await mutateAsync({ data });
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>

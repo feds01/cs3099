@@ -7,7 +7,7 @@ interface Props {
 export default function Header(props: Props): ReactElement {
     return (
         <div>
-            
+            Header
         </div>
     )
 }

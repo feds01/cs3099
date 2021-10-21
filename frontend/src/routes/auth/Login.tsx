@@ -24,8 +24,8 @@ function Login() {
     const history = useHistory();
     let { from } = location.state || { from: { pathname: '/' } };
 
-    const handleSuccess = (session: User, token: string, refreshToken: string) => {
-        authDispatcher({ type: 'login', data: {session, token, refreshToken }});
+    const handleSuccess = (session: User, token: string, refreshToken: string, rememberUser: boolean) => {
+        authDispatcher({ type: 'login', rememberUser,  data: {session, token, refreshToken }});
         history.push(from);
     };
 

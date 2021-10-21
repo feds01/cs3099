@@ -1,8 +1,9 @@
-import React, { Dispatch, FC, useContext, useReducer } from 'react';
+import { z } from 'zod';
 import { User } from '../lib/api/models';
+import React, { Dispatch, FC, useContext, useReducer } from 'react';
 
 export type AuthStateAction =
-    | { type: 'login'; data: {session: User; token: string; refreshToken: string }}
+    | { type: 'login'; rememberUser: boolean; data: { session: User; token: string; refreshToken: string } }
     | { type: 'logout' }
     | { type: 'refresh' };
 
@@ -12,6 +13,14 @@ export type AuthState = {
     refreshToken: string | null;
     isLoggedIn: boolean;
 };
+
+// Use a schema for validating the session schema.
+const SessionSchema = z.object({
+    id: z.string(),
+    email: z.string(),
+    username: z.string(),
+    profilePictureUrl: z.string().optional(),
+});
 
 const initialState: AuthState = {
     session: null,
@@ -31,10 +40,24 @@ export const AuthContext = React.createContext<{
 export function authReducer(state: AuthState, action: AuthStateAction): AuthState {
     switch (action.type) {
         case 'login':
-            // TODO: save session and tokens to local-storage
+            // If the user specifies to remember the login, the we save the tokens into local storage, otherwise
+            // we place the tokens into the session storage.
+            if (action.rememberUser) {
+                console.log(action.data);
+                localStorage.setItem('token', action.data.token);
+                localStorage.setItem('refreshToken', action.data.refreshToken);
+                localStorage.setItem('session', JSON.stringify(action.data.session));
+            } else {
+                sessionStorage.setItem('token', action.data.token);
+                sessionStorage.setItem('refreshToken', action.data.refreshToken);
+                sessionStorage.setItem('session', JSON.stringify(action.data.session));
+            }
+
             return { ...state, ...action.data, isLoggedIn: true };
         case 'logout':
-            // TODO: clear the session and the local storage
+            localStorage.clear();
+            sessionStorage.clear();
+
             return { session: null, token: null, refreshToken: null, isLoggedIn: false };
         case 'refresh':
             // TODO: make a call to the token refresh endpoint
@@ -42,8 +65,37 @@ export function authReducer(state: AuthState, action: AuthStateAction): AuthStat
     }
 }
 
+const initAuth = (state: AuthState): AuthState => {
+    const token = localStorage.getItem('token');
+    const refreshToken = localStorage.getItem('refreshToken');
+
+    if (token && refreshToken) {
+        state.token = token;
+
+        // TODO: verify token endpoint
+        state.isLoggedIn = true;
+
+        try {
+            const session = localStorage.getItem('session');
+
+            if (session) {
+                const jsonSession = JSON.parse(session);
+
+                // Attempt to validate the session using Zod
+                const parsedSession = SessionSchema.parse(jsonSession);
+                state.session = parsedSession;
+            }
+
+        } catch (e) {
+            console.log('Session in localStorage was invalid');
+        }
+    }
+
+    return state;
+}
+
 export const AuthProvider: FC = ({ children }) => {
-    const [state, dispatch] = useReducer(authReducer, initialState);
+    const [state, dispatch] = useReducer(authReducer, initialState, initAuth);
 
     return <AuthContext.Provider value={{ state, dispatch }}>{children}</AuthContext.Provider>;
 };

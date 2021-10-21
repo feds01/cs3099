@@ -95,13 +95,12 @@ router.post('/register', async (req, res) => {
         const newUser = new User({ ...response, password: hash });
 
         try {
-            // const savedUser = await newUser.save();
+            const savedUser = await newUser.save();
 
             const { token, refreshToken } = await createTokens({
                 email,
                 username,
-                id: "blah blah"
-                // id: savedUser._id,
+                id: savedUser._id,
             });
 
             return res.status(201).json({

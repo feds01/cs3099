@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect } from 'react';
 import { z } from 'zod';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -57,18 +57,19 @@ export default function RegisterForm({ onSuccess }: Props): ReactElement {
         resolver: zodResolver(RegisterSchema),
     });
 
-    const { isLoading, isError, data: response, error, mutate } = usePostUserRegister();
+    const { isLoading, isError, data: response, error, mutateAsync } = usePostUserRegister();
 
-    const onSubmit: SubmitHandler<IRegisterForm> = async (data) => {
-        await mutate({ data });
-
+    useEffect(() => {
         // Check here if an error occurred, otherwise call the onSuccess function...
         if (isError) {
+            // TODO: transform the errors into appropriate values
             console.log(error);
-        } else if (response) {
+        } else if (!isLoading && response) {
             onSuccess(response.user, response.token, response.refreshToken);
         }
-    };
+    }, [isLoading, isError]);
+
+    const onSubmit: SubmitHandler<IRegisterForm> = async (data) => await mutateAsync({ data });
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>

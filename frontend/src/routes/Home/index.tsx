@@ -1,8 +1,15 @@
 import React from 'react';
+import { useAuth } from '../../hooks/auth';
 
-interface Props {
-}
+interface Props {}
 
 export default function Home(props: Props) {
-    return <div>Home Page</div>;
+    const { session } = useAuth();
+    
+    return (
+        <div>
+            Home Page
+            <p>{JSON.stringify(session)}</p>
+        </div>
+    );
 }
