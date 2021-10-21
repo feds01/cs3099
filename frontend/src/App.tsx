@@ -84,11 +84,10 @@ function App() {
         <ThemeProvider theme={theme}>
             <Router>
                 <Switch>
-                    <AppliedRoute exact path={'/login'} appProps={{ authState, setAuthState }} component={LoginRoute} />
+                    <AppliedRoute exact path={'/login'} component={LoginRoute} />
                     <AppliedRoute
                         exact
                         path={'/register'}
-                        appProps={{ authState, setAuthState }}
                         component={RegisterRoute}
                     />
                     <Route>

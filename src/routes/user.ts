@@ -452,41 +452,6 @@ router.delete('/:id', paramValidator, ownerAuth, async (req, res) => {
     });
 });
 
-/**
- * @version v1.0.0
- * @method GET
- * @url /api/user/<id>/role
- * @example
- * https://af268.cs.st-andrews.ac.uk/api/user/<616f115feb505663f8bce3e2>/role
- * >>> response: {
- *  "status": "true", 
- *  "role": "default" // TO CHECK
- * }
- *
- * @description This route is used to get the role of a user.
- *
- * @error {UNAUTHORIZED} if the request is not sent by an administrator.
- *
- * @return sends the role of the specified user.
- * */
-router.get('/:id/role', paramValidator, adminAuth, async (req, res) => {
-    const { id } = req.params; // const id = req.params.id;
-
-    User.findById(id, {}, {}, (err, user) => {
-        // If the user wasn't found, then return a not found status.
-        if (!user) {
-            return res.status(404).json({
-                status: false,
-                message: 'No user with given id exists',
-            });
-        }
-
-        return res.status(200).json({
-            status: true,
-            role: user.role
-        });
-    });
-});
 
 /**
  * @version v1.0.0
@@ -573,5 +538,90 @@ router.get('/:id/role', paramValidator, adminAuth, async (req, res) => {
         });
     });
  });
+
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/userExists
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user/userExists
+ *
+ * >>> response:
+ * {
+ *  "status": "true",
+ *  "message": "Username exists"
+ * }
+ *
+ * @description This route is used to determine if a username is already in use, the route
+ * will accept a token in the header of the request to authenticate the request.
+ *
+ * @error {UNAUTHORIZED} if the request does not contain a token or refreshToken
+ *
+ * @return sends a response to client if user successfully (or not) logged in. The response contains
+ * whether username is in use.
+ *
+ * */
+ router.get('/userExists/:username', ownerAuth, async (req, res) => {
+    const { username } = req.params; // const id = req.params.id;
+
+    const result = await User.findOne({username}).exec();
+
+        // If the user wasn't found, then return a not found status.
+        if (!result) {
+            return res.status(404).json({
+                status: false,
+                message: 'No user with given username exists',
+
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Username exists',
+        });
+});
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/emailExists
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user/emailExists
+ *
+ * >>> response:
+ * {
+ *  "status": "true",
+ *  "message": "Email exists"
+ * }
+ *
+ * @description This route is used to determine if an email address is already in use, the route
+ * will accept a token in the header of the request to authenticate the request.
+ *
+ * @error {UNAUTHORIZED} if the request does not contain a token or refreshToken
+ *
+ * @return sends a response to client if user successfully (or not) logged in. The response contains
+ * whether the email is in use.
+ *
+ * */
+ router.get('/emailExists/:email', ownerAuth, async (req, res) => {
+    const { email } = req.params; // const id = req.params.id;
+
+    const result = await User.findOne({email}).exec();
+
+        // If the email wasn't found, then return a not found status.
+        if (!result) {
+            return res.status(404).json({
+                status: false,
+                message: 'Email address not in use',
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Email exists',
+        });
+});
+
 
 export default router;
