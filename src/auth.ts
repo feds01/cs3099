@@ -12,6 +12,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 
 import User from './models/User';
+import { IUserRole } from './models/User';
 import { Token } from './types/auth';
 import * as error from './common/errors';
 
@@ -153,6 +154,42 @@ export async function ownerAuth(req: express.Request, res: express.Response, nex
             // TODO: permissions: here we should check that the request is valid in the current scope.
             // roles, permissions on resources (scoped)
 
+            next(); // the request was fine and is authenticated.
+        }
+    } else {
+        return res.status(401).json({
+            status: false,
+            message: error.UNAUTHORIZED,
+            extra: 'Invalid request headers.',
+        });
+    }
+}
+
+export async function adminAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+    const token = await getTokensFromHeader(req, res); // unpack JWT token
+
+    // if the token is null, the token or refresh tokens aren't in the request
+    //  headers
+    if (!token) {
+        // only send an un-authorized response if there was no provided token in the request
+        return res.status(401).json({
+            status: false,
+            message: error.AUTHENTICATION_FAILED,
+            extra: 'Missing request headers.',
+        });
+    }
+
+    if (token?.data.id) {
+        const existingUser = await User.findOne({ _id: token.data.id, role: IUserRole.Administrator});
+
+        if (!existingUser) {
+            return res.status(404).json({
+                status: false,
+                message: "You must be an administrator to perform this action."
+            });
+        } else {
+            req.token = token;
+            
             next(); // the request was fine and is authenticated.
         }
     } else {
