@@ -472,14 +472,10 @@ router.delete('/:id', paramValidator, ownerAuth, async (req, res) => {
  * whether username is in use.
  *
  * */
- router.get('/userExists/:username', paramValidator, ownerAuth, async (req, res) => {
+ router.get('/userExists/:username', ownerAuth, async (req, res) => {
     const { username } = req.params; // const id = req.params.id;
 
-    const searchQuery= {
-        username: username
-    };
-
-    const result = await User.findOne(searchQuery).exec();
+    const result = await User.findOne({username}).exec();
 
         // If the user wasn't found, then return a not found status.
         if (!result) {
@@ -518,14 +514,10 @@ router.delete('/:id', paramValidator, ownerAuth, async (req, res) => {
  * whether the email is in use.
  *
  * */
- router.get('/emailExists/:email', paramValidator, ownerAuth, async (req, res) => {
+ router.get('/emailExists/:email', ownerAuth, async (req, res) => {
     const { email } = req.params; // const id = req.params.id;
 
-    const searchQuery= {
-        email: email
-    };
-
-    const result = await User.findOne(searchQuery).exec();
+    const result = await User.findOne({email}).exec();
 
         // If the email wasn't found, then return a not found status.
         if (!result) {
