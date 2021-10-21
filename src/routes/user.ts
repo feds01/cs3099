@@ -496,4 +496,50 @@ router.delete('/:id', paramValidator, ownerAuth, async (req, res) => {
 
 });
 
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/emailExists
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user/emailExists
+ *
+ * >>> response:
+ * {
+ *  "status": "true",
+ *  "message": "Email exists"
+ * }
+ *
+ * @description This route is used to determine if an email address is already in use, the route
+ * will accept a token in the header of the request to authenticate the request.
+ *
+ * @error {UNAUTHORIZED} if the request does not contain a token or refreshToken
+ *
+ * @return sends a response to client if user successfully (or not) logged in. The response contains
+ * whether the email is in use.
+ *
+ * */
+ router.get('/emailExists/:email', paramValidator, ownerAuth, async (req, res) => {
+    const { email } = req.params; // const id = req.params.id;
+
+    const searchQuery= {
+        email: email
+    };
+
+    const result = await User.findOne(searchQuery).exec();
+
+        // If the email wasn't found, then return a not found status.
+        if (!result) {
+            return res.status(404).json({
+                status: false,
+                message: 'Email address not in use',
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Email exists',
+        });
+
+});
+
 export default router;
