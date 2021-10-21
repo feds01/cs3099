@@ -1,12 +1,17 @@
 import React, { ReactElement } from 'react';
 import { z } from 'zod';
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import AlertTitle from '@mui/material/AlertTitle';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import Grid from '@mui/material/Grid';
 import { User } from '../../lib/api/models';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { usePostUserRegister } from '../../lib/api/users/users';
+import CircularProgress from '@mui/material/CircularProgress';
+import PasswordField from '../PasswordField';
 
 /**
  * This is the password regex. It specifies that the password must be between the length
@@ -43,7 +48,7 @@ interface Props {
     onSuccess: (session: User, token: string, refreshToken: string) => void;
 }
 
-export default function RegisterForm(props: Props): ReactElement {
+export default function RegisterForm({ onSuccess }: Props): ReactElement {
     const {
         control,
         handleSubmit,
@@ -52,8 +57,17 @@ export default function RegisterForm(props: Props): ReactElement {
         resolver: zodResolver(RegisterSchema),
     });
 
-    const onSubmit: SubmitHandler<IRegisterForm> = (data) => {
-        console.log(data);
+    const { isLoading, isError, data: response, error, mutate } = usePostUserRegister();
+
+    const onSubmit: SubmitHandler<IRegisterForm> = async (data) => {
+        await mutate({ data });
+
+        // Check here if an error occurred, otherwise call the onSuccess function...
+        if (isError) {
+            console.log(error);
+        } else if (response) {
+            onSuccess(response.user, response.token, response.refreshToken);
+        }
     };
 
     return (
@@ -176,9 +190,12 @@ export default function RegisterForm(props: Props): ReactElement {
                             name="password"
                             control={control}
                             defaultValue=""
-                            render={({ field }) => (
-                                <TextField
-                                    {...field}
+                            render={({
+                                field: { ref: inputRef, ...values},
+                            }) => (
+                                <PasswordField
+                                    {...values}
+                                    inputRef={inputRef}
                                     {...(errors.password && {
                                         error: true,
                                         helperText: errors.password.message,
@@ -203,7 +220,7 @@ export default function RegisterForm(props: Props): ReactElement {
                             control={control}
                             defaultValue=""
                             render={({ field }) => (
-                                <TextField
+                                <PasswordField
                                     {...field}
                                     {...(errors.passwordConfirm && {
                                         error: true,
@@ -225,11 +242,17 @@ export default function RegisterForm(props: Props): ReactElement {
                     </Grid>
                 </Grid>
                 <div>
-                    <Button type={'submit'} variant="contained" color="primary" fullWidth={false}>
-                        Create Account
+                    <Button type={'submit'} disabled={isLoading} variant="contained" color="primary" fullWidth={false}>
+                        {!isLoading ? 'Create Account' : <CircularProgress color="inherit" size={14} />}
                     </Button>
                 </div>
             </Box>
+            {isError && (
+                <Alert severity="error">
+                    <AlertTitle>Error</AlertTitle>
+                    <strong>{error!.message || 'Something went wrong'}</strong>
+                </Alert>
+            )}
         </form>
     );
 }

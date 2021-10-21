@@ -6,7 +6,7 @@ import { User } from '../../lib/api/models';
 import Typography from '@mui/material/Typography';
 import LoginForm from '../../components/LoginForm';
 import LoginCover from './../../static/images/login.svg';
-import { dispatchAuth } from '../../hooks/auth';
+import { useDispatchAuth } from '../../hooks/auth';
 
 interface LocationState {
     from: { pathname: string };
@@ -16,7 +16,7 @@ interface LocationState {
 // and details from the server back to the callbackUrl. If the callbackUrl is specified,
 // we should ignore the 'from' parameter (if it's provided).
 function Login() {
-    const authDispatcher = dispatchAuth();
+    const authDispatcher = useDispatchAuth();
 
     // extract the 'from' part of the redirect if it's present. We use this path
     // to redirect the user back to where they tried to go.
@@ -25,7 +25,7 @@ function Login() {
     let { from } = location.state || { from: { pathname: '/' } };
 
     const handleSuccess = (session: User, token: string, refreshToken: string) => {
-        authDispatcher({ type: 'login', session, token, refreshToken });
+        authDispatcher({ type: 'login', data: {session, token, refreshToken }});
         history.push(from);
     };
 

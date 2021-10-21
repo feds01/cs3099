@@ -2,7 +2,7 @@ import React, { Dispatch, FC, useContext, useReducer } from 'react';
 import { User } from '../lib/api/models';
 
 export type AuthStateAction =
-    | { type: 'login'; session: User; token: string; refreshToken: string }
+    | { type: 'login'; data: {session: User; token: string; refreshToken: string }}
     | { type: 'logout' }
     | { type: 'refresh' };
 
@@ -32,7 +32,7 @@ export function authReducer(state: AuthState, action: AuthStateAction): AuthStat
     switch (action.type) {
         case 'login':
             // TODO: save session and tokens to local-storage
-            return { ...state, isLoggedIn: true };
+            return { ...state, ...action.data, isLoggedIn: true };
         case 'logout':
             // TODO: clear the session and the local storage
             return { session: null, token: null, refreshToken: null, isLoggedIn: false };
@@ -58,7 +58,7 @@ export const useAuth = () => {
     return context.state;
 };
 
-export const dispatchAuth = () => {
+export const useDispatchAuth = () => {
     const context = useContext(AuthContext);
 
     if (typeof context === 'undefined') {

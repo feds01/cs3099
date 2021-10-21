@@ -6,14 +6,14 @@ import { User } from '../../lib/api/models';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import AuthCover from './../../static/images/login.svg';
 import RegisterForm from '../../components/RegisterForm';
-import { dispatchAuth } from '../../hooks/auth';
+import { useDispatchAuth } from '../../hooks/auth';
 
 interface LocationState {
     from: { pathname: string };
 }
 
 export default function Register() {
-    const authDispatcher = dispatchAuth();
+    const authDispatcher = useDispatchAuth();
 
     // extract the 'from' part of the redirect if it's present. We use this path
     // to redirect the user back to where they tried to go.
@@ -22,7 +22,7 @@ export default function Register() {
     let { from } = location.state || { from: { pathname: '/' } };
 
     const handleSuccess = (session: User, token: string, refreshToken: string) => {
-        authDispatcher({ type: 'login', session, token, refreshToken });
+        authDispatcher({ type: 'login',  data: {session, token, refreshToken }});
         history.push(from.pathname);
     };
 

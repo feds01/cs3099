@@ -13,6 +13,7 @@ import {
     IUserPatchRequest,
     IUserLoginRequestSchema,
     IUserLoginRequest,
+    IUserRegisterRequest,
 } from '../validators/user';
 import paramValidator from '../validators/requests';
 
@@ -55,7 +56,7 @@ const router = express.Router();
  * @return response to client if user was created and added to the system.
  * */
 router.post('/register', async (req, res) => {
-    let response: IUserLoginRequest;
+    let response: IUserRegisterRequest;
 
     try {
         response = await IUserRegisterRequestSchema.parseAsync(req.body);
@@ -91,15 +92,16 @@ router.post('/register', async (req, res) => {
         }
 
         // create the user object and save it to the table
-        const newUser = new User({ email, password: hash, username });
+        const newUser = new User({ ...response, password: hash });
 
         try {
-            const savedUser = await newUser.save();
+            // const savedUser = await newUser.save();
 
             const { token, refreshToken } = await createTokens({
                 email,
                 username,
-                id: savedUser._id,
+                id: "blah blah"
+                // id: savedUser._id,
             });
 
             return res.status(201).json({
@@ -182,13 +184,9 @@ router.post('/login', async (req, res) => {
         });
     }
 
-    const { username, email, password } = response;
+    const { username, password, isEmail } = response;
 
-    // Use both fields to look for the login
-    const searchQuery = {
-        $or: [...(username ? [{ username }] : []), ...(email ? [{ email }] : [])],
-    };
-
+    const searchQuery = isEmail ? { email: username } : { username };
     const result = await User.findOne(searchQuery).exec();
 
     // Important to send an authentication failure request, rather than a
@@ -217,12 +215,7 @@ router.post('/login', async (req, res) => {
                     id: result._id,
                 });
 
-                // set the tokens in the response headers
-                res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
-                res.set('x-token', token);
-                res.set('x-refresh-token', refreshToken);
-
-                return res.status(302).json({
+                return res.status(200).json({
                     status: true,
                     message: 'Authentication successful',
                     user: User.project(result),
@@ -233,7 +226,7 @@ router.post('/login', async (req, res) => {
             // password did not match the stored hashed password within the database
             return res.status(401).json({
                 status: false,
-                message: error.BAD_REQUEST,
+                message: error.AUTHENTICATION_FAILED,
                 extra: error.MISMATCHING_LOGIN,
             });
         });

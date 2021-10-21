@@ -1,10 +1,8 @@
 import React from 'react';
 import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
-import Toolbar from '@mui/material/Toolbar';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import { AuthProvider } from './hooks/auth';
@@ -14,6 +12,10 @@ import PageLayout from './components/PageLayout';
 import AppliedRoute from './components/AppliedRoute';
 import RegisterRoute from './routes/auth/Register';
 import PrivateRoute from './components/PrivateRoute';
+import Sidebar from './components/Sidebar';
+
+// API querying client.
+const queryClient = new QueryClient();
 
 // The width of the left hand-side drawer
 const drawerWidth = 240;
@@ -67,46 +69,33 @@ const theme = createTheme({
 function App() {
     return (
         <AuthProvider>
-            <ThemeProvider theme={theme}>
-                <Router>
-                    <Switch>
-                        <AppliedRoute exact path={'/login'} component={LoginRoute} />
-                        <AppliedRoute exact path={'/register'} component={RegisterRoute} />
-                        <Route>
-                            <Box sx={{ display: 'flex' }}>
-                                <CssBaseline />
-                                <Drawer
-                                    sx={{
-                                        width: drawerWidth,
-                                        flexShrink: 0,
-                                        '& .MuiDrawer-paper': {
-                                            width: drawerWidth,
-                                            boxSizing: 'border-box',
-                                        },
-                                    }}
-                                    variant="permanent"
-                                    anchor="left"
-                                >
-                                    <Toolbar />
-                                    <Divider />
-                                    Drawer!
-                                </Drawer>
-                                <PageLayout>
-                                    {Object.keys(routeConfig.routes).map((path) => {
-                                        return (
-                                            <PrivateRoute
-                                                key={path}
-                                                path={path}
-                                                {...routeConfig.routes[path as keyof routeConfig.Routes]}
-                                            />
-                                        );
-                                    })}
-                                </PageLayout>
-                            </Box>
-                        </Route>
-                    </Switch>
-                </Router>
-            </ThemeProvider>
+            <QueryClientProvider client={queryClient}>
+                <ThemeProvider theme={theme}>
+                    <Router>
+                        <Switch>
+                            <AppliedRoute exact path={'/login'} component={LoginRoute} />
+                            <AppliedRoute exact path={'/register'} component={RegisterRoute} />
+                            <Route>
+                                <Box sx={{ display: 'flex' }}>
+                                    <CssBaseline />
+                                    <Sidebar drawerWidth={drawerWidth} />
+                                    <PageLayout>
+                                        {Object.keys(routeConfig.routes).map((path) => {
+                                            return (
+                                                <PrivateRoute
+                                                    key={path}
+                                                    path={path}
+                                                    {...routeConfig.routes[path as keyof routeConfig.Routes]}
+                                                />
+                                            );
+                                        })}
+                                    </PageLayout>
+                                </Box>
+                            </Route>
+                        </Switch>
+                    </Router>
+                </ThemeProvider>
+            </QueryClientProvider>
         </AuthProvider>
     );
 }
