@@ -450,4 +450,50 @@ router.delete('/:id', paramValidator, ownerAuth, async (req, res) => {
     });
 });
 
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/userExists
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user/userExists
+ *
+ * >>> response:
+ * {
+ *  "status": "true",
+ *  "message": "Username exists"
+ * }
+ *
+ * @description This route is used to determine if a username is already in use, the route
+ * will accept a token in the header of the request to authenticate the request.
+ *
+ * @error {UNAUTHORIZED} if the request does not contain a token or refreshToken
+ *
+ * @return sends a response to client if user successfully (or not) logged in. The response contains
+ * whether username is in use.
+ *
+ * */
+ router.get('/userExists/:username', paramValidator, ownerAuth, async (req, res) => {
+    const { username } = req.params; // const id = req.params.id;
+
+    const searchQuery= {
+        username: username
+    };
+
+    const result = await User.findOne(searchQuery).exec();
+
+        // If the user wasn't found, then return a not found status.
+        if (!result) {
+            return res.status(404).json({
+                status: false,
+                message: 'No user with given username exists',
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Username exists',
+        });
+
+});
+
 export default router;
