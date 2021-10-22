@@ -1,11 +1,17 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect } from 'react';
 import { z } from 'zod';
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import AlertTitle from '@mui/material/AlertTitle';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { User } from '../../lib/api/models';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import Grid from '@mui/material/Grid';
+import { usePostUserRegister } from '../../lib/api/users/users';
+import CircularProgress from '@mui/material/CircularProgress';
+import PasswordField from '../PasswordField';
 
 /**
  * This is the password regex. It specifies that the password must be between the length
@@ -13,8 +19,6 @@ import Grid from '@mui/material/Grid';
  * character, and a digit.
  */
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$@!%&*?])[A-Za-z\d#$@!%&*?]{8,30}$/;
-
-interface Props {}
 
 const RegisterSchema = z
     .object({
@@ -40,7 +44,11 @@ const RegisterSchema = z
 
 type IRegisterForm = z.infer<typeof RegisterSchema>;
 
-export default function RegisterForm(props: Props): ReactElement {
+interface Props {
+    onSuccess: (session: User, token: string, refreshToken: string) => void;
+}
+
+export default function RegisterForm({ onSuccess }: Props): ReactElement {
     const {
         control,
         handleSubmit,
@@ -49,9 +57,19 @@ export default function RegisterForm(props: Props): ReactElement {
         resolver: zodResolver(RegisterSchema),
     });
 
-    const onSubmit: SubmitHandler<IRegisterForm> = (data) => {
-        console.log(data);
-    };
+    const { isLoading, isError, data: response, error, mutateAsync } = usePostUserRegister();
+
+    useEffect(() => {
+        // Check here if an error occurred, otherwise call the onSuccess function...
+        if (isError) {
+            // TODO: transform the errors into appropriate values
+            console.log(error);
+        } else if (!isLoading && response) {
+            onSuccess(response.user, response.token, response.refreshToken);
+        }
+    }, [isLoading, isError]);
+
+    const onSubmit: SubmitHandler<IRegisterForm> = async (data) => await mutateAsync({ data });
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -173,9 +191,10 @@ export default function RegisterForm(props: Props): ReactElement {
                             name="password"
                             control={control}
                             defaultValue=""
-                            render={({ field }) => (
-                                <TextField
-                                    {...field}
+                            render={({ field: { ref: inputRef, ...values } }) => (
+                                <PasswordField
+                                    {...values}
+                                    inputRef={inputRef}
                                     {...(errors.password && {
                                         error: true,
                                         helperText: errors.password.message,
@@ -200,7 +219,7 @@ export default function RegisterForm(props: Props): ReactElement {
                             control={control}
                             defaultValue=""
                             render={({ field }) => (
-                                <TextField
+                                <PasswordField
                                     {...field}
                                     {...(errors.passwordConfirm && {
                                         error: true,
@@ -222,11 +241,17 @@ export default function RegisterForm(props: Props): ReactElement {
                     </Grid>
                 </Grid>
                 <div>
-                    <Button type={'submit'} variant="contained" color="primary" fullWidth={false}>
-                        Create Account
+                    <Button type={'submit'} disabled={isLoading} variant="contained" color="primary" fullWidth={false}>
+                        {!isLoading ? 'Create Account' : <CircularProgress color="inherit" size={14} />}
                     </Button>
                 </div>
             </Box>
+            {isError && (
+                <Alert severity="error">
+                    <AlertTitle>Error</AlertTitle>
+                    <strong>{error!.message || 'Something went wrong'}</strong>
+                </Alert>
+            )}
         </form>
     );
 }

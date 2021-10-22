@@ -1,13 +1,19 @@
 {
     "openapi": "3.0.0",
+    "servers": [
+        {
+            "description": "Local development",
+            "url": "https://localhost:5000"
+        }
+    ],
     "info": {
-        "title": "Iamus API",
         "description": "This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.",
+        "version": "1.0.0",
+        "title": "Iamus API",
         "license": {
             "name": "MIT",
             "url": "https://spdx.org/licenses/MIT.html"
-        },
-        "version": "1.0.0"
+        }
     },
     "tags": [
         {
@@ -30,19 +36,19 @@
     "paths": {
         "/user/login": {
             "post": {
-                "tags": ["users"],
                 "summary": "User Login",
                 "description": "User login endpoint, returning authentication tokens.",
+                "tags": ["users"],
                 "requestBody": {
+                    "required": true,
                     "description": "Provide either a username or user email to login with, and a password. Providing both will result in the request trying to use both parameters.",
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/user_login_body"
+                                "$ref": "#/components/schemas/UserLogin"
                             }
                         }
-                    },
-                    "required": true
+                    }
                 },
                 "responses": {
                     "200": {
@@ -50,50 +56,30 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/inline_response_200"
+                                    "$ref": "#/components/schemas/UserAuthResponse"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Authentication failed, the request body was malformed or invalid.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/inline_response_400"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/BadRequest"
                     },
                     "401": {
-                        "description": "Unauthorized. Authentication failed, the provided credentials failed",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/inline_response_401"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/Unauthorized"
                     },
                     "500": {
-                        "description": "Internal Server Error. Authentication failed, server unexpectedly returned an error.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/inline_response_500"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InternalServerError"
                     }
                 }
             }
         },
         "/user/register": {
             "post": {
-                "tags": ["users"],
                 "summary": "User registration",
                 "description": "User registration endpoint, returning authentication tokens.",
+                "tags": ["users"],
                 "requestBody": {
+                    "required": true,
                     "description": "Provide user information to the endpoint that's used to create the server.",
                     "content": {
                         "application/json": {
@@ -101,8 +87,7 @@
                                 "$ref": "#/components/schemas/UserRegistration"
                             }
                         }
-                    },
-                    "required": true
+                    }
                 },
                 "responses": {
                     "201": {
@@ -110,100 +95,39 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/inline_response_200"
+                                    "$ref": "#/components/schemas/UserAuthResponse"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "User registration failed, the request body was malformed or invalid.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/inline_response_400"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/BadRequest"
                     },
                     "500": {
-                        "description": "Internal Server Error. Authentication failed, server unexpectedly returned an error.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/inline_response_500"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InternalServerError"
                     }
                 }
             }
         },
         "/user/{id}": {
-            "get": {
-                "tags": ["users"],
-                "summary": "Account information",
-                "description": "User account information endpoint, get user details by the id.",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "The ID of the user to get information on.",
-                        "required": true,
-                        "style": "simple",
-                        "explode": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/inline_response_200_1"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Specified user id does not exist in teh scope of the requesters permissions.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/inline_response_404"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error. Information retrieval failed, server unexpectedly returned an error.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/inline_response_500"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
             "delete": {
-                "tags": ["users"],
                 "summary": "Account deletion",
                 "description": "User account deletion endpoint, delete a user by the id.",
+                "tags": ["users"],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
-                        "name": "id",
                         "in": "path",
-                        "description": "The ID of the user to delete.",
-                        "required": true,
-                        "style": "simple",
-                        "explode": false,
+                        "name": "id",
                         "schema": {
                             "type": "string"
-                        }
+                        },
+                        "required": true,
+                        "description": "The ID of the user to delete."
                     }
                 ],
                 "responses": {
@@ -212,48 +136,85 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/inline_response_200_2"
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "example": "User deleted"
+                                        }
+                                    }
                                 }
                             }
                         }
                     },
                     "401": {
-                        "description": "Unauthroized. Requestee doesn't have sufficient permissions to delete this account.",
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Account information",
+                "description": "User account information endpoint, get user details by the id.",
+                "tags": ["users"],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "required": true,
+                        "description": "The ID of the user to get information on."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/inline_response_404"
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    }
                                 }
                             }
                         }
                     },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
                     "500": {
-                        "description": "Internal Server Error. Deletion failed, server unexpectedly returned an error.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/inline_response_500"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InternalServerError"
                     }
                 }
             },
             "patch": {
-                "tags": ["users"],
                 "summary": "Update account information",
                 "description": "Update user information endpoint, update user details for a user specified by the user id.",
+                "tags": ["users"],
                 "parameters": [
                     {
-                        "name": "id",
                         "in": "path",
-                        "description": "The ID of the user",
-                        "required": true,
-                        "style": "simple",
-                        "explode": false,
+                        "name": "id",
                         "schema": {
                             "type": "string"
-                        }
+                        },
+                        "required": true,
+                        "description": "The ID of the user"
                     }
                 ],
                 "responses": {
@@ -262,49 +223,136 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/inline_response_200_1"
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    }
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Request body was malformed.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/inline_response_400_1"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
                     },
                     "404": {
-                        "description": "Specified user id does not exist in teh scope of the requesters permissions.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/inline_response_404_1"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/NotFound"
                     },
                     "500": {
-                        "description": "Internal Server Error. Information retrieval failed, server unexpectedly returned an error.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/inline_response_500"
-                                }
-                            }
-                        }
+                        "$ref": "#/components/responses/InternalServerError"
                     }
                 }
             }
         }
     },
     "components": {
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        },
+        "responses": {
+            "BadRequest": {
+                "description": "Bad Request. Provided request parameters were invalid.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "Malformed request body"
+                                },
+                                "id": {
+                                    "type": "number",
+                                    "example": 3
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Unauthorized": {
+                "description": "Unauthorized. Requester doesn't have sufficient permissions in the scope of this resource.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "required": ["status", "message"],
+                            "properties": {
+                                "status": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "Unauthorized"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "InternalServerError": {
+                "description": "Internal Server Error. Information retrieval failed, server unexpectedly returned an error.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "required": ["status", "message"],
+                            "properties": {
+                                "status": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "Internal Server Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "NotFound": {
+                "description": "Specified resource does not exist in the scope of the requesters permissions.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "required": ["status", "message"],
+                            "properties": {
+                                "status": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "Not Found"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "schemas": {
             "UserRegistration": {
                 "type": "object",
+                "required": ["email", "username", "firstName", "lastName", "password"],
                 "properties": {
                     "email": {
                         "type": "string",
@@ -314,52 +362,42 @@
                         "type": "string",
                         "example": "John"
                     },
+                    "username": {
+                        "type": "string",
+                        "example": "jdoe1"
+                    },
                     "lastName": {
                         "type": "string",
                         "example": "Doe"
                     },
+                    "about": {
+                        "type": "string",
+                        "example": "Professor at Example University"
+                    },
                     "password": {
                         "type": "string",
-                        "example": "password1"
+                        "example": "Password1!"
                     }
                 }
             },
-            "User": {
+            "UserLogin": {
                 "type": "object",
+                "description": "The username can either be the actual username or the user's email.",
+                "required": ["password", "username"],
                 "properties": {
-                    "id": {
-                        "type": "string",
-                        "example": "507f1f77bcf86cd799439011"
-                    },
-                    "email": {
-                        "type": "string",
-                        "example": "jon.doe@email.com"
-                    },
-                    "name": {
-                        "type": "string",
-                        "example": "John Doe"
-                    }
-                }
-            },
-            "user_login_body": {
-                "type": "object",
-                "properties": {
-                    "email": {
-                        "type": "string",
-                        "example": "john.doe@example.com"
-                    },
                     "username": {
                         "type": "string",
-                        "example": "jdoe"
+                        "example": "jdoe1"
                     },
                     "password": {
                         "type": "string",
-                        "example": "password1"
+                        "example": "Password1!"
                     }
                 }
             },
-            "inline_response_200": {
+            "UserAuthResponse": {
                 "type": "object",
+                "required": ["user", "token", "refreshToken"],
                 "properties": {
                     "status": {
                         "type": "boolean",
@@ -378,110 +416,25 @@
                     }
                 }
             },
-            "inline_response_400": {
+            "User": {
                 "type": "object",
+                "required": ["id", "email", "username"],
                 "properties": {
-                    "status": {
-                        "type": "boolean",
-                        "example": false
-                    },
-                    "description": {
+                    "id": {
                         "type": "string",
-                        "example": "Malformed request"
-                    }
-                }
-            },
-            "inline_response_401": {
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "type": "boolean",
-                        "example": false
+                        "example": "507f1f77bcf86cd799439011"
                     },
-                    "description": {
+                    "email": {
                         "type": "string",
-                        "example": "Unauthorized. Invalid credentials"
-                    }
-                }
-            },
-            "inline_response_500": {
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "type": "boolean",
-                        "example": false
+                        "example": "jon.doe@email.com"
                     },
-                    "description": {
+                    "username": {
                         "type": "string",
-                        "example": "Internal Server Error"
-                    }
-                }
-            },
-            "inline_response_200_1": {
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "type": "boolean",
-                        "example": true
+                        "example": "John Doe"
                     },
-                    "user": {
-                        "$ref": "#/components/schemas/User"
-                    }
-                }
-            },
-            "inline_response_404": {
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "type": "boolean",
-                        "example": false
-                    },
-                    "description": {
+                    "profilePictureUrl": {
                         "type": "string",
-                        "example": "Unauthorized"
-                    }
-                }
-            },
-            "inline_response_200_2": {
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "type": "boolean",
-                        "example": true
-                    },
-                    "description": {
-                        "type": "string",
-                        "example": "User deleted"
-                    }
-                }
-            },
-            "inline_response_400_1": {
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "type": "boolean",
-                        "example": false
-                    },
-                    "description": {
-                        "type": "string",
-                        "example": "Bad Request. Request body is malformed."
-                    },
-                    "errors": {
-                        "type": "object",
-                        "example": {}
-                    }
-                }
-            },
-            "inline_response_404_1": {
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "type": "boolean",
-                        "example": false
-                    },
-                    "description": {
-                        "type": "string",
-                        "example": "Not Found"
+                        "example": "https://some-cdn.some-company.com/profiles/avatar.jpg"
                     }
                 }
             }
