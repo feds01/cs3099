@@ -1,20 +1,21 @@
+import React from 'react';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
-import Toolbar from '@mui/material/Toolbar';
-import React, { useState, useEffect } from 'react';
-
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
-import { AuthState } from './types/auth';
+import { AuthProvider } from './hooks/auth';
+import LoginRoute from './routes/auth/Login';
 import * as routeConfig from './config/routes';
 import PageLayout from './components/PageLayout';
 import AppliedRoute from './components/AppliedRoute';
-import LoginRoute from './routes/auth/Login';
 import RegisterRoute from './routes/auth/Register';
 import PrivateRoute from './components/PrivateRoute';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Sidebar from './components/Sidebar';
+
+// API querying client.
+const queryClient = new QueryClient();
 
 // The width of the left hand-side drawer
 const drawerWidth = 240;
@@ -66,67 +67,29 @@ const theme = createTheme({
 });
 
 function App() {
-    const [authState, setAuthState] = useState<AuthState<Error>>({ state: 'loading' });
-
-    useEffect(() => {
-        async function onLoad() {
-            try {
-                // TODO: token's exist?
-            } catch (e: any) {
-                setAuthState({ state: 'error', error: e });
-            }
-        }
-
-        onLoad();
-    }, []);
-
     return (
-        <ThemeProvider theme={theme}>
-            <Router>
-                <Switch>
-                    <AppliedRoute exact path={'/login'} appProps={{ authState, setAuthState }} component={LoginRoute} />
-                    <AppliedRoute
-                        exact
-                        path={'/register'}
-                        appProps={{ authState, setAuthState }}
-                        component={RegisterRoute}
-                    />
-                    <Route>
-                        <Box sx={{ display: 'flex' }}>
-                            <CssBaseline />
-                            <Drawer
-                                sx={{
-                                    width: drawerWidth,
-                                    flexShrink: 0,
-                                    '& .MuiDrawer-paper': {
-                                        width: drawerWidth,
-                                        boxSizing: 'border-box',
-                                    },
-                                }}
-                                variant="permanent"
-                                anchor="left"
-                            >
-                                <Toolbar />
-                                <Divider />
-                                Drawer!
-                            </Drawer>
-                            <PageLayout>
-                                {Object.keys(routeConfig.routes).map((path) => {
-                                    return (
-                                        <PrivateRoute
-                                            key={path}
-                                            path={path}
-                                            {...routeConfig.routes[path as keyof routeConfig.Routes]}
-                                            appProps={{ authState, setAuthState }}
-                                        />
-                                    );
-                                })}
-                            </PageLayout>
-                        </Box>
-                    </Route>
-                </Switch>
-            </Router>
-        </ThemeProvider>
+        <AuthProvider>
+            <QueryClientProvider client={queryClient}>
+                <ThemeProvider theme={theme}>
+                    <Router>
+                        <Switch>
+                            <AppliedRoute exact path={'/login'} component={LoginRoute} />
+                            <AppliedRoute exact path={'/register'} component={RegisterRoute} />
+                            <Route>
+                                <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
+                                    <CssBaseline />
+                                    <Route>
+                                        {Object.entries(routeConfig.routes).map(([path, config]) => {
+                                            return <PrivateRoute key={path} path={path} {...config} />;
+                                        })}
+                                    </Route>
+                                </Box>
+                            </Route>
+                        </Switch>
+                    </Router>
+                </ThemeProvider>
+            </QueryClientProvider>
+        </AuthProvider>
     );
 }
 

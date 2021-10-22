@@ -13,8 +13,7 @@ import {
     IUserPatchRequest,
     IUserLoginRequestSchema,
     IUserLoginRequest,
-    IUserRoleRequestSchema,
-    IUserRoleRequest
+    IUserRegisterRequest,
 } from '../validators/user';
 import paramValidator from '../validators/requests';
 
@@ -57,7 +56,7 @@ const router = express.Router();
  * @return response to client if user was created and added to the system.
  * */
 router.post('/register', async (req, res) => {
-    let response: IUserLoginRequest;
+    let response: IUserRegisterRequest;
 
     try {
         response = await IUserRegisterRequestSchema.parseAsync(req.body);
@@ -128,11 +127,6 @@ router.post('/register', async (req, res) => {
                 username,
                 id: savedUser._id,
             });
-
-            // set the tokens in the response headers
-            res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
-            res.set('x-token', token);
-            res.set('x-refresh-token', refreshToken);
 
             return res.status(201).json({
                 status: true,
@@ -214,13 +208,9 @@ router.post('/login', async (req, res) => {
         });
     }
 
-    const { username, email, password } = response;
+    const { username, password, isEmail } = response;
 
-    // Use both fields to look for the login
-    const searchQuery = {
-        $or: [...(username ? [{ username }] : []), ...(email ? [{ email }] : [])],
-    };
-
+    const searchQuery = isEmail ? { email: username } : { username };
     const result = await User.findOne(searchQuery).exec();
 
     // Important to send an authentication failure request, rather than a
@@ -249,12 +239,7 @@ router.post('/login', async (req, res) => {
                     id: result._id,
                 });
 
-                // set the tokens in the response headers
-                res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
-                res.set('x-token', token);
-                res.set('x-refresh-token', refreshToken);
-
-                return res.status(302).json({
+                return res.status(200).json({
                     status: true,
                     message: 'Authentication successful',
                     user: User.project(result),
@@ -265,7 +250,7 @@ router.post('/login', async (req, res) => {
             // password did not match the stored hashed password within the database
             return res.status(401).json({
                 status: false,
-                message: error.BAD_REQUEST,
+                message: error.AUTHENTICATION_FAILED,
                 extra: error.MISMATCHING_LOGIN,
             });
         });
@@ -590,5 +575,90 @@ router.get('/:id/role', paramValidator, adminAuth, async (req, res) => {
         });
     });
  });
+
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/userExists
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user/userExists
+ *
+ * >>> response:
+ * {
+ *  "status": "true",
+ *  "message": "Username exists"
+ * }
+ *
+ * @description This route is used to determine if a username is already in use, the route
+ * will accept a token in the header of the request to authenticate the request.
+ *
+ * @error {UNAUTHORIZED} if the request does not contain a token or refreshToken
+ *
+ * @return sends a response to client if user successfully (or not) logged in. The response contains
+ * whether username is in use.
+ *
+ * */
+ router.get('/userExists/:username', ownerAuth, async (req, res) => {
+    const { username } = req.params; // const id = req.params.id;
+
+    const result = await User.findOne({username}).exec();
+
+        // If the user wasn't found, then return a not found status.
+        if (!result) {
+            return res.status(404).json({
+                status: false,
+                message: 'No user with given username exists',
+
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Username exists',
+        });
+});
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/emailExists
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user/emailExists
+ *
+ * >>> response:
+ * {
+ *  "status": "true",
+ *  "message": "Email exists"
+ * }
+ *
+ * @description This route is used to determine if an email address is already in use, the route
+ * will accept a token in the header of the request to authenticate the request.
+ *
+ * @error {UNAUTHORIZED} if the request does not contain a token or refreshToken
+ *
+ * @return sends a response to client if user successfully (or not) logged in. The response contains
+ * whether the email is in use.
+ *
+ * */
+ router.get('/emailExists/:email', ownerAuth, async (req, res) => {
+    const { email } = req.params; // const id = req.params.id;
+
+    const result = await User.findOne({email}).exec();
+
+        // If the email wasn't found, then return a not found status.
+        if (!result) {
+            return res.status(404).json({
+                status: false,
+                message: 'Email address not in use',
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: 'Email exists',
+        });
+});
+
 
 export default router;

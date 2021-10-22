@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect } from 'react';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
@@ -8,31 +8,50 @@ import TextField from '@mui/material/TextField';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-
-interface Props {}
+import { User } from '../../lib/api/models';
+import { usePostUserLogin } from '../../lib/api/users/users';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import PasswordField from '../PasswordField';
 
 const LoginSchema = z.object({
-    email: z.string().email(),
+    username: z.string(),
     password: z.string().nonempty(),
     rememberLogin: z.boolean(),
 });
 
 type ILoginForm = z.infer<typeof LoginSchema>;
 
-export default function LoginForm({}: Props): ReactElement {
+interface Props {
+    onSuccess: (session: User, token: string, refreshToken: string, rememberUser: boolean) => void;
+}
+
+export default function LoginForm({ onSuccess }: Props): ReactElement {
     const {
         control,
         handleSubmit,
         formState: { errors },
+        getValues,
     } = useForm<ILoginForm>({
         resolver: zodResolver(LoginSchema),
+        defaultValues: {
+            rememberLogin: true,
+        },
     });
 
-    const onSubmit: SubmitHandler<ILoginForm> = (data) => {
-        console.log(data);
-        // TODO: make a post request to REST API to get tokens.
-        // TODO: set the tokens into localstorage
-    };
+    const { isLoading, isError, data: response, error, mutateAsync } = usePostUserLogin();
+
+    // TODO: try and do this in onSubmit instead of using an effect.
+    useEffect(() => {
+        if (!isLoading && typeof response !== 'undefined') {
+            const rememberLogin = getValues('rememberLogin');
+
+            onSuccess(response.user, response.token, response.refreshToken, rememberLogin);
+        }
+    }, [isLoading]);
+
+    const onSubmit: SubmitHandler<ILoginForm> = async (data) => await mutateAsync({ data });
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -45,15 +64,15 @@ export default function LoginForm({}: Props): ReactElement {
                 }}
             >
                 <Controller
-                    name="email"
+                    name="username"
                     control={control}
                     defaultValue=""
                     render={({ field }) => (
                         <TextField
                             {...field}
-                            {...(errors.email && {
+                            {...(errors.username && {
                                 error: true,
-                                helperText: errors.email.message,
+                                helperText: errors.username.message,
                             })}
                             label="Email/Username"
                             InputLabelProps={{
@@ -71,7 +90,7 @@ export default function LoginForm({}: Props): ReactElement {
                     control={control}
                     defaultValue=""
                     render={({ field }) => (
-                        <TextField
+                        <PasswordField
                             {...field}
                             {...(errors.password && {
                                 error: true,
@@ -84,7 +103,7 @@ export default function LoginForm({}: Props): ReactElement {
                             InputLabelProps={{
                                 shrink: true,
                             }}
-                            type="password"
+                            fullWidth
                             label="Password"
                         />
                     )}
@@ -117,10 +136,16 @@ export default function LoginForm({}: Props): ReactElement {
                     />
                     <Link to="/auth/forgot-password">Forgot Password?</Link>
                 </Box>
-                <Button type={'submit'} variant="contained" color="primary" fullWidth>
-                    Sign in
+                <Button type={'submit'} disabled={isLoading} variant="contained" color="primary" fullWidth>
+                    {!isLoading ? 'Sign in' : <CircularProgress variant="determinate" color="inherit" size={14} />}
                 </Button>
             </Box>
+            {isError && (
+                <Alert severity="error">
+                    <AlertTitle>Error</AlertTitle>
+                    <strong>{error!.message || 'Something went wrong'}</strong>
+                </Alert>
+            )}
         </form>
     );
 }
