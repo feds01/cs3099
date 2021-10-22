@@ -8,7 +8,7 @@ export default function Profile(props: Props): ReactElement {
     const auth = useAuth();
 
     return (
-        <PageLayout title={'Profile'}>
+        <PageLayout title={'Profile'} sidebar={false}>
             Profile
             {JSON.stringify(auth.session)}
         </PageLayout>

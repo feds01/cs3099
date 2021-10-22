@@ -8,18 +8,14 @@ import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { AuthProvider } from './hooks/auth';
 import LoginRoute from './routes/auth/Login';
 import * as routeConfig from './config/routes';
-import PageLayout from './components/PageLayout';
 import AppliedRoute from './components/AppliedRoute';
 import RegisterRoute from './routes/auth/Register';
 import PrivateRoute from './components/PrivateRoute';
-import Sidebar from './components/Sidebar';
 
 // API querying client.
 const queryClient = new QueryClient();
 
-// The width of the left hand-side drawer
-const drawerWidth = 240;
-
+// The application theme
 const theme = createTheme({
     palette: {
         primary: {

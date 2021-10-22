@@ -8,9 +8,20 @@ interface Props {
     children: React.ReactNode;
     title: string;
     drawerWidth?: number;
+    sidebar?: boolean;
 }
 
-export default function PageLayout({ children, drawerWidth = 240, title }: Props): ReactElement {
+export default function PageLayout({ children, drawerWidth = 240, title, sidebar = true }: Props): ReactElement {
+    const [open, setOpen] = React.useState<boolean>(false);
+
+    const handleDrawerOpen = () => {
+        setOpen(true);
+    };
+
+    const handleDrawerClose = () => {
+        setOpen(false);
+    };
+
     return (
         <Box
             sx={{
@@ -24,15 +35,15 @@ export default function PageLayout({ children, drawerWidth = 240, title }: Props
                 wordBreak: 'break-all',
             }}
         >
-            <Box component="main" sx={{ display: 'flex', flex: 1, height: 'inherit' }}>
-                <Sidebar drawerWidth={drawerWidth} />
-                <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                    <Header title={title} />
+            <Box component="main" sx={{ display: 'flex', flexDirection: 'column', flex: 1, height: 'inherit' }}>
+                <Header open={open} drawerWidth={drawerWidth} handleDrawerOpen={handleDrawerOpen} title={title} />
+                <Box sx={{ display: 'flex', flexDirection: 'row', flexGrow: 1 }}>
+                    {sidebar && <Sidebar open={open} handleDrawerClose={handleDrawerClose} drawerWidth={drawerWidth} />}
                     <Container
                         sx={{
                             background: '#F5F6F5',
                             flexGrow: 1,
-                            padding: 0,
+                            paddingTop: 3,
                         }}
                         maxWidth={false}
                     >

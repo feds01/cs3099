@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import AppBar from '@mui/material/AppBar';
+import MuiAppBar from '@mui/material/AppBar';
 import Menu from '@mui/material/Menu';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -9,12 +9,40 @@ import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useAuth, useDispatchAuth } from '../../hooks/auth';
 import { Link } from 'react-router-dom';
+import { styled } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+
+interface AppBarProps {
+    open: boolean;
+    drawerWidth: number;
+}
+
+const AppBar = styled(MuiAppBar, {
+    shouldForwardProp: (prop) => prop !== 'open' && prop !== 'drawerWidth',
+})<AppBarProps>(({ theme, open, drawerWidth }) => ({
+    zIndex: theme.zIndex.drawer + 1,
+    transition: theme.transitions.create(['width', 'margin'], {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+    }),
+    ...(open && {
+        marginLeft: drawerWidth,
+        width: `calc(100% - ${drawerWidth}px)`,
+        transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+        }),
+    }),
+}));
 
 interface Props {
     title: string;
+    open: boolean;
+    handleDrawerOpen: () => void;
+    drawerWidth: number;
 }
 
-export default function Header({ title }: Props): ReactElement {
+export default function Header({ title, open, handleDrawerOpen, drawerWidth }: Props): ReactElement {
     const auth = useAuth();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
@@ -29,63 +57,76 @@ export default function Header({ title }: Props): ReactElement {
     const authDispatcher = useDispatchAuth();
 
     return (
-        <AppBar
-            position={'static'}
-            sx={{
-                boxShadow: '0px 3px 6px #00000029',
-            }}
-        >
-            <Toolbar>
-                <IconButton size="large" edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
-                    <MenuIcon />
-                </IconButton>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    {title}
-                </Typography>
-                {auth && (
-                    <div>
-                        <IconButton
-                            size="large"
-                            aria-label="account of current user"
-                            aria-controls="menu-appbar"
-                            aria-haspopup="true"
-                            onClick={handleMenu}
-                            color="inherit"
-                        >
-                            <AccountCircle />
-                        </IconButton>
-                        <Menu
-                            id="menu-appbar"
-                            anchorEl={anchorEl}
-                            anchorOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                            open={Boolean(anchorEl)}
-                            onClose={handleClose}
-                        >
-                            <MenuItem>
-                                <Link to="/profile/me">Profile</Link>
-                            </MenuItem>
-                            <MenuItem>
-                                <Link to="/account">My account</Link>
-                            </MenuItem>
-                            <MenuItem
-                                onClick={() => {
-                                    authDispatcher({ type: 'logout' });
-                                }}
+        <Box sx={{ flex: 'display' }}>
+            <AppBar
+                open={open}
+                drawerWidth={drawerWidth}
+                position={'fixed'}
+                sx={{
+                    boxShadow: '0px 3px 6px #00000029',
+                }}
+            >
+                <Toolbar>
+                    <IconButton
+                        color="inherit"
+                        aria-label="open drawer"
+                        onClick={handleDrawerOpen}
+                        edge="start"
+                        sx={{
+                            marginRight: '36px',
+                            ...(open && { display: 'none' }),
+                        }}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                        {title}
+                    </Typography>
+                    {auth && (
+                        <div>
+                            <IconButton
+                                size="large"
+                                aria-label="account of current user"
+                                aria-controls="menu-appbar"
+                                aria-haspopup="true"
+                                onClick={handleMenu}
+                                color="inherit"
                             >
-                                Sign out
-                            </MenuItem>
-                        </Menu>
-                    </div>
-                )}
-            </Toolbar>
-        </AppBar>
+                                <AccountCircle />
+                            </IconButton>
+                            <Menu
+                                id="menu-appbar"
+                                anchorEl={anchorEl}
+                                anchorOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                }}
+                                keepMounted
+                                transformOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                }}
+                                open={Boolean(anchorEl)}
+                                onClose={handleClose}
+                            >
+                                <MenuItem>
+                                    <Link to="/profile/me">Profile</Link>
+                                </MenuItem>
+                                <MenuItem>
+                                    <Link to="/account">My account</Link>
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() => {
+                                        authDispatcher({ type: 'logout' });
+                                    }}
+                                >
+                                    Sign out
+                                </MenuItem>
+                            </Menu>
+                        </div>
+                    )}
+                </Toolbar>
+            </AppBar>
+        </Box>
     );
 }

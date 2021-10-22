@@ -81,7 +81,7 @@ router.post('/register', async (req, res) => {
     // Check if username or email is already in use
 
     const searchQueryUser = {
-        $or: [{username}, {email}],
+        $or: [{ username }, { email }],
     };
 
     const resultUser = await User.findOne(searchQueryUser).exec();
