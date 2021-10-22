@@ -1,16 +1,9 @@
 import React, { ReactElement } from 'react';
 import { Route, Redirect, RouteProps } from 'react-router-dom';
-import { AuthState } from '../../types/auth';
+import { useAuth } from '../../hooks/auth';
 
-interface Props extends RouteProps {
-    appProps: {
-        authState: AuthState<Error>;
-        setAuthState: (state: AuthState<Error>) => void;
-    };
-}
-
-export default function PrivateRoute({ component: C, appProps, ...rest }: Props): ReactElement {
-    const isLoggedIn = appProps.authState.state === 'authenticated';
+export default function PrivateRoute({ component: C, ...rest }: RouteProps): ReactElement {
+    const auth = useAuth();
 
     if (typeof C == 'undefined') {
         throw new Error('Component prop must be passed to a PrivateRoute.');
@@ -20,8 +13,8 @@ export default function PrivateRoute({ component: C, appProps, ...rest }: Props)
         <Route
             {...rest}
             render={(props) =>
-                isLoggedIn ? (
-                    <C {...props} {...appProps} />
+                auth.isLoggedIn ? (
+                    <C {...props} />
                 ) : (
                     <Redirect to={{ pathname: '/login', state: { from: props.location } }} />
                 )

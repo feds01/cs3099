@@ -1,11 +1,16 @@
 import React from 'react';
-import { AuthState } from '../../types/auth';
+import PageLayout from '../../components/PageLayout';
+import { useAuth } from '../../hooks/auth';
 
-interface Props {
-    authState: AuthState<Error>;
-    setAuthState: (state: AuthState<Error>) => void;
-}
+interface Props {}
 
 export default function Home(props: Props) {
-    return <div>Home Page</div>;
+    const { session } = useAuth();
+
+    return (
+        <PageLayout title={'Home'}>
+            Home Page
+            <p>{JSON.stringify(session)}</p>
+        </PageLayout>
+    );
 }

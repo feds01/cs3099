@@ -1,18 +1,34 @@
 import React from 'react';
 import { Box } from '@mui/system';
-import { AuthState } from '../../types/auth';
 
-import { Link } from 'react-router-dom';
+import { Link, useHistory, useLocation } from 'react-router-dom';
+import { User } from '../../lib/api/models';
 import Typography from '@mui/material/Typography';
 import LoginForm from '../../components/LoginForm';
 import LoginCover from './../../static/images/login.svg';
+import { useDispatchAuth } from '../../hooks/auth';
 
-interface Props {
-    authState: AuthState<Error>;
-    setAuthState: (state: AuthState<Error>) => void;
+interface LocationState {
+    from: { pathname: string };
 }
 
-function Login(props: Props) {
+// TODO: Support callbackUrl parameter... This involves forwarding the returned tokens
+// and details from the server back to the callbackUrl. If the callbackUrl is specified,
+// we should ignore the 'from' parameter (if it's provided).
+function Login() {
+    const authDispatcher = useDispatchAuth();
+
+    // extract the 'from' part of the redirect if it's present. We use this path
+    // to redirect the user back to where they tried to go.
+    const location = useLocation<LocationState>();
+    const history = useHistory();
+    let { from } = location.state || { from: { pathname: '/' } };
+
+    const handleSuccess = (session: User, token: string, refreshToken: string, rememberUser: boolean) => {
+        authDispatcher({ type: 'login', rememberUser, data: { session, token, refreshToken } });
+        history.push(from);
+    };
+
     return (
         <Box
             sx={{
@@ -52,9 +68,9 @@ function Login(props: Props) {
                 <Typography variant={'caption'}>
                     Publish scientific works, papers, review and checkout the most recent works in astronomy today.
                 </Typography>
-                <LoginForm />
+                <LoginForm onSuccess={handleSuccess} />
                 <Typography variant="body1">
-                    Don't have an account yet? <Link to="/register">Join Iamus</Link>
+                    Don't have an account yet? <Link to={{ pathname: '/register', state: { from } }}>Join Iamus</Link>
                 </Typography>
             </Box>
         </Box>

@@ -11,11 +11,19 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$@!%&*?])[A-Za-z\d
 
 export const IUserLoginRequestSchema = z
     .object({
-        username: z.string().nonempty().max(50).optional(),
-        email: z.string().email().optional(),
+        username: z.string().optional(),
         password: z.string().nonempty(),
     })
-    .refine((data) => data.username || data.email, 'Either username or email should be specified.');
+    .transform((val) => {
+        let email = z.string().email().safeParse(val.username);
+
+        // Use the email instead of the provided username
+        if (email.success) {
+            return { ...val, isEmail: true };
+        }
+
+        return { ...val, isEmail: false };
+    });
 
 export type IUserLoginRequest = z.infer<typeof IUserLoginRequestSchema>;
 
@@ -25,8 +33,8 @@ export const IUserRegisterRequestSchema = z.object({
     firstName: z.string().nonempty().max(32),
     lastName: z.string().nonempty().max(32),
     password: z.string().regex(PASSWORD_REGEX),
-    about: z.string(),
-    profilePictureUrl: z.string().url(),
+    about: z.string().optional(),
+    profilePictureUrl: z.string().url().optional(),
 });
 
 export type IUserRegisterRequest = z.infer<typeof IUserRegisterRequestSchema>;
