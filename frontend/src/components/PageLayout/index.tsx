@@ -11,17 +11,7 @@ interface Props {
     sidebar?: boolean;
 }
 
-export default function PageLayout({ children, drawerWidth = 240, title, sidebar = true }: Props): ReactElement {
-    const [open, setOpen] = React.useState<boolean>(false);
-
-    const handleDrawerOpen = () => {
-        setOpen(true);
-    };
-
-    const handleDrawerClose = () => {
-        setOpen(false);
-    };
-
+export default function PageLayout({ children, drawerWidth = 180, title, sidebar = true }: Props): ReactElement {
     return (
         <Box
             sx={{
@@ -36,14 +26,13 @@ export default function PageLayout({ children, drawerWidth = 240, title, sidebar
             }}
         >
             <Box component="main" sx={{ display: 'flex', flexDirection: 'column', flex: 1, height: 'inherit' }}>
-                <Header open={open} drawerWidth={drawerWidth} handleDrawerOpen={handleDrawerOpen} title={title} />
+                <Header title={title} />
                 <Box sx={{ display: 'flex', flexDirection: 'row', flexGrow: 1 }}>
-                    {sidebar && <Sidebar open={open} handleDrawerClose={handleDrawerClose} drawerWidth={drawerWidth} />}
+                    {sidebar && <Sidebar />}
                     <Container
                         sx={{
                             background: '#F5F6F5',
                             flexGrow: 1,
-                            paddingTop: 3,
                         }}
                         maxWidth={false}
                     >

@@ -10,5 +10,7 @@ export interface User {
     id: string;
     email: string;
     username: string;
+    first?: string;
+    lastName: string;
     profilePictureUrl?: string;
 }

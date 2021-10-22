@@ -1,9 +1,9 @@
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
+import { useRawAuth } from '../../hooks/auth';
 import { Route, Redirect, RouteProps } from 'react-router-dom';
-import { useAuth } from '../../hooks/auth';
 
 export default function PrivateRoute({ component: C, ...rest }: RouteProps): ReactElement {
-    const auth = useAuth();
+    const auth = useRawAuth();
 
     if (typeof C == 'undefined') {
         throw new Error('Component prop must be passed to a PrivateRoute.');

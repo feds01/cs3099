@@ -54,7 +54,7 @@ UserSchema.statics.project = function (user: IUserDocument) {
         email: user.email,
         username: user.username,
         firstName: user.firstName,
-        lastName: user.firstName,
+        lastName: user.lastName,
         ...(profilePictureUrl && { profilePictureUrl }),
         ...(about && { about }),
     };

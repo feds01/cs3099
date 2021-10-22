@@ -6,10 +6,10 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import { AuthProvider } from './hooks/auth';
-import LoginRoute from './routes/auth/Login';
+import LoginRoute from './routes/Auth/Login';
 import * as routeConfig from './config/routes';
 import AppliedRoute from './components/AppliedRoute';
-import RegisterRoute from './routes/auth/Register';
+import RegisterRoute from './routes/Auth/Register';
 import PrivateRoute from './components/PrivateRoute';
 
 // API querying client.
@@ -24,8 +24,13 @@ const theme = createTheme({
         secondary: {
             main: '#37123C',
         },
+        text: {
+            primary: '#292E37',
+            secondary: '#292E37',
+        },
     },
     typography: {
+        fontSize: 12,
         fontFamily: [
             'Noto Sans',
             '-apple-system',

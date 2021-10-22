@@ -418,7 +418,7 @@
             },
             "User": {
                 "type": "object",
-                "required": ["id", "email", "username"],
+                "required": ["id", "email", "username", "firstName", "lastName"],
                 "properties": {
                     "id": {
                         "type": "string",
@@ -430,7 +430,15 @@
                     },
                     "username": {
                         "type": "string",
-                        "example": "John Doe"
+                        "example": "jdoe1"
+                    },
+                    "first": {
+                        "type": "string",
+                        "example": "John"
+                    },
+                    "lastName": {
+                        "type": "string",
+                        "example": "Doe"
                     },
                     "profilePictureUrl": {
                         "type": "string",

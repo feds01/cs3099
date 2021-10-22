@@ -81,7 +81,7 @@ export default function RegisterForm({ onSuccess }: Props): ReactElement {
                     paddingBottom: 2,
                 }}
             >
-                <Grid container spacing={1}>
+                <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
                         <Controller
                             name="firstName"
