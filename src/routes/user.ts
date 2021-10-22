@@ -296,7 +296,7 @@ router.get('/:id', paramValidator, ownerAuth, async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 status: false,
-                message: 'No user with given id exists',
+                message: error.NON_EXISTENT_USER_ID,
             });
         }
 
@@ -437,6 +437,58 @@ router.delete('/:id', paramValidator, ownerAuth, async (req, res) => {
     });
 });
 
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/<id>/role
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/user/<616f115feb505663f8bce3e2>/role
+ * >>> response: {
+ *  "status": "true", 
+ *  "role": "default" // TO CHECK
+ * }
+ *
+ * @description This route is used to get the role of a user.
+ *
+ * @error {UNAUTHORIZED} if the request is not sent by an administrator.
+ *
+ * @return sends the role of the specified user.
+ * */
+router.get('/:id/role', paramValidator, adminAuth, async (req, res) => {
+    const { id } = req.params; // const id = req.params.id;
+
+    User.findById(id, {}, {}, (err, user) => {
+        if (err) {
+            if (err instanceof mongoose.Error.ValidationError) {
+                return res.status(400).json({
+                    status: false,
+                    message: error.BAD_REQUEST,
+                    extra: err.errors,
+                });
+            }
+
+            // Something went wrong...
+            Logger.error(err);
+            return res.status(500).json({
+                status: false,
+                message: error.INTERNAL_SERVER_ERROR,
+            });
+        }
+
+        // If the user wasn't found, then return a not found status.
+        if (!user) {
+            return res.status(404).json({
+                status: false,
+                message: error.NON_EXISTENT_USER_ID,
+            });
+        }  
+
+        return res.status(200).json({
+            status: true,
+            role: user.role
+        });
+    });
+});
 
 /**
  * @version v1.0.0
@@ -512,7 +564,7 @@ router.delete('/:id', paramValidator, ownerAuth, async (req, res) => {
         if (!newUser) {
             return res.status(404).json({
                 status: false,
-                message: 'No user with given id exists',
+                message: error.NON_EXISTENT_USER_ID,
             });
         }
 
