@@ -311,7 +311,7 @@ router.get('/:id', paramValidator, ownerAuth, async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 status: false,
-                message: 'No user with given id exists',
+                message: error.NON_EXISTENT_USER_ID,
             });
         }
 
@@ -473,13 +473,30 @@ router.get('/:id/role', paramValidator, adminAuth, async (req, res) => {
     const { id } = req.params; // const id = req.params.id;
 
     User.findById(id, {}, {}, (err, user) => {
+        if (err) {
+            if (err instanceof mongoose.Error.ValidationError) {
+                return res.status(400).json({
+                    status: false,
+                    message: error.BAD_REQUEST,
+                    extra: err.errors,
+                });
+            }
+
+            // Something went wrong...
+            Logger.error(err);
+            return res.status(500).json({
+                status: false,
+                message: error.INTERNAL_SERVER_ERROR,
+            });
+        }
+
         // If the user wasn't found, then return a not found status.
         if (!user) {
             return res.status(404).json({
                 status: false,
-                message: 'No user with given id exists',
+                message: error.NON_EXISTENT_USER_ID,
             });
-        }
+        }  
 
         return res.status(200).json({
             status: true,
@@ -562,7 +579,7 @@ router.get('/:id/role', paramValidator, adminAuth, async (req, res) => {
         if (!newUser) {
             return res.status(404).json({
                 status: false,
-                message: 'No user with given id exists',
+                message: error.NON_EXISTENT_USER_ID,
             });
         }
 

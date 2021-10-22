@@ -27,6 +27,7 @@ export const UNAUTHORIZED = "User doesn't have permissions to perform this actio
 export const REGISTRATION_FAILED = 'Registration failed';
 export const AUTHENTICATION_FAILED = 'Authentication failed';
 export const NON_EXISTENT_USER = 'No user with the given username exists';
+export const NON_EXISTENT_USER_ID = 'No user with the given id exists';
 
 // General request errors
 export const INTERNAL_SERVER_ERROR = 'Internal Server Error.';
