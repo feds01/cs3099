@@ -1,5 +1,4 @@
-import mongoose, { Document, Model, ObjectId, Schema } from 'mongoose';
-import { string } from 'zod';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IComment {
     submission: mongoose.ObjectId;
@@ -16,12 +15,12 @@ interface ICommentModel extends Model<ICommentDocument> {}
 
 const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
     {
-        submission: { type: mongoose.Schema.Types.ObjectId, ref: 'Submission', required: true },
-        owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        submission: { type: mongoose.Schema.Types.ObjectId, ref: 'submission', required: true },
+        owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
         content: { type: String, required: true },
         thread: { type: mongoose.Schema.Types.ObjectId, required: false },
-        replying: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment', required: false },
-        review: { type: mongoose.Schema.Types.ObjectId, ref: 'Review' },
+        replying: { type: mongoose.Schema.Types.ObjectId, ref: 'comment', required: false },
+        review: { type: mongoose.Schema.Types.ObjectId, ref: 'review' },
     },
     { timestamps: true },
 );

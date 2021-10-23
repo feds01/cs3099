@@ -1,6 +1,6 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
-enum IUserRole {
+export enum IUserRole {
     Default = 'default',
     Moderator = 'moderator',
     Administrator = 'administrator',
