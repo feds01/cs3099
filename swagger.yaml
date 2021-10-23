@@ -30,7 +30,7 @@ paths:
         - users
       requestBody:
         required: true
-        description: Provide either a username or user email to login with, and a password. Providing both will result in the request trying to use both parameters. 
+        description: Provide either a username or user email to login with, and a password. Providing both will result in the request trying to use both parameters.
         content:
           application/json:
             schema:
@@ -60,7 +60,7 @@ paths:
         content:
           application/json:
             schema:
-               $ref: '#/components/schemas/UserRegistration'
+              $ref: '#/components/schemas/UserRegistration'
       responses:
         '201':
           description: Created. uthentication tokens with user information.
@@ -69,7 +69,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserAuthResponse'
         '400':
-          $ref: '#/components/responses/BadRequest'  
+          $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /user/{id}:
@@ -86,7 +86,7 @@ paths:
           schema:
             type: string
           required: true
-          description: The ID of the user to delete.
+          description: User ID.
       responses:
         '200':
           description: User was successfully deleted.
@@ -116,13 +116,13 @@ paths:
           schema:
             type: string
           required: true
-          description: The ID of the user to get information on.
+          description: User ID.
       responses:
         '200':
           description: OK
           content:
             application/json:
-               schema:
+              schema:
                 type: object
                 properties:
                   status:
@@ -145,13 +145,13 @@ paths:
           schema:
             type: string
           required: true
-          description: The ID of the user
+          description: User ID.
       responses:
         '200':
           description: User information was updated successfully.
           content:
             application/json:
-               schema:
+              schema:
                 type: object
                 properties:
                   status:
@@ -160,7 +160,7 @@ paths:
                   user:
                     $ref: '#/components/schemas/User'
         '400':
-          $ref: '#/components/responses/BadRequest' 
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -179,13 +179,13 @@ paths:
           schema:
             type: string
           required: true
-          description: The ID of the user to get information on.
+          description: User ID.
       responses:
         '200':
           description: OK
           content:
             application/json:
-               schema:
+              schema:
                 type: object
                 properties:
                   status:
@@ -195,7 +195,7 @@ paths:
                     type: string
                     example: "default"
         '400':
-          $ref: '#/components/responses/BadRequest' 
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -208,12 +208,12 @@ paths:
       tags:
         - users
       parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-        description: The ID of the user
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: User ID.
       responses:
         '200':
           description: User role was updated successfully.
@@ -232,14 +232,190 @@ paths:
                     type: string
                     example: "default"
         '400':
-          $ref: '#/components/responses/BadRequest' 
+          $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-      
+  /user/{id}/follow:
+    get:
+      summary: Get the current user's follow status.
+      description: Endpoint for checking if the current user is following another user specified by the given id.
+      tags:
+        - users
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: User ID.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  following:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "User is following the other user"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Follow another user
+      description: Endpoint for current user to follow another legit user.
+      tags:
+        - users
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: User ID.
+      responses:
+        '200':
+          description: Successfully followed another user.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Successfully added new follows."
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: Unfollowing another user.
+      description: Endpoint for current user to unfollow another legit user.
+      tags:
+        - users
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: User ID.
+      responses:
+        '200':
+          description: Successfully unfollowed another user.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "User was unfollowed"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /user/{id}/followers:
+    get:
+      summary: Get a user's follower list.
+      description: Endpoint for getting any user's follower list.
+      tags:
+        - users
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: User ID.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/FollowerListData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /user/{id}/following:
+    get:
+      summary: Get a user's following list.
+      description: Endpoint for fetching a user's follows list
+      tags:
+        - users
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: User ID.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/FollowingListData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
 components:
   securitySchemes:
     BearerAuth:
@@ -376,6 +552,8 @@ components:
         - id
         - email
         - username
+        - firstName
+        - lastName
       properties:
         id:
           type: string
@@ -386,6 +564,29 @@ components:
         username:
           type: string
           example: "John Doe"
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
         profilePictureUrl:
           type: string
           example: https://some-cdn.some-company.com/profiles/avatar.jpg
+        about:
+          type: string
+          example: "Professor at Example University"   
+    FollowerListData:
+      type: object
+      properties:
+        followers:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    FollowingListData:
+      type: object
+      properties:
+        following:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
