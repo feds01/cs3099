@@ -774,7 +774,7 @@ router.get('/:id/following', paramValidator, ownerAuth, async (req, res) => {
     return res.status(200).json({
         status: true,
         data: {
-            followers,
+            "following": followers,
         },
     });
 });
