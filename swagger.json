@@ -663,6 +663,10 @@
           "application/json": {
             "schema": {
               "type": "object",
+              "required": [
+                "status",
+                "message"
+              ],
               "properties": {
                 "status": {
                   "type": "boolean",
@@ -689,14 +693,14 @@
               "type": "object",
               "required": [
                 "status",
-                "description"
+                "message"
               ],
               "properties": {
                 "status": {
                   "type": "boolean",
                   "example": false
                 },
-                "description": {
+                "message": {
                   "type": "string",
                   "example": "Unauthorized"
                 }
@@ -737,14 +741,14 @@
               "type": "object",
               "required": [
                 "status",
-                "description"
+                "message"
               ],
               "properties": {
                 "status": {
                   "type": "boolean",
                   "example": false
                 },
-                "description": {
+                "message": {
                   "type": "string",
                   "example": "Not Found"
                 }

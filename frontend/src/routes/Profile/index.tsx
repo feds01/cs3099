@@ -64,7 +64,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                 </Box>
             );
         case 'error':
-            return <Redirect to="/error" />;
+            throw content.error;
         case 'ok':
             const profileData = content.data;
             return (

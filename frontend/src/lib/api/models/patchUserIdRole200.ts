@@ -6,7 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type NotFoundResponse = {
-  status: boolean;
-  message: string;
+export type PatchUserIdRole200 = {
+  status?: boolean;
+  message?: string;
+  role?: string;
 };

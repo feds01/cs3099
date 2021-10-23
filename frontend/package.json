@@ -32,7 +32,8 @@
         "build": "react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject",
-        "fmt": "prettier --write ."
+        "fmt": "prettier --write .",
+        "version": "ts-node --skip-project scripts/versioning.ts"
     },
     "eslintConfig": {
         "extends": [
@@ -52,10 +53,17 @@
             "last 1 safari version"
         ]
     },
+    "husky": {
+        "hooks": {
+            "pre-push": "yarn run version"
+        }
+    },
     "devDependencies": {
         "@types/faker": "^5.5.9",
         "@types/react-router-dom": "^5.3.1",
         "faker": "^5.5.3",
-        "msw": "^0.35.0"
+        "husky": "^7.0.4",
+        "msw": "^0.35.0",
+        "ts-node": "^10.4.0"
     }
 }

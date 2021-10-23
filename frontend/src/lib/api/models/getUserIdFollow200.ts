@@ -6,7 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type NotFoundResponse = {
-  status: boolean;
-  message: string;
+export type GetUserIdFollow200 = {
+  status?: boolean;
+  following?: boolean;
+  message?: string;
 };

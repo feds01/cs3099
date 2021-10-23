@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type NotFoundResponse = {
-  status: boolean;
-  message: string;
+export type DeleteUserIdFollow200 = {
+  status?: boolean;
+  message?: string;
 };

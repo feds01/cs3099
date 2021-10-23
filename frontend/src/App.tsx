@@ -11,6 +11,7 @@ import * as routeConfig from './config/routes';
 import AppliedRoute from './components/AppliedRoute';
 import RegisterRoute from './routes/Auth/Register';
 import PrivateRoute from './components/PrivateRoute';
+import ErrorContainer from './components/ErrorContainer';
 
 // API querying client.
 const queryClient = new QueryClient();
@@ -77,14 +78,16 @@ function App() {
                             <AppliedRoute exact path={'/login'} component={LoginRoute} />
                             <AppliedRoute exact path={'/register'} component={RegisterRoute} />
                             <Route>
-                                <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
-                                    <CssBaseline />
-                                    <Route>
-                                        {Object.entries(routeConfig.routes).map(([path, config]) => {
-                                            return <PrivateRoute key={path} path={path} {...config} />;
-                                        })}
-                                    </Route>
-                                </Box>
+                                <ErrorContainer>
+                                    <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
+                                        <CssBaseline />
+                                        <Route>
+                                            {Object.entries(routeConfig.routes).map(([path, config]) => {
+                                                return <PrivateRoute key={path} path={path} {...config} />;
+                                            })}
+                                        </Route>
+                                    </Box>
+                                </ErrorContainer>
                             </Route>
                         </Switch>
                     </Router>
