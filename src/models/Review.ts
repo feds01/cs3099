@@ -19,9 +19,9 @@ interface IReviewModel extends Model<IReviewDocument> {}
 
 const ReviewSchema = new Schema<IReview, IReviewModel, IReview>(
     {
-        submission: { type: mongoose.Schema.Types.ObjectId, ref: 'Submission', required: true },
-        owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-        generalComment: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment' },
+        submission: { type: mongoose.Schema.Types.ObjectId, ref: 'submission', required: true },
+        owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
+        generalComment: { type: mongoose.Schema.Types.ObjectId, ref: 'comment' },
         status: { type: String, enum: IReviewStatus },
     },
     { timestamps: true },

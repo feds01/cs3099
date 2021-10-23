@@ -6,7 +6,7 @@
     "scripts": {
         "build": "tsc",
         "start": "tsc & node .",
-        "dev": "ts-node-dev ./src/index.ts",
+        "dev": "ts-node-dev  --trace-warnings --  ./src/index.ts",
         "test": "jest --collect-coverage --ci",
         "lint": "eslint src/*/**",
         "fmt": "prettier --write .",

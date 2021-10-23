@@ -180,16 +180,16 @@ export async function adminAuth(req: express.Request, res: express.Response, nex
     }
 
     if (token?.data.id) {
-        const existingUser = await User.findOne({ _id: token.data.id, role: IUserRole.Administrator});
+        const existingUser = await User.findOne({ _id: token.data.id, role: IUserRole.Administrator });
 
         if (!existingUser) {
-            return res.status(404).json({
+            return res.status(401).json({
                 status: false,
-                message: "You must be an administrator to perform this action."
+                message: error.UNAUTHORIZED,
             });
         } else {
             req.token = token;
-            
+
             next(); // the request was fine and is authenticated.
         }
     } else {
