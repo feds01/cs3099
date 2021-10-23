@@ -432,7 +432,7 @@
                         "type": "string",
                         "example": "jdoe1"
                     },
-                    "first": {
+                    "firstName": {
                         "type": "string",
                         "example": "John"
                     },

@@ -1,5 +1,4 @@
 import React, { ReactElement } from 'react';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import MuiAppBar from '@mui/material/AppBar';

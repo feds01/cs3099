@@ -33,16 +33,11 @@ export default function PageLayout({ children, drawerWidth = 180, title, sidebar
                         sx={{
                             background: '#F5F6F5',
                             flexGrow: 1,
+                            p: '0 !important',
                         }}
                         maxWidth={false}
                     >
-                        <Box
-                            sx={{
-                                margin: 2,
-                            }}
-                        >
-                            {children}
-                        </Box>
+                        {children}
                     </Container>
                 </Box>
             </Box>

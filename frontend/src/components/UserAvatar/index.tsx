@@ -2,15 +2,16 @@ import React, { ReactElement } from 'react';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import { Typography } from '@mui/material';
+import { User } from '../../lib/api/models';
 
-interface Props {
-    firstName?: string;
-    lastName?: string;
-    username: string;
-    profilePictureUrl?: string;
-    displayName: boolean;
-    position: 'right' | 'bottom';
+type NameDisplayProps = { displayName?: false; position?: never } | { displayName: true; position: 'right' | 'bottom' };
+
+interface CommonProps {
+    children?: React.ReactNode;
+    size?: number;
 }
+
+type Props = User & CommonProps & NameDisplayProps;
 
 /**
  * Function that generates initials from provided first and last names of
@@ -34,10 +35,11 @@ export function getUserInitials(firstName?: string, lastName?: string): string {
     return initials;
 }
 
-// TODO: support different sizes too
 export default function UserAvatar({
+    children,
     firstName,
-    displayName,
+    displayName = false,
+    size,
     position,
     lastName,
     username,
@@ -54,14 +56,19 @@ export default function UserAvatar({
                 alignItems: 'center',
             }}
         >
-            <Avatar alt={username} {...(profilePictureUrl && { src: profilePictureUrl })}>
-                {initials}
+            <Avatar
+                alt={username}
+                {...(size && { sx: { width: size, height: size } })}
+                {...(profilePictureUrl && { src: profilePictureUrl })}
+            >
+                <Typography {...(size && { sx: { fontSize: size / 2 } })}>{initials}</Typography>
             </Avatar>
             {displayName && (
-                <Typography sx={{ paddingLeft: 1 }} color="text" component="p">
+                <Typography sx={{ paddingLeft: position === 'right' ? 1 : 0 }} color="text" component="p">
                     {username}
                 </Typography>
             )}
+            {children}
         </Box>
     );
 }
