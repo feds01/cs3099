@@ -15,6 +15,7 @@ import Follows from './Modules/Follows';
 import Reviews from './Modules/Reviews';
 import Activity from './Modules/Activity';
 import Publications from './Modules/Publications';
+import { useGetUserId } from '../../lib/api/users/users';
 
 interface Props {}
 
@@ -48,7 +49,7 @@ const TabMap = (username: string) => {
 };
 
 interface IProfileLayout {
-    content: ContentState<User, Error>;
+    content: ContentState<User, any>;
 }
 
 function ProfileLayout({ content }: IProfileLayout): ReactElement {
@@ -107,13 +108,22 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
 export default function Profile(props: Props): ReactElement {
     const { session } = useAuth();
     const location = useLocation();
-    const { id }: { id: string } = useParams();
 
-    const [profileData, setProfileData] = useState<ContentState<User, Error>>({ state: 'loading' });
+    // Get the user data
+    const { id }: { id: string } = useParams();
+    const content = useGetUserId(id);
+
+    const [profileData, setProfileData] = useState<ContentState<User, any>>({ state: 'loading' });
 
     useEffect(() => {
-        console.log(id);
-    }, [id]);
+        if (!content.isLoading) {
+            if (content.isError) {
+                setProfileData({ state: 'error', error: content.error });
+            } else if (content.data) {
+                setProfileData({ state: 'ok', data: content.data.user as User });
+            }
+        }
+    }, [content.isLoading, content.isError, content.error]);
 
     return (
         <PageLayout title={'Profile'} sidebar={false}>
