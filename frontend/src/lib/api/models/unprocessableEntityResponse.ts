@@ -7,6 +7,6 @@
  */
 
 export type UnprocessableEntityResponse = {
-  status: boolean;
-  message: string;
+    message: string;
+    status: boolean;
 };

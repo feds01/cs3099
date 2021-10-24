@@ -7,6 +7,6 @@
  */
 
 export type DeleteUserUsername200 = {
-  status?: boolean;
-  description?: string;
+    description?: string;
+    status?: boolean;
 };

@@ -15,7 +15,7 @@ import UserAvatar from '../../components/UserAvatar';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { ReactElement, useEffect, useState } from 'react';
 import { Route, Switch, useLocation, useParams } from 'react-router';
-import { Button, Container, Divider, Skeleton, Tab, Tabs } from '@mui/material';
+import { Divider, Skeleton, Tab, Tabs } from '@mui/material';
 import FollowerButton from '../../components/FollowerButton';
 
 interface Props {}
@@ -59,7 +59,7 @@ function formatDate(date: number): string {
 }
 
 interface IProfileLayout {
-    content: ContentState<User, any>;
+    content: ContentState<ProfileData, any>;
 }
 
 function ProfileLayout({ content }: IProfileLayout): ReactElement {
@@ -91,22 +91,24 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                             width: '100%',
                         }}
                     >
-                        <FollowerButton username={profileData.username} />
+                        <FollowerButton username={profileData.user.username} />
                     </Box>
-                    <UserAvatar {...profileData} size={80}>
+                    <UserAvatar {...profileData.user} size={80}>
                         <Typography sx={{ fontWeight: 'bold', fontSize: 28 }} color="text" component="h1">
-                            {profileData.username}
+                            {profileData.user.username}
                         </Typography>
-                        <Typography color="text" component="p">
-                            Custom status?
-                        </Typography>
+                        {profileData.user.status && (
+                            <Typography color="text" component="p">
+                                {profileData.user.status}
+                            </Typography>
+                        )}
                         <Box
                             sx={{
                                 display: 'flex',
                                 flexDirection: 'row',
                             }}
                         >
-                            <Typography>@{profileData.username}</Typography>
+                            <Typography>@{profileData.user.username}</Typography>
                             <Divider orientation="vertical" sx={{ margin: '0 4px' }} />
                             <Typography>Member since {formatDate(Date.now())}</Typography>
                         </Box>
@@ -118,11 +120,16 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                         >
                             <PersonOutlineIcon />
                             <Typography>
-                                <Link to={`/profile/${profileData.username}/followers`}>{0} Followers</Link>
+                                <Link to={`/profile/${profileData.user.username}/followers`}>
+                                    {profileData.follows.followers}{' '}
+                                    {profileData.follows.followers === 1 ? 'Follower' : 'Followers'}
+                                </Link>
                             </Typography>
                             <Divider orientation="vertical" sx={{ margin: '0 4px' }} />
                             <Typography>
-                                <Link to={`/profile/${profileData.username}/following`}>Following {0}</Link>
+                                <Link to={`/profile/${profileData.user.username}/following`}>
+                                    Following {profileData.follows.following}
+                                </Link>
                             </Typography>
                         </Box>
                     </UserAvatar>
@@ -130,6 +137,8 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
             );
     }
 }
+
+type ProfileData = { user: User; follows: { followers: number; following: number } };
 
 export default function Profile(props: Props): ReactElement {
     const { session } = useAuth();
@@ -139,14 +148,14 @@ export default function Profile(props: Props): ReactElement {
     const { id }: { id: string } = useParams();
     const content = useGetUserUsername(id);
 
-    const [profileData, setProfileData] = useState<ContentState<User, any>>({ state: 'loading' });
+    const [profileData, setProfileData] = useState<ContentState<ProfileData, any>>({ state: 'loading' });
 
     useEffect(() => {
         if (!content.isLoading) {
             if (content.isError) {
                 setProfileData({ state: 'error', error: content.error });
             } else if (content.data) {
-                setProfileData({ state: 'ok', data: content.data.user as User });
+                setProfileData({ state: 'ok', data: { user: content.data.user, follows: content.data.follows } });
             }
         }
     }, [content.data]);
@@ -164,36 +173,42 @@ export default function Profile(props: Props): ReactElement {
             </Box>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={location.pathname} centered>
-                    {Object.entries(TabMap(session.username)).map(([path, props]) => {
+                    {Object.entries(TabMap(id)).map(([path, props]) => {
                         return <Tab key={path} component={Link} to={path} value={path} label={props.label} />;
                     })}
                 </Tabs>
             </Box>
-            <Container
+            <Box
                 sx={{
                     p: 2,
                     background: '#fff',
                     display: 'flex',
                     flex: 1,
+                    flexShrink: 0,
                 }}
                 color="text"
             >
                 <Switch>
                     {profileData.state === 'ok' &&
-                        Object.entries(TabMap(profileData.data.username)).map(([path, props]) => {
+                        Object.entries(TabMap(profileData.data.user.username)).map(([path, props]) => {
                             return (
                                 <Route
                                     exact
                                     key={path}
                                     path={path}
                                     render={(routeProps) => (
-                                        <Box sx={{ width: '100%' }}>{props.component(session.id)}</Box>
+                                        <>
+                                            <Box sx={{ width: '100%', alignSelf: 'stretch' }}>
+                                                {props.component(id)}
+                                            </Box>
+                                            <div></div>
+                                        </>
                                     )}
                                 />
                             );
                         })}
                 </Switch>
-            </Container>
+            </Box>
         </PageLayout>
     );
 }

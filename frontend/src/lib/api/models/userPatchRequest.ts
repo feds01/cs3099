@@ -5,10 +5,13 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import type { BadRequestResponseExtra } from './badRequestResponseExtra';
 
-export type BadRequestResponse = {
-    extra?: BadRequestResponseExtra;
-    message: string;
-    status: boolean;
-};
+export interface UserPatchRequest {
+    about?: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    password?: string;
+    status?: string;
+    username?: string;
+}

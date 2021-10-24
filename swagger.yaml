@@ -38,8 +38,8 @@ paths:
                   required: true
                   name: state
                   schema:
-                    type: string
-                    description: Session state
+                      type: string
+                      description: Session state
             requestBody:
                 required: true
                 description: Login endpoint for external services
@@ -61,7 +61,7 @@ paths:
                 '500':
                     $ref: '#/components/responses/InternalServerError'
     /sg/sso/verify:
-      post:
+        post:
             summary: Refresh user session
             description: Endpoint to refresh a JWT token
             tags:
@@ -97,13 +97,13 @@ paths:
                   required: true
                   name: state
                   schema:
-                    type: string
-                    description: Session state
+                      type: string
+                      description: Session state
             responses:
                 '204':
                     description: No Content
                 '500':
-                    $ref: '#/components/responses/InternalServerError' 
+                    $ref: '#/components/responses/InternalServerError'
 
     /auth/email_validation:
         post:
@@ -277,12 +277,18 @@ paths:
                         application/json:
                             schema:
                                 type: object
+                                required:
+                                    - status
+                                    - user
+                                    - follows
                                 properties:
                                     status:
                                         type: boolean
                                         example: true
                                     user:
                                         $ref: '#/components/schemas/User'
+                                    follows:
+                                        $ref: '#/components/schemas/FollowerCount'
                 '404':
                     $ref: '#/components/responses/NotFound'
                 '500':
@@ -301,6 +307,13 @@ paths:
                       type: string
                   required: true
                   description: Username.
+            requestBody:
+                required: true
+                description: Provide patched user information to update user information fields. Any field can be omitted from the request
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UserPatchRequest'
             responses:
                 '200':
                     description: User information was updated successfully.
@@ -420,6 +433,9 @@ paths:
                         application/json:
                             schema:
                                 type: object
+                                required:
+                                    - status
+                                    - following
                                 properties:
                                     status:
                                         type: boolean
@@ -427,9 +443,6 @@ paths:
                                     following:
                                         type: boolean
                                         example: true
-                                    message:
-                                        type: string
-                                        example: 'User is following the other user'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -532,6 +545,9 @@ paths:
                         application/json:
                             schema:
                                 type: object
+                                required:
+                                    - data
+                                    - status
                                 properties:
                                     status:
                                         type: boolean
@@ -568,6 +584,9 @@ paths:
                         application/json:
                             schema:
                                 type: object
+                                required:
+                                    - status
+                                    - data
                                 properties:
                                     status:
                                         type: boolean
@@ -605,9 +624,8 @@ components:
                             message:
                                 type: string
                                 example: 'Malformed request body'
-                            id:
-                                type: number
-                                example: 3
+                            extra:
+                                type: object
         Unauthorized:
             description: Unauthorized. Requester doesn't have sufficient permissions to perform this action.
             content:
@@ -712,21 +730,21 @@ components:
                     type: string
                     example: 'Token is valid'
         UsernameValidation:
-          type: object
-          required:
-            - username
-          properties:
-            username:
-              type: string
-              example: 'jdoe1'
+            type: object
+            required:
+                - username
+            properties:
+                username:
+                    type: string
+                    example: 'jdoe1'
         EmailValidation:
-          type: object
-          required:
-            - email
-          properties:
-            email:
-              type: string
-              example: 'jon.doe@email.com'
+            type: object
+            required:
+                - email
+            properties:
+                email:
+                    type: string
+                    example: 'jon.doe@email.com'
         UserRegistration:
             type: object
             required:
@@ -751,6 +769,30 @@ components:
                 about:
                     type: string
                     example: 'Professor at Example University'
+                password:
+                    type: string
+                    example: 'Password1!'
+        UserPatchRequest:
+            type: object
+            properties:
+                email:
+                    type: string
+                    example: 'jon.doe@email.com'
+                firstName:
+                    type: string
+                    example: 'John'
+                username:
+                    type: string
+                    example: 'jdoe1'
+                lastName:
+                    type: string
+                    example: 'Doe'
+                about:
+                    type: string
+                    example: 'Professor at Example University'
+                status:
+                    type: string
+                    example: "I'm working"
                 password:
                     type: string
                     example: 'Password1!'
@@ -814,11 +856,28 @@ components:
                 profilePictureUrl:
                     type: string
                     example: https://some-cdn.some-company.com/profiles/avatar.jpg
+                status:
+                    type: string
+                    example: "I'm working!"
                 about:
                     type: string
                     example: 'Professor at Example University'
+        FollowerCount:
+            type: object
+            required:
+                - following
+                - followers
+            properties:
+                followers:
+                    type: number
+                    example: 0
+                following:
+                    type: number
+                    example: 0
         FollowerListData:
             type: object
+            required:
+                - followers
             properties:
                 followers:
                     type: array
@@ -826,6 +885,8 @@ components:
                         $ref: '#/components/schemas/User'
         FollowingListData:
             type: object
+            required:
+                - following
             properties:
                 following:
                     type: array

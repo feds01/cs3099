@@ -40,3 +40,6 @@ export * from './tokenRequest';
 export * from './postSgSsoLoginParams';
 export * from './tokenVerificationResponseStatus';
 export * from './tokenResponse';
+export * from './followerCount';
+export * from './userPatchRequest';
+export * from './badRequestResponseExtra';

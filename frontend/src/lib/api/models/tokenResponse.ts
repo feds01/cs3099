@@ -7,7 +7,7 @@
  */
 
 export interface TokenResponse {
-  status: boolean;
-  token: string;
-  refreshToken: string;
+    refreshToken: string;
+    status: boolean;
+    token: string;
 }

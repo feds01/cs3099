@@ -15,6 +15,7 @@ export interface IUser {
     profilePictureUrl?: string;
     role: IUserRole;
     about?: string;
+    status?: string;
     externalId?: string;
 }
 
@@ -33,6 +34,7 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
         password: { type: String, required: true, minLength: 12 },
         profilePictureUrl: { type: String },
         about: { type: String },
+        status: { type: String },
         externalId: { type: String },
         role: { type: String, enum: IUserRole, default: IUserRole.Default },
     },
@@ -47,7 +49,7 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
  * @returns A partial user object with selected fields that are to be projected.
  */
 UserSchema.statics.project = function (user: IUserDocument) {
-    const { profilePictureUrl, about } = user;
+    const { profilePictureUrl, about, status } = user;
 
     return {
         id: user._id,
@@ -57,6 +59,7 @@ UserSchema.statics.project = function (user: IUserDocument) {
         lastName: user.lastName,
         ...(profilePictureUrl && { profilePictureUrl }),
         ...(about && { about }),
+        ...(status && { status }),
     };
 };
 

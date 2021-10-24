@@ -14,11 +14,12 @@ import {
     IUserRoleRequest,
 } from '../../validators/user';
 import paramValidator from '../../validators/requests';
+import Follower from '../../models/Follower';
 
 const router = express.Router();
 
 // Register the follower routes
-router.use('/:username/follow*', followerRouter);
+router.use('/', followerRouter);
 
 /**
  * @version v1.0.0
@@ -58,9 +59,18 @@ router.get('/:username', ownerAuth, async (req, res) => {
         });
     }
 
+    // we want to count the followers of the user and following entries
+    // @@Performance: Maybe in the future store these numbers and update them when follow/unfollow events occur
+    const followingCount = await Follower.count({ follower: user._id }).exec();
+    const followerCount = await Follower.count({ following: user._id }).exec();
+
     return res.status(200).json({
         status: true,
         user: User.project(user),
+        follows: {
+            followers: followerCount,
+            following: followingCount,
+        },
     });
 });
 

@@ -31,7 +31,9 @@ export default function PageLayout({ children, drawerWidth = 180, title, sidebar
                     {sidebar && <Sidebar />}
                     <Container
                         sx={{
+                            display: 'flex',
                             background: '#F5F6F5',
+                            flexDirection: 'column',
                             flexGrow: 1,
                             p: '0 !important',
                         }}

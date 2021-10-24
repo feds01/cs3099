@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { User } from '../lib/api/models';
-import { AXIOS_INSTANCE } from '../lib/api/mutator/custom-instance';
-import React, { Dispatch, FC, useContext, useEffect, useReducer } from 'react';
+import React, { Dispatch, FC, useContext, useReducer } from 'react';
 
 export type AuthStateAction =
     | { type: 'login'; rememberUser: boolean; data: { session: User; token: string; refreshToken: string } }

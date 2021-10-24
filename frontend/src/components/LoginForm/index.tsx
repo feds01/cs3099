@@ -9,11 +9,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { User } from '../../lib/api/models';
-import { usePostUserLogin } from '../../lib/api/users/users';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import PasswordField from '../PasswordField';
+import { usePostAuthLogin } from '../../lib/api/auth/auth';
 
 const LoginSchema = z.object({
     username: z.string(),
@@ -40,7 +40,7 @@ export default function LoginForm({ onSuccess }: Props): ReactElement {
         },
     });
 
-    const { isLoading, isError, data: response, error, mutateAsync } = usePostUserLogin();
+    const { isLoading, isError, data: response, error, mutateAsync } = usePostAuthLogin();
 
     // TODO: try and do this in onSubmit instead of using an effect.
     useEffect(() => {
