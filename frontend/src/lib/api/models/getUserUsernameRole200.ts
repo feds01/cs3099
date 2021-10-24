@@ -7,6 +7,6 @@
  */
 
 export type GetUserUsernameRole200 = {
-    status?: boolean;
-    role?: string;
+  status?: boolean;
+  role?: string;
 };

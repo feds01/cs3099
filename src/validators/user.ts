@@ -28,7 +28,11 @@ export const IUserLoginRequestSchema = z
 export type IUserLoginRequest = z.infer<typeof IUserLoginRequestSchema>;
 
 export const IUserRegisterRequestSchema = z.object({
-    username: z.string().nonempty().max(50),
+    username: z
+        .string()
+        .nonempty()
+        .max(50)
+        .regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric'),
     email: z.string().email(),
     firstName: z.string().nonempty().max(32),
     lastName: z.string().nonempty().max(32),

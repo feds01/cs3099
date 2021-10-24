@@ -7,9 +7,12 @@
  */
 import type { User } from './user';
 
+/**
+ * Successful authentication, returning a token, and a refreshToken.
+ */
 export interface UserAuthResponse {
-    status?: boolean;
-    token: string;
-    refreshToken: string;
-    user: User;
+  status?: boolean;
+  token: string;
+  refreshToken: string;
+  user: User;
 }

@@ -6,7 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type NotFoundResponse = {
-  status: boolean;
-  message: string;
+export type TokenVerificationResponseStatus = 'ok' | 'error';
+
+
+export const TokenVerificationResponseStatus = {
+  ok: 'ok' as TokenVerificationResponseStatus,
+  error: 'error' as TokenVerificationResponseStatus,
 };

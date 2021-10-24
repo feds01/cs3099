@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type NotFoundResponse = {
+export type UnprocessableEntityResponse = {
   status: boolean;
   message: string;
 };

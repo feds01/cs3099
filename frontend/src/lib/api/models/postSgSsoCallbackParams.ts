@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type NotFoundResponse = {
-  status: boolean;
-  message: string;
-};
+export type PostSgSsoCallbackParams = { from: string; state: string };

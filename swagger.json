@@ -10,15 +10,16 @@
         "description": "This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.",
         "version": "1.0.0",
         "title": "Iamus API",
-        "contact": {
-            "email": "you@your-company.com"
-        },
         "license": {
             "name": "MIT",
             "url": "https://spdx.org/licenses/MIT.html"
         }
     },
     "tags": [
+        {
+            "name": "external",
+            "description": "Methods that can be used by external services within the Super group to communicate with our API"
+        },
         {
             "name": "auth",
             "description": "Authentication related endpoints for external services."
@@ -37,11 +38,232 @@
         }
     ],
     "paths": {
-        "/user/login": {
+        "/sg/sso/login": {
+            "post": {
+                "summary": "External login endpoint",
+                "description": "Endpoint for external services to authenticate with this service.",
+                "tags": ["external"],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "required": true,
+                        "name": "from",
+                        "schema": {
+                            "type": "string",
+                            "description": "Callback URL of where to respond"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "required": true,
+                        "name": "state",
+                        "schema": {
+                            "type": "string",
+                            "description": "Session state"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "description": "Login endpoint for external services",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserLogin"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authentication tokens with user information.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserAuthResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        },
+        "/sg/sso/verify": {
+            "post": {
+                "summary": "Refresh user session",
+                "description": "Endpoint to refresh a JWT token",
+                "tags": ["external"],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "required": true,
+                        "name": "token",
+                        "schema": {
+                            "type": "integer",
+                            "description": "JWT to check"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Authentication tokens with user information.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenVerificationResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/sg/sso/callback": {
+            "post": {
+                "summary": "Successful external login endpoint.",
+                "description": "This endpoint is used to notify the journal that the external login was successful and we should proceed with authenticating the external user. This might mean that there is an internal process of registering the user on the platofrm.",
+                "tags": ["external"],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "required": true,
+                        "name": "from",
+                        "schema": {
+                            "type": "string",
+                            "description": "Callback URL of where to respond"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "required": true,
+                        "name": "state",
+                        "schema": {
+                            "type": "string",
+                            "description": "Session state"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        },
+        "/auth/email_validation": {
+            "post": {
+                "summary": "Pre-registration email validation",
+                "description": "Check if an email is valid to use when registering",
+                "tags": ["auth"],
+                "requestBody": {
+                    "required": true,
+                    "description": "Provide a email to be checked",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EmailValidation"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/UnprocessableEntity"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        },
+        "/auth/username_validation": {
+            "post": {
+                "summary": "Pre-registration username validation",
+                "description": "Check if an email is valid to use when registering",
+                "tags": ["auth"],
+                "requestBody": {
+                    "required": true,
+                    "description": "Provide a username to be checked",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UsernameValidation"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/UnprocessableEntity"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        },
+        "/auth/token": {
+            "post": {
+                "summary": "Refresh user session",
+                "description": "Endpoint to refresh a JWT token",
+                "tags": ["auth"],
+                "requestBody": {
+                    "required": true,
+                    "description": "Provide a valid refresh token to get a new token.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TokenRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authentication tokens with user information.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalServerError"
+                    }
+                }
+            }
+        },
+        "/auth/login": {
             "post": {
                 "summary": "User Login",
                 "description": "User login endpoint, returning authentication tokens.",
-                "tags": ["users"],
+                "tags": ["auth"],
                 "requestBody": {
                     "required": true,
                     "description": "Provide either a username or user email to login with, and a password. Providing both will result in the request trying to use both parameters.",
@@ -76,11 +298,11 @@
                 }
             }
         },
-        "/user/register": {
+        "/auth/register": {
             "post": {
                 "summary": "User registration",
                 "description": "User registration endpoint, returning authentication tokens.",
-                "tags": ["users"],
+                "tags": ["auth"],
                 "requestBody": {
                     "required": true,
                     "description": "Provide user information to the endpoint that's used to create the server.",
@@ -409,7 +631,6 @@
                             "application/json": {
                                 "schema": {
                                     "type": "object",
-                                    "required": ["following"],
                                     "properties": {
                                         "status": {
                                             "type": "boolean",
@@ -720,6 +941,27 @@
                     }
                 }
             },
+            "UnprocessableEntity": {
+                "description": "Entity is unprocessable.",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "required": ["status", "message"],
+                            "properties": {
+                                "status": {
+                                    "type": "boolean",
+                                    "example": false
+                                },
+                                "message": {
+                                    "type": "string",
+                                    "example": "UnprocessableEntity"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "InternalServerError": {
                 "description": "Internal Server Error. Information retrieval failed, server unexpectedly returned an error.",
                 "content": {
@@ -764,6 +1006,72 @@
             }
         },
         "schemas": {
+            "TokenRequest": {
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                    },
+                    "refreshToken": {
+                        "type": "string",
+                        "example": "ABCDE921312DAB23AE"
+                    }
+                }
+            },
+            "TokenResponse": {
+                "type": "object",
+                "required": ["status", "token", "refreshToken"],
+                "properties": {
+                    "status": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "token": {
+                        "type": "string",
+                        "example": "Token is valid"
+                    },
+                    "refreshToken": {
+                        "type": "string",
+                        "example": "refresh-token"
+                    }
+                }
+            },
+            "TokenVerificationResponse": {
+                "type": "object",
+                "required": ["status", "message"],
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "example": "ok",
+                        "enum": ["ok", "error"]
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Token is valid"
+                    }
+                }
+            },
+            "UsernameValidation": {
+                "type": "object",
+                "required": ["username"],
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "example": "jdoe1"
+                    }
+                }
+            },
+            "EmailValidation": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "example": "jon.doe@email.com"
+                    }
+                }
+            },
             "UserRegistration": {
                 "type": "object",
                 "required": ["email", "username", "firstName", "lastName", "password"],
@@ -811,6 +1119,7 @@
             },
             "UserAuthResponse": {
                 "type": "object",
+                "description": "Successful authentication, returning a token, and a refreshToken.",
                 "required": ["user", "token", "refreshToken"],
                 "properties": {
                     "status": {

@@ -6,7 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type NotFoundResponse = {
+export interface TokenResponse {
   status: boolean;
-  message: string;
-};
+  token: string;
+  refreshToken: string;
+}

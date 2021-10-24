@@ -7,7 +7,7 @@
  */
 
 export type PatchUserUsernameRole200 = {
-    status?: boolean;
-    message?: string;
-    role?: string;
+  status?: boolean;
+  message?: string;
+  role?: string;
 };

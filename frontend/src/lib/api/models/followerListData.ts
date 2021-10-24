@@ -8,5 +8,5 @@
 import type { User } from './user';
 
 export interface FollowerListData {
-    followers?: User[];
+  followers?: User[];
 }

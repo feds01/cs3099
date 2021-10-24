@@ -27,7 +27,10 @@ type TokenPayload = {
  * to unpack the contents into an object under the namespace 'user_data'. So, the data from
  * the token is accessible by using 'req.token'.
  */
-export async function getTokensFromHeader(req: express.Request, res: express.Response): Promise<Token<any> | null> {
+export async function getTokensFromHeader(
+    req: express.Request,
+    res: express.Response,
+): Promise<Token<any> | null> {
     const token: string | string[] | undefined = req.headers['x-token'];
 
     try {
@@ -74,7 +77,10 @@ export async function getTokensFromHeader(req: express.Request, res: express.Res
  * @error if the refreshToken is stale, the method will return an empty object.
  * */
 export async function refreshTokens(refreshToken: string): Promise<TokenPayload> {
-    const decodedToken = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET_KEY!) as Token<any>;
+    const decodedToken = jwt.verify(
+        refreshToken,
+        process.env.JWT_REFRESH_SECRET_KEY!,
+    ) as Token<any>;
 
     // generate new token values to replace old token's with refreshed ones.
     return await createTokens(decodedToken.data);
@@ -96,15 +102,23 @@ export const createTokens = async (payload: {}): Promise<TokenPayload> => {
     });
 
     // sign the refresh-token
-    const refreshToken = await jwt.sign({ data: { ...payload } }, process.env.JWT_REFRESH_SECRET_KEY!, {
-        expiresIn: '7d',
-    });
+    const refreshToken = await jwt.sign(
+        { data: { ...payload } },
+        process.env.JWT_REFRESH_SECRET_KEY!,
+        {
+            expiresIn: '7d',
+        },
+    );
 
     // return the tokens as a resolved promise
     return { token, refreshToken };
 };
 
-export async function withAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+export async function withAuth(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+) {
     const userToken = await getTokensFromHeader(req, res); // unpack JWT token
 
     // ensure that the user token has a valid user id, if they do then set the
@@ -125,7 +139,11 @@ export async function withAuth(req: express.Request, res: express.Response, next
     next();
 }
 
-export async function ownerAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+export async function ownerAuth(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+) {
     const token = await getTokensFromHeader(req, res); // unpack JWT token
 
     // if the token is null, the token or refresh tokens aren't in the request
@@ -165,7 +183,11 @@ export async function ownerAuth(req: express.Request, res: express.Response, nex
     }
 }
 
-export async function adminAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+export async function adminAuth(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+) {
     const token = await getTokensFromHeader(req, res); // unpack JWT token
 
     // if the token is null, the token or refresh tokens aren't in the request
@@ -180,7 +202,10 @@ export async function adminAuth(req: express.Request, res: express.Response, nex
     }
 
     if (token?.data.id) {
-        const existingUser = await User.findOne({ _id: token.data.id, role: IUserRole.Administrator });
+        const existingUser = await User.findOne({
+            _id: token.data.id,
+            role: IUserRole.Administrator,
+        });
 
         if (!existingUser) {
             return res.status(401).json({
