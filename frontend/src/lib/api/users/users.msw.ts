@@ -89,7 +89,7 @@ export const getPatchUserUsernameRoleMock = () => ({
 
 export const getGetUserUsernameFollowMock = () => ({
     status: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
-    following: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
+    following: faker.datatype.boolean(),
     message: faker.helpers.randomize([faker.random.word(), undefined]),
 });
 

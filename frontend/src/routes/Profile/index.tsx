@@ -1,21 +1,22 @@
 import { useAuth } from '../../hooks/auth';
-import { Button, Container, Divider, Skeleton, Tab, Tabs } from '@mui/material';
 import Box from '@mui/material/Box';
 import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
-import { ReactElement, useEffect, useState } from 'react';
-import { Route, Switch, useLocation, useParams } from 'react-router';
-import PageLayout from '../../components/PageLayout';
-import UserAvatar from '../../components/UserAvatar';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import { ContentState } from '../../types/requests';
 import { User } from '../../lib/api/models';
+import { ContentState } from '../../types/requests';
 import Overview from './Modules/Overview';
 import Follows from './Modules/Follows';
 import Reviews from './Modules/Reviews';
 import Activity from './Modules/Activity';
 import Publications from './Modules/Publications';
 import { useGetUserUsername } from '../../lib/api/users/users';
+import PageLayout from '../../components/PageLayout';
+import UserAvatar from '../../components/UserAvatar';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import { ReactElement, useEffect, useState } from 'react';
+import { Route, Switch, useLocation, useParams } from 'react-router';
+import { Button, Container, Divider, Skeleton, Tab, Tabs } from '@mui/material';
+import FollowerButton from '../../components/FollowerButton';
 
 interface Props {}
 
@@ -61,22 +62,6 @@ interface IProfileLayout {
     content: ContentState<User, any>;
 }
 
-interface IFollowButton {
-    username: string;
-}
-
-function FollowButton({ username }: IFollowButton) {
-    const auth = useAuth();
-
-    useEffect(() => {}, [username]);
-
-    return (
-        <Button variant="contained" sx={{ fontWeight: 'bold' }}>
-            Follow
-        </Button>
-    );
-}
-
 function ProfileLayout({ content }: IProfileLayout): ReactElement {
     switch (content.state) {
         case 'loading':
@@ -106,7 +91,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                             width: '100%',
                         }}
                     >
-                        <FollowButton username={profileData.username} />
+                        <FollowerButton username={profileData.username} />
                     </Box>
                     <UserAvatar {...profileData} size={80}>
                         <Typography sx={{ fontWeight: 'bold', fontSize: 28 }} color="text" component="h1">
@@ -189,22 +174,24 @@ export default function Profile(props: Props): ReactElement {
                     p: 2,
                     background: '#fff',
                     display: 'flex',
-                    height: '100%',
                     flex: 1,
                 }}
                 color="text"
             >
                 <Switch>
-                    {Object.entries(TabMap(session.username)).map(([path, props]) => {
-                        return (
-                            <Route
-                                exact
-                                key={path}
-                                path={path}
-                                render={(routeProps) => <Box sx={{ width: '100%' }}>{props.component(session.id)}</Box>}
-                            />
-                        );
-                    })}
+                    {profileData.state === 'ok' &&
+                        Object.entries(TabMap(profileData.data.username)).map(([path, props]) => {
+                            return (
+                                <Route
+                                    exact
+                                    key={path}
+                                    path={path}
+                                    render={(routeProps) => (
+                                        <Box sx={{ width: '100%' }}>{props.component(session.id)}</Box>
+                                    )}
+                                />
+                            );
+                        })}
                 </Switch>
             </Container>
         </PageLayout>

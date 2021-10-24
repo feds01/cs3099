@@ -409,6 +409,7 @@
                             "application/json": {
                                 "schema": {
                                     "type": "object",
+                                    "required": ["following"],
                                     "properties": {
                                         "status": {
                                             "type": "boolean",

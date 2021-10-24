@@ -53,7 +53,6 @@ export function authReducer(state: AuthState, action: AuthStateAction): AuthStat
             // If the user specifies to remember the login, the we save the tokens into local storage, otherwise
             // we place the tokens into the session storage.
             if (action.rememberUser) {
-                console.log(action.data);
                 localStorage.setItem('token', action.data.token);
                 localStorage.setItem('refreshToken', action.data.refreshToken);
                 localStorage.setItem('session', JSON.stringify(action.data.session));
@@ -105,25 +104,6 @@ const initAuth = (state: AuthState): AuthState => {
 
 export const AuthProvider: FC = ({ children }) => {
     const [state, dispatch] = useReducer(authReducer, initialState, initAuth);
-
-    useEffect(() => {
-        const interceptorId = AXIOS_INSTANCE.interceptors.request.use((config) => {
-            return {
-                ...config,
-                headers: state.token
-                    ? {
-                          ...config.headers,
-                          'x-token': `${state.token}`,
-                      }
-                    : config.headers,
-            };
-        });
-        console.log("Loaded interceptor")
-
-        return () => {
-            AXIOS_INSTANCE.interceptors.request.eject(interceptorId);
-        };
-    }, [state.token]);
 
     return <AuthContext.Provider value={{ state, dispatch }}>{children}</AuthContext.Provider>;
 };

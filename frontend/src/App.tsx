@@ -17,6 +17,11 @@ import ErrorContainer from './components/ErrorContainer';
 const queryCache = new QueryCache();
 const queryClient = new QueryClient({
     queryCache,
+    defaultOptions: {
+        queries: {
+            retry: 0,
+        },
+    },
 });
 
 // The application theme

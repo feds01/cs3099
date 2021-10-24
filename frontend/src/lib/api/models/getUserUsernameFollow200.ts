@@ -8,6 +8,6 @@
 
 export type GetUserUsernameFollow200 = {
     status?: boolean;
-    following?: boolean;
+    following: boolean;
     message?: string;
 };
