@@ -8,6 +8,6 @@
 import type { FollowerListData } from './followerListData';
 
 export type GetUserIdFollowers200 = {
-  status?: boolean;
-  data?: FollowerListData;
+    status?: boolean;
+    data?: FollowerListData;
 };

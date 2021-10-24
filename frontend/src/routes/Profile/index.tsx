@@ -1,10 +1,10 @@
 import { useAuth } from '../../hooks/auth';
-import { Container, Divider, Skeleton, Tab, Tabs } from '@mui/material';
+import { Button, Container, Divider, Skeleton, Tab, Tabs } from '@mui/material';
 import Box from '@mui/material/Box';
 import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import { ReactElement, useEffect, useState } from 'react';
-import { Redirect, Route, Switch, useLocation, useParams } from 'react-router';
+import { Route, Switch, useLocation, useParams } from 'react-router';
 import PageLayout from '../../components/PageLayout';
 import UserAvatar from '../../components/UserAvatar';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
@@ -15,7 +15,7 @@ import Follows from './Modules/Follows';
 import Reviews from './Modules/Reviews';
 import Activity from './Modules/Activity';
 import Publications from './Modules/Publications';
-import { useGetUserId } from '../../lib/api/users/users';
+import { useGetUserUsername } from '../../lib/api/users/users';
 
 interface Props {}
 
@@ -48,8 +48,33 @@ const TabMap = (username: string) => {
     };
 };
 
+function formatDate(date: number): string {
+    const myDate = new Date(date);
+    const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][
+        myDate.getMonth()
+    ];
+
+    return myDate.getDate() + ' ' + month + ' ' + myDate.getFullYear();
+}
+
 interface IProfileLayout {
     content: ContentState<User, any>;
+}
+
+interface IFollowButton {
+    username: string;
+}
+
+function FollowButton({ username }: IFollowButton) {
+    const auth = useAuth();
+
+    useEffect(() => {}, [username]);
+
+    return (
+        <Button variant="contained" sx={{ fontWeight: 'bold' }}>
+            Follow
+        </Button>
+    );
 }
 
 function ProfileLayout({ content }: IProfileLayout): ReactElement {
@@ -68,39 +93,55 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
         case 'ok':
             const profileData = content.data;
             return (
-                <UserAvatar {...profileData} size={80}>
-                    <Typography sx={{ fontWeight: 'bold', fontSize: 28 }} color="text" component="h1">
-                        {profileData.username}
-                    </Typography>
-                    <Typography color="text" component="p">
-                        Custom status?
-                    </Typography>
+                <>
                     <Box
                         sx={{
+                            position: 'absolute',
+                            zIndex: 1000,
+                            justifyContent: 'flex-end',
+                            alignItems: 'flex-end',
                             display: 'flex',
                             flexDirection: 'row',
+                            marginRight: 2,
+                            width: '100%',
                         }}
                     >
-                        <Typography>@{profileData.username}</Typography>
-                        <Divider orientation="vertical" sx={{ margin: '0 4px' }} />
-                        <Typography>Member since {Date.now()}</Typography>
+                        <FollowButton username={profileData.username} />
                     </Box>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                        }}
-                    >
-                        <PersonOutlineIcon />
-                        <Typography>
-                            <Link to={`/profile/${profileData.username}/followers`}>{0} Followers</Link>
+                    <UserAvatar {...profileData} size={80}>
+                        <Typography sx={{ fontWeight: 'bold', fontSize: 28 }} color="text" component="h1">
+                            {profileData.username}
                         </Typography>
-                        <Divider orientation="vertical" sx={{ margin: '0 4px' }} />
-                        <Typography>
-                            <Link to={`/profile/${profileData.username}/following`}>Following {0}</Link>
+                        <Typography color="text" component="p">
+                            Custom status?
                         </Typography>
-                    </Box>
-                </UserAvatar>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                            }}
+                        >
+                            <Typography>@{profileData.username}</Typography>
+                            <Divider orientation="vertical" sx={{ margin: '0 4px' }} />
+                            <Typography>Member since {formatDate(Date.now())}</Typography>
+                        </Box>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                            }}
+                        >
+                            <PersonOutlineIcon />
+                            <Typography>
+                                <Link to={`/profile/${profileData.username}/followers`}>{0} Followers</Link>
+                            </Typography>
+                            <Divider orientation="vertical" sx={{ margin: '0 4px' }} />
+                            <Typography>
+                                <Link to={`/profile/${profileData.username}/following`}>Following {0}</Link>
+                            </Typography>
+                        </Box>
+                    </UserAvatar>
+                </>
             );
     }
 }
@@ -111,7 +152,7 @@ export default function Profile(props: Props): ReactElement {
 
     // Get the user data
     const { id }: { id: string } = useParams();
-    const content = useGetUserId(id);
+    const content = useGetUserUsername(id);
 
     const [profileData, setProfileData] = useState<ContentState<User, any>>({ state: 'loading' });
 
@@ -123,7 +164,7 @@ export default function Profile(props: Props): ReactElement {
                 setProfileData({ state: 'ok', data: content.data.user as User });
             }
         }
-    }, [content.isLoading, content.isError, content.error]);
+    }, [content.data]);
 
     return (
         <PageLayout title={'Profile'} sidebar={false}>
@@ -131,7 +172,6 @@ export default function Profile(props: Props): ReactElement {
                 sx={{
                     display: 'flex',
                     justifyContent: 'center',
-                    width: '100%',
                     margin: 2,
                 }}
             >

@@ -7,6 +7,6 @@
  */
 
 export type DeleteUserIdFollow200 = {
-  status?: boolean;
-  message?: string;
+    status?: boolean;
+    message?: string;
 };

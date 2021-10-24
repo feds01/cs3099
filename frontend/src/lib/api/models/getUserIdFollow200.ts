@@ -7,7 +7,7 @@
  */
 
 export type GetUserIdFollow200 = {
-  status?: boolean;
-  following?: boolean;
-  message?: string;
+    status?: boolean;
+    following?: boolean;
+    message?: string;
 };

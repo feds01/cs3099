@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { User } from '../lib/api/models';
-import React, { Dispatch, FC, useContext, useReducer } from 'react';
+import { AXIOS_INSTANCE } from '../lib/api/mutator/custom-instance';
+import React, { Dispatch, FC, useContext, useEffect, useReducer } from 'react';
 
 export type AuthStateAction =
     | { type: 'login'; rememberUser: boolean; data: { session: User; token: string; refreshToken: string } }
@@ -104,6 +105,25 @@ const initAuth = (state: AuthState): AuthState => {
 
 export const AuthProvider: FC = ({ children }) => {
     const [state, dispatch] = useReducer(authReducer, initialState, initAuth);
+
+    useEffect(() => {
+        const interceptorId = AXIOS_INSTANCE.interceptors.request.use((config) => {
+            return {
+                ...config,
+                headers: state.token
+                    ? {
+                          ...config.headers,
+                          'x-token': `${state.token}`,
+                      }
+                    : config.headers,
+            };
+        });
+        console.log("Loaded interceptor")
+
+        return () => {
+            AXIOS_INSTANCE.interceptors.request.eject(interceptorId);
+        };
+    }, [state.token]);
 
     return <AuthContext.Provider value={{ state, dispatch }}>{children}</AuthContext.Provider>;
 };

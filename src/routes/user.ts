@@ -291,22 +291,22 @@ router.post('/login', async (req, res) => {
  * information about the user.
  *
  * */
-router.get('/:id', paramValidator, ownerAuth, async (req, res) => {
-    const { id } = req.params; // const id = req.params.id;
+router.get('/:username', ownerAuth, async (req, res) => {
+    const { username } = req.params; // const id = req.params.id;
 
-    User.findById(id, {}, {}, (err, user) => {
-        // If the user wasn't found, then return a not found status.
-        if (!user) {
-            return res.status(404).json({
-                status: false,
-                message: error.NON_EXISTENT_USER,
-            });
-        }
+    const user = await User.findOne({ username }).exec();
 
-        return res.status(200).json({
-            status: true,
-            user: User.project(user),
+    // If the user wasn't found, then return a not found status.
+    if (!user) {
+        return res.status(404).json({
+            status: false,
+            message: error.NON_EXISTENT_USER,
         });
+    }
+
+    return res.status(200).json({
+        status: true,
+        user: User.project(user),
     });
 });
 
@@ -447,7 +447,7 @@ router.delete('/:id', paramValidator, ownerAuth, async (req, res) => {
  * @example
  * https://af268.cs.st-andrews.ac.uk/api/user/<616f115feb505663f8bce3e2>/role
  * >>> response: {
- *  "status": "true", 
+ *  "status": "true",
  *  "role": "default" // TO CHECK
  * }
  *
@@ -488,7 +488,7 @@ router.get('/:id/role', paramValidator, adminAuth, async (req, res) => {
 
         return res.status(200).json({
             status: true,
-            role: user.role
+            role: user.role,
         });
     });
 });
@@ -628,7 +628,7 @@ router.post('/:id/follow', paramValidator, ownerAuth, async (req, res) => {
     // check if the user is already following, if so, exit early and return
     // corresponding messages
     const doc = await Follower.findOne(mapping).exec();
-    
+
     if (doc) {
         return res.status(401).json({
             status: false,
@@ -734,9 +734,7 @@ router.get('/:id/followers', paramValidator, ownerAuth, async (req, res) => {
     // TODO:(alex) Implement pagination for this endpoint since the current limit will
     //             be 50 documents.
     // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
-    const result = await Follower.find({ following: user._id })
-        .populate<{ follower: IUser }[]>('follower')
-        .limit(50);
+    const result = await Follower.find({ following: user._id }).populate<{ follower: IUser }[]>('follower').limit(50);
 
     const followers = result.map((link) => User.project((link as typeof result[number]).follower));
 
@@ -774,7 +772,7 @@ router.get('/:id/following', paramValidator, ownerAuth, async (req, res) => {
     return res.status(200).json({
         status: true,
         data: {
-            "following": followers,
+            following: followers,
         },
     });
 });

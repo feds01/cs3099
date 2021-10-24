@@ -2,7 +2,7 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryCache, QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import { AuthProvider } from './hooks/auth';
@@ -14,7 +14,10 @@ import PrivateRoute from './components/PrivateRoute';
 import ErrorContainer from './components/ErrorContainer';
 
 // API querying client.
-const queryClient = new QueryClient();
+const queryCache = new QueryCache();
+const queryClient = new QueryClient({
+    queryCache,
+});
 
 // The application theme
 const theme = createTheme({

@@ -7,7 +7,7 @@
  */
 
 export type BadRequestResponse = {
-  status: boolean;
-  message: string;
-  id?: number;
+    status: boolean;
+    message: string;
+    id?: number;
 };

@@ -1,595 +1,611 @@
 openapi: 3.0.0
 servers:
-  # Added by API Auto Mocking Plugin
-  - description: Local development
-    url: https://localhost:5000
+    # Added by API Auto Mocking Plugin
+    - description: Local development
+      url: https://localhost:5000
 info:
-  description: This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
-  version: "1.0.0"
-  title: Iamus API
-  contact:
-    email: you@your-company.com
-  license:
-    name: MIT
-    url: https://spdx.org/licenses/MIT.html
+    description: This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
+    version: '1.0.0'
+    title: Iamus API
+    contact:
+        email: you@your-company.com
+    license:
+        name: MIT
+        url: https://spdx.org/licenses/MIT.html
 tags:
-  - name: auth
-    description: Authentication related endpoints for external services.
-  - name: users
-    description: Secured Admin-only calls
-  - name: reviews
-    description: Calls relating to submission reviews.
-  - name: submissions
-    description: Calls relating to submissions.
+    - name: auth
+      description: Authentication related endpoints for external services.
+    - name: users
+      description: Secured Admin-only calls
+    - name: reviews
+      description: Calls relating to submission reviews.
+    - name: submissions
+      description: Calls relating to submissions.
 paths:
-  /user/login:
-    post:
-      summary: User Login
-      description: User login endpoint, returning authentication tokens.
-      tags:
-        - users
-      requestBody:
-        required: true
-        description: Provide either a username or user email to login with, and a password. Providing both will result in the request trying to use both parameters.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserLogin'
-      responses:
-        '200':
-          description: Authentication tokens with user information.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserAuthResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /user/register:
-    post:
-      summary: User registration
-      description: User registration endpoint, returning authentication tokens.
-      tags:
-        - users
-      requestBody:
-        required: true
-        description: Provide user information to the endpoint that's used to create the server.
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRegistration'
-      responses:
-        '201':
-          description: Created. Authentication tokens with user information.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserAuthResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /user/{id}:
-    delete:
-      summary: Account deletion
-      description: User account deletion endpoint, delete a user by the id.
-      tags:
-        - users
-      security:
-        - BearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-          description: User ID.
-      responses:
-        '200':
-          description: User was successfully deleted.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    example: true
-                  description:
-                    type: string
-                    example: "User deleted"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    get:
-      summary: Account information
-      description: User account information endpoint, get user details by the id.
-      tags:
-        - users
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-          description: User ID.
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    example: true
-                  user:
-                    $ref: '#/components/schemas/User'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    patch:
-      summary: Update account information
-      description: Update user information endpoint, update user details for a user specified by the user id.
-      tags:
-        - users
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-          description: User ID.
-      responses:
-        '200':
-          description: User information was updated successfully.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    example: true
-                  user:
-                    $ref: '#/components/schemas/User'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /user/{id}/role:
-    get:
-      summary: Get user role
-      description: Endpoint for getting user role by id.
-      tags:
-        - users
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-          description: User ID.
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    example: true
-                  role:
-                    type: string
-                    example: "default"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    patch:
-      summary: Update user role
-      description: Endpoint for updating user role by id.
-      tags:
-        - users
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-          description: User ID.
-      responses:
-        '200':
-          description: User role was updated successfully.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Successfully updated user role."
-                  role:
-                    type: string
-                    example: "default"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /user/{id}/follow:
-    get:
-      summary: Get the current user's follow status.
-      description: Endpoint for checking if the current user is following another user specified by the given id.
-      tags:
-        - users
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-          description: User ID.
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    example: true
-                  following:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "User is following the other user"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    post:
-      summary: Follow another user
-      description: Endpoint for current user to follow another legit user.
-      tags:
-        - users
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-          description: User ID.
-      responses:
-        '200':
-          description: Successfully followed another user.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "Successfully added new follows."
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    delete:
-      summary: Unfollowing another user.
-      description: Endpoint for current user to unfollow another legit user.
-      tags:
-        - users
-      security:
-        - BearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-          description: User ID.
-      responses:
-        '200':
-          description: Successfully unfollowed another user.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: "User was unfollowed"
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /user/{id}/followers:
-    get:
-      summary: Get a user's follower list.
-      description: Endpoint for getting any user's follower list.
-      tags:
-        - users
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-          description: User ID.
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    example: true
-                  data:
-                    $ref: '#/components/schemas/FollowerListData'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  /user/{id}/following:
-    get:
-      summary: Get a user's following list.
-      description: Endpoint for fetching a user's follows list
-      tags:
-        - users
-      parameters:
-        - in: path
-          name: id
-          schema:
-            type: string
-          required: true
-          description: User ID.
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    example: true
-                  data:
-                    $ref: '#/components/schemas/FollowingListData'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+    /user/login:
+        post:
+            summary: User Login
+            description: User login endpoint, returning authentication tokens.
+            tags:
+                - users
+            requestBody:
+                required: true
+                description: Provide either a username or user email to login with, and a password. Providing both will result in the request trying to use both parameters.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UserLogin'
+            responses:
+                '200':
+                    description: Authentication tokens with user information.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UserAuthResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /user/register:
+        post:
+            summary: User registration
+            description: User registration endpoint, returning authentication tokens.
+            tags:
+                - users
+            requestBody:
+                required: true
+                description: Provide user information to the endpoint that's used to create the server.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UserRegistration'
+            responses:
+                '201':
+                    description: Created. Authentication tokens with user information.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UserAuthResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /user/{username}:
+        delete:
+            summary: Account deletion
+            description: User account deletion endpoint, delete a user by the id.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: User was successfully deleted.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    description:
+                                        type: string
+                                        example: 'User deleted'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+        get:
+            summary: Account information
+            description: User account information endpoint, get user details by the id.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    user:
+                                        $ref: '#/components/schemas/User'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+        patch:
+            summary: Update account information
+            description: Update user information endpoint, update user details for a user specified by the user id.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: User information was updated successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    user:
+                                        $ref: '#/components/schemas/User'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /user/{username}/role:
+        get:
+            summary: Get user role
+            description: Endpoint for getting user role by id.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    role:
+                                        type: string
+                                        example: 'default'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+        patch:
+            summary: Update user role
+            description: Endpoint for updating user role by id.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: User role was updated successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    message:
+                                        type: string
+                                        example: 'Successfully updated user role.'
+                                    role:
+                                        type: string
+                                        example: 'default'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /user/{username}/follow:
+        get:
+            summary: Get the current user's follow status.
+            description: Endpoint for checking if the current user is following another user specified by the given id.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    following:
+                                        type: boolean
+                                        example: true
+                                    message:
+                                        type: string
+                                        example: 'User is following the other user'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+        post:
+            summary: Follow another user
+            description: Endpoint for current user to follow another legit user.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: Successfully followed another user.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    message:
+                                        type: string
+                                        example: 'Successfully added new follows.'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+        delete:
+            summary: Unfollowing another user.
+            description: Endpoint for current user to unfollow another legit user.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: Successfully unfollowed another user.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    message:
+                                        type: string
+                                        example: 'User was unfollowed'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /user/{username}/followers:
+        get:
+            summary: Get a user's follower list.
+            description: Endpoint for getting any user's follower list.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    data:
+                                        $ref: '#/components/schemas/FollowerListData'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /user/{username}/following:
+        get:
+            summary: Get a user's following list.
+            description: Endpoint for fetching a user's follows list
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    data:
+                                        $ref: '#/components/schemas/FollowingListData'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-  responses:
-    BadRequest:
-      description: Bad Request. Provided request parameters were invalid.
-      content:
-        application/json:
-          schema:
+    securitySchemes:
+        BearerAuth:
+            type: http
+            scheme: bearer
+    responses:
+        BadRequest:
+            description: Bad Request. Provided request parameters were invalid.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: boolean
+                                example: false
+                            message:
+                                type: string
+                                example: 'Malformed request body'
+                            id:
+                                type: number
+                                example: 3
+        Unauthorized:
+            description: Unauthorized. Requester doesn't have sufficient permissions to perform this action.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: boolean
+                                example: false
+                            message:
+                                type: string
+                                example: 'Unauthorized'
+        InternalServerError:
+            description: Internal Server Error. Information retrieval failed, server unexpectedly returned an error.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: boolean
+                                example: false
+                            message:
+                                type: string
+                                example: 'Internal Server Error'
+        NotFound:
+            description: Specified resource does not exist in the scope of the requesters permissions.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: boolean
+                                example: false
+                            message:
+                                type: string
+                                example: 'Not Found'
+    schemas:
+        UserRegistration:
             type: object
             required:
-              - status
-              - message
+                - email
+                - username
+                - firstName
+                - lastName
+                - password
             properties:
-              status:
-                type: boolean
-                example: false
-              message:
-                type: string
-                example: "Malformed request body"
-              id:
-                type: number
-                example: 3
-    Unauthorized:
-      description: Unauthorized. Requester doesn't have sufficient permissions to perform this action.
-      content:
-        application/json:
-          schema:
+                email:
+                    type: string
+                    example: 'jon.doe@email.com'
+                firstName:
+                    type: string
+                    example: 'John'
+                username:
+                    type: string
+                    example: 'jdoe1'
+                lastName:
+                    type: string
+                    example: 'Doe'
+                about:
+                    type: string
+                    example: 'Professor at Example University'
+                password:
+                    type: string
+                    example: 'Password1!'
+        UserLogin:
+            type: object
+            description: The username can either be the actual username or the user's email.
+            required:
+                - password
+                - username
+            properties:
+                username:
+                    type: string
+                    example: 'jdoe1'
+                password:
+                    type: string
+                    example: 'Password1!'
+        UserAuthResponse:
             type: object
             required:
-              - status
-              - message
+                - user
+                - token
+                - refreshToken
             properties:
-              status:
-                type: boolean
-                example: false
-              message:
-                type: string
-                example: "Unauthorized"
-    InternalServerError:
-      description: Internal Server Error. Information retrieval failed, server unexpectedly returned an error.
-      content:
-        application/json:
-          schema:
+                status:
+                    type: boolean
+                    example: true
+                token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                refreshToken:
+                    type: string
+                    example: ABCDE921312DAB23AE
+                user:
+                    $ref: '#/components/schemas/User'
+
+        User:
             type: object
             required:
-              - status
-              - message
+                - id
+                - email
+                - username
+                - firstName
+                - lastName
             properties:
-              status:
-                type: boolean
-                example: false
-              message:
-                type: string
-                example: "Internal Server Error"
-    NotFound:
-      description: Specified resource does not exist in the scope of the requesters permissions.
-      content:
-        application/json:
-          schema:
+                id:
+                    type: string
+                    example: '507f1f77bcf86cd799439011'
+                email:
+                    type: string
+                    example: 'jon.doe@email.com'
+                username:
+                    type: string
+                    example: 'jdoe1'
+                firstName:
+                    type: string
+                    example: 'John'
+                lastName:
+                    type: string
+                    example: 'Doe'
+                profilePictureUrl:
+                    type: string
+                    example: https://some-cdn.some-company.com/profiles/avatar.jpg
+                about:
+                    type: string
+                    example: 'Professor at Example University'
+        FollowerListData:
             type: object
-            required:
-              - status
-              - message
             properties:
-              status:
-                type: boolean
-                example: false
-              message:
-                type: string
-                example: "Not Found"
-  schemas:
-    UserRegistration:
-      type: object
-      required:
-        - email
-        - username
-        - firstName
-        - lastName
-        - password
-      properties:
-        email:
-          type: string
-          example: "jon.doe@email.com"
-        firstName:
-          type: string
-          example: "John"
-        username:
-          type: string
-          example: "jdoe1"
-        lastName:
-          type: string
-          example: "Doe"
-        about:
-          type: string
-          example: "Professor at Example University"
-        password:
-          type: string
-          example: "Password1!"
-    UserLogin:
-      type: object
-      description: The username can either be the actual username or the user's email.
-      required:
-        - password
-        - username
-      properties:
-        username:
-          type: string
-          example: "jdoe1"
-        password:
-          type: string
-          example: "Password1!"
-    UserAuthResponse:
-      type: object
-      required:
-        - user
-        - token
-        - refreshToken
-      properties:
-        status:
-          type: boolean
-          example: true
-        token:
-          type: string
-          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-        refreshToken:
-          type: string
-          example: ABCDE921312DAB23AE
-        user:
-          $ref: '#/components/schemas/User'
-      
-    User:
-      type: object
-      required:
-        - id
-        - email
-        - username
-        - firstName
-        - lastName
-      properties:
-        id:
-          type: string
-          example: "507f1f77bcf86cd799439011"
-        email:
-          type: string
-          example: "jon.doe@email.com"
-        username:
-          type: string
-          example: "jdoe1"
-        firstName:
-          type: string
-          example: "John"
-        lastName:
-          type: string
-          example: "Doe"
-        profilePictureUrl:
-          type: string
-          example: https://some-cdn.some-company.com/profiles/avatar.jpg
-        about:
-          type: string
-          example: "Professor at Example University"   
-    FollowerListData:
-      type: object
-      properties:
-        followers:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
-    FollowingListData:
-      type: object
-      properties:
-        following:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
+                followers:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/User'
+        FollowingListData:
+            type: object
+            properties:
+                following:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/User'
