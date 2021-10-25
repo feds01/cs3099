@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { z } from 'zod';
-import { useAuth } from '../../hooks/auth';
+import { useAuth, useDispatchAuth } from '../../hooks/auth';
 import PageLayout from '../../components/PageLayout';
 import Grid from '@mui/material/Grid';
 import { Alert, AlertTitle, Box, Button, Divider, TextField, Typography } from '@mui/material';
@@ -19,21 +19,35 @@ const AccountUpdateSchema = z.object({
     about: z.string().optional(),
 });
 
-type AccountUpdateSchema = z.infer<typeof AccountUpdateSchema>;
+type AccountUpdate = z.infer<typeof AccountUpdateSchema>;
 
+// TODO: better UI feedback, we can use notifications to denote whether the request to update
+//       succeeded or failed via snackbar notifications that appear for a bit on the screen and disappear.
 function AccountUpdateForm({ session }: { session: User }) {
+    const authDispatcher = useDispatchAuth();
     const {
         control,
         handleSubmit,
         reset,
         formState: { errors },
-    } = useForm<AccountUpdateSchema>({
+    } = useForm<AccountUpdate>({
         resolver: zodResolver(AccountUpdateSchema),
         defaultValues: { ...session },
     });
 
     const { isLoading, isError, data: response, error, mutateAsync } = usePatchUserUsername();
-    const onSubmit: SubmitHandler<AccountUpdateSchema> = (data) => console.log(data);
+    const onSubmit: SubmitHandler<AccountUpdate> = async (data) =>
+        await mutateAsync({ username: session.username, data });
+
+    useEffect(() => {
+        // Check here if an error occurred, otherwise call the onSuccess function...
+        if (isError) {
+            // TODO: transform the errors into appropriate values
+            console.log(error);
+        } else if (!isLoading && response) {
+            authDispatcher({ type: 'data', data: response.user });
+        }
+    }, [isLoading, isError]);
 
     return (
         <form style={{ width: '100%' }} onSubmit={handleSubmit(onSubmit)}>
@@ -220,14 +234,13 @@ function AccountUpdateForm({ session }: { session: User }) {
                             Cancel
                         </Button>
                     </Box>
+                    {isError && (
+                        <Alert severity="error" sx={{ marginTop: 2, maxWidth: 500 }}>
+                            <AlertTitle>Error</AlertTitle>
+                            <strong>{error!.message || 'Something went wrong'}</strong>
+                        </Alert>
+                    )}
                 </Grid>
-
-                {isError && (
-                    <Alert severity="error">
-                        <AlertTitle>Error</AlertTitle>
-                        <strong>{error!.message || 'Something went wrong'}</strong>
-                    </Alert>
-                )}
             </Grid>
         </form>
     );

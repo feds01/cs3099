@@ -1,4 +1,3 @@
-import { useAuth } from '../../hooks/auth';
 import Box from '@mui/material/Box';
 import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
