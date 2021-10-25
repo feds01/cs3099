@@ -35,7 +35,7 @@ router.post('/:username/follow', ownerAuth, async (req, res) => {
     // check if the user is already following the other user, if so
     // then exit early and don't create the new follower link.
     const follower = await User.findById(followerId).exec();
-    const following = await User.findById({ username }).exec();
+    const following = await User.findOne({ username }).exec();
 
     if (!follower || !following) {
         return res.status(404).json({
