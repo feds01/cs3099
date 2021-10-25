@@ -19,7 +19,7 @@ type UserActivity = {
 };
 
 export default function Activity({ title, withDivider = false, id, limit = 20 }: Props): ReactElement {
-    const [activities, setActivities] = useState<ContentState<UserActivity[], Error>>({ state: 'loading' });
+    const [activities] = useState<ContentState<UserActivity[], Error>>({ state: 'loading' });
 
     switch (activities.state) {
         case 'loading':

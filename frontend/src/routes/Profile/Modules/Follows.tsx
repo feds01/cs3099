@@ -82,10 +82,10 @@ export default function Follows({ type, id }: Props): ReactElement {
                         />
                         <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                             {type === 'followers'
-                                ? session.username == id
+                                ? session.username === id
                                     ? 'You currently have no followers'
                                     : `@${id} has no followers yet.`
-                                : session.username == id
+                                : session.username === id
                                 ? "You're not following anyone yet"
                                 : `@${id} isn't following anyone yet`}
                         </Typography>
@@ -97,7 +97,7 @@ export default function Follows({ type, id }: Props): ReactElement {
                 <Grid container spacing={1} columns={{ xs: 4, sm: 9, md: 12 }}>
                     {followers.data.map((follower) => {
                         return (
-                            <Grid key={follower.username} item xs={2} sm={3} md={2}>
+                            <Grid key={follower.username} item xs={2} sm={3} md={3}>
                                 <FollowerCard key={follower.id} user={follower} />
                             </Grid>
                         );

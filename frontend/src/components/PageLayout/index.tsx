@@ -6,7 +6,7 @@ import Sidebar from '../Sidebar';
 
 interface Props {
     children: React.ReactNode;
-    title: string;
+    title?: string;
     drawerWidth?: number;
     sidebar?: boolean;
 }

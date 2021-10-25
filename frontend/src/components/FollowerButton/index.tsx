@@ -24,7 +24,7 @@ export default function FollowerButton({ username }: Props): ReactElement {
                 setResponse({ state: 'ok', data: { self: false, following: follow.data.following } });
             }
         }
-    }, [username, follow.data]);
+    }, [username, follow.data, auth.session.username]);
 
     if (response.state === 'loading' || response.state === 'error') {
         return <></>;

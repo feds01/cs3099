@@ -35,8 +35,8 @@ const theme = createTheme({
             main: '#37123C',
         },
         text: {
-            primary: '#292E37',
-            secondary: '#292E37',
+            primary: '#303035',
+            secondary: '#303035',
         },
     },
     typography: {

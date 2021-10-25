@@ -141,7 +141,6 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
 type ProfileData = { user: User; follows: { followers: number; following: number } };
 
 export default function Profile(props: Props): ReactElement {
-    const { session } = useAuth();
     const location = useLocation();
 
     // Get the user data
