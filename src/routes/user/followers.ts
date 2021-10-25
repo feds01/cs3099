@@ -35,7 +35,7 @@ router.post('/:username/follow', ownerAuth, async (req, res) => {
     // check if the user is already following the other user, if so
     // then exit early and don't create the new follower link.
     const follower = await User.findById(followerId).exec();
-    const following = await User.findById({ username }).exec();
+    const following = await User.findOne({ username }).exec();
 
     if (!follower || !following) {
         return res.status(404).json({
@@ -45,13 +45,13 @@ router.post('/:username/follow', ownerAuth, async (req, res) => {
     }
 
     // Just return a NoContent
-    if (follower._id === following._id) {
+    if (follower.id === following.id) {
         return res.status(204).json({
             status: true,
         });
     }
 
-    let mapping = { follower: follower._id, following: following._id };
+    let mapping = { follower: follower.id, following: following.id };
 
     // check if the user is already following, if so, exit early and return
     // corresponding messages
@@ -99,8 +99,8 @@ router.delete('/:username/follow', ownerAuth, async (req, res) => {
     }
 
     const link = await Follower.findOneAndDelete({
-        follower: follower._id,
-        following: followee._id,
+        follower: follower.id,
+        following: followee.id,
     }).exec();
 
     if (!link) {
@@ -132,7 +132,7 @@ router.get('/:username/follow', ownerAuth, async (req, res) => {
         });
     }
 
-    const link = await Follower.findOne({ follower: follower._id, following: followee._id }).exec();
+    const link = await Follower.findOne({ follower: follower.id, following: followee.id }).exec();
 
     if (!link) {
         return res.status(404).json({
@@ -165,7 +165,7 @@ router.get('/:username/followers', ownerAuth, async (req, res) => {
     // TODO:(alex) Implement pagination for this endpoint since the current limit will
     //             be 50 documents.
     // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
-    const result = await Follower.find({ following: user._id })
+    const result = await Follower.find({ following: user.id })
         .populate<{ follower: IUser }[]>('follower')
         .limit(50);
 
@@ -195,7 +195,7 @@ router.get('/:username/following', ownerAuth, async (req, res) => {
     // TODO:(alex) Implement pagination for this endpoint since the current limit will
     //             be 50 documents.
     // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
-    const result = await Follower.find({ follower: user._id })
+    const result = await Follower.find({ follower: user.id })
         .populate<{ following: IUser }[]>('following')
         .limit(50)
         .exec();

@@ -25,6 +25,7 @@ function AccountUpdateForm({ session }: { session: User }) {
     const {
         control,
         handleSubmit,
+        reset,
         formState: { errors },
     } = useForm<AccountUpdateSchema>({
         resolver: zodResolver(AccountUpdateSchema),
@@ -215,7 +216,9 @@ function AccountUpdateForm({ session }: { session: User }) {
                         <Button sx={{ marginRight: 1 }} type="submit" variant="contained">
                             Update profile
                         </Button>
-                        <Button variant="outlined">Cancel</Button>
+                        <Button variant="outlined" onClick={() => reset(session)}>
+                            Cancel
+                        </Button>
                     </Box>
                 </Grid>
 
