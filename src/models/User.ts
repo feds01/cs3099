@@ -52,7 +52,7 @@ UserSchema.statics.project = function (user: IUserDocument) {
     const { profilePictureUrl, about, status } = user;
 
     return {
-        id: user._id,
+        id: user.id,
         email: user.email,
         username: user.username,
         firstName: user.firstName,

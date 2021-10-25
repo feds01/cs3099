@@ -61,8 +61,8 @@ router.get('/:username', ownerAuth, async (req, res) => {
 
     // we want to count the followers of the user and following entries
     // @@Performance: Maybe in the future store these numbers and update them when follow/unfollow events occur
-    const followingCount = await Follower.count({ follower: user._id }).exec();
-    const followerCount = await Follower.count({ following: user._id }).exec();
+    const followingCount = await Follower.count({ follower: user.id }).exec();
+    const followerCount = await Follower.count({ following: user.id }).exec();
 
     return res.status(200).json({
         status: true,
