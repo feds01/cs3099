@@ -14,105 +14,49 @@ import {
     MutationFunction,
 } from 'react-query';
 import type {
-    UserAuthResponse,
-    BadRequestResponse,
+    DeleteUserUsername200,
     UnauthorizedResponse,
     InternalServerErrorResponse,
-    UserLogin,
-    UserRegistration,
-    DeleteUserId200,
-    GetUserId200,
+    GetUserUsername200,
     NotFoundResponse,
-    PatchUserId200,
+    PatchUserUsername200,
+    BadRequestResponse,
+    UserPatchRequest,
+    DeleteUserUsernameFollow200,
+    GetUserUsernameFollow200,
+    PostUserUsernameFollow200,
+    GetUserUsernameFollowers200,
+    GetUserUsernameFollowing200,
+    GetUserUsernameRole200,
+    PatchUserUsernameRole200,
 } from '.././models';
 import { customInstance } from '.././mutator/custom-instance';
 
 type AsyncReturnType<T extends (...args: any) => Promise<any>> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 /**
- * User login endpoint, returning authentication tokens.
- * @summary User Login
- */
-export const postUserLogin = (userLogin: UserLogin) => {
-    return customInstance<UserAuthResponse>({ url: `/user/login`, method: 'post', data: userLogin });
-};
-
-export const usePostUserLogin = <
-    TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
-    TContext = unknown,
->(options?: {
-    mutation?: UseMutationOptions<AsyncReturnType<typeof postUserLogin>, TError, { data: UserLogin }, TContext>;
-}) => {
-    const { mutation: mutationOptions } = options || {};
-
-    const mutationFn: MutationFunction<AsyncReturnType<typeof postUserLogin>, { data: UserLogin }> = (props) => {
-        const { data } = props || {};
-
-        return postUserLogin(data);
-    };
-
-    return useMutation<AsyncReturnType<typeof postUserLogin>, TError, { data: UserLogin }, TContext>(
-        mutationFn,
-        mutationOptions,
-    );
-};
-/**
- * User registration endpoint, returning authentication tokens.
- * @summary User registration
- */
-export const postUserRegister = (userRegistration: UserRegistration) => {
-    return customInstance<UserAuthResponse>({ url: `/user/register`, method: 'post', data: userRegistration });
-};
-
-export const usePostUserRegister = <
-    TError = BadRequestResponse | InternalServerErrorResponse,
-    TContext = unknown,
->(options?: {
-    mutation?: UseMutationOptions<
-        AsyncReturnType<typeof postUserRegister>,
-        TError,
-        { data: UserRegistration },
-        TContext
-    >;
-}) => {
-    const { mutation: mutationOptions } = options || {};
-
-    const mutationFn: MutationFunction<AsyncReturnType<typeof postUserRegister>, { data: UserRegistration }> = (
-        props,
-    ) => {
-        const { data } = props || {};
-
-        return postUserRegister(data);
-    };
-
-    return useMutation<AsyncReturnType<typeof postUserRegister>, TError, { data: UserRegistration }, TContext>(
-        mutationFn,
-        mutationOptions,
-    );
-};
-/**
  * User account deletion endpoint, delete a user by the id.
  * @summary Account deletion
  */
-export const deleteUserId = (id: string) => {
-    return customInstance<DeleteUserId200>({ url: `/user/${id}`, method: 'delete' });
+export const deleteUserUsername = (username: string) => {
+    return customInstance<DeleteUserUsername200>({ url: `/user/${username}`, method: 'delete' });
 };
 
-export const useDeleteUserId = <
+export const useDeleteUserUsername = <
     TError = UnauthorizedResponse | InternalServerErrorResponse,
     TContext = unknown,
 >(options?: {
-    mutation?: UseMutationOptions<AsyncReturnType<typeof deleteUserId>, TError, { id: string }, TContext>;
+    mutation?: UseMutationOptions<AsyncReturnType<typeof deleteUserUsername>, TError, { username: string }, TContext>;
 }) => {
     const { mutation: mutationOptions } = options || {};
 
-    const mutationFn: MutationFunction<AsyncReturnType<typeof deleteUserId>, { id: string }> = (props) => {
-        const { id } = props || {};
+    const mutationFn: MutationFunction<AsyncReturnType<typeof deleteUserUsername>, { username: string }> = (props) => {
+        const { username } = props || {};
 
-        return deleteUserId(id);
+        return deleteUserUsername(username);
     };
 
-    return useMutation<AsyncReturnType<typeof deleteUserId>, TError, { id: string }, TContext>(
+    return useMutation<AsyncReturnType<typeof deleteUserUsername>, TError, { username: string }, TContext>(
         mutationFn,
         mutationOptions,
     );
@@ -121,26 +65,26 @@ export const useDeleteUserId = <
  * User account information endpoint, get user details by the id.
  * @summary Account information
  */
-export const getUserId = (id: string) => {
-    return customInstance<GetUserId200>({ url: `/user/${id}`, method: 'get' });
+export const getUserUsername = (username: string) => {
+    return customInstance<GetUserUsername200>({ url: `/user/${username}`, method: 'get' });
 };
 
-export const getGetUserIdQueryKey = (id: string) => [`/user/${id}`];
+export const getGetUserUsernameQueryKey = (username: string) => [`/user/${username}`];
 
-export const useGetUserId = <
-    TData = AsyncReturnType<typeof getUserId>,
+export const useGetUserUsername = <
+    TData = AsyncReturnType<typeof getUserUsername>,
     TError = NotFoundResponse | InternalServerErrorResponse,
 >(
-    id: string,
-    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getUserId>, TError, TData> },
+    username: string,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getUserUsername>, TError, TData> },
 ) => {
     const { query: queryOptions } = options || {};
 
-    const queryKey = queryOptions?.queryKey ?? getGetUserIdQueryKey(id);
-    const queryFn: QueryFunction<AsyncReturnType<typeof getUserId>> = () => getUserId(id);
+    const queryKey = queryOptions?.queryKey ?? getGetUserUsernameQueryKey(username);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsername>> = () => getUserUsername(username);
 
-    const query = useQuery<AsyncReturnType<typeof getUserId>, TError, TData>(queryKey, queryFn, {
-        enabled: !!id,
+    const query = useQuery<AsyncReturnType<typeof getUserUsername>, TError, TData>(queryKey, queryFn, {
+        enabled: !!username,
         ...queryOptions,
     });
 
@@ -154,25 +98,279 @@ export const useGetUserId = <
  * Update user information endpoint, update user details for a user specified by the user id.
  * @summary Update account information
  */
-export const patchUserId = (id: string) => {
-    return customInstance<PatchUserId200>({ url: `/user/${id}`, method: 'patch', data: undefined });
+export const patchUserUsername = (username: string, userPatchRequest: UserPatchRequest) => {
+    return customInstance<PatchUserUsername200>({ url: `/user/${username}`, method: 'patch', data: userPatchRequest });
 };
 
-export const usePatchUserId = <
+export const usePatchUserUsername = <
     TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
     TContext = unknown,
 >(options?: {
-    mutation?: UseMutationOptions<AsyncReturnType<typeof patchUserId>, TError, { id: string }, TContext>;
+    mutation?: UseMutationOptions<
+        AsyncReturnType<typeof patchUserUsername>,
+        TError,
+        { username: string; data: UserPatchRequest },
+        TContext
+    >;
 }) => {
     const { mutation: mutationOptions } = options || {};
 
-    const mutationFn: MutationFunction<AsyncReturnType<typeof patchUserId>, { id: string }> = (props) => {
-        const { id } = props || {};
+    const mutationFn: MutationFunction<
+        AsyncReturnType<typeof patchUserUsername>,
+        { username: string; data: UserPatchRequest }
+    > = (props) => {
+        const { username, data } = props || {};
 
-        return patchUserId(id);
+        return patchUserUsername(username, data);
     };
 
-    return useMutation<AsyncReturnType<typeof patchUserId>, TError, { id: string }, TContext>(
+    return useMutation<
+        AsyncReturnType<typeof patchUserUsername>,
+        TError,
+        { username: string; data: UserPatchRequest },
+        TContext
+    >(mutationFn, mutationOptions);
+};
+/**
+ * Endpoint for current user to unfollow another legit user.
+ * @summary Unfollowing another user.
+ */
+export const deleteUserUsernameFollow = (username: string) => {
+    return customInstance<DeleteUserUsernameFollow200>({ url: `/user/${username}/follow`, method: 'delete' });
+};
+
+export const useDeleteUserUsernameFollow = <
+    TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+    TContext = unknown,
+>(options?: {
+    mutation?: UseMutationOptions<
+        AsyncReturnType<typeof deleteUserUsernameFollow>,
+        TError,
+        { username: string },
+        TContext
+    >;
+}) => {
+    const { mutation: mutationOptions } = options || {};
+
+    const mutationFn: MutationFunction<AsyncReturnType<typeof deleteUserUsernameFollow>, { username: string }> = (
+        props,
+    ) => {
+        const { username } = props || {};
+
+        return deleteUserUsernameFollow(username);
+    };
+
+    return useMutation<AsyncReturnType<typeof deleteUserUsernameFollow>, TError, { username: string }, TContext>(
+        mutationFn,
+        mutationOptions,
+    );
+};
+/**
+ * Endpoint for checking if the current user is following another user specified by the given id.
+ * @summary Get the current user's follow status.
+ */
+export const getUserUsernameFollow = (username: string) => {
+    return customInstance<GetUserUsernameFollow200>({ url: `/user/${username}/follow`, method: 'get' });
+};
+
+export const getGetUserUsernameFollowQueryKey = (username: string) => [`/user/${username}/follow`];
+
+export const useGetUserUsernameFollow = <
+    TData = AsyncReturnType<typeof getUserUsernameFollow>,
+    TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+>(
+    username: string,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollow>, TError, TData> },
+) => {
+    const { query: queryOptions } = options || {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowQueryKey(username);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollow>> = () => getUserUsernameFollow(username);
+
+    const query = useQuery<AsyncReturnType<typeof getUserUsernameFollow>, TError, TData>(queryKey, queryFn, {
+        enabled: !!username,
+        ...queryOptions,
+    });
+
+    return {
+        queryKey,
+        ...query,
+    };
+};
+
+/**
+ * Endpoint for current user to follow another legit user.
+ * @summary Follow another user
+ */
+export const postUserUsernameFollow = (username: string) => {
+    return customInstance<PostUserUsernameFollow200>({
+        url: `/user/${username}/follow`,
+        method: 'post',
+        data: undefined,
+    });
+};
+
+export const usePostUserUsernameFollow = <
+    TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+    TContext = unknown,
+>(options?: {
+    mutation?: UseMutationOptions<
+        AsyncReturnType<typeof postUserUsernameFollow>,
+        TError,
+        { username: string },
+        TContext
+    >;
+}) => {
+    const { mutation: mutationOptions } = options || {};
+
+    const mutationFn: MutationFunction<AsyncReturnType<typeof postUserUsernameFollow>, { username: string }> = (
+        props,
+    ) => {
+        const { username } = props || {};
+
+        return postUserUsernameFollow(username);
+    };
+
+    return useMutation<AsyncReturnType<typeof postUserUsernameFollow>, TError, { username: string }, TContext>(
+        mutationFn,
+        mutationOptions,
+    );
+};
+/**
+ * Endpoint for getting any user's follower list.
+ * @summary Get a user's follower list.
+ */
+export const getUserUsernameFollowers = (username: string) => {
+    return customInstance<GetUserUsernameFollowers200>({ url: `/user/${username}/followers`, method: 'get' });
+};
+
+export const getGetUserUsernameFollowersQueryKey = (username: string) => [`/user/${username}/followers`];
+
+export const useGetUserUsernameFollowers = <
+    TData = AsyncReturnType<typeof getUserUsernameFollowers>,
+    TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+>(
+    username: string,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowers>, TError, TData> },
+) => {
+    const { query: queryOptions } = options || {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowersQueryKey(username);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollowers>> = () =>
+        getUserUsernameFollowers(username);
+
+    const query = useQuery<AsyncReturnType<typeof getUserUsernameFollowers>, TError, TData>(queryKey, queryFn, {
+        enabled: !!username,
+        ...queryOptions,
+    });
+
+    return {
+        queryKey,
+        ...query,
+    };
+};
+
+/**
+ * Endpoint for fetching a user's follows list
+ * @summary Get a user's following list.
+ */
+export const getUserUsernameFollowing = (username: string) => {
+    return customInstance<GetUserUsernameFollowing200>({ url: `/user/${username}/following`, method: 'get' });
+};
+
+export const getGetUserUsernameFollowingQueryKey = (username: string) => [`/user/${username}/following`];
+
+export const useGetUserUsernameFollowing = <
+    TData = AsyncReturnType<typeof getUserUsernameFollowing>,
+    TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+>(
+    username: string,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowing>, TError, TData> },
+) => {
+    const { query: queryOptions } = options || {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowingQueryKey(username);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollowing>> = () =>
+        getUserUsernameFollowing(username);
+
+    const query = useQuery<AsyncReturnType<typeof getUserUsernameFollowing>, TError, TData>(queryKey, queryFn, {
+        enabled: !!username,
+        ...queryOptions,
+    });
+
+    return {
+        queryKey,
+        ...query,
+    };
+};
+
+/**
+ * Endpoint for getting user role by id.
+ * @summary Get user role
+ */
+export const getUserUsernameRole = (username: string) => {
+    return customInstance<GetUserUsernameRole200>({ url: `/user/${username}/role`, method: 'get' });
+};
+
+export const getGetUserUsernameRoleQueryKey = (username: string) => [`/user/${username}/role`];
+
+export const useGetUserUsernameRole = <
+    TData = AsyncReturnType<typeof getUserUsernameRole>,
+    TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+>(
+    username: string,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getUserUsernameRole>, TError, TData> },
+) => {
+    const { query: queryOptions } = options || {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetUserUsernameRoleQueryKey(username);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameRole>> = () => getUserUsernameRole(username);
+
+    const query = useQuery<AsyncReturnType<typeof getUserUsernameRole>, TError, TData>(queryKey, queryFn, {
+        enabled: !!username,
+        ...queryOptions,
+    });
+
+    return {
+        queryKey,
+        ...query,
+    };
+};
+
+/**
+ * Endpoint for updating user role by id.
+ * @summary Update user role
+ */
+export const patchUserUsernameRole = (username: string) => {
+    return customInstance<PatchUserUsernameRole200>({
+        url: `/user/${username}/role`,
+        method: 'patch',
+        data: undefined,
+    });
+};
+
+export const usePatchUserUsernameRole = <
+    TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+    TContext = unknown,
+>(options?: {
+    mutation?: UseMutationOptions<
+        AsyncReturnType<typeof patchUserUsernameRole>,
+        TError,
+        { username: string },
+        TContext
+    >;
+}) => {
+    const { mutation: mutationOptions } = options || {};
+
+    const mutationFn: MutationFunction<AsyncReturnType<typeof patchUserUsernameRole>, { username: string }> = (
+        props,
+    ) => {
+        const { username } = props || {};
+
+        return patchUserUsernameRole(username);
+    };
+
+    return useMutation<AsyncReturnType<typeof patchUserUsernameRole>, TError, { username: string }, TContext>(
         mutationFn,
         mutationOptions,
     );

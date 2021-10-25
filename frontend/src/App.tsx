@@ -2,24 +2,30 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryCache, QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import { AuthProvider } from './hooks/auth';
-import LoginRoute from './routes/auth/Login';
+import LoginRoute from './routes/Auth/Login';
 import * as routeConfig from './config/routes';
-import PageLayout from './components/PageLayout';
 import AppliedRoute from './components/AppliedRoute';
-import RegisterRoute from './routes/auth/Register';
+import RegisterRoute from './routes/Auth/Register';
 import PrivateRoute from './components/PrivateRoute';
-import Sidebar from './components/Sidebar';
+import ErrorContainer from './components/ErrorContainer';
 
 // API querying client.
-const queryClient = new QueryClient();
+const queryCache = new QueryCache();
+const queryClient = new QueryClient({
+    queryCache,
+    defaultOptions: {
+        queries: {
+            retry: 0,
+            refetchOnWindowFocus: false,
+        },
+    },
+});
 
-// The width of the left hand-side drawer
-const drawerWidth = 240;
-
+// The application theme
 const theme = createTheme({
     palette: {
         primary: {
@@ -28,8 +34,13 @@ const theme = createTheme({
         secondary: {
             main: '#37123C',
         },
+        text: {
+            primary: '#292E37',
+            secondary: '#292E37',
+        },
     },
     typography: {
+        fontSize: 12,
         fontFamily: [
             'Noto Sans',
             '-apple-system',
@@ -76,14 +87,16 @@ function App() {
                             <AppliedRoute exact path={'/login'} component={LoginRoute} />
                             <AppliedRoute exact path={'/register'} component={RegisterRoute} />
                             <Route>
-                                <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
-                                    <CssBaseline />
-                                    <Route>
-                                        {Object.entries(routeConfig.routes).map(([path, config]) => {
-                                            return <PrivateRoute key={path} path={path} {...config} />;
-                                        })}
-                                    </Route>
-                                </Box>
+                                <ErrorContainer>
+                                    <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
+                                        <CssBaseline />
+                                        <Route>
+                                            {Object.entries(routeConfig.routes).map(([path, config]) => {
+                                                return <PrivateRoute key={path} path={path} {...config} />;
+                                            })}
+                                        </Route>
+                                    </Box>
+                                </ErrorContainer>
                             </Route>
                         </Switch>
                     </Router>

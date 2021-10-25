@@ -11,12 +11,16 @@ import Swagger from 'swagger-jsdoc';
 import SwaggerUI from 'swagger-ui-express';
 
 import Logger from './common/logger';
-import userRouter from './routes/user';
 import * as errors from './common/errors';
-import reviewsRouter from './routes/reviews';
-import submissionsRouter from './routes/submissions';
-import morganMiddleware from './config/morganMiddleware';
 import * as SwaggerOptions from './../swagger.json';
+
+// Routers
+import userRouter from './routes/user';
+import authRouter from './routes/auth';
+import ssoRouter from './routes/auth/sso';
+import reviewsRouter from './routes/reviews';
+import publicationsRouter from './routes/publications';
+import morganMiddleware from './config/morganMiddleware';
 
 // Create the express application
 const app: Application = express();
@@ -24,7 +28,13 @@ const app: Application = express();
 // Add swagger to the Express app
 const options = {
     definition: SwaggerOptions,
-    apis: ['./routes/user.ts', './routes/reviews.ts', './routes/submissions.ts'],
+    apis: [
+        './routes/user/index.ts',
+        './routes/auth/index.ts',
+        './routes/auth/sso.ts',
+        './routes/reviews/index.ts',
+        './routes/publications/index.ts',
+    ],
 };
 
 const specs = Swagger(options);
@@ -45,15 +55,22 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
 });
 
 // Setup the specific API routes
+app.use('/sg', ssoRouter); // TODO(alex): we'll probably need to setup a proxy so that the SuperGroup can access all endpoints not just login
+app.use('/auth', authRouter);
 app.use('/user', userRouter);
-app.use('/submissions', submissionsRouter);
+app.use('/submissions', publicationsRouter);
 app.use('/reviews', reviewsRouter);
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     // This check makes sure this is a JSON parsing issue, but it might be
     // coming from any middleware, not just body-parser:
 
-    if (errors.isExpressError(err) && err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    if (
+        errors.isExpressError(err) &&
+        err instanceof SyntaxError &&
+        err.status === 400 &&
+        'body' in err
+    ) {
         Logger.warn('received invalid JSON body.');
 
         // Bad request
@@ -82,6 +99,10 @@ server.listen(process.env.PORT || 5000, () => {
 
     Logger.info(`Server started on ${port}! (environment: ${process.env.NODE_ENV || 'dev'})`);
     Logger.info('Attempting connection with MongoDB service');
+
+    // TODO(alex): Try to load the current federations configuration from disk, but if we don't
+    //             have it, then we make a request to the supergroup info endpoint at:
+    //             --> https://gbs3.host.cs.st-andrews.ac.uk/cs3099-journals.json
 
     mongoose.connect(
         process.env.MONGODB_CONNECTION_URI!,

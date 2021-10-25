@@ -14,11 +14,20 @@ export type AuthState = {
     isLoggedIn: boolean;
 };
 
+export type VerifiedAuthState = {
+    session: User;
+    token: string | null;
+    refreshToken: string | null;
+    isLoggedIn: true;
+};
+
 // Use a schema for validating the session schema.
 const SessionSchema = z.object({
     id: z.string(),
     email: z.string(),
     username: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
     profilePictureUrl: z.string().optional(),
 });
 
@@ -43,7 +52,6 @@ export function authReducer(state: AuthState, action: AuthStateAction): AuthStat
             // If the user specifies to remember the login, the we save the tokens into local storage, otherwise
             // we place the tokens into the session storage.
             if (action.rememberUser) {
-                console.log(action.data);
                 localStorage.setItem('token', action.data.token);
                 localStorage.setItem('refreshToken', action.data.refreshToken);
                 localStorage.setItem('session', JSON.stringify(action.data.session));
@@ -99,7 +107,13 @@ export const AuthProvider: FC = ({ children }) => {
     return <AuthContext.Provider value={{ state, dispatch }}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
+/**
+ * Hook to get the raw user session with no assertion about if the user is really
+ * logged in or not.
+ *
+ * @returns The current auth session
+ */
+export const useRawAuth = () => {
     const context = useContext(AuthContext);
 
     if (typeof context === 'undefined') {
@@ -107,6 +121,27 @@ export const useAuth = () => {
     }
 
     return context.state;
+};
+
+/**
+ * Hook to get the authentication state of the current session. Unlike useAuthRaw(), this
+ * guarantees that there exists a user session and that the user is logged in. This should
+ * only be used when expecting the user to be logged in.
+ *
+ * @returns A verified user session.
+ */
+export const useAuth = (): VerifiedAuthState => {
+    const state = useRawAuth();
+
+    if (!state.isLoggedIn || !state.session) {
+        throw new Error('Expected a user session, but had none.');
+    }
+
+    return {
+        ...state,
+        isLoggedIn: true,
+        session: state.session,
+    };
 };
 
 export const useDispatchAuth = () => {

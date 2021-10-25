@@ -12,3 +12,6 @@ dist/
 # Environment files
 .env
 .env.*
+
+# Generated Swagger JSON file
+swagger.json

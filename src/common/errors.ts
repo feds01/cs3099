@@ -14,7 +14,9 @@ interface ExpressError extends Error {
 
 export function isExpressError(err: unknown): err is ExpressError {
     return (
-        err instanceof Error && err.hasOwnProperty('status') && typeof (err as { status?: unknown }).status === 'number'
+        err instanceof Error &&
+        err.hasOwnProperty('status') &&
+        typeof (err as { status?: unknown }).status === 'number'
     );
 }
 

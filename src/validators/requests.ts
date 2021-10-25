@@ -13,7 +13,11 @@ import * as errors from '../common/errors';
  * @param res - The response object.
  * @param next  - The next function callback, used to continue execution.
  */
-export default function paramValidator(req: express.Request, res: express.Response, next: express.NextFunction) {
+export default function paramValidator(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+) {
     const { id } = req.params;
 
     // TODO: In the future, we can use zod to provide general schemas for each point and the checker

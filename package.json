@@ -10,7 +10,8 @@
         "test": "jest --collect-coverage --ci",
         "lint": "eslint src/*/**",
         "fmt": "prettier --write .",
-        "generate-client": "orval"
+        "generate-client": "orval",
+        "transform-yaml": "yaml2json swagger.yaml > swagger.json"
     },
     "repository": {
         "type": "git",

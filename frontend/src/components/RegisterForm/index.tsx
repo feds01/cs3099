@@ -7,11 +7,11 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import AlertTitle from '@mui/material/AlertTitle';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { User } from '../../lib/api/models';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { usePostUserRegister } from '../../lib/api/users/users';
-import CircularProgress from '@mui/material/CircularProgress';
 import PasswordField from '../PasswordField';
+import { User } from '../../lib/api/models';
+import CircularProgress from '@mui/material/CircularProgress';
+import { usePostAuthRegister } from '../../lib/api/auth/auth';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 /**
  * This is the password regex. It specifies that the password must be between the length
@@ -57,7 +57,7 @@ export default function RegisterForm({ onSuccess }: Props): ReactElement {
         resolver: zodResolver(RegisterSchema),
     });
 
-    const { isLoading, isError, data: response, error, mutateAsync } = usePostUserRegister();
+    const { isLoading, isError, data: response, error, mutateAsync } = usePostAuthRegister();
 
     useEffect(() => {
         // Check here if an error occurred, otherwise call the onSuccess function...

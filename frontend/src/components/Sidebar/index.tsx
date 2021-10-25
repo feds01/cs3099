@@ -1,29 +1,109 @@
-import Divider from '@mui/material/Divider';
-import Drawer from '@mui/material/Drawer';
-import Toolbar from '@mui/material/Toolbar';
-import React, { ReactElement } from 'react';
+import { ReactElement, useState } from 'react';
+import IconButton from '@mui/material/IconButton';
+import PersonIcon from '@mui/icons-material/Person';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+import RateReviewIcon from '@mui/icons-material/RateReview';
+import { styled, Theme, CSSObject } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import { Button } from '@mui/material';
 
-interface Props {
-    drawerWidth: number;
+const drawerWidth = 180;
+
+const openedMixin = (theme: Theme, drawerWidth: number): CSSObject => ({
+    width: drawerWidth,
+    transition: theme.transitions.create('width', {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.enteringScreen,
+    }),
+    overflowX: 'hidden',
+});
+
+const closedMixin = (theme: Theme): CSSObject => ({
+    transition: theme.transitions.create('width', {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+    }),
+    overflowX: 'hidden',
+    width: `calc(${theme.spacing(5)} + 1px)`,
+    [theme.breakpoints.up('sm')]: {
+        width: `calc(${theme.spacing(5)} + 1px)`,
+    },
+});
+
+interface SidebarProps {
+    open: boolean;
 }
 
-export default function Sidebar({ drawerWidth }: Props): ReactElement {
+const SidebarContainer = styled('div', { shouldForwardProp: (prop) => prop !== 'open' })<SidebarProps>(
+    ({ theme, open }) => ({
+        width: drawerWidth,
+        flexShrink: 0,
+        background: '#fff',
+        height: '100%',
+        zIndex: 2000,
+        borderRight: '1px solid grey',
+        whiteSpace: 'nowrap',
+        boxSizing: 'border-box',
+        ...(open && {
+            ...openedMixin(theme, drawerWidth),
+        }),
+        ...(!open && {
+            ...closedMixin(theme),
+        }),
+    }),
+);
+
+const menuMap = [
+    { title: 'Profile', icon: PersonIcon },
+    { title: 'Submissions', icon: FileUploadIcon },
+    { title: 'Reviews', icon: RateReviewIcon },
+];
+
+export default function Sidebar(): ReactElement {
+    const [open, setOpen] = useState<boolean>(false);
+
     return (
-        <Drawer
-            sx={{
-                width: drawerWidth,
-                flexShrink: 0,
-                '& .MuiDrawer-paper': {
-                    width: drawerWidth,
-                    boxSizing: 'border-box',
-                },
-            }}
-            variant="permanent"
-            anchor="left"
-        >
-            <Toolbar />
-            <Divider />
-            Sidebar
-        </Drawer>
+        <SidebarContainer open={open}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    flex: 1,
+                    height: '100%',
+                }}
+            >
+                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    {menuMap.map((entry) => (
+                        <Button key={entry.title}>
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'left',
+                                    flex: 1,
+                                    color: 'rgba(0, 0, 0, 0.54)',
+                                }}
+                            >
+                                <entry.icon color="inherit" sx={{ marginRight: open ? 1 : 0 }} />
+                                {open && <Box sx={{ fontWeight: 'bold' }}>{entry.title}</Box>}
+                            </Box>
+                        </Button>
+                    ))}
+                </Box>
+                {open ? (
+                    <Button color="inherit" startIcon={<ChevronLeftIcon />} onClick={() => setOpen(!open)}>
+                        Collapse
+                    </Button>
+                ) : (
+                    <IconButton color="inherit" onClick={() => setOpen(!open)}>
+                        <ChevronRightIcon color="inherit" />
+                    </IconButton>
+                )}
+            </Box>
+        </SidebarContainer>
     );
 }
