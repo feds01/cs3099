@@ -245,7 +245,7 @@ router.post('/register', async (req, res) => {
             const { token, refreshToken } = await createTokens({
                 email,
                 username,
-                id: savedUser._id,
+                id: savedUser.id,
             });
 
             return res.status(201).json({
@@ -356,7 +356,7 @@ router.post('/login', async (req, res) => {
                 const { token, refreshToken } = await createTokens({
                     email: result.email,
                     name: result.username,
-                    id: result._id,
+                    id: result.id,
                 });
 
                 return res.status(200).json({

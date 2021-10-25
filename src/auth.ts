@@ -124,7 +124,7 @@ export async function withAuth(
     // ensure that the user token has a valid user id, if they do then set the
     // request user token as the decoded token, otherwise don't bother.
     if (userToken?.data?.id) {
-        const existingUser = await User.findOne({ _id: userToken.data.id });
+        const existingUser = await User.findById(userToken.data.id);
 
         if (existingUser) req.token = userToken;
     } else if (userToken) {
@@ -158,7 +158,7 @@ export async function ownerAuth(
     }
 
     if (token?.data.id) {
-        const existingUser = await User.findOne({ _id: token.data.id });
+        const existingUser = await User.findById(token.data.id);
 
         if (!existingUser) {
             return res.status(404).json({
@@ -203,7 +203,7 @@ export async function adminAuth(
 
     if (token?.data.id) {
         const existingUser = await User.findOne({
-            _id: token.data.id,
+            id: token.data.id,
             role: IUserRole.Administrator,
         });
 

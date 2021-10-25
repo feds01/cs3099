@@ -13,7 +13,6 @@ import {
     IUserRoleRequestSchema,
     IUserRoleRequest,
 } from '../../validators/user';
-import paramValidator from '../../validators/requests';
 import Follower from '../../models/Follower';
 
 const router = express.Router();
@@ -61,8 +60,8 @@ router.get('/:username', ownerAuth, async (req, res) => {
 
     // we want to count the followers of the user and following entries
     // @@Performance: Maybe in the future store these numbers and update them when follow/unfollow events occur
-    const followingCount = await Follower.count({ follower: user._id }).exec();
-    const followerCount = await Follower.count({ following: user._id }).exec();
+    const followingCount = await Follower.count({ follower: user.id }).exec();
+    const followerCount = await Follower.count({ following: user.id }).exec();
 
     return res.status(200).json({
         status: true,
@@ -102,7 +101,7 @@ router.get('/:username', ownerAuth, async (req, res) => {
  * @return sends a response to client if user successfully updated, with the new updated user
  * information.
  * */
-router.patch('/:username', paramValidator, ownerAuth, async (req, res) => {
+router.patch('/:username', ownerAuth, async (req, res) => {
     const { username } = req.params;
 
     let response: IUserPatchRequest;
@@ -181,23 +180,24 @@ router.patch('/:username', paramValidator, ownerAuth, async (req, res) => {
  * @return sends a response to client if user was successfully deleted or not.
  * */
 
-router.delete('/:username', paramValidator, ownerAuth, async (req, res) => {
+router.delete('/:username', ownerAuth, async (req, res) => {
     const { username } = req.params;
 
-    User.findOneAndDelete({ username }, {}, (err) => {
-        if (err) {
-            Logger.error(err);
+    const user = await User.findOneAndDelete({ username }).exec();
 
-            return res.status(500).json({
-                status: true,
-                message: error.INTERNAL_SERVER_ERROR,
-            });
-        }
-
-        return res.status(200).json({
-            status: true,
-            message: 'Successfully deleted user account.',
+    if (!user) {
+        return res.status(404).json({
+            status: false,
+            message: error.NON_EXISTENT_USER,
         });
+    }
+
+    // Now we need to delete any follower entries that contain the current user's id
+    await Follower.deleteMany({ $or: [{ following: user.id }, { follower: user.id }] }).exec();
+
+    return res.status(200).json({
+        status: true,
+        message: 'Successfully deleted user account.',
     });
 });
 
@@ -218,7 +218,7 @@ router.delete('/:username', paramValidator, ownerAuth, async (req, res) => {
  *
  * @return sends the role of the specified user.
  * */
-router.get('/:username/role', paramValidator, adminAuth, async (req, res) => {
+router.get('/:username/role', adminAuth, async (req, res) => {
     const { username } = req.params; // const id = req.params.id;
 
     const user = await User.findOne({ username }).exec();
@@ -227,7 +227,7 @@ router.get('/:username/role', paramValidator, adminAuth, async (req, res) => {
     if (!user) {
         return res.status(404).json({
             status: false,
-            message: error.NON_EXISTENT_USER_ID,
+            message: error.NON_EXISTENT_USER,
         });
     }
 
@@ -263,7 +263,7 @@ router.get('/:username/role', paramValidator, adminAuth, async (req, res) => {
  * @return sends a response to client if user role successfully updated, with the new updated user role
  * information.
  * */
-router.patch('/:username/role', paramValidator, adminAuth, async (req, res) => {
+router.patch('/:username/role', adminAuth, async (req, res) => {
     const { username } = req.params;
 
     let response: IUserRoleRequest;
