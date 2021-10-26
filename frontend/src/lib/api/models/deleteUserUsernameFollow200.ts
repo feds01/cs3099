@@ -7,6 +7,6 @@
  */
 
 export type DeleteUserUsernameFollow200 = {
-    message?: string;
-    status?: boolean;
+    message: string;
+    status: boolean;
 };

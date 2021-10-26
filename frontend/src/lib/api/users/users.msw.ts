@@ -29,25 +29,22 @@ export const getGetUserUsernameMock = () => ({
 });
 
 export const getPatchUserUsernameMock = () => ({
-    status: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
-    user: faker.helpers.randomize([
-        {
-            about: faker.helpers.randomize([faker.random.word(), undefined]),
-            email: faker.random.word(),
-            firstName: faker.random.word(),
-            id: faker.random.word(),
-            lastName: faker.random.word(),
-            profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
-            status: faker.helpers.randomize([faker.random.word(), undefined]),
-            username: faker.random.word(),
-        },
-        undefined,
-    ]),
+    status: faker.datatype.boolean(),
+    user: {
+        about: faker.helpers.randomize([faker.random.word(), undefined]),
+        email: faker.random.word(),
+        firstName: faker.random.word(),
+        id: faker.random.word(),
+        lastName: faker.random.word(),
+        profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+        status: faker.helpers.randomize([faker.random.word(), undefined]),
+        username: faker.random.word(),
+    },
 });
 
 export const getDeleteUserUsernameFollowMock = () => ({
-    message: faker.helpers.randomize([faker.random.word(), undefined]),
-    status: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
+    message: faker.random.word(),
+    status: faker.datatype.boolean(),
 });
 
 export const getGetUserUsernameFollowMock = () => ({
@@ -55,10 +52,7 @@ export const getGetUserUsernameFollowMock = () => ({
     status: faker.datatype.boolean(),
 });
 
-export const getPostUserUsernameFollowMock = () => ({
-    message: faker.helpers.randomize([faker.random.word(), undefined]),
-    status: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
-});
+export const getPostUserUsernameFollowMock = () => ({ message: faker.random.word(), status: faker.datatype.boolean() });
 
 export const getGetUserUsernameFollowersMock = () => ({
     data: {
@@ -92,15 +86,12 @@ export const getGetUserUsernameFollowingMock = () => ({
     status: faker.datatype.boolean(),
 });
 
-export const getGetUserUsernameRoleMock = () => ({
-    role: faker.helpers.randomize([faker.random.word(), undefined]),
-    status: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
-});
+export const getGetUserUsernameRoleMock = () => ({ role: faker.random.word(), status: faker.datatype.boolean() });
 
 export const getPatchUserUsernameRoleMock = () => ({
-    message: faker.helpers.randomize([faker.random.word(), undefined]),
-    role: faker.helpers.randomize([faker.random.word(), undefined]),
-    status: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
+    message: faker.random.word(),
+    role: faker.random.word(),
+    status: faker.datatype.boolean(),
 });
 
 export const getUsersMSW = () => [

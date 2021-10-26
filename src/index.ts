@@ -42,7 +42,7 @@ const specs = Swagger(options);
 app.use('/docs', SwaggerUI.serve, SwaggerUI.setup(specs));
 
 // Setup express middleware
-app.use(helmet());
+app.use(helmet({}));
 app.use(morganMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -50,6 +50,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', '*');
+    res.header('Access-Control-Allow-Methods', 'POST, PUT, GET, OPTIONS, DELETE, PATCH');
 
     next();
 });

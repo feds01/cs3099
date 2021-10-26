@@ -15,7 +15,7 @@ const AppBar = styled(MuiAppBar)(({ theme }) => ({
 }));
 
 interface Props {
-    title: string;
+    title?: string;
 }
 
 export default function Header({ title }: Props): ReactElement {
@@ -26,12 +26,11 @@ export default function Header({ title }: Props): ReactElement {
         <AppBar
             sx={{
                 position: 'relative',
-                backgroundColor: '#FFFFFF',
-                borderBottom: '1px solid grey',
-                boxShadow: '10px 0 12px 0 rgb(0 0 0 / 20%)',
+                backgroundColor: '#f0f0f0',
+                boxShadow: '0 1px 0 0 #dbdbdb',
             }}
         >
-            <Toolbar>
+            <Toolbar sx={{ ...(!title && { justifyContent: 'space-between' }) }}>
                 <IconButton
                     aria-label="open drawer"
                     edge="start"
@@ -41,9 +40,11 @@ export default function Header({ title }: Props): ReactElement {
                 >
                     Some logo
                 </IconButton>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    {title}
-                </Typography>
+                {title && (
+                    <Typography variant="h6" component="div" sx={{ color: 'text.primary', flexGrow: 1 }}>
+                        {title}
+                    </Typography>
+                )}
                 <div>
                     <Button
                         endIcon={<ExpandMoreOutlinedIcon />}

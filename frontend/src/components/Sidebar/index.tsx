@@ -42,8 +42,6 @@ const SidebarContainer = styled('div', { shouldForwardProp: (prop) => prop !== '
         flexShrink: 0,
         background: '#fff',
         height: '100%',
-        zIndex: 2000,
-        borderRight: '1px solid grey',
         whiteSpace: 'nowrap',
         boxSizing: 'border-box',
         ...(open && {
@@ -70,6 +68,7 @@ export default function Sidebar(): ReactElement {
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
+                    backgroundColor: '#f0f0f0',
                     justifyContent: 'space-between',
                     flex: 1,
                     height: '100%',

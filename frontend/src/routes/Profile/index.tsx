@@ -1,4 +1,3 @@
-import { useAuth } from '../../hooks/auth';
 import Box from '@mui/material/Box';
 import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
@@ -141,7 +140,6 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
 type ProfileData = { user: User; follows: { followers: number; following: number } };
 
 export default function Profile(props: Props): ReactElement {
-    const { session } = useAuth();
     const location = useLocation();
 
     // Get the user data

@@ -4,6 +4,7 @@ import React, { Dispatch, FC, useContext, useReducer } from 'react';
 
 export type AuthStateAction =
     | { type: 'login'; rememberUser: boolean; data: { session: User; token: string; refreshToken: string } }
+    | { type: 'data'; data: User }
     | { type: 'logout' }
     | { type: 'refresh' };
 
@@ -28,6 +29,8 @@ const SessionSchema = z.object({
     username: z.string(),
     firstName: z.string(),
     lastName: z.string(),
+    status: z.string().optional(),
+    about: z.string().optional(),
     profilePictureUrl: z.string().optional(),
 });
 
@@ -62,6 +65,9 @@ export function authReducer(state: AuthState, action: AuthStateAction): AuthStat
             }
 
             return { ...state, ...action.data, isLoggedIn: true };
+        case 'data':
+            localStorage.setItem('session', JSON.stringify(action.data));
+            return { ...state, session: action.data };
         case 'logout':
             localStorage.clear();
             sessionStorage.clear();

@@ -27,13 +27,13 @@ const RegisterSchema = z
         email: z.string().email(),
         username: z.string().nonempty().max(50),
         password: z.string().regex(PASSWORD_REGEX),
-        passwordConfirm: z.string().regex(PASSWORD_REGEX),
+        confirm: z.string().regex(PASSWORD_REGEX),
     })
     .superRefine((val, ctx) => {
         // TODO: check that the username and email are unique
 
         // check that the password and confirmed password match
-        if (val.password !== val.passwordConfirm) {
+        if (val.password !== val.confirm) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ['passwordConfirm'],
@@ -215,15 +215,15 @@ export default function RegisterForm({ onSuccess }: Props): ReactElement {
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Controller
-                            name="passwordConfirm"
+                            name="confirm"
                             control={control}
                             defaultValue=""
                             render={({ field }) => (
                                 <PasswordField
                                     {...field}
-                                    {...(errors.passwordConfirm && {
+                                    {...(errors.confirm && {
                                         error: true,
-                                        helperText: errors.passwordConfirm.message,
+                                        helperText: errors.confirm.message,
                                     })}
                                     fullWidth
                                     sx={{
