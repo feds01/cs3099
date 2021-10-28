@@ -15,3 +15,6 @@ dist/
 
 # Generated Swagger JSON file
 swagger.json
+
+# Server saved files
+./resources/

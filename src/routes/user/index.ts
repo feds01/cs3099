@@ -1,19 +1,13 @@
+import { z } from 'zod';
 import express from 'express';
-
 import mongoose from 'mongoose';
-import { ZodError } from 'zod';
-import User from '../../models/User';
 import Logger from '../../common/logger';
-import * as error from '../../common/errors';
 import followerRouter from './followers';
-import { ownerAuth, adminAuth } from '../../auth';
-import {
-    IUserPatchRequestSchema,
-    IUserPatchRequest,
-    IUserRoleRequestSchema,
-    IUserRoleRequest,
-} from '../../validators/user';
+import * as error from '../../common/errors';
+import User, { IUserRole } from '../../models/User';
+import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
 import Follower from '../../models/Follower';
+import { registerRoute } from '../../wrappers/requests';
 
 const router = express.Router();
 
@@ -45,32 +39,38 @@ router.use('/', followerRouter);
  * information about the user.
  *
  * */
-router.get('/:username', ownerAuth, async (req, res) => {
-    const { username } = req.params; // const id = req.params.id;
+registerRoute(router, '/:username', {
+    method: 'get',
+    params: z.object({ username: z.string() }),
+    query: z.object({}),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const { username } = req.params; // const id = req.params.id;
 
-    const user = await User.findOne({ username }).exec();
+        const user = await User.findOne({ username }).exec();
 
-    // If the user wasn't found, then return a not found status.
-    if (!user) {
-        return res.status(404).json({
-            status: false,
-            message: error.NON_EXISTENT_USER,
+        // If the user wasn't found, then return a not found status.
+        if (!user) {
+            return res.status(404).json({
+                status: false,
+                message: error.NON_EXISTENT_USER,
+            });
+        }
+
+        // we want to count the followers of the user and following entries
+        // @@Performance: Maybe in the future store these numbers and update them when follow/unfollow events occur
+        const followingCount = await Follower.count({ follower: user.id }).exec();
+        const followerCount = await Follower.count({ following: user.id }).exec();
+
+        return res.status(200).json({
+            status: true,
+            user: User.project(user),
+            follows: {
+                followers: followerCount,
+                following: followingCount,
+            },
         });
-    }
-
-    // we want to count the followers of the user and following entries
-    // @@Performance: Maybe in the future store these numbers and update them when follow/unfollow events occur
-    const followingCount = await Follower.count({ follower: user.id }).exec();
-    const followerCount = await Follower.count({ following: user.id }).exec();
-
-    return res.status(200).json({
-        status: true,
-        user: User.project(user),
-        follows: {
-            followers: followerCount,
-            following: followingCount,
-        },
-    });
+    },
 });
 
 /**
@@ -101,68 +101,56 @@ router.get('/:username', ownerAuth, async (req, res) => {
  * @return sends a response to client if user successfully updated, with the new updated user
  * information.
  * */
-router.patch('/:username', ownerAuth, async (req, res) => {
-    const { username } = req.params;
+registerRoute(router, '/:username', {
+    method: 'patch',
+    params: z.object({ username: z.string() }),
+    query: z.object({}),
+    body: IUserPatchRequestSchema,
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const { username } = req.params;
 
-    let response: IUserPatchRequest;
+        const response = req.body;
+        const update = { $set: { ...response } };
+        const queryOptions = { new: true }; // new as in return the updated document
 
-    try {
-        response = await IUserPatchRequestSchema.parseAsync(req.body);
-    } catch (e) {
-        if (e instanceof ZodError) {
-            return res.status(400).json({
-                status: false,
-                message: error.BAD_REQUEST,
-                errors: e.errors,
-            });
-        }
-        Logger.error(e);
+        // So take the fields that are to be updated into the set request, it's okay to this because
+        // we validated the request previously and we should be able to add all of the fields into the
+        // database. If the user tries to update the username or an email that's already in use, mongo
+        // will return an error because these fields have to be unique.
+        User.findOneAndUpdate({ username }, update, queryOptions, (err, newUser) => {
+            if (err) {
+                if (err instanceof mongoose.Error.ValidationError) {
+                    return res.status(400).json({
+                        status: false,
+                        message: error.BAD_REQUEST,
+                        extra: err.errors,
+                    });
+                }
 
-        return res.status(500).json({
-            status: false,
-            message: error.INTERNAL_SERVER_ERROR,
-        });
-    }
-
-    const update = { $set: { ...response } };
-    const queryOptions = { new: true }; // new as in return the updated document
-
-    // So take the fields that are to be updated into the set request, it's okay to this because
-    // we validated the request previously and we should be able to add all of the fields into the
-    // database. If the user tries to update the username or an email that's already in use, mongo
-    // will return an error because these fields have to be unique.
-    User.findOneAndUpdate({ username }, update, queryOptions, (err, newUser) => {
-        if (err) {
-            if (err instanceof mongoose.Error.ValidationError) {
-                return res.status(400).json({
+                // Something went wrong...
+                Logger.error(err);
+                return res.status(500).json({
                     status: false,
-                    message: error.BAD_REQUEST,
-                    extra: err.errors,
+                    message: error.INTERNAL_SERVER_ERROR,
                 });
             }
 
-            // Something went wrong...
-            Logger.error(err);
-            return res.status(500).json({
-                status: false,
-                message: error.INTERNAL_SERVER_ERROR,
-            });
-        }
+            // If we couldn't find the user.
+            if (!newUser) {
+                return res.status(404).json({
+                    status: false,
+                    message: error.NON_EXISTENT_USER,
+                });
+            }
 
-        // If we couldn't find the user.
-        if (!newUser) {
-            return res.status(404).json({
-                status: false,
-                message: error.NON_EXISTENT_USER,
+            return res.status(200).json({
+                status: true,
+                message: 'Successfully updated user details.',
+                user: User.project(newUser),
             });
-        }
-
-        return res.status(200).json({
-            status: true,
-            message: 'Successfully updated user details.',
-            user: User.project(newUser),
         });
-    });
+    },
 });
 
 /**
@@ -179,26 +167,31 @@ router.patch('/:username', ownerAuth, async (req, res) => {
  *
  * @return sends a response to client if user was successfully deleted or not.
  * */
+registerRoute(router, '/:username', {
+    method: 'delete',
+    params: z.object({ username: z.string() }),
+    query: z.object({}),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const { username } = req.params;
 
-router.delete('/:username', ownerAuth, async (req, res) => {
-    const { username } = req.params;
+        const user = await User.findOneAndDelete({ username }).exec();
 
-    const user = await User.findOneAndDelete({ username }).exec();
+        if (!user) {
+            return res.status(404).json({
+                status: false,
+                message: error.NON_EXISTENT_USER,
+            });
+        }
 
-    if (!user) {
-        return res.status(404).json({
-            status: false,
-            message: error.NON_EXISTENT_USER,
+        // Now we need to delete any follower entries that contain the current user's id
+        await Follower.deleteMany({ $or: [{ following: user.id }, { follower: user.id }] }).exec();
+
+        return res.status(200).json({
+            status: true,
+            message: 'Successfully deleted user account.',
         });
-    }
-
-    // Now we need to delete any follower entries that contain the current user's id
-    await Follower.deleteMany({ $or: [{ following: user.id }, { follower: user.id }] }).exec();
-
-    return res.status(200).json({
-        status: true,
-        message: 'Successfully deleted user account.',
-    });
+    },
 });
 
 /**
@@ -218,23 +211,29 @@ router.delete('/:username', ownerAuth, async (req, res) => {
  *
  * @return sends the role of the specified user.
  * */
-router.get('/:username/role', adminAuth, async (req, res) => {
-    const { username } = req.params; // const id = req.params.id;
+registerRoute(router, '/:username/role', {
+    method: 'get',
+    params: z.object({ username: z.string() }),
+    query: z.object({}),
+    permission: IUserRole.Administrator,
+    handler: async (req, res) => {
+        const { username } = req.params; // const id = req.params.id;
 
-    const user = await User.findOne({ username }).exec();
+        const user = await User.findOne({ username }).exec();
 
-    // If the user wasn't found, then return a not found status.
-    if (!user) {
-        return res.status(404).json({
-            status: false,
-            message: error.NON_EXISTENT_USER,
+        // If the user wasn't found, then return a not found status.
+        if (!user) {
+            return res.status(404).json({
+                status: false,
+                message: error.NON_EXISTENT_USER,
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            role: user.role,
         });
-    }
-
-    return res.status(200).json({
-        status: true,
-        role: user.role,
-    });
+    },
 });
 
 /**
@@ -263,63 +262,51 @@ router.get('/:username/role', adminAuth, async (req, res) => {
  * @return sends a response to client if user role successfully updated, with the new updated user role
  * information.
  * */
-router.patch('/:username/role', adminAuth, async (req, res) => {
-    const { username } = req.params;
+registerRoute(router, '/:username/role', {
+    method: 'patch',
+    params: z.object({ username: z.string() }),
+    query: z.object({}),
+    body: IUserRoleRequestSchema,
+    permission: IUserRole.Administrator,
+    handler: async (req, res) => {
+        const { username } = req.params;
+        const response = req.body;
 
-    let response: IUserRoleRequest;
+        const update = { $set: { ...response } };
 
-    try {
-        response = await IUserRoleRequestSchema.parseAsync(req.body);
-    } catch (e) {
-        if (e instanceof ZodError) {
-            return res.status(400).json({
-                status: false,
-                message: error.BAD_REQUEST,
-                errors: e.errors,
-            });
-        }
-        Logger.error(e);
+        User.findOneAndUpdate({ username }, update, { new: true }, (err, newUser) => {
+            if (err) {
+                if (err instanceof mongoose.Error.ValidationError) {
+                    return res.status(400).json({
+                        status: false,
+                        message: error.BAD_REQUEST,
+                        extra: err.errors,
+                    });
+                }
 
-        return res.status(500).json({
-            status: false,
-            message: error.INTERNAL_SERVER_ERROR,
-        });
-    }
-
-    const update = { $set: { ...response } };
-
-    User.findOneAndUpdate({ username }, update, { new: true }, (err, newUser) => {
-        if (err) {
-            if (err instanceof mongoose.Error.ValidationError) {
-                return res.status(400).json({
+                // Something went wrong...
+                Logger.error(err);
+                return res.status(500).json({
                     status: false,
-                    message: error.BAD_REQUEST,
-                    extra: err.errors,
+                    message: error.INTERNAL_SERVER_ERROR,
                 });
             }
 
-            // Something went wrong...
-            Logger.error(err);
-            return res.status(500).json({
-                status: false,
-                message: error.INTERNAL_SERVER_ERROR,
-            });
-        }
+            // If we couldn't find the user.
+            if (!newUser) {
+                return res.status(404).json({
+                    status: false,
+                    message: error.NON_EXISTENT_USER_ID,
+                });
+            }
 
-        // If we couldn't find the user.
-        if (!newUser) {
-            return res.status(404).json({
-                status: false,
-                message: error.NON_EXISTENT_USER_ID,
+            return res.status(200).json({
+                status: true,
+                message: 'Successfully updated user role.',
+                role: newUser.role,
             });
-        }
-
-        return res.status(200).json({
-            status: true,
-            message: 'Successfully updated user role.',
-            role: newUser.role,
         });
-    });
+    },
 });
 
 export default router;

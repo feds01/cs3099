@@ -36,4 +36,5 @@ export const SELF_FOLLOWING = 'Users cannot follow themselves';
 export const ALREADY_FOLLOWED = 'The user is already followed by you';
 
 // General request errors
+export const RESOURCE_NOT_FOUND = 'Resource could not be found.';
 export const INTERNAL_SERVER_ERROR = 'Internal Server Error.';
