@@ -1,9 +1,4 @@
-require('dotenv').config(); // Import our environment variables
-
 import helmet from 'helmet';
-import mongoose from 'mongoose';
-import { createServer } from 'http';
-import { AddressInfo } from 'net';
 import fileUpload from 'express-fileupload';
 import express, { Application } from 'express';
 
@@ -13,7 +8,8 @@ import SwaggerUI from 'swagger-ui-express';
 
 import Logger from './common/logger';
 import * as errors from './common/errors';
-import * as SwaggerOptions from './../swagger.json';
+import manifest from './../package.json';
+import * as SwaggerOptions from '../swagger.json';
 
 // Routers
 import userRouter from './routes/user';
@@ -39,7 +35,6 @@ const options = {
 };
 
 const specs = Swagger(options);
-
 app.use('/docs', SwaggerUI.serve, SwaggerUI.setup(specs));
 
 // Setup express middleware
@@ -57,6 +52,15 @@ app.use((_req: express.Request, res: express.Response, next: express.NextFunctio
     res.header('Access-Control-Allow-Methods', 'POST, PUT, GET, OPTIONS, DELETE, PATCH');
 
     next();
+});
+
+app.get('/version', (_req, res) => {
+    res.status(200).json({
+        status: true,
+        version: {
+            app: manifest.version,
+        },
+    });
 });
 
 // Setup the specific API routes
@@ -96,32 +100,4 @@ app.use((_req, res) => {
     });
 });
 
-//initialize a simple http server
-const server = createServer(app);
-
-//start our server
-server.listen(process.env['PORT'] || 5000, () => {
-    const port = (server.address() as AddressInfo).port;
-
-    Logger.info(`Server started on ${port}! (environment: ${process.env['NODE_ENV'] || 'dev'})`);
-    Logger.info('Attempting connection with MongoDB service');
-
-    // TODO(alex): Try to load the current federations configuration from disk, but if we don't
-    //             have it, then we make a request to the supergroup info endpoint at:
-    //             --> https://gbs3.host.cs.st-andrews.ac.uk/cs3099-journals.json
-
-    mongoose.connect(
-        process.env['MONGODB_CONNECTION_URI']!,
-        {
-            connectTimeoutMS: 30000,
-        },
-        (err: any) => {
-            if (err) {
-                Logger.error(`Failed to connect to MongoDB: ${err.message}`);
-                process.exit(1);
-            }
-
-            Logger.info('Established connection with MongoDB service');
-        },
-    );
-});
+export default app;
