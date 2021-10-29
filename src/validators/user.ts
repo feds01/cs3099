@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-import { IUserRole } from '../models/User';
+import mongoose from 'mongoose';
+import * as error from '../common/errors';
+import User, { IUserRole } from '../models/User';
 
 /**
  * This is the password regex. It specifies that the password must be between the length
@@ -41,6 +43,17 @@ export const IUserRegisterRequestSchema = z.object({
     status: z.string().optional(),
     profilePictureUrl: z.string().url().optional(),
 });
+
+export const ObjectIdSchema = z.string().refine(mongoose.Types.ObjectId.isValid, { message: "Not a valid object id" });
+export const UsernameSchema = z
+        .string()
+        .nonempty()
+        .max(50)
+        .regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric')
+        .refine(
+                async (username) => await User.count({ username }) > 0,
+                { message: error.NON_EXISTENT_USER }
+        );
 
 export type IUserRegisterRequest = z.infer<typeof IUserRegisterRequestSchema>;
 

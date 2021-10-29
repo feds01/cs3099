@@ -59,7 +59,7 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
 app.use('/sg', ssoRouter); // TODO(alex): we'll probably need to setup a proxy so that the SuperGroup can access all endpoints not just login
 app.use('/auth', authRouter);
 app.use('/user', userRouter);
-app.use('/submissions', publicationsRouter);
+app.use('/publication', publicationsRouter);
 app.use('/reviews', reviewsRouter);
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

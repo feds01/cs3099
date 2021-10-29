@@ -37,7 +37,7 @@ export const ALREADY_FOLLOWED = 'The user is already followed by you';
 
 // Submissions endpoints
 export const SUBMISSION_FAILED = 'Submission failed';
-export const TITLE_EXISTS = 'Title already in use';
+export const TITLE_EXISTS = 'Title already in use by another submission of yours';
 export const NON_EXISTENT_SUBMISSION = 'No submission with the given title exists';
 export const NON_EXISTENT_SUBMISSION_ID = 'No submission with the given id exists';
 

@@ -1,15 +1,19 @@
-import mongoose from 'mongoose';
 import { z } from 'zod';
+import {UsernameSchema} from "./user"
 
-const ObjectIdSchema = z.string().refine(mongoose.Types.ObjectId.isValid, { message: "Not a valid object id" })
+const CollaboratorArraySchema = UsernameSchema
+        .array()
+        .refine(
+                (arr) => arr.length === new Set(arr).size,
+                { message: "No duplicated collaborators allowed" }
+        );
 
 export const ISubmissionPostRequestSchema = z.object({
         revision: z.string().nonempty(),
-        owner: ObjectIdSchema,
+        owner: UsernameSchema,
         title: z.string().nonempty(),
         introduction: z.string().nonempty(),
-        collaborators: z.array(ObjectIdSchema),
+        collaborators: CollaboratorArraySchema,
 });
-    
 
 export type ISubmissionPostRequest = z.infer<typeof ISubmissionPostRequestSchema>;

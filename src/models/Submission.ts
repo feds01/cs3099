@@ -2,10 +2,10 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface ISubmission {
     revision: string;
-    owner: mongoose.ObjectId;
+    owner: mongoose.Types.ObjectId;
     title: string;
     introduction: string;
-    collaborators: mongoose.ObjectId[];
+    collaborators: mongoose.Types.ObjectId[];
 }
 
 interface ISubmissionDocument extends ISubmission, Document {}
