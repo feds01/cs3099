@@ -1,19 +1,11 @@
-export interface RegisteredUserTokenPayload {
-    id: string;
-    name: string;
-    email: string;
-}
+import * as jwt from 'jsonwebtoken';
 
-export interface Token<T extends RegisteredUserTokenPayload> {
-    data: T;
-    exp: number;
-    alg: string;
-}
-
-declare global {
-    namespace Express {
-        export interface Request {
-            token?: Token;
-        }
+declare module 'jsonwebtoken' {
+    export interface JwtPayload {
+        data: {
+            id: string;
+            username: string;
+            email: string;
+        };
     }
 }

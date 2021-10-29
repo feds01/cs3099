@@ -1,10 +1,12 @@
-import { ZodError } from 'zod';
+import { z } from 'zod';
 import express from 'express';
-import User, { IUser } from '../../models/User';
 import Logger from '../../common/logger';
 import * as error from '../../common/errors';
 import Follower from '../../models/Follower';
-import { ownerAuth } from '../../auth';
+import * as userUtils from '../../utils/users';
+import { registerRoute } from '../../wrappers/requests';
+import User, { IUser, IUserRole } from '../../models/User';
+import { ModeSchema } from '../../validators/requests';
 
 const router = express.Router({ mergeParams: true });
 
@@ -27,187 +29,209 @@ const router = express.Router({ mergeParams: true });
  *
  * @return response to client if mapping was created and added to the system.
  * */
+registerRoute(router, '/:username/follow', {
+    method: 'post',
+    params: z.object({ username: z.string() }),
+    body: z.object({}),
+    query: z.object({ mode: ModeSchema }),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
-router.post('/:username/follow', ownerAuth, async (req, res) => {
-    const { username } = req.params;
-    const { id: followerId } = req.token.data;
+        const { id: followerId } = req.token.data;
 
-    // check if the user is already following the other user, if so
-    // then exit early and don't create the new follower link.
-    const follower = await User.findById(followerId).exec();
-    const following = await User.findOne({ username }).exec();
+        // check if the user is already following the other user, if so
+        // then exit early and don't create the new follower link.
+        const follower = await User.findById(followerId).exec();
 
-    if (!follower || !following) {
-        return res.status(404).json({
-            status: false,
-            message: error.NON_EXISTENT_USER_ID,
-        });
-    }
+        if (!follower) {
+            return res.status(404).json({
+                status: false,
+                message: error.NON_EXISTENT_USER_ID,
+            });
+        }
 
-    // Just return a NoContent
-    if (follower.id === following.id) {
-        return res.status(204).json({
-            status: true,
-        });
-    }
+        // Just return a NoContent since we don't need to create anything
+        if (follower.id === user.id) {
+            return res.status(204).json({
+                status: true,
+            });
+        }
 
-    let mapping = { follower: follower.id, following: following.id };
+        let mapping = { follower: follower.id, following: user.id };
 
-    // check if the user is already following, if so, exit early and return
-    // corresponding messages
-    const doc = await Follower.findOne(mapping).exec();
+        // check if the user is already following, if so, exit early and return
+        // corresponding messages
+        const doc = await Follower.findOne(mapping).exec();
 
-    if (doc) {
-        return res.status(401).json({
-            status: false,
-            message: error.ALREADY_FOLLOWED,
-        });
-    }
+        if (doc) {
+            return res.status(401).json({
+                status: false,
+                message: error.ALREADY_FOLLOWED,
+            });
+        }
 
-    const newFollow = new Follower(mapping);
-    try {
-        newFollow.save();
+        const newFollow = new Follower(mapping);
+        try {
+            newFollow.save();
 
-        return res.status(201).json({
-            status: true,
-            message: 'Successfully followed user.',
-        });
-    } catch (e) {
-        Logger.error(e);
+            return res.status(201).json({
+                status: true,
+                message: 'Successfully followed user.',
+            });
+        } catch (e) {
+            Logger.error(e);
 
-        return res.status(500).json({
-            status: false,
-            message: error.INTERNAL_SERVER_ERROR,
-        });
-    }
+            return res.status(500).json({
+                status: false,
+                message: error.INTERNAL_SERVER_ERROR,
+            });
+        }
+    },
 });
 
-router.delete('/:username/follow', ownerAuth, async (req, res) => {
-    const { username } = req.params;
-    const { id: followerId } = req.token.data;
+registerRoute(router, '/:username/follow', {
+    method: 'delete',
+    params: z.object({ username: z.string() }),
+    query: z.object({ mode: ModeSchema }),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
-    // check if the user is already following the other user, if so
-    // then exit early and don't create the new follower link.
-    const follower = await User.findById(followerId).exec();
-    const followee = await User.findOne({ username }).exec();
+        const { id: followerId } = req.token.data;
 
-    if (!follower || !followee) {
-        return res.status(404).json({
-            status: false,
-            message: error.NON_EXISTENT_USER_ID,
-        });
-    }
+        // check if the user is already following the other user, if so
+        // then exit early and don't create the new follower link.
+        const follower = await User.findById(followerId).exec();
 
-    const link = await Follower.findOneAndDelete({
-        follower: follower.id,
-        following: followee.id,
-    }).exec();
+        if (!follower) {
+            return res.status(404).json({
+                status: false,
+                message: error.NON_EXISTENT_USER_ID,
+            });
+        }
 
-    if (!link) {
-        return res.status(404).json({
-            status: true,
-            message: "User isn't following the other user",
-        });
-    } else {
+        const link = await Follower.findOneAndDelete({
+            follower: follower.id,
+            following: user.id,
+        }).exec();
+
+        if (!link) {
+            return res.status(404).json({
+                status: true,
+                message: "User isn't following the other user",
+            });
+        }
+
         return res.status(200).json({
             status: true,
             message: 'User was unfollowed',
         });
-    }
+    },
 });
 
-router.get('/:username/follow', ownerAuth, async (req, res) => {
-    const { username } = req.params;
-    const { id: followerId } = req.token.data;
+registerRoute(router, '/:username/follow', {
+    method: 'get',
+    params: z.object({ username: z.string() }),
+    query: z.object({ mode: ModeSchema }),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
-    // check if the user is already following the other user, if so
-    // then exit early and don't create the new follower link.
-    const follower = await User.findById(followerId).exec();
-    const followee = await User.findOne({ username }).exec();
+        const { id: followerId } = req.token['data'];
 
-    if (!follower || !followee) {
-        return res.status(404).json({
-            status: false,
-            message: error.NON_EXISTENT_USER_ID,
-        });
-    }
+        // check if the user is already following the other user, if so
+        // then exit early and don't create the new follower link.
+        const follower = await User.findById(followerId).exec();
 
-    const link = await Follower.findOne({ follower: follower.id, following: followee.id }).exec();
+        if (!follower) {
+            return res.status(404).json({
+                status: false,
+                message: error.NON_EXISTENT_USER_ID,
+            });
+        }
 
-    if (!link) {
-        return res.status(404).json({
-            status: true,
-            following: false,
-            message: "User isn't following the other user",
-        });
-    } else {
+        const link = await Follower.findOne({
+            follower: follower.id,
+            following: user.id,
+        }).exec();
+
+        if (!link) {
+            return res.status(404).json({
+                status: true,
+                following: false,
+                message: "User isn't following the other user",
+            });
+        } else {
+            return res.status(200).json({
+                status: true,
+                following: true,
+                message: 'User is following the other user',
+            });
+        }
+    },
+});
+
+registerRoute(router, '/:username/followers', {
+    method: 'get',
+    params: z.object({ username: z.string() }),
+    query: z.object({ mode: ModeSchema }),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        // TODO:(alex) Implement pagination for this endpoint since the current limit will
+        //             be 50 documents.
+        // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
+        const result = await Follower.find({ following: user.id })
+            .populate<{ follower: IUser }[]>('follower')
+            .limit(50);
+
+        const followers = result.map((link) =>
+            User.project((link as typeof result[number]).follower),
+        );
+
         return res.status(200).json({
             status: true,
-            following: true,
-            message: 'User is following the other user',
+            data: {
+                followers,
+            },
         });
-    }
+    },
 });
 
-router.get('/:username/followers', ownerAuth, async (req, res) => {
-    const { username } = req.params;
+registerRoute(router, '/:username/followers', {
+    method: 'get',
+    params: z.object({ username: z.string() }),
+    query: z.object({ mode: ModeSchema }),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
-    // then exit early and don't create the new follower link.
-    const user = await User.findOne({ username }).exec();
+        // TODO:(alex) Implement pagination for this endpoint since the current limit will
+        //             be 50 documents.
+        // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
+        const result = await Follower.find({ follower: user.id })
+            .populate<{ following: IUser }[]>('following')
+            .limit(50)
+            .exec();
 
-    if (!user) {
-        return res.status(404).json({
-            status: false,
-            message: error.NON_EXISTENT_USER_ID,
+        const followers = result.map((link) =>
+            User.project((link as typeof result[number]).following),
+        );
+
+        return res.status(200).json({
+            status: true,
+            data: {
+                following: followers,
+            },
         });
-    }
-
-    // TODO:(alex) Implement pagination for this endpoint since the current limit will
-    //             be 50 documents.
-    // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
-    const result = await Follower.find({ following: user.id })
-        .populate<{ follower: IUser }[]>('follower')
-        .limit(50);
-
-    const followers = result.map((link) => User.project((link as typeof result[number]).follower));
-
-    return res.status(200).json({
-        status: true,
-        data: {
-            followers,
-        },
-    });
-});
-
-router.get('/:username/following', ownerAuth, async (req, res) => {
-    const { username } = req.params;
-
-    // then exit early and don't create the new follower link.
-    const user = await User.findOne({ username }).exec();
-
-    if (!user) {
-        return res.status(404).json({
-            status: false,
-            message: error.NON_EXISTENT_USER_ID,
-        });
-    }
-
-    // TODO:(alex) Implement pagination for this endpoint since the current limit will
-    //             be 50 documents.
-    // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
-    const result = await Follower.find({ follower: user.id })
-        .populate<{ following: IUser }[]>('following')
-        .limit(50)
-        .exec();
-
-    const followers = result.map((link) => User.project((link as typeof result[number]).following));
-
-    return res.status(200).json({
-        status: true,
-        data: {
-            following: followers,
-        },
-    });
+    },
 });
 
 export default router;
