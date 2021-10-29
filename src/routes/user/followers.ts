@@ -3,8 +3,10 @@ import express from 'express';
 import Logger from '../../common/logger';
 import * as error from '../../common/errors';
 import Follower from '../../models/Follower';
+import * as userUtils from '../../utils/users';
 import { registerRoute } from '../../wrappers/requests';
 import User, { IUser, IUserRole } from '../../models/User';
+import { ModeSchema } from '../../validators/requests';
 
 const router = express.Router({ mergeParams: true });
 
@@ -31,32 +33,33 @@ registerRoute(router, '/:username/follow', {
     method: 'post',
     params: z.object({ username: z.string() }),
     body: z.object({}),
-    query: z.object({}),
+    query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { username } = req.params;
-        const { id: followerId } = req.token['data'];
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        const { id: followerId } = req.token.data;
 
         // check if the user is already following the other user, if so
         // then exit early and don't create the new follower link.
         const follower = await User.findById(followerId).exec();
-        const following = await User.findOne({ username }).exec();
 
-        if (!follower || !following) {
+        if (!follower) {
             return res.status(404).json({
                 status: false,
                 message: error.NON_EXISTENT_USER_ID,
             });
         }
 
-        // Just return a NoContent
-        if (follower.id === following.id) {
+        // Just return a NoContent since we don't need to create anything
+        if (follower.id === user.id) {
             return res.status(204).json({
                 status: true,
             });
         }
 
-        let mapping = { follower: follower.id, following: following.id };
+        let mapping = { follower: follower.id, following: user.id };
 
         // check if the user is already following, if so, exit early and return
         // corresponding messages
@@ -91,18 +94,19 @@ registerRoute(router, '/:username/follow', {
 registerRoute(router, '/:username/follow', {
     method: 'delete',
     params: z.object({ username: z.string() }),
-    query: z.object({}),
+    query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { username } = req.params;
-        const { id: followerId } = req.token['data'];
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        const { id: followerId } = req.token.data;
 
         // check if the user is already following the other user, if so
         // then exit early and don't create the new follower link.
         const follower = await User.findById(followerId).exec();
-        const followee = await User.findOne({ username }).exec();
 
-        if (!follower || !followee) {
+        if (!follower) {
             return res.status(404).json({
                 status: false,
                 message: error.NON_EXISTENT_USER_ID,
@@ -111,7 +115,7 @@ registerRoute(router, '/:username/follow', {
 
         const link = await Follower.findOneAndDelete({
             follower: follower.id,
-            following: followee.id,
+            following: user.id,
         }).exec();
 
         if (!link) {
@@ -131,18 +135,19 @@ registerRoute(router, '/:username/follow', {
 registerRoute(router, '/:username/follow', {
     method: 'get',
     params: z.object({ username: z.string() }),
-    query: z.object({}),
+    query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { username } = req.params;
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
         const { id: followerId } = req.token['data'];
 
         // check if the user is already following the other user, if so
         // then exit early and don't create the new follower link.
         const follower = await User.findById(followerId).exec();
-        const followee = await User.findOne({ username }).exec();
 
-        if (!follower || !followee) {
+        if (!follower) {
             return res.status(404).json({
                 status: false,
                 message: error.NON_EXISTENT_USER_ID,
@@ -151,7 +156,7 @@ registerRoute(router, '/:username/follow', {
 
         const link = await Follower.findOne({
             follower: follower.id,
-            following: followee.id,
+            following: user.id,
         }).exec();
 
         if (!link) {
@@ -173,20 +178,11 @@ registerRoute(router, '/:username/follow', {
 registerRoute(router, '/:username/followers', {
     method: 'get',
     params: z.object({ username: z.string() }),
-    query: z.object({}),
+    query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { username } = req.params;
-
-        // then exit early and don't create the new follower link.
-        const user = await User.findOne({ username }).exec();
-
-        if (!user) {
-            return res.status(404).json({
-                status: false,
-                message: error.NON_EXISTENT_USER_ID,
-            });
-        }
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
         // TODO:(alex) Implement pagination for this endpoint since the current limit will
         //             be 50 documents.
@@ -211,20 +207,11 @@ registerRoute(router, '/:username/followers', {
 registerRoute(router, '/:username/followers', {
     method: 'get',
     params: z.object({ username: z.string() }),
-    query: z.object({}),
+    query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { username } = req.params;
-
-        // then exit early and don't create the new follower link.
-        const user = await User.findOne({ username }).exec();
-
-        if (!user) {
-            return res.status(404).json({
-                status: false,
-                message: error.NON_EXISTENT_USER_ID,
-            });
-        }
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
         // TODO:(alex) Implement pagination for this endpoint since the current limit will
         //             be 50 documents.

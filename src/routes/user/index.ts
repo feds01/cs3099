@@ -4,10 +4,12 @@ import mongoose from 'mongoose';
 import Logger from '../../common/logger';
 import followerRouter from './followers';
 import * as error from '../../common/errors';
-import User, { IUserRole } from '../../models/User';
-import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
 import Follower from '../../models/Follower';
+import * as userUtils from './../../utils/users';
+import User, { IUserRole } from '../../models/User';
 import { registerRoute } from '../../wrappers/requests';
+import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
+import { ModeSchema } from '../../validators/requests';
 
 const router = express.Router();
 
@@ -42,20 +44,11 @@ router.use('/', followerRouter);
 registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
-    query: z.object({}),
+    query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { username } = req.params; // const id = req.params.id;
-
-        const user = await User.findOne({ username }).exec();
-
-        // If the user wasn't found, then return a not found status.
-        if (!user) {
-            return res.status(404).json({
-                status: false,
-                message: error.NON_EXISTENT_USER,
-            });
-        }
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
         // we want to count the followers of the user and following entries
         // @@Performance: Maybe in the future store these numbers and update them when follow/unfollow events occur
@@ -104,11 +97,12 @@ registerRoute(router, '/:username', {
 registerRoute(router, '/:username', {
     method: 'patch',
     params: z.object({ username: z.string() }),
-    query: z.object({}),
+    query: z.object({ mode: ModeSchema }),
     body: IUserPatchRequestSchema,
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { username } = req.params;
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
         const response = req.body;
         const update = { $set: { ...response } };
@@ -118,7 +112,7 @@ registerRoute(router, '/:username', {
         // we validated the request previously and we should be able to add all of the fields into the
         // database. If the user tries to update the username or an email that's already in use, mongo
         // will return an error because these fields have to be unique.
-        User.findOneAndUpdate({ username }, update, queryOptions, (err, newUser) => {
+        User.findByIdAndUpdate(user.id, update, queryOptions, (err, newUser) => {
             if (err) {
                 if (err instanceof mongoose.Error.ValidationError) {
                     return res.status(400).json({
@@ -170,14 +164,15 @@ registerRoute(router, '/:username', {
 registerRoute(router, '/:username', {
     method: 'delete',
     params: z.object({ username: z.string() }),
-    query: z.object({}),
+    query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { username } = req.params;
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
-        const user = await User.findOneAndDelete({ username }).exec();
+        const deletedUser = await User.findByIdAndDelete(user.id).exec();
 
-        if (!user) {
+        if (!deletedUser) {
             return res.status(404).json({
                 status: false,
                 message: error.NON_EXISTENT_USER,
@@ -214,20 +209,11 @@ registerRoute(router, '/:username', {
 registerRoute(router, '/:username/role', {
     method: 'get',
     params: z.object({ username: z.string() }),
-    query: z.object({}),
+    query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Administrator,
     handler: async (req, res) => {
-        const { username } = req.params; // const id = req.params.id;
-
-        const user = await User.findOne({ username }).exec();
-
-        // If the user wasn't found, then return a not found status.
-        if (!user) {
-            return res.status(404).json({
-                status: false,
-                message: error.NON_EXISTENT_USER,
-            });
-        }
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
         return res.status(200).json({
             status: true,
@@ -265,16 +251,16 @@ registerRoute(router, '/:username/role', {
 registerRoute(router, '/:username/role', {
     method: 'patch',
     params: z.object({ username: z.string() }),
-    query: z.object({}),
+    query: z.object({ mode: ModeSchema }),
     body: IUserRoleRequestSchema,
     permission: IUserRole.Administrator,
     handler: async (req, res) => {
-        const { username } = req.params;
-        const response = req.body;
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
-        const update = { $set: { ...response } };
+        const update = { $set: { ...req.body } };
 
-        User.findOneAndUpdate({ username }, update, { new: true }, (err, newUser) => {
+        User.findByIdAndUpdate(user.id, update, { new: true }, (err, newUser) => {
             if (err) {
                 if (err instanceof mongoose.Error.ValidationError) {
                     return res.status(400).json({

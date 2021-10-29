@@ -4,9 +4,10 @@ import express, { Router } from 'express';
 import Logger from '../../common/logger';
 import Submission from '../../models/Submission';
 import { IUserRole } from '../../models/User';
+import * as userUtils from '../../utils/users';
 import { registerRoute } from '../../wrappers/requests';
 import { joinPaths, extractFile } from '../../utils/resources';
-import { ObjectIdSchema } from '../../validators/requests';
+import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
 
 const router = express.Router();
 
@@ -15,12 +16,14 @@ const router = express.Router();
  */
 registerRoute(router, '/upload/:username', {
     params: z.object({ username: z.string() }),
-    query: z.object({}),
+    query: z.object({ mode: ModeSchema }),
     body: z.any(),
     method: 'post',
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { username } = req.params;
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
         const file = extractFile(req.raw);
 
         if (!file) {
@@ -30,10 +33,10 @@ registerRoute(router, '/upload/:username', {
             });
         }
 
-        const uploadPath = joinPaths('avatar', username, 'avatar');
+        const uploadPath = joinPaths('avatar', user.username, 'avatar');
 
         // Move the file into it's appropriate storage location
-        file.mv(uploadPath, (err) => {
+        return file.mv(uploadPath, (err) => {
             if (err) {
                 Logger.error(err);
 
@@ -85,7 +88,7 @@ registerRoute(router, '/upload/publication/:title', {
         const uploadPath = joinPaths('submissions', username, submission.id);
 
         // Move the file into it's appropriate storage location
-        file.mv(uploadPath, (err) => {
+        return file.mv(uploadPath, (err) => {
             if (err) {
                 Logger.error(err);
 
@@ -107,13 +110,16 @@ registerRoute(router, '/upload/publication/:title', {
 /**
  * Endpoint for uploading comment attachments to a submission
  */
-registerRoute(router, '/upload/comment/:username/:od', {
+registerRoute(router, '/upload/comment/:username/:id', {
     params: z.object({ username: z.string(), id: ObjectIdSchema }),
-    query: z.object({}),
+    query: z.object({ mode: ModeSchema }),
     body: z.any(),
     method: 'post',
     permission: IUserRole.Default,
     handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
         throw new Error('Unimplemented');
     },
 });
