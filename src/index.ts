@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import mongoose from 'mongoose';
 import { createServer } from 'http';
 import { AddressInfo } from 'net';
+import fileUpload from 'express-fileupload';
 import express, { Application } from 'express';
 
 // Import relevant modules to Swagger UI
@@ -47,7 +48,10 @@ app.use(morganMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+// File uploads
+app.use(fileUpload());
+
+app.use((_req: express.Request, res: express.Response, next: express.NextFunction) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', '*');
     res.header('Access-Control-Allow-Methods', 'POST, PUT, GET, OPTIONS, DELETE, PATCH');
@@ -62,7 +66,7 @@ app.use('/user', userRouter);
 app.use('/publication', publicationsRouter);
 app.use('/reviews', reviewsRouter);
 
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     // This check makes sure this is a JSON parsing issue, but it might be
     // coming from any middleware, not just body-parser:
 
@@ -82,10 +86,11 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     }
 
     next();
+    return;
 });
 
 // catch 404 and forward to error handler
-app.use((req, res, next) => {
+app.use((_req, res) => {
     res.status(404).send({
         status: false,
     });
@@ -95,10 +100,10 @@ app.use((req, res, next) => {
 const server = createServer(app);
 
 //start our server
-server.listen(process.env.PORT || 5000, () => {
+server.listen(process.env['PORT'] || 5000, () => {
     const port = (server.address() as AddressInfo).port;
 
-    Logger.info(`Server started on ${port}! (environment: ${process.env.NODE_ENV || 'dev'})`);
+    Logger.info(`Server started on ${port}! (environment: ${process.env['NODE_ENV'] || 'dev'})`);
     Logger.info('Attempting connection with MongoDB service');
 
     // TODO(alex): Try to load the current federations configuration from disk, but if we don't
@@ -106,7 +111,7 @@ server.listen(process.env.PORT || 5000, () => {
     //             --> https://gbs3.host.cs.st-andrews.ac.uk/cs3099-journals.json
 
     mongoose.connect(
-        process.env.MONGODB_CONNECTION_URI!,
+        process.env['MONGODB_CONNECTION_URI']!,
         {
             connectTimeoutMS: 30000,
         },

@@ -20,6 +20,8 @@ tags:
       description: Calls relating to submission reviews.
     - name: submissions
       description: Calls relating to submissions.
+    - name: resources
+      description: Endpoints related to managing uploaded resources.
 paths:
     /sg/sso/login:
         post:
@@ -104,7 +106,6 @@ paths:
                     description: No Content
                 '500':
                     $ref: '#/components/responses/InternalServerError'
-
     /auth/email_validation:
         post:
             summary: Pre-registration email validation
@@ -145,7 +146,6 @@ paths:
                     $ref: '#/components/responses/UnprocessableEntity'
                 '500':
                     $ref: '#/components/responses/InternalServerError'
-
     /auth/token:
         post:
             summary: Refresh user session
@@ -172,7 +172,6 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                 '500':
                     $ref: '#/components/responses/InternalServerError'
-
     /auth/login:
         post:
             summary: User Login
@@ -617,6 +616,47 @@ paths:
                     $ref: '#/components/responses/NotFound'
                 '500':
                     $ref: '#/components/responses/InternalServerError'
+    /resources/upload/{username}/{type}:
+        post:
+            summary: Upload a generic file resource
+            description: Endpoint for uploading media to Iamus from multiple sources including publications, comments, profile pictures, etc.
+            tags:
+                - resources
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                description: Provide information about the upload
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/UploadResource'
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: type
+                  schema:
+                      type: string
+                  required: true
+                  description: The type of the upload
+            responses:
+                '302':
+                    description: Information about the uploaded resource, where it can be found.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UploadResourceResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
 
 components:
     securitySchemes:
@@ -844,7 +884,6 @@ components:
                     example: ABCDE921312DAB23AE
                 user:
                     $ref: '#/components/schemas/User'
-
         User:
             type: object
             required:
@@ -908,3 +947,10 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/User'
+        UploadResource:
+            required: true
+            type: string
+        UploadResourceResponse:
+            type: object
+            required:
+                - status

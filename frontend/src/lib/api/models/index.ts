@@ -43,3 +43,5 @@ export * from './tokenResponse';
 export * from './followerCount';
 export * from './userPatchRequest';
 export * from './badRequestResponseExtra';
+export * from './uploadResource';
+export * from './uploadResourceResponse';

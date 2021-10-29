@@ -5,6 +5,7 @@ export interface ISubmission {
     owner: mongoose.Types.ObjectId;
     title: string;
     introduction: string;
+    attachment?: string;
     collaborators: mongoose.Types.ObjectId[];
 }
 
@@ -18,6 +19,7 @@ const SubmissionSchema = new Schema<ISubmission, ISubmissionModel, ISubmission>(
         title: { type: String, required: true },
         introduction: { type: String, required: true },
         owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
+        attachment: { type: String },
         collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
     },
     { timestamps: true },

@@ -1,35 +1,12 @@
-import * as express from 'express';
-import { isValidObjectId } from 'mongoose';
+import { z } from 'zod';
+import mongoose from 'mongoose';
 
-import * as errors from '../common/errors';
+export const ObjectIdSchema = z
+    .string()
+    .refine(mongoose.Types.ObjectId.isValid, { message: 'Not a valid object id' });
 
-/**
- * This is a middleware to make sure that when a certain request contains a user id,
- * it can be validated using this middleware, so that we can generalise this kind of
- * error handling. It is expected that the 'id' parameter follows the MongoDB convention
- *  of using a ObjectID which is a string of 24 hex characters.
- *
- * @param req - The current request object.
- * @param res - The response object.
- * @param next  - The next function callback, used to continue execution.
- */
-export default function paramValidator(
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction,
-) {
-    const { id } = req.params;
+// Schema for describing if the request is querying by user ID or by username.
+const modes = ['username', 'id'] as const;
+export const ModeSchema = z.enum(modes).default('username');
 
-    // TODO: In the future, we can use zod to provide general schemas for each point and the checker
-    // can just use the schema instead of only checking the 'id' parameter, and lifting the constraint
-    // of the 'id' field being named as it is.
-    if (!isValidObjectId(id)) {
-        return res.status(400).json({
-            status: false,
-            message: errors.BAD_REQUEST,
-            extra: 'Invalid user id format.',
-        });
-    }
-
-    next();
-}
+export type UserRequestMode = z.infer<typeof ModeSchema>;

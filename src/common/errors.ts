@@ -42,4 +42,5 @@ export const NON_EXISTENT_SUBMISSION = 'No submission with the given title exist
 export const NON_EXISTENT_SUBMISSION_ID = 'No submission with the given id exists';
 
 // General request errors
+export const RESOURCE_NOT_FOUND = 'Resource could not be found.';
 export const INTERNAL_SERVER_ERROR = 'Internal Server Error.';

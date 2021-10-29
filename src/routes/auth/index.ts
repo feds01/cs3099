@@ -10,7 +10,7 @@ import {
     IUsernameValidity,
     IUsernameValiditySchema,
 } from '../../validators/auth';
-import { createTokens } from '../../auth';
+import { createTokens } from '../../wrappers/auth';
 import {
     IUserLoginRequest,
     IUserLoginRequestSchema,
@@ -337,7 +337,7 @@ router.post('/login', async (req, res) => {
     // username not found. This could lead to a brute force attack to retrieve
     // all existent user names.
     if (result) {
-        bcrypt.compare(password, result.password, async (err, response) => {
+        return bcrypt.compare(password, result.password, async (err, response) => {
             if (err) {
                 // Log the error in the server console & respond to the client with an
                 // INTERNAL_SERVER_ERROR, since this was an unexpected exception.
@@ -355,7 +355,7 @@ router.post('/login', async (req, res) => {
             if (response) {
                 const { token, refreshToken } = await createTokens({
                     email: result.email,
-                    name: result.username,
+                    username: result.username,
                     id: result.id,
                 });
 

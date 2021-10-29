@@ -19,9 +19,9 @@ export interface IUser {
     externalId?: string;
 }
 
-interface IUserDocument extends IUser, Document {}
+export interface IUserDocument extends IUser, Document {}
 
-interface IUserModel extends Model<IUserDocument> {
+export interface IUserModel extends Model<IUserDocument> {
     project: (user: IUser) => Partial<IUser>;
 }
 
