@@ -1,6 +1,4 @@
 import path from 'path';
-import express from 'express';
-import { UploadedFile } from 'express-fileupload';
 
 /**
  * Function to concatenate paths with the specified project resource folder.
@@ -16,13 +14,4 @@ export function joinPaths(...paths: string[]): string {
     }
 
     return path.join(prefix, ...paths);
-}
-
-export function extractFile(req: express.Request): UploadedFile | null {
-    if (!req.files || !req.files.file) {
-        return null;
-    }
-
-    const { file } = req.files;
-    return Array.isArray(file) ? null : file; // Ensure that is not an array
 }

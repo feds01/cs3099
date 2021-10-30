@@ -2,7 +2,7 @@ import { z } from 'zod';
 import * as errors from '../../common/errors';
 import express, { Router } from 'express';
 import Logger from '../../common/logger';
-import Submission from '../../models/Submission';
+import Submission from '../../models/Publication';
 import { IUserRole } from '../../models/User';
 import * as userUtils from '../../utils/users';
 import registerRoute from '../../wrappers/requests';
