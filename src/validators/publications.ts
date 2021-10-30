@@ -8,7 +8,7 @@ const CollaboratorArraySchema = ExistUsernameSchema
                 { message: "No duplicated collaborators allowed" }
         );
 
-export const ISubmissionPostRequestSchema = z.object({
+export const IPublicationPostRequestSchema = z.object({
         revision: z.string().nonempty(),
         title: z.string().nonempty(),
         introduction: z.string().nonempty(),
@@ -19,4 +19,4 @@ export const ISubmissionPostRequestSchema = z.object({
 export const SearchModeSchema = z.enum(['title', 'username']).default('title');
 
 export type SearchRequestMode = z.infer<typeof SearchModeSchema>
-export type ISubmissionPostRequest = z.infer<typeof ISubmissionPostRequestSchema>;
+export type IPublicationPostRequest = z.infer<typeof IPublicationPostRequestSchema>;

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import * as errors from '../../common/errors';
 import express, { Router } from 'express';
 import Logger from '../../common/logger';
-import Submission from '../../models/Submission';
+import Publication from '../../models/Publications';
 import { IUserRole } from '../../models/User';
 import * as userUtils from '../../utils/users';
 import { registerRoute } from '../../wrappers/requests';
@@ -56,7 +56,7 @@ registerRoute(router, '/upload/:username', {
 });
 
 /**
- * Endpoint for uploading resources to submissions
+ * Endpoint for uploading resources to publications
  */
 registerRoute(router, '/upload/publication/:title', {
     params: z.object({ title: z.string() }),
@@ -76,16 +76,16 @@ registerRoute(router, '/upload/publication/:title', {
             });
         }
 
-        const submission = await Submission.findOne({ title });
+        const publication = await Publication.findOne({ title });
 
-        if (!submission) {
+        if (!publication) {
             return res.status(404).json({
                 status: false,
                 message: errors.RESOURCE_NOT_FOUND,
             });
         }
 
-        const uploadPath = joinPaths('submissions', username, submission.id);
+        const uploadPath = joinPaths('publications', username, publication.id);
 
         // Move the file into it's appropriate storage location
         return file.mv(uploadPath, (err) => {
@@ -108,7 +108,7 @@ registerRoute(router, '/upload/publication/:title', {
 });
 
 /**
- * Endpoint for uploading comment attachments to a submission
+ * Endpoint for uploading comment attachments to a publication
  */
 registerRoute(router, '/upload/comment/:username/:id', {
     params: z.object({ username: z.string(), id: ObjectIdSchema }),

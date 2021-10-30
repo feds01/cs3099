@@ -35,11 +35,11 @@ export const NON_EXISTENT_USER_ID = 'No user with the given id exists';
 export const SELF_FOLLOWING = 'Users cannot follow themselves';
 export const ALREADY_FOLLOWED = 'The user is already followed by you';
 
-// Submissions endpoints
-export const SUBMISSION_FAILED = 'Submission failed';
-export const TITLE_EXISTS = 'Title already in use by another submission of yours';
-export const NON_EXISTENT_SUBMISSION = 'No submission with the given keyword exists';
-export const NON_EXISTENT_SUBMISSION_ID = 'No submission with the given id exists';
+// Publications endpoints
+export const PUBLICATION_FAILED = 'Upload publication failed';
+export const TITLE_EXISTS = 'Title already in use by another publication of yours';
+export const NON_EXISTENT_PUBLICATION = 'No publication with the given keyword exists';
+export const NON_EXISTENT_PUBLICATION_ID = 'No publication with the given id exists';
 
 // General request errors
 export const RESOURCE_NOT_FOUND = 'Resource could not be found.';

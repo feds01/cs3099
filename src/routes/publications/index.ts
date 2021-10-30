@@ -4,12 +4,12 @@ import { z } from 'zod';
 import User, { IUserRole } from '../../models/User';
 import Logger from '../../common/logger';
 import * as errors from '../../common/errors';
-import Submission, { ISubmissionDocument } from '../../models/Submission';
+import Publication, { IPublicationDocument } from '../../models/Publications';
 import {
-    ISubmissionPostRequestSchema,
-    ISubmissionPostRequest,
+    IPublicationPostRequestSchema,
+    IPublicationPostRequest,
     SearchModeSchema,
-} from '../../validators/submission';
+} from '../../validators/publications';
 import { registerRoute } from '../../wrappers/requests';
 import { ExistUsernameSchema } from '../../validators/user';
 
@@ -23,10 +23,10 @@ registerRoute(router, '/', {
     permission: IUserRole.Default, 
     handler: async (_req, res) => {
         // TODO: pagination
-        const publications = await Submission.find().limit(50);
+        const publications = await Publication.find().limit(50);
         return res.status(200).json({
             status: true,
-            submissions: publications
+            publications: publications
         });
     },
 });
@@ -42,9 +42,9 @@ registerRoute(router, '/:keyword', {
         const { mode } = req.query;
         const { keyword } = req.params;
 
-        let submissions: ISubmissionDocument[];
+        let publications: IPublicationDocument[];
         if (!mode || mode === 'title') {
-            submissions = await Submission.find({ title: keyword });
+            publications = await Publication.find({ title: keyword });
         } else {
             const userDoc = await User.findOne({ username: keyword}).exec();
             if (!userDoc) {
@@ -54,19 +54,19 @@ registerRoute(router, '/:keyword', {
                 });
             }
             
-            submissions = await Submission.find({ owner: userDoc.id });
+            publications = await Publication.find({ owner: userDoc.id });
         }
 
-        if (!submissions) {
+        if (!publications) {
             return res.status(404).json({
                 status: false,
-                message: errors.NON_EXISTENT_SUBMISSION,
+                message: errors.NON_EXISTENT_PUBLICATION,
             });
         }
 
         return res.status(200).json({
             status: true,
-            submissions,
+            publications,
         });
     }
 });
@@ -89,20 +89,20 @@ registerRoute(router, '/:keyword', {
 registerRoute(router, '/', {
     method: 'post',
     params: z.object({}),
-    body: ISubmissionPostRequestSchema,
+    body: IPublicationPostRequestSchema,
     query: z.object({}),
     permission: IUserRole.Default, 
     handler: async (req, res) => {
-        let response: ISubmissionPostRequest = req.body;
+        let response: IPublicationPostRequest = req.body;
         const { title, collaborators } = response;
         const { id: owner } = req.token.data;
 
         // Check if the title is already in use.
-        const existingSubmission = await Submission.count({ owner, title: title }).exec();
-        if (existingSubmission > 0) {
+        const existingPublication = await Publication.count({ owner, title: title }).exec();
+        if (existingPublication > 0) {
             return res.status(400).json({
                 status: false,
-                message: errors.SUBMISSION_FAILED,
+                message: errors.PUBLICATION_FAILED,
                 extra: errors.TITLE_EXISTS,
             });
         }
@@ -119,7 +119,7 @@ registerRoute(router, '/', {
             });
         }
 
-        const newSubmission = new Submission({
+        const newPublication = new Publication({
             revision: response.revision,
             title: response.title,
             introduction: response.introduction,
@@ -129,12 +129,12 @@ registerRoute(router, '/', {
         });
 
         try {
-            const savedSubmission = await newSubmission.save();
+            const savedPublication = await newPublication.save();
 
             return res.status(201).json({
                 status: true,
                 message: 'Successfully submitted new publication.',
-                submission: savedSubmission,
+                publication: savedPublication,
             })
         } catch (e) {
             Logger.error(e);
@@ -157,17 +157,17 @@ registerRoute(router, '/:username/:title', {
         const userDoc = await User.findOne({ username });
         // username must exist after parsed by ExistUsernameSchema 
         const userId = userDoc?.id;
-        const submission = await Submission.findOne({ owner: userId, title });
-        if (!submission) {
+        const publication = await Publication.findOne({ owner: userId, title });
+        if (!publication) {
             return res.status(404).json({
                 status: false,
-                message: errors.NON_EXISTENT_SUBMISSION, 
+                message: errors.NON_EXISTENT_PUBLICATION, 
             });
         }
 
         return res.status(200).json({
             status: true,
-            submission,
+            publication,
         });
     }
 });

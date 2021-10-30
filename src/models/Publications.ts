@@ -1,6 +1,6 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
-export interface ISubmission {
+export interface IPublication {
     revision: string;
     owner: mongoose.Types.ObjectId;
     title: string;
@@ -9,11 +9,11 @@ export interface ISubmission {
     collaborators: mongoose.Types.ObjectId[];
 }
 
-export interface ISubmissionDocument extends ISubmission, Document {}
+export interface IPublicationDocument extends IPublication, Document {}
 
-interface ISubmissionModel extends Model<ISubmissionDocument> {}
+interface IPublicationModel extends Model<IPublicationDocument> {}
 
-const SubmissionSchema = new Schema<ISubmission, ISubmissionModel, ISubmission>(
+const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublication>(
     {
         revision: { type: String, required: true },
         title: { type: String, required: true },
@@ -25,4 +25,4 @@ const SubmissionSchema = new Schema<ISubmission, ISubmissionModel, ISubmission>(
     { timestamps: true },
 );
 
-export default mongoose.model<ISubmission, ISubmissionModel>('submission', SubmissionSchema);
+export default mongoose.model<IPublication, IPublicationModel>('publication', PublicationSchema);
