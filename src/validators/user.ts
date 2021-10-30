@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-import mongoose from 'mongoose';
 import * as error from '../common/errors';
 import User, { IUserRole } from '../models/User';
 
@@ -44,8 +43,7 @@ export const IUserRegisterRequestSchema = z.object({
     profilePictureUrl: z.string().url().optional(),
 });
 
-export const ObjectIdSchema = z.string().refine(mongoose.Types.ObjectId.isValid, { message: "Not a valid object id" });
-export const UsernameSchema = z
+export const ExistUsernameSchema = z
         .string()
         .nonempty()
         .max(50)

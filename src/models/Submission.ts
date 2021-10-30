@@ -9,7 +9,7 @@ export interface ISubmission {
     collaborators: mongoose.Types.ObjectId[];
 }
 
-interface ISubmissionDocument extends ISubmission, Document {}
+export interface ISubmissionDocument extends ISubmission, Document {}
 
 interface ISubmissionModel extends Model<ISubmissionDocument> {}
 
