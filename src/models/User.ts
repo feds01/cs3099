@@ -1,3 +1,4 @@
+import { strict } from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export enum IUserRole {
@@ -19,7 +20,7 @@ export interface IUser {
     externalId?: string;
 }
 
-export interface IUserDocument extends IUser, Document {}
+export interface IUserDocument extends IUser, Document<string> {}
 
 export interface IUserModel extends Model<IUserDocument> {
     project: (user: IUser) => Partial<IUser>;
@@ -48,8 +49,10 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
  * @param user The user Document that is to be projected.
  * @returns A partial user object with selected fields that are to be projected.
  */
-UserSchema.statics.project = function (user: IUserDocument) {
+UserSchema.statics.project = (user: IUserDocument) => {
     const { profilePictureUrl, about, status } = user;
+
+    strict.strict(typeof user.id === 'string');
 
     return {
         id: user.id,
@@ -57,9 +60,9 @@ UserSchema.statics.project = function (user: IUserDocument) {
         username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
-        ...(profilePictureUrl && { profilePictureUrl }),
-        ...(about && { about }),
-        ...(status && { status }),
+        ...(typeof profilePictureUrl !== 'undefined' && { profilePictureUrl }),
+        ...(typeof about !== 'undefined' && { about }),
+        ...(typeof status !== 'undefined' && { status }),
     };
 };
 

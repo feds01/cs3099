@@ -12,8 +12,9 @@
     },
     "plugins": ["@typescript-eslint"],
     "rules": {
-        "indent": ["error", 4],
+        "indent": ["off", 4],
         "max-len": ["error", 100, { "ignoreStrings": true }],
+        "operator-linebreak": ["error", "after"],
         "no-underscore-dangle": ["off"],
         "import/no-unresolved": ["off"],
         "import/extensions": ["off"],
@@ -35,7 +36,7 @@
         "@typescript-eslint/no-unsafe-return": "error",
         "@typescript-eslint/prefer-as-const": "warn",
         "@typescript-eslint/prefer-readonly-parameter-types": [
-            "warn",
+            "off",
             {
                 "ignoreInferredTypes": true
             }
@@ -45,6 +46,8 @@
         "no-return-await": "off",
         "@typescript-eslint/return-await": ["error", "always"],
         "no-unused-vars": "off",
+        "no-shadow": "off",
+        "@typescript-eslint/no-shadow": "error",
         "@typescript-eslint/no-unused-vars": [
             "error",
             {
@@ -61,7 +64,7 @@
         "@typescript-eslint/no-floating-promises": "error",
         "@typescript-eslint/no-for-in-array": "error",
         "@typescript-eslint/no-implicit-any-catch": "error",
-        "@typescript-eslint/no-misused-promises": "error",
+        "@typescript-eslint/no-misused-promises": "off",
         "@typescript-eslint/no-namespace": "off",
         "@typescript-eslint/no-unnecessary-condition": "warn",
         "@typescript-eslint/no-unnecessary-type-assertion": "warn",

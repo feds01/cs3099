@@ -9,7 +9,7 @@ import { UploadedFile } from 'express-fileupload';
  * @returns The concatenated path.
  */
 export function joinPaths(...paths: string[]): string {
-    const prefix = process.env['RESOURCES_FOLDER'];
+    const prefix = process.env.RESOURCES_FOLDER;
 
     if (typeof prefix === 'undefined') {
         throw new Error("Environment variable 'RESOURCE_FOLDER' is undefined.");
@@ -19,10 +19,10 @@ export function joinPaths(...paths: string[]): string {
 }
 
 export function extractFile(req: express.Request): UploadedFile | null {
-    if (!req.files || !req.files['file']) {
+    if (!req.files || !req.files.file) {
         return null;
     }
 
-    const file = req.files['file'];
+    const { file } = req.files;
     return Array.isArray(file) ? null : file; // Ensure that is not an array
 }

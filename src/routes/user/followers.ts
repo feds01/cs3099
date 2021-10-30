@@ -4,7 +4,7 @@ import Logger from '../../common/logger';
 import * as error from '../../common/errors';
 import Follower from '../../models/Follower';
 import * as userUtils from '../../utils/users';
-import { registerRoute } from '../../wrappers/requests';
+import registerRoute from '../../wrappers/requests';
 import User, { IUser, IUserRole } from '../../models/User';
 import { ModeSchema } from '../../validators/requests';
 
