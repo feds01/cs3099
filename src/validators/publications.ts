@@ -13,7 +13,7 @@ export const IPublicationPostRequestSchema = z.object({
         title: z.string().nonempty(),
         introduction: z.string().nonempty(),
         collaborators: CollaboratorArraySchema,
-        attachment: z.string().optional(),
+        draft: z.boolean().optional(),
 });
 
 export const SearchModeSchema = z.enum(['title', 'username']).default('title');

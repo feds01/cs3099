@@ -74,7 +74,7 @@ registerRoute(router, '/:keyword', {
 /**
  * @version v1.0.0
  * @method POST
- * @url /api/publication/
+ * @url /api/publications/
  * @example
  * https://af268.cs.st-andrews.ac.uk/publication/
  * >>> body:
@@ -83,7 +83,7 @@ registerRoute(router, '/:keyword', {
  *   "title": "Test",
  *   "introduction": "Introduction here",
  *   "collaborators": ["user1", "user2"],
- *   "attachment": "https://example.com/attachment"
+ *   "draft": true
  * }
  */
 registerRoute(router, '/', {
@@ -110,12 +110,12 @@ registerRoute(router, '/', {
         // Find all corresponding ids of each collaborators' username
         const collaboratorDocs = await User.find({ username: { $in: collaborators }}).exec();
         if (collaboratorDocs.length < collaborators.length) {
-            let namesFound: string[] = collaboratorDocs.map(doc => doc.username);
-            let missingNames: string[] = collaborators.filter((name: string) => !namesFound.includes(name));
+            const namesFound = collaboratorDocs.map(doc => doc.username);
+            const missingNames = collaborators.filter((name: string) => !namesFound.includes(name));
             return res.status(404).json({
-            status: false,
-            message: errors.NON_EXISTENT_USER,
-            extra: missingNames, 
+                status: false,
+                message: errors.NON_EXISTENT_USER,
+                extra: missingNames,
             });
         }
 
@@ -123,8 +123,8 @@ registerRoute(router, '/', {
             revision: response.revision,
             title: response.title,
             introduction: response.introduction,
-            attachment: response.attachment,
             collaborators: collaboratorDocs.map((doc) => doc.id),
+            draft: response.draft,
             owner,
         });
 
