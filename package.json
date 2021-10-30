@@ -6,11 +6,11 @@
     "scripts": {
         "build": "tsc",
         "start": "tsc & node .",
-        "dev": "ts-node-dev  --trace-warnings --  ./src/app.ts",
+        "dev": "ts-node-dev  --trace-warnings --  ./src/server.ts",
         "test": "jest --ci",
         "test:coverage": "jest --collect-coverage --ci",
-        "lint": "eslint src/*/**",
-        "fmt": "prettier --write src/**/*.ts frontend/src/**.ts",
+        "lint": "eslint src/*/**.ts",
+        "fmt": "prettier --write src/**/*.ts frontend/src/**/*.ts",
         "generate-client": "orval",
         "transform-yaml": "yaml2json swagger.yaml > swagger.json"
     },

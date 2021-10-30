@@ -7,6 +7,6 @@ export const ObjectIdSchema = z
 
 // Schema for describing if the request is querying by user ID or by username.
 const modes = ['username', 'id'] as const;
-export const ModeSchema = z.enum(modes).default('username');
+export const ModeSchema = z.enum(modes).optional();
 
 export type UserRequestMode = z.infer<typeof ModeSchema>;

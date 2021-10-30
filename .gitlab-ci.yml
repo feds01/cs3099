@@ -1,0 +1,36 @@
+workflow:
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    
+stages:
+  - install
+  - quality
+  - test
+
+install:
+  image: node:14.17.0
+  stage: install
+  script:
+    - yarn install
+  artifacts:
+    name: "artifacts"
+    untracked: true
+    expire_in: 30 mins
+    paths:
+      - .npm/
+      - node_modules/
+
+linting:
+  extends: install
+  stage: quality
+  script:
+    - yarn lint
+
+tests:
+  stage: test
+  script:
+    - yarn test
+
+
