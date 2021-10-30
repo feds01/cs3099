@@ -11,6 +11,7 @@ import {
     SearchModeSchema,
 } from '../../validators/submission';
 import { registerRoute } from '../../wrappers/requests';
+import { ExistUsernameSchema } from '../../validators/user';
 
 const router = express.Router();
 
@@ -70,7 +71,21 @@ registerRoute(router, '/:keyword', {
     }
 });
 
-// Submit a publication
+/**
+ * @version v1.0.0
+ * @method POST
+ * @url /api/publication/
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/publication/
+ * >>> body:
+ * {
+ *   "revision": "v1",
+ *   "title": "Test",
+ *   "introduction": "Introduction here",
+ *   "collaborators": ["user1", "user2"],
+ *   "attachment": "https://example.com/attachment"
+ * }
+ */
 registerRoute(router, '/', {
     method: 'post',
     params: z.object({}),
@@ -108,6 +123,7 @@ registerRoute(router, '/', {
             revision: response.revision,
             title: response.title,
             introduction: response.introduction,
+            attachment: response.attachment,
             collaborators: collaboratorDocs.map((doc) => doc.id),
             owner,
         });
@@ -128,6 +144,31 @@ registerRoute(router, '/', {
                 message: errors.INTERNAL_SERVER_ERROR,
             });
         }
+    }
+});
+
+registerRoute(router, '/:username/:title', {
+    method: 'get',
+    params: z.object({ username: ExistUsernameSchema, title: z.string() }),
+    query: z.object({}),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const { username, title } = req.params;
+        const userDoc = await User.findOne({ username });
+        // username must exist after parsed by ExistUsernameSchema 
+        const userId = userDoc?.id;
+        const submission = await Submission.findOne({ owner: userId, title });
+        if (!submission) {
+            return res.status(404).json({
+                status: false,
+                message: errors.NON_EXISTENT_SUBMISSION, 
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            submission,
+        });
     }
 });
 
