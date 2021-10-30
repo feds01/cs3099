@@ -93,7 +93,7 @@ export function registerRoute<P, B, Q, M extends RequestMethod>(
         }
 
         // Now validate the permissions
-        const permissionsValid = ensureValidPermissions(registrar.permission, token, res);
+        const permissionsValid = await ensureValidPermissions(registrar.permission, token, res);
 
         // TODO: send a bad request here instead of inside valid perms
         if (!permissionsValid) {
