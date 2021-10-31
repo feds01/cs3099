@@ -16,7 +16,7 @@ export const IUserLoginRequestSchema = z
         password: z.string().nonempty(),
     })
     .transform((val) => {
-        let email = z.string().email().safeParse(val.username);
+        const email = z.string().email().safeParse(val.username);
 
         // Use the email instead of the provided username
         if (email.success) {

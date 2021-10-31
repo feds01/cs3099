@@ -1,6 +1,5 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
-// export type IReviewStatus = "completed" | "started"
 export enum IReviewStatus {
     Completed = 'completed',
     Started = 'started',

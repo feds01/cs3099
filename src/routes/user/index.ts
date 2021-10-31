@@ -7,7 +7,7 @@ import * as error from '../../common/errors';
 import Follower from '../../models/Follower';
 import * as userUtils from './../../utils/users';
 import User, { IUserRole } from '../../models/User';
-import { registerRoute } from '../../wrappers/requests';
+import registerRoute from '../../wrappers/requests';
 import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
 import { ModeSchema } from '../../validators/requests';
 

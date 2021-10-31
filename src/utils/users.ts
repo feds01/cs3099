@@ -3,10 +3,10 @@ import User, { IUserDocument } from '../models/User';
 import * as errors from '../common/errors';
 import { ObjectIdSchema, UserRequestMode } from '../validators/requests';
 
-export type RequestParameters<P, Q> = {
+export interface RequestParameters<P, Q> {
     params: P;
     query: Q;
-};
+}
 
 interface UsernameReq {
     username: string;
@@ -30,7 +30,7 @@ export async function transformUsernameIntoId<P extends UsernameReq, Q extends U
     const { username } = req.params;
 
     let user;
-    if (!mode || mode === 'username') {
+    if (mode === 'username' || typeof mode === 'undefined') {
         user = await User.findOne({ username });
     } else {
         // We need to first validate that the 'username' parameter is a mongoose
