@@ -18,6 +18,16 @@ export function joinPaths(...paths: string[]): string {
     return path.join(prefix, ...paths);
 }
 
+/**
+ * Function to extract the base of a file path.
+ *
+ * @param path - The full path of a entry in the filesystem.
+ * @returns The base of the path.
+ */
+export function getPathBase(filePath: string): string {
+    return path.parse(filePath).base;
+}
+
 export function extractFile(req: express.Request): UploadedFile | null {
     if (!req.files || !req.files.file) {
         return null;

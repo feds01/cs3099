@@ -18,8 +18,8 @@ tags:
       description: Secured Admin-only calls
     - name: reviews
       description: Calls relating to submission reviews.
-    - name: submissions
-      description: Calls relating to submissions.
+    - name: publications
+      description: Calls relating to publications.
     - name: resources
       description: Endpoints related to managing uploaded resources.
 paths:

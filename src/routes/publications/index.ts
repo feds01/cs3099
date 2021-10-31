@@ -1,23 +1,60 @@
-import express from 'express';
-
 import { z } from 'zod';
-import User, { IUserRole } from '../../models/User';
+import express from 'express';
 import Logger from '../../common/logger';
-import * as errors from '../../common/errors';
-import Publication from '../../models/Publications';
+import * as zip from "./../../wrappers/zip";
+import User, { IUserRole } from '../../models/User';
+import * as errors from "./../../common/errors";
+import * as userUtils from "./../../utils/users";
+import registerRoute from '../../wrappers/requests';
+import Publication from '../../models/Publication';
+import { ModeSchema } from '../../validators/requests';
 import {
     IPublicationPostRequestSchema,
-    IPublicationPostRequest,
 } from '../../validators/publications';
-import { registerRoute } from '../../wrappers/requests';
-import * as userUtils from '../../utils/users';
-import { ModeSchema } from '../../validators/requests';
 import searchRouter from './search';
 
 const router = express.Router();
 
 // Register the follower routes
 router.use('/', searchRouter);
+
+registerRoute(router, '/:username/:title/:revision?/tree/:path(*)', {
+    method: 'get',
+    params: z.object({ username: z.string(), title: z.string(), path: z.string().optional(), revision: z.string().optional(), }),
+    query: z.object({ mode: ModeSchema }),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        const { title, revision, path } = req.params;
+
+        // TODO: We need to check that the actual revision exists
+        // TODO: We need to get the actual publication entry
+
+        let archive = {
+            userId: user.id!,
+            name: title,
+            ...(typeof revision !== 'undefined' && { revision })
+        }
+
+        const transformedPath = path ?? "/";
+        const entry = zip.getEntry(archive, transformedPath === "" ? "/" : transformedPath);
+
+        if (!entry) {
+            return res.status(404).json({
+                status: false,
+                message: errors.RESOURCE_NOT_FOUND,
+            })
+        } else {
+            return res.status(200).json({
+                status: true,
+                data: entry
+            })
+        }
+    }
+});
+
 
 /**
  * @version v1.0.0
@@ -33,6 +70,8 @@ router.use('/', searchRouter);
  *   "collaborators": ["user1", "user2"],
  *   "draft": true
  * }
+ * 
+ * @description Route to create a new publication entry in the database.
  */
 registerRoute(router, '/', {
     method: 'post',
@@ -41,17 +80,17 @@ registerRoute(router, '/', {
     query: z.object({}),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        let response: IPublicationPostRequest = req.body;
-        const { title, collaborators, revision, draft } = response;
+        const { name, collaborators, revision, draft } = req.body
         const { id: owner } = req.token.data;
 
-        // Check if the publication is already in use.
+        // Check if the publication is already in use...
         const existingPublication = await Publication.count({
             owner,
-            title,
+            name,
             revision,
             draft,
         }).exec();
+
         if (existingPublication > 0) {
             return res.status(400).json({
                 status: false,
@@ -62,9 +101,11 @@ registerRoute(router, '/', {
 
         // Find all corresponding ids of each collaborators' username
         const collaboratorDocs = await User.find({ username: { $in: collaborators } }).exec();
+
         if (collaboratorDocs.length < collaborators.length) {
             const namesFound = collaboratorDocs.map((doc) => doc.username);
             const missingNames = collaborators.filter((name: string) => !namesFound.includes(name));
+
             return res.status(404).json({
                 status: false,
                 message: errors.NON_EXISTENT_USER,
@@ -73,21 +114,18 @@ registerRoute(router, '/', {
         }
 
         const newPublication = new Publication({
-            revision: response.revision,
-            title: response.title,
-            introduction: response.introduction,
+            ...req.body,
             collaborators: collaboratorDocs.map((doc) => doc.id),
-            draft: response.draft,
             owner,
         });
 
         try {
-            const savedPublication = await newPublication.save();
+            const publication = await newPublication.save();
 
             return res.status(201).json({
                 status: true,
                 message: 'Successfully submitted new publication.',
-                publication: savedPublication,
+                publication,
             });
         } catch (e) {
             Logger.error(e);
@@ -100,32 +138,32 @@ registerRoute(router, '/', {
     },
 });
 
-registerRoute(router, '/:username/:title/:revision?', {
+registerRoute(router, '/:username/:name/:revision?', {
     method: 'get',
     params: z.object({
         username: z.string().nonempty(),
-        title: z.string().nonempty(),
+        name: z.string().nonempty(),
         revision: z.string().optional(),
     }),
     query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).default('false') }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const userDoc = await userUtils.transformUsernameIntoId(req, res);
-        if (!userDoc) return;
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
         const draft = req.query.draft === 'true';
-        const { title, revision } = req.params;
+        const { name, revision } = req.params;
 
-        let doc;
-        if (!revision) {
-            // get the most recently created publication
-            doc = await Publication.findOne({ owner: userDoc.id, title, draft })
-                .sort({ _id: -1 }) // sort by id in descending order
-                .exec();
-        } else {
-            doc = await Publication.findOne({ owner: userDoc.id, title, draft, revision });
-        }
-        const publication = doc;
+        // sort by id in descending order since this is actually faster than using a 'createdAt' field because 
+        // ObjectID's in MongoDB have a natural ascending order of time. More information about the details
+        // are here: https://stackoverflow.com/a/54741405
+        const publication = await Publication.findOne({
+            owner: user.id,
+            name,
+            draft,
+            ...(typeof revision !== 'undefined' && { revision })
+        }).sort({ _id: -1 }).exec();
+
         if (!publication) {
             return res.status(404).json({
                 status: false,

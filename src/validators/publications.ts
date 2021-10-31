@@ -9,6 +9,7 @@ const CollaboratorArraySchema = ExistUsernameSchema.array().refine(
 export const IPublicationPostRequestSchema = z.object({
     revision: z.string().nonempty(),
     title: z.string().nonempty(),
+    name: z.string().nonempty(),
     introduction: z.string().nonempty(),
     collaborators: CollaboratorArraySchema,
     draft: z.boolean().default(false),
