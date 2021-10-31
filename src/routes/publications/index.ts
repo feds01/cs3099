@@ -19,7 +19,6 @@ const router = express.Router();
 // Register the follower routes
 router.use('/', searchRouter);
 
-
 /**
  * @version v1.0.0
  * @method POST
@@ -40,14 +39,19 @@ registerRoute(router, '/', {
     params: z.object({}),
     body: IPublicationPostRequestSchema,
     query: z.object({}),
-    permission: IUserRole.Default, 
+    permission: IUserRole.Default,
     handler: async (req, res) => {
         let response: IPublicationPostRequest = req.body;
         const { title, collaborators, revision, draft } = response;
         const { id: owner } = req.token.data;
 
         // Check if the publication is already in use.
-        const existingPublication = await Publication.count({ owner, title, revision, draft }).exec();
+        const existingPublication = await Publication.count({
+            owner,
+            title,
+            revision,
+            draft,
+        }).exec();
         if (existingPublication > 0) {
             return res.status(400).json({
                 status: false,
@@ -57,9 +61,9 @@ registerRoute(router, '/', {
         }
 
         // Find all corresponding ids of each collaborators' username
-        const collaboratorDocs = await User.find({ username: { $in: collaborators }}).exec();
+        const collaboratorDocs = await User.find({ username: { $in: collaborators } }).exec();
         if (collaboratorDocs.length < collaborators.length) {
-            const namesFound = collaboratorDocs.map(doc => doc.username);
+            const namesFound = collaboratorDocs.map((doc) => doc.username);
             const missingNames = collaborators.filter((name: string) => !namesFound.includes(name));
             return res.status(404).json({
                 status: false,
@@ -84,7 +88,7 @@ registerRoute(router, '/', {
                 status: true,
                 message: 'Successfully submitted new publication.',
                 publication: savedPublication,
-            })
+            });
         } catch (e) {
             Logger.error(e);
 
@@ -93,13 +97,17 @@ registerRoute(router, '/', {
                 message: errors.INTERNAL_SERVER_ERROR,
             });
         }
-    }
+    },
 });
 
 registerRoute(router, '/:username/:title/:revision?', {
     method: 'get',
-    params: z.object({ username: z.string().nonempty(), title: z.string().nonempty(), revision: z.string().optional() }),
-    query: z.object({ mode: ModeSchema, draft: z.enum(["true", "false"]).default("false") }),
+    params: z.object({
+        username: z.string().nonempty(),
+        title: z.string().nonempty(),
+        revision: z.string().optional(),
+    }),
+    query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).default('false') }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
         const userDoc = await userUtils.transformUsernameIntoId(req, res);
@@ -107,24 +115,25 @@ registerRoute(router, '/:username/:title/:revision?', {
             return res.status(404).json({
                 status: false,
                 message: errors.NON_EXISTENT_USER,
-            })
+            });
         }
-        
-        const draft = (req.query.draft === "true");
+
+        const draft = req.query.draft === 'true';
         const { title, revision } = req.params;
-        
+
         let doc;
         if (!revision) {
-            doc = await Publication.findOne({ owner: userDoc.id, title, draft }).sort({ _id: -1 }).exec();
-        }
-        else {
-            doc = await Publication.findOne({ owner: userDoc.id, title, draft, revision})
+            doc = await Publication.findOne({ owner: userDoc.id, title, draft })
+                .sort({ _id: -1 })
+                .exec();
+        } else {
+            doc = await Publication.findOne({ owner: userDoc.id, title, draft, revision });
         }
         const publication = doc;
         if (!publication) {
             return res.status(404).json({
                 status: false,
-                message: errors.NON_EXISTENT_PUBLICATION, 
+                message: errors.NON_EXISTENT_PUBLICATION,
             });
         }
 
@@ -132,7 +141,7 @@ registerRoute(router, '/:username/:title/:revision?', {
             status: true,
             publication,
         });
-    }
+    },
 });
 
 export default router;

@@ -44,14 +44,13 @@ export const IUserRegisterRequestSchema = z.object({
 });
 
 export const ExistUsernameSchema = z
-        .string()
-        .nonempty()
-        .max(50)
-        .regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric')
-        .refine(
-                async (username) => await User.count({ username }) > 0,
-                { message: error.NON_EXISTENT_USER }
-        );
+    .string()
+    .nonempty()
+    .max(50)
+    .regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric')
+    .refine(async (username) => (await User.count({ username })) > 0, {
+        message: error.NON_EXISTENT_USER,
+    });
 
 export type IUserRegisterRequest = z.infer<typeof IUserRegisterRequestSchema>;
 
