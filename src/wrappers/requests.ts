@@ -78,8 +78,8 @@ export default function registerRoute<P, B, Q, M extends RequestMethod>(
     registrar: RegisterRoute<P, B, Q, M>,
 ) {
     const wrappedHandler = async (req: express.Request, res: express.Response) => {
-        const params = registrar.params.safeParse(req.params);
-        const query = registrar.query.safeParse(req.query);
+        const params = await registrar.params.safeParseAsync(req.params);
+        const query = await registrar.query.safeParseAsync(req.query);
 
         // If the parameter parsing wasn't successful, fail here
         if (!params.success) {
@@ -134,7 +134,7 @@ export default function registerRoute<P, B, Q, M extends RequestMethod>(
             raw: req,
         };
         if ('body' in registrar) {
-            const body = registrar.body.safeParse(req.body);
+            const body = await registrar.body.safeParseAsync(req.body);
 
             // If the body parsing wasn't successful, fail here
             if (!body.success) {

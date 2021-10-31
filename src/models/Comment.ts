@@ -1,7 +1,7 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IComment {
-    submission: mongoose.ObjectId;
+    publication: mongoose.ObjectId;
     owner: mongoose.ObjectId;
     content: string;
     review: mongoose.ObjectId;
@@ -15,7 +15,7 @@ interface ICommentModel extends Model<ICommentDocument> {}
 
 const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
     {
-        submission: { type: mongoose.Schema.Types.ObjectId, ref: 'submission', required: true },
+        publication: { type: mongoose.Schema.Types.ObjectId, ref: 'publication', required: true },
         owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
         content: { type: String, required: true },
         thread: { type: mongoose.Schema.Types.ObjectId, required: false },

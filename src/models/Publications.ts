@@ -1,28 +1,30 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
-export interface ISubmission {
+export interface IPublication {
     revision: string;
-    owner: mongoose.ObjectId;
+    owner: mongoose.Types.ObjectId;
     title: string;
     introduction: string;
     attachment?: string;
-    collaborators: mongoose.ObjectId[];
+    draft: boolean;
+    collaborators: mongoose.Types.ObjectId[];
 }
 
-interface ISubmissionDocument extends ISubmission, Document {}
+export interface IPublicationDocument extends IPublication, Document {}
 
-interface ISubmissionModel extends Model<ISubmissionDocument> {}
+interface IPublicationModel extends Model<IPublicationDocument> {}
 
-const SubmissionSchema = new Schema<ISubmission, ISubmissionModel, ISubmission>(
+const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublication>(
     {
         revision: { type: String, required: true },
         title: { type: String, required: true },
         introduction: { type: String, required: true },
         owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
         attachment: { type: String },
+        draft: { type: Boolean, required: true },
         collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
     },
     { timestamps: true },
 );
 
-export default mongoose.model<ISubmission, ISubmissionModel>('submission', SubmissionSchema);
+export default mongoose.model<IPublication, IPublicationModel>('publication', PublicationSchema);

@@ -6,7 +6,7 @@ export enum IReviewStatus {
 }
 
 export interface IReview {
-    submission: mongoose.ObjectId;
+    publication: mongoose.ObjectId;
     owner: mongoose.ObjectId;
     generalComment?: mongoose.ObjectId;
     status: IReviewStatus;
@@ -18,7 +18,7 @@ interface IReviewModel extends Model<IReviewDocument> {}
 
 const ReviewSchema = new Schema<IReview, IReviewModel, IReview>(
     {
-        submission: { type: mongoose.Schema.Types.ObjectId, ref: 'submission', required: true },
+        publication: { type: mongoose.Schema.Types.ObjectId, ref: 'publication', required: true },
         owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
         generalComment: { type: mongoose.Schema.Types.ObjectId, ref: 'comment' },
         status: { type: String, enum: IReviewStatus },

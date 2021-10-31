@@ -282,7 +282,7 @@ registerRoute(router, '/:username/role', {
             if (!newUser) {
                 return res.status(404).json({
                     status: false,
-                    message: error.NON_EXISTENT_USER_ID,
+                    message: error.NON_EXISTENT_USER,
                 });
             }
 
