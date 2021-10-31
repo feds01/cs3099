@@ -10,6 +10,7 @@
         "test": "jest --ci",
         "test:coverage": "jest --collect-coverage --ci",
         "lint": "eslint src/*/**.ts",
+        "tcheck": "tsc --noEmit",
         "fmt": "prettier --write src/**/*.ts frontend/src/**/*.ts",
         "generate-client": "orval",
         "transform-yaml": "yaml2json swagger.yaml > swagger.json"

@@ -948,7 +948,7 @@ components:
                     items:
                         $ref: '#/components/schemas/User'
         UploadResource:
-            required: true
+            # required: true
             type: string
         UploadResourceResponse:
             type: object
