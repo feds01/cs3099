@@ -13,10 +13,16 @@ export const IPublicationPostRequestSchema = z.object({
         title: z.string().nonempty(),
         introduction: z.string().nonempty(),
         collaborators: CollaboratorArraySchema,
-        draft: z.boolean().optional(),
+        draft: z.boolean().default(false),
 });
 
-export const SearchModeSchema = z.enum(['title', 'username']).default('title');
+// TODO: Implement better schema
+export const SearchQuerySchema = z.object({
+        owner: z.string().optional(),
+        title: z.string().optional(),
+        introduction: z.string().optional(),
+        keyword: z.string().optional(),
+        collaborators: z.string().array(),
+});
 
-export type SearchRequestMode = z.infer<typeof SearchModeSchema>
-export type IPublicationPostRequest = z.infer<typeof IPublicationPostRequestSchema>;
+export type IPublicationPostRequest = z.input<typeof IPublicationPostRequestSchema>;

@@ -28,8 +28,7 @@ export const BAD_REQUEST = 'The API request is malformed or invalid';
 export const UNAUTHORIZED = "User doesn't have permissions to perform this action.";
 export const REGISTRATION_FAILED = 'Registration failed';
 export const AUTHENTICATION_FAILED = 'Authentication failed';
-export const NON_EXISTENT_USER = 'No user with the given username exists';
-export const NON_EXISTENT_USER_ID = 'No user with the given id exists';
+export const NON_EXISTENT_USER = 'No user with the given username or id exists';
 
 // Follow endpoints
 export const SELF_FOLLOWING = 'Users cannot follow themselves';
@@ -37,7 +36,7 @@ export const ALREADY_FOLLOWED = 'The user is already followed by you';
 
 // Publications endpoints
 export const PUBLICATION_FAILED = 'Upload publication failed';
-export const TITLE_EXISTS = 'Title already in use by another publication of yours';
+export const PUBLICATION_EXISTS = 'Publication of yours with the same information exists';
 export const NON_EXISTENT_PUBLICATION = 'No publication with the given keyword exists';
 export const NON_EXISTENT_PUBLICATION_ID = 'No publication with the given id exists';
 

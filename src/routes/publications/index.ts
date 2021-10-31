@@ -4,72 +4,21 @@ import { z } from 'zod';
 import User, { IUserRole } from '../../models/User';
 import Logger from '../../common/logger';
 import * as errors from '../../common/errors';
-import Publication, { IPublicationDocument } from '../../models/Publications';
+import Publication from '../../models/Publications';
 import {
     IPublicationPostRequestSchema,
     IPublicationPostRequest,
-    SearchModeSchema,
 } from '../../validators/publications';
 import { registerRoute } from '../../wrappers/requests';
-import { ExistUsernameSchema } from '../../validators/user';
+import * as userUtils from '../../utils/users';
+import { ModeSchema } from '../../validators/requests';
+import searchRouter from './search';
 
 const router = express.Router();
 
-// Get all publications
-registerRoute(router, '/', {
-    method: 'get',
-    params: z.object({}),
-    query: z.object({}),
-    permission: IUserRole.Default, 
-    handler: async (_req, res) => {
-        // TODO: pagination
-        const publications = await Publication.find().limit(50);
-        return res.status(200).json({
-            status: true,
-            publications: publications
-        });
-    },
-});
+// Register the follower routes
+router.use('/', searchRouter);
 
-
-// Get a list of all publications with a specific title or username
-registerRoute(router, '/:keyword', {
-    method: 'get',
-    params: z.object({ keyword: z.string() }),
-    query: z.object({ mode: SearchModeSchema }),
-    permission: IUserRole.Default,
-    handler: async (req, res) => {
-        const { mode } = req.query;
-        const { keyword } = req.params;
-
-        let publications: IPublicationDocument[];
-        if (!mode || mode === 'title') {
-            publications = await Publication.find({ title: keyword });
-        } else {
-            const userDoc = await User.findOne({ username: keyword}).exec();
-            if (!userDoc) {
-                return res.status(400).json({
-                    status: false,
-                    message: errors.BAD_REQUEST,
-                });
-            }
-            
-            publications = await Publication.find({ owner: userDoc.id });
-        }
-
-        if (!publications) {
-            return res.status(404).json({
-                status: false,
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
-        }
-
-        return res.status(200).json({
-            status: true,
-            publications,
-        });
-    }
-});
 
 /**
  * @version v1.0.0
@@ -94,16 +43,16 @@ registerRoute(router, '/', {
     permission: IUserRole.Default, 
     handler: async (req, res) => {
         let response: IPublicationPostRequest = req.body;
-        const { title, collaborators } = response;
+        const { title, collaborators, revision, draft } = response;
         const { id: owner } = req.token.data;
 
-        // Check if the title is already in use.
-        const existingPublication = await Publication.count({ owner, title: title }).exec();
+        // Check if the publication is already in use.
+        const existingPublication = await Publication.count({ owner, title, revision, draft }).exec();
         if (existingPublication > 0) {
             return res.status(400).json({
                 status: false,
                 message: errors.PUBLICATION_FAILED,
-                extra: errors.TITLE_EXISTS,
+                extra: errors.PUBLICATION_EXISTS,
             });
         }
 
@@ -147,17 +96,31 @@ registerRoute(router, '/', {
     }
 });
 
-registerRoute(router, '/:username/:title', {
+registerRoute(router, '/:username/:title/:revision?', {
     method: 'get',
-    params: z.object({ username: ExistUsernameSchema, title: z.string() }),
-    query: z.object({}),
+    params: z.object({ username: z.string().nonempty(), title: z.string().nonempty(), revision: z.string().optional() }),
+    query: z.object({ mode: ModeSchema, draft: z.enum(["true", "false"]).default("false") }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { username, title } = req.params;
-        const userDoc = await User.findOne({ username });
-        // username must exist after parsed by ExistUsernameSchema 
-        const userId = userDoc?.id;
-        const publication = await Publication.findOne({ owner: userId, title });
+        const userDoc = await userUtils.transformUsernameIntoId(req, res);
+        if (!userDoc) {
+            return res.status(404).json({
+                status: false,
+                message: errors.NON_EXISTENT_USER,
+            })
+        }
+        
+        const draft = (req.query.draft === "true");
+        const { title, revision } = req.params;
+        
+        let doc;
+        if (!revision) {
+            doc = await Publication.findOne({ owner: userDoc.id, title, draft }).sort({ _id: -1 }).exec();
+        }
+        else {
+            doc = await Publication.findOne({ owner: userDoc.id, title, draft, revision})
+        }
+        const publication = doc;
         if (!publication) {
             return res.status(404).json({
                 status: false,

@@ -48,7 +48,7 @@ registerRoute(router, '/:username/follow', {
         if (!follower) {
             return res.status(404).json({
                 status: false,
-                message: error.NON_EXISTENT_USER_ID,
+                message: error.NON_EXISTENT_USER,
             });
         }
 
@@ -109,7 +109,7 @@ registerRoute(router, '/:username/follow', {
         if (!follower) {
             return res.status(404).json({
                 status: false,
-                message: error.NON_EXISTENT_USER_ID,
+                message: error.NON_EXISTENT_USER,
             });
         }
 
@@ -150,7 +150,7 @@ registerRoute(router, '/:username/follow', {
         if (!follower) {
             return res.status(404).json({
                 status: false,
-                message: error.NON_EXISTENT_USER_ID,
+                message: error.NON_EXISTENT_USER,
             });
         }
 
