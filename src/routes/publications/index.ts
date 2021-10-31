@@ -111,20 +111,16 @@ registerRoute(router, '/:username/:title/:revision?', {
     permission: IUserRole.Default,
     handler: async (req, res) => {
         const userDoc = await userUtils.transformUsernameIntoId(req, res);
-        if (!userDoc) {
-            return res.status(404).json({
-                status: false,
-                message: errors.NON_EXISTENT_USER,
-            });
-        }
+        if (!userDoc) return;
 
         const draft = req.query.draft === 'true';
         const { title, revision } = req.params;
 
         let doc;
         if (!revision) {
+            // get the most recently created publication
             doc = await Publication.findOne({ owner: userDoc.id, title, draft })
-                .sort({ _id: -1 })
+                .sort({ _id: -1 }) // sort by id in descending order
                 .exec();
         } else {
             doc = await Publication.findOne({ owner: userDoc.id, title, draft, revision });
