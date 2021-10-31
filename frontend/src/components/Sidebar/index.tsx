@@ -55,7 +55,7 @@ const SidebarContainer = styled('div', { shouldForwardProp: (prop) => prop !== '
 
 const menuMap = [
     { title: 'Profile', icon: PersonIcon },
-    { title: 'Submissions', icon: FileUploadIcon },
+    { title: 'Publications', icon: FileUploadIcon },
     { title: 'Reviews', icon: RateReviewIcon },
 ];
 

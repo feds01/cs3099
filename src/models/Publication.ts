@@ -4,6 +4,7 @@ export interface IPublication {
     revision: string;
     owner: mongoose.ObjectId;
     title: string;
+    name: string;
     introduction: string;
     attachment?: string;
     collaborators: mongoose.ObjectId[];
@@ -16,6 +17,7 @@ interface IPublicationModel extends Model<IPublicationDocument> {}
 const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublication>(
     {
         revision: { type: String, required: true },
+        name: { type: String, required: true },
         title: { type: String, required: true },
         introduction: { type: String, required: true },
         owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },

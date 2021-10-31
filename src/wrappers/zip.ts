@@ -1,12 +1,18 @@
 import AdmZip from 'adm-zip';
 import assert from 'assert';
-import { joinPaths } from '../utils/resources';
+import { promises as fs } from 'fs';
+import { getPathBase, joinPaths } from '../utils/resources';
 
+// Interface representing either a file entry or a directory entry
 interface DirectoryEntry {
     type: 'file' | 'directory';
     filename: string;
+    updatedAt: number;
 }
 
+// Interface representing a particular publication entry. If the entry is a file,
+// then the contents of the file will be stored in the type. If the entry type is a
+// directory, then the directory's contents are listed using a directory entry.
 type PublicationPathContent =
     | {
           type: 'file';
@@ -17,6 +23,8 @@ type PublicationPathContent =
           entries: DirectoryEntry[];
       };
 
+// Interface representing the physical location of an archive on the filesystem using
+// the owner's user id, archive name and revision number to locate the physical archive.
 interface ArchiveIndex {
     userId: string;
     name: string;
@@ -24,37 +32,60 @@ interface ArchiveIndex {
 }
 
 /**
+ * Function to convert an ArchiveIndex into a filesystem path.
  *
+ * @param archive - The entry describing the archives location in the file system.
+ * @returns - A path representation of the archive index.
  */
-// export async function createArchive(_archive: ArchiveIndex) {}
-
-/**
- *
- */
-function loadArchive(archive: ArchiveIndex) {
-    let source;
-
+function archiveIndexToPath(archive: ArchiveIndex): string {
     // Append the revision path if there is one
     if (typeof archive.revision !== 'undefined') {
-        source = joinPaths(
+        return joinPaths(
+            'publications',
             archive.userId,
             archive.name,
             'revisions',
             archive.revision,
             'publication.zip',
         );
-    } else {
-        source = joinPaths(archive.userId, archive.name, 'publication.zip');
     }
 
-    return new AdmZip(source);
+    return joinPaths('publications', archive.userId, archive.name, 'publication.zip');
 }
 
 /**
- * 
+ * Function to find and load the archive from the filesystem using an ArchiveIndex entry.
+ *
  * @param archive - The entry describing the archives location in the file system.
- * @param path - 
- * @returns 
+ */
+function loadArchive(archive: ArchiveIndex): AdmZip {
+    return new AdmZip(archiveIndexToPath(archive));
+}
+
+/**
+ * Function to create an archive from
+ */
+export async function createArchive(archive: ArchiveIndex, filePath: string) {
+    const zip = loadArchive(archive);
+    const base = getPathBase(filePath);
+
+    // TODO: assert here that the path to the resource is an actual file and has an acceptable
+    // mime-type to be zipped.
+    const buf = await fs.readFile(filePath);
+    const savePath = archiveIndexToPath(archive);
+
+    zip.addFile(base, buf);
+    zip.writeZip(savePath);
+}
+
+/**
+ * Function to get an entry from the a archive index. The function will generate
+ * information about the entry if it is either a file or a directory, returning a
+ * @see{PublicationPathContent} describing the entry.
+ *
+ * @param archive - The entry describing the archives location in the file system.
+ * @param path - Path in the archive to the actual folder
+ * @returns The transformed entry or null if the entry doesn't exist.
  */
 export function getEntry(archive: ArchiveIndex, path: string): PublicationPathContent | null {
     const zip = loadArchive(archive);
@@ -89,6 +120,7 @@ export function getEntry(archive: ArchiveIndex, path: string): PublicationPathCo
                 return {
                     type: e.isDirectory ? 'directory' : 'file',
                     filename: e.isDirectory ? transformedName : e.name,
+                    updatedAt: e.header.time.getTime(),
                 };
             });
 
@@ -97,10 +129,10 @@ export function getEntry(archive: ArchiveIndex, path: string): PublicationPathCo
             entries,
         };
     }
-        const contents = entry.getData().toString();
+    const contents = entry.getData().toString();
 
-        return {
-            type: 'file',
-            contents,
-        };
+    return {
+        type: 'file',
+        contents,
+    };
 }
