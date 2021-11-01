@@ -6,7 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type UnauthorizedResponse = {
-  message: string;
-  status: boolean;
+export type FileResponseData = {
+  contents: string;
+  type: string;
+  updatedAt: number;
 };

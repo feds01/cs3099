@@ -7,10 +7,10 @@
  */
 
 export interface UserRegistration {
-    about?: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    password: string;
-    username: string;
+  about?: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  username: string;
 }

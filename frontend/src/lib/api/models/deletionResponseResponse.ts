@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type UnauthorizedResponse = {
+export type DeletionResponseResponse = {
   message: string;
   status: boolean;
 };

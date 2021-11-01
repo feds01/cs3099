@@ -6,13 +6,13 @@ const CollaboratorArraySchema = ExistUsernameSchema.array().refine(
     { message: 'No duplicated collaborators allowed' },
 );
 
-export const IPublicationPostRequestSchema = z.object({
+export const IPublicationCreationSchema = z.object({
     revision: z.string().nonempty(),
     title: z.string().nonempty(),
     name: z.string().nonempty(),
     introduction: z.string().nonempty(),
     collaborators: CollaboratorArraySchema,
-    draft: z.boolean().default(false),
+    draft: z.boolean().optional().default(false),
 });
 
 // TODO: Implement better schema
@@ -24,4 +24,4 @@ export const SearchQuerySchema = z.object({
     collaborators: z.string().array(),
 });
 
-export type IPublicationPostRequest = z.input<typeof IPublicationPostRequestSchema>;
+export type IPublicationCreationRequest = z.input<typeof IPublicationCreationSchema>;

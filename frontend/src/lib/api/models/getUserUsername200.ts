@@ -9,7 +9,7 @@ import type { FollowerCount } from './followerCount';
 import type { User } from './user';
 
 export type GetUserUsername200 = {
-    follows: FollowerCount;
-    status: boolean;
-    user: User;
+  follows: FollowerCount;
+  status: boolean;
+  user: User;
 };

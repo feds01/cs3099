@@ -6,5 +6,6 @@
  * OpenAPI spec version: 1.0.0
  */
 
-// tslint:disable-next-line:no-empty-interface
-export interface UploadResourceResponse {}
+export interface UploadResourceResponse {
+  status: boolean;
+}

@@ -9,7 +9,7 @@ import registerRoute from '../../wrappers/requests';
 import Publication from '../../models/Publication';
 import { ModeSchema } from '../../validators/requests';
 import {
-    IPublicationPostRequestSchema,
+    IPublicationCreationSchema,
 } from '../../validators/publications';
 import searchRouter from './search';
 
@@ -76,7 +76,7 @@ registerRoute(router, '/:username/:title/:revision?/tree/:path(*)', {
 registerRoute(router, '/', {
     method: 'post',
     params: z.object({}),
-    body: IPublicationPostRequestSchema,
+    body: IPublicationCreationSchema,
     query: z.object({}),
     permission: IUserRole.Default,
     handler: async (req, res) => {

@@ -167,7 +167,7 @@ registerRoute(router, '/publication/upload/:id', {
  * Endpoint for uploading attachements on reviwew commetns, items such as images/files or even
  * videos.
  */
-registerRoute(router, '/reviews/upload/:id', {
+registerRoute(router, '/review/upload/:id', {
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({}),
     body: z.any(),

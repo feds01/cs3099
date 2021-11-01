@@ -5,8 +5,9 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
+import type { DirectoryResponseDataEntriesItem } from './directoryResponseDataEntriesItem';
 
-export type UnauthorizedResponse = {
-  message: string;
-  status: boolean;
+export type DirectoryResponseData = {
+  entries?: DirectoryResponseDataEntriesItem[];
+  type: string;
 };

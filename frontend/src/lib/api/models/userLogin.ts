@@ -10,6 +10,6 @@
  * The username can either be the actual username or the user's email.
  */
 export interface UserLogin {
-    password: string;
-    username: string;
+  password: string;
+  username: string;
 }
