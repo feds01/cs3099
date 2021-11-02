@@ -350,10 +350,10 @@ router.post('/login', async (req, res) => {
             }
 
             // If the sent over password matches the hashed password within the database, generate the
-            // 'x-token' and 'x-refresh-token' JWT's . Also, update the 'last_login' timestamp and record
+            // token and refreshToken JWT's . Also, update the 'last_login' timestamp and record
             // an entry for the user logging in into the system.
             if (response) {
-                const { token, refreshToken } = await createTokens({
+                const { token, refreshToken } = createTokens({
                     email: result.email,
                     username: result.username,
                     id: result.id,

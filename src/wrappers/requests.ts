@@ -46,30 +46,27 @@ type RegisterRoute<P, B, Q, M extends RequestMethod> = M extends RequestMethodWi
     ? RegisterRouteWithoutBody<P, Q, M>
     : never;
 
+function permissionToInt(permission: IUserRole) {
+    switch (permission) {
+        case IUserRole.Moderator:
+            return 1;
+        case IUserRole.Administrator:
+            return 2;
+        default:
+            return 0;
+    }
+}
+
 async function ensureValidPermissions(permission: IUserRole, token: JwtPayload): Promise<boolean> {
     // Lookup the user in the current request
     const user = await User.findById(token.data.id);
 
-    if (!user || user.role !== permission) {
-        return false;
-    }
+    if (!user) return false;
 
-    // // Now we need to get the current resource specified and check if the current user
-    // // has the appropriate permissions on the resource
-    // if (permission === IUserRole.Default) {
-    //     switch (resource) {
-    //         case "comment": {
+    const requiredPermission = permissionToInt(permission);
+    const acquiredPermission = permissionToInt(user.role);
 
-    //         }
-    //         case "publication": {
-
-    //         }
-    //         case "comment": {
-
-    //         }
-    //     }
-    // }
-    return true;
+    return acquiredPermission >= requiredPermission;
 }
 
 export default function registerRoute<P, B, Q, M extends RequestMethod>(
@@ -109,11 +106,10 @@ export default function registerRoute<P, B, Q, M extends RequestMethod>(
 
         const token = getTokensFromHeader(req, res);
 
-        if (!token) {
+        if (typeof token === 'string') {
             return res.status(401).json({
                 status: false,
-                message:
-                    "Unauthorized. User doesn't have sufficient permissions to perform this request",
+                message: token,
             });
         }
 
