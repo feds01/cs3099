@@ -17,7 +17,7 @@ AXIOS_INSTANCE.interceptors.request.use((config) => {
         headers: token
             ? {
                   ...config.headers,
-                  'Authorization': `Bearer ${token}`,
+                  Authorization: `Bearer ${token}`,
                   ...(refreshToken && { 'x-refresh-token': refreshToken }),
               }
             : config.headers,

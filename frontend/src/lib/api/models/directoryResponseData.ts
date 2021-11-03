@@ -9,6 +9,6 @@ import type { DirectoryResponseDataEntriesItem } from './directoryResponseDataEn
 import type { DirectoryResponseDataType } from './directoryResponseDataType';
 
 export type DirectoryResponseData = {
-  entries: DirectoryResponseDataEntriesItem[];
-  type: DirectoryResponseDataType;
+    entries: DirectoryResponseDataEntriesItem[];
+    type: DirectoryResponseDataType;
 };

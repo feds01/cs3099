@@ -37,8 +37,8 @@ function PublicationView() {
     // @@Cleanup: We could probably convert the revision into a query parameter instead of a path parameter
     // because the code generation that orval performs is so shit here!
     const getPublicationQuery = useGetPublication(username, name, revision || '');
-    const getPublicationSourceQuery = useGetPublicationSource(username, name, revision || '', path || '/');
-    const getMainPublicationSourceQuery = useGetRevisionlessPublicationSource(username, name, path || '/');
+    const getPublicationSourceQuery = useGetPublicationSource(username, name, revision || '', path || '');
+    const getMainPublicationSourceQuery = useGetRevisionlessPublicationSource(username, name, path || '');
 
     useEffect(() => {
         getPublicationQuery.refetch();
@@ -85,9 +85,7 @@ function PublicationView() {
         case 'ok': {
             return (
                 <PublicationViewSource
-                    username={username}
-                    name={name}
-                    revision={revision}
+                    index={{ username, name, revision }}
                     filename={path || '/'}
                     contents={publicationSource}
                 />
@@ -99,7 +97,7 @@ function PublicationView() {
 export default function PublicationRoute(props: Props): ReactElement {
     return (
         <PageLayout title={'Publication'}>
-            <Container sx={{p: 2}}>
+            <Container sx={{ p: 2 }}>
                 <PublicationView />
             </Container>
         </PageLayout>

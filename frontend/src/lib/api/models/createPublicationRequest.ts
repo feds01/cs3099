@@ -8,9 +8,9 @@
 import type { User } from './user';
 
 export interface CreatePublicationRequest {
-  name: string;
-  title: string;
-  introduction: string;
-  revision?: string;
-  collaborators: User[];
+    name: string;
+    title: string;
+    introduction: string;
+    revision?: string;
+    collaborators: User[];
 }

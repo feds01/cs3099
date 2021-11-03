@@ -1,13 +1,7 @@
-import React, { ReactElement } from 'react'
+import React, { ReactElement } from 'react';
 
-interface Props {
-    
-}
+interface Props {}
 
 export default function PublicationCard({}: Props): ReactElement {
-    return (
-        <div>
-            
-        </div>
-    )
+    return <div></div>;
 }

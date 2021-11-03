@@ -30,8 +30,18 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
 
         const { name, revision, path } = req.params;
 
-        // TODO: We need to check that the actual revision exists
-        // TODO: We need to get the actual publication entry
+        const publication = await Publication.findOne({
+            owner: user.id,
+            name,
+            ...(typeof revision !== 'undefined' && { revision })
+        }).sort({ _id: -1 }).exec();
+
+        if (!publication) {
+            return res.status(404).json({
+                status: false,
+                message: errors.RESOURCE_NOT_FOUND,
+            });
+        }
 
         let archive = {
             userId: user.id!,
@@ -39,8 +49,8 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
             ...(typeof revision !== 'undefined' && { revision })
         }
 
-        const transformedPath = path ?? "/";
-        const entry = zip.getEntry(archive, transformedPath === "" ? "/" : transformedPath);
+        const transformedPath = path ?? "";
+        const entry = zip.getEntry(archive, transformedPath);
 
         if (!entry) {
             return res.status(404).json({

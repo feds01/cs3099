@@ -15,6 +15,7 @@
         "indent": ["off", 4],
         "max-len": ["error", 100, { "ignoreStrings": true }],
         "operator-linebreak": ["error", "after"],
+        "object-curly-newline": ["off"],
         "no-underscore-dangle": ["off"],
         "import/no-unresolved": ["off"],
         "import/extensions": ["off"],

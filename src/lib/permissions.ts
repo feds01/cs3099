@@ -3,7 +3,6 @@ import User, { IUser, IUserRole } from '../models/User';
 type ResolvedPermission =
     | {
           valid: false;
-          user?: never;
       }
     | {
           valid: true;
@@ -62,7 +61,6 @@ export async function ensureValidPermissions(
 
     if (acquiredPermission >= requiredPermission) {
         return { valid: true, user };
-    } else {
-        return { valid: false };
     }
+    return { valid: false };
 }

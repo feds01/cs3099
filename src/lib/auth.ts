@@ -103,8 +103,10 @@ export function getTokensFromHeader(
             return 'Invalid JWT provided.';
         }
 
-        if (typeof refreshToken !== 'string')
+        if (typeof refreshToken !== 'string') {
             return "Couldn't refresh stale token as no refresh token is provided.";
+        }
+
         const newTokens = refreshTokens(refreshToken);
 
         // Exit early if refreshing tokens failed...

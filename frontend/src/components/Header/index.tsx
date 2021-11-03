@@ -9,7 +9,7 @@ import ProfileMenu from '../ProfileMenu';
 import UserAvatar from '../UserAvatar';
 import { useAuth } from '../../hooks/auth';
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
-import LogoImage from "./../../static/images/logos/logo.jpg";
+import LogoImage from './../../static/images/logos/logo.jpg';
 
 const AppBar = styled(MuiAppBar)(({ theme }) => ({
     zIndex: theme.zIndex.drawer + 1,
@@ -33,13 +33,13 @@ export default function Header({ title }: Props): ReactElement {
         >
             <Toolbar sx={{ ...(!title && { justifyContent: 'space-between' }) }}>
                 <Link
-                    href={"/"}
+                    href={'/'}
                     aria-label="home"
                     sx={{
                         mr: 1,
                     }}
                 >
-                    <img src={LogoImage} height={48} alt="Iamus"/>    
+                    <img src={LogoImage} height={48} alt="Iamus" />
                 </Link>
                 {title && (
                     <Typography variant="h6" component="div" sx={{ color: 'text.primary', flexGrow: 1 }}>

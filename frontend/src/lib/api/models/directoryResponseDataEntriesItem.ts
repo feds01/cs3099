@@ -7,7 +7,7 @@
  */
 
 export type DirectoryResponseDataEntriesItem = {
-  filename: string;
-  type: string;
-  updatedAt: number;
+    filename: string;
+    type: string;
+    updatedAt: number;
 };

@@ -8,7 +8,6 @@
 
 export type FileResponseDataType = 'file';
 
-
 export const FileResponseDataType = {
-  file: 'file' as FileResponseDataType,
+    file: 'file' as FileResponseDataType,
 };

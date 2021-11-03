@@ -1,8 +1,9 @@
 import { Alert, AlertTitle, Divider } from '@mui/material';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import { ResourceResponseResponse } from '../../lib/api/models';
+import { constructBasePath, PublicationIndex } from '../../lib/utils/publications';
 import { ContentState } from '../../types/requests';
 import DirectoryViewer from '../DirectoryViewer';
 import FileViewer from '../FileViewer';
@@ -10,16 +11,12 @@ import BreadCrumb from './BreadCrumb';
 
 interface SourceViewerProps {
     filename: string;
+    basePath: string;
+    index: PublicationIndex;
     contents: ContentState<ResourceResponseResponse, any>;
 }
 
-export interface PublicationIndex {
-    username: string;
-    name: string;
-    revision?: string;
-}
-
-function SourceViewer({ contents, filename }: SourceViewerProps): ReactElement {
+function SourceViewer({ contents, filename, basePath }: SourceViewerProps): ReactElement {
     switch (contents.state) {
         case 'loading': {
             return <div>Loading</div>;
@@ -40,21 +37,33 @@ function SourceViewer({ contents, filename }: SourceViewerProps): ReactElement {
                     <FileViewer contents={data.contents} filename={filename} comments={[]} updatedAt={data.updatedAt} />
                 );
             } else {
-                return <DirectoryViewer type={data.type} entries={data.entries} filename={filename} />;
+                return (
+                    <DirectoryViewer type={data.type} entries={data.entries} basePath={basePath} filename={filename} />
+                );
             }
         }
     }
 }
 
-type Props = SourceViewerProps & PublicationIndex;
+type Props = {
+    index: PublicationIndex;
+    contents: ContentState<ResourceResponseResponse, any>;
+    filename: string;
+};
 
-export default function PublicationViewSource({ contents, filename, ...rest }: Props): ReactElement {
+export default function PublicationViewSource({ contents, filename, index }: Props): ReactElement {
+    const [basePath, setBasePath] = useState<string>(constructBasePath(index));
+
+    useEffect(() => {
+        setBasePath(constructBasePath(index));
+    }, [index]);
+
     return (
         <Container>
-            <BreadCrumb {...rest} filename={filename} />
-            <Divider/>
+            <BreadCrumb index={index} basePath={basePath} filename={filename} />
+            <Divider />
             <Box>
-                <SourceViewer contents={contents} filename={filename} />
+                <SourceViewer index={index} contents={contents} basePath={basePath} filename={filename} />
             </Box>
         </Container>
     );

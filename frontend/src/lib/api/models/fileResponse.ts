@@ -8,7 +8,7 @@
 import type { FileResponseType } from './fileResponseType';
 
 export interface FileResponse {
-  type: FileResponseType;
-  contents: string;
-  updatedAt: number;
+    type: FileResponseType;
+    contents: string;
+    updatedAt: number;
 }

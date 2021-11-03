@@ -8,7 +8,7 @@
 import type { FileResponseDataType } from './fileResponseDataType';
 
 export type FileResponseData = {
-  contents: string;
-  type: FileResponseDataType;
-  updatedAt: number;
+    contents: string;
+    type: FileResponseDataType;
+    updatedAt: number;
 };

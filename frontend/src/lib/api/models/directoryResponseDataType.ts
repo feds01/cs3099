@@ -8,7 +8,6 @@
 
 export type DirectoryResponseDataType = 'directory';
 
-
 export const DirectoryResponseDataType = {
-  directory: 'directory' as DirectoryResponseDataType,
+    directory: 'directory' as DirectoryResponseDataType,
 };
