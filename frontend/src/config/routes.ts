@@ -3,7 +3,6 @@ import { RouteProps } from 'react-router';
 import HomeRoute from './../routes/Home';
 import ProfileRoute from './../routes/Profile';
 import AccountRoute from './../routes/Account';
-import PublicationRoute from '../routes/Publication';
 
 type Extends<T, U extends T> = U;
 
@@ -28,9 +27,5 @@ export const routes = {
         exact: true,
         title: 'Account',
         component: AccountRoute,
-    },
-    '/:username/:name/:revision?/tree/:path(.*)': {
-        exact: false,
-        component: PublicationRoute,
     },
 };

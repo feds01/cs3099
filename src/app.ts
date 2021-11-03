@@ -68,9 +68,9 @@ app.get('/version', (_req, res) => {
 app.use('/sg', ssoRouter); // TODO(alex): we'll probably need to setup a proxy so that the SuperGroup can access all endpoints not just login
 app.use('/auth', authRouter);
 app.use('/user', userRouter);
-app.use('/review', reviewsRouter);
-app.use('/resource', resourcesRouter);
-app.use('/publication', publicationsRouter);
+app.use('/reviews', reviewsRouter);
+app.use('/resources', resourcesRouter);
+app.use('/publications', publicationsRouter);
 
 app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     // This check makes sure this is a JSON parsing issue, but it might be
