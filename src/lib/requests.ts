@@ -3,7 +3,7 @@ import express from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import * as errors from '../common/errors';
 import { getTokensFromHeader } from './auth';
-import { IUser, IUserRole } from '../models/User';
+import { IUserDocument, IUserRole } from '../models/User';
 import { ensureValidPermissions } from './permissions';
 
 // Request method types
@@ -21,7 +21,7 @@ interface BasicRequest<P, Q> {
     params: P;
     query: Q;
     token: JwtPayload;
-    requester: IUser;
+    requester: IUserDocument;
     raw: express.Request;
 }
 

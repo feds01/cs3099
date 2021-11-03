@@ -1,4 +1,4 @@
-import User, { IUser, IUserRole } from '../models/User';
+import User, { IUserDocument, IUserRole } from '../models/User';
 
 type ResolvedPermission =
     | {
@@ -6,7 +6,7 @@ type ResolvedPermission =
       }
     | {
           valid: true;
-          user: IUser;
+          user: IUserDocument;
       };
 
 /**

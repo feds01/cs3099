@@ -57,8 +57,12 @@ function archiveIndexToPath(archive: ArchiveIndex): string {
  *
  * @param archive - The entry describing the archives location in the file system.
  */
-function loadArchive(archive: ArchiveIndex): AdmZip {
-    return new AdmZip(archiveIndexToPath(archive));
+function loadArchive(archive: ArchiveIndex): AdmZip | null {
+    try {
+        return new AdmZip(archiveIndexToPath(archive));
+    } catch (e: unknown) {
+        return null;
+    }
 }
 
 /**
@@ -66,6 +70,8 @@ function loadArchive(archive: ArchiveIndex): AdmZip {
  */
 export async function createArchive(archive: ArchiveIndex, filePath: string) {
     const zip = loadArchive(archive);
+    if (!zip) throw new Error("Couldn't load archive");
+
     const base = getPathBase(filePath);
 
     // TODO: assert here that the path to the resource is an actual file and has an acceptable
@@ -124,6 +130,7 @@ function findEntry(zip: AdmZip, path: string) {
  */
 export function getEntry(archive: ArchiveIndex, path: string): PublicationPathContent | null {
     const zip = loadArchive(archive);
+    if (!zip) return null;
 
     // We have to handle a special case here where the actual path provided is '/'.
     // In this situation, we essentially have to find all the top level (probably only)

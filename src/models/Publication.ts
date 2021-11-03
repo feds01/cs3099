@@ -8,6 +8,7 @@ export interface IPublication {
     introduction: string;
     attachment?: string;
     draft: boolean;
+    current: boolean;
     collaborators: mongoose.Types.ObjectId[];
 }
 
@@ -23,6 +24,7 @@ const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublicati
         introduction: { type: String, required: true },
         owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
         draft: { type: Boolean, required: true },
+        current: { type: Boolean, required: true },
         collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
     },
     { timestamps: true },

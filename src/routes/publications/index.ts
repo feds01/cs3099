@@ -46,8 +46,8 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
         let archive = {
             userId: user.id!,
             name,
-            ...(typeof revision !== 'undefined' && { revision })
-        }
+            ...(!publication.current && typeof revision !== 'undefined' && { revision })
+        };
 
         const transformedPath = path ?? "";
         let entry = zip.getEntry(archive, transformedPath);
@@ -210,7 +210,7 @@ registerRoute(router, '/:username/:name/:revision?', {
         // privileges, they can't get the publication. Only the owner should be able
         // to retrieve their draft. This behaviour is entirely overridden if the query
         // flag 'draft' is specified.
-        const isOwner = publication.owner._id.toString() === user.id;
+        const isOwner = publication.owner._id.toString() === req.requester.id;
 
         if (publication.draft && (!isOwner && !comparePermissions(requester.role, IUserRole.Moderator))) {
             return res.status(404).json({
