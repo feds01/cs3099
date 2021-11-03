@@ -3,12 +3,13 @@ import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import MuiAppBar from '@mui/material/AppBar';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
 import { styled } from '@mui/material/styles';
 import ProfileMenu from '../ProfileMenu';
-import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import UserAvatar from '../UserAvatar';
 import { useAuth } from '../../hooks/auth';
+import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
+import LogoImage from "./../../static/images/logos/logo.jpg";
 
 const AppBar = styled(MuiAppBar)(({ theme }) => ({
     zIndex: theme.zIndex.drawer + 1,
@@ -31,15 +32,15 @@ export default function Header({ title }: Props): ReactElement {
             }}
         >
             <Toolbar sx={{ ...(!title && { justifyContent: 'space-between' }) }}>
-                <IconButton
-                    aria-label="open drawer"
-                    edge="start"
+                <Link
+                    href={"/"}
+                    aria-label="home"
                     sx={{
-                        marginRight: '36px',
+                        mr: 1,
                     }}
                 >
-                    Some logo
-                </IconButton>
+                    <img src={LogoImage} height={48} alt="Iamus"/>    
+                </Link>
                 {title && (
                     <Typography variant="h6" component="div" sx={{ color: 'text.primary', flexGrow: 1 }}>
                         {title}

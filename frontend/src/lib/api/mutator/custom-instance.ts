@@ -3,7 +3,7 @@ import Axios, { AxiosRequestConfig } from 'axios';
 export const AXIOS_INSTANCE = Axios.create({
     baseURL: 'http://localhost:5000',
     headers: {
-        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Allow-Headers': 'Authorization, x-refresh-token',
         'content-type': 'application/json',
     },
 });

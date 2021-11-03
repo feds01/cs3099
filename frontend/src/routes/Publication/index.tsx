@@ -99,7 +99,7 @@ function PublicationView() {
 export default function PublicationRoute(props: Props): ReactElement {
     return (
         <PageLayout title={'Publication'}>
-            <Container>
+            <Container sx={{p: 2}}>
                 <PublicationView />
             </Container>
         </PageLayout>
