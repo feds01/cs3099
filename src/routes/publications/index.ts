@@ -7,7 +7,7 @@ import * as errors from "./../../common/errors";
 import * as userUtils from "./../../utils/users";
 import registerRoute from '../../lib/requests';
 import Publication from '../../models/Publication';
-import { ModeSchema } from '../../validators/requests';
+import { ModeSchema, ResourceSortSchema } from '../../validators/requests';
 import {
     IPublicationCreationSchema,
 } from '../../validators/publications';
@@ -22,7 +22,7 @@ router.use('/', searchRouter);
 registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
     method: 'get',
     params: z.object({ username: z.string(), name: z.string(), path: z.string().optional(), revision: z.string().optional(), }),
-    query: z.object({ mode: ModeSchema }),
+    query: z.object({ mode: ModeSchema, sortBy: ResourceSortSchema }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
@@ -50,7 +50,7 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
         }
 
         const transformedPath = path ?? "";
-        const entry = zip.getEntry(archive, transformedPath);
+        let entry = zip.getEntry(archive, transformedPath);
 
         if (!entry) {
             return res.status(404).json({
@@ -58,6 +58,28 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
                 message: errors.RESOURCE_NOT_FOUND,
             })
         } else {
+
+            // Here we need to apply sorting to the particular entry if the entry is a directory type
+            if (entry.type === "directory") {
+                const sortBy = req.query.sortBy ?? "directory";
+
+                entry.entries = entry.entries.sort((a, b) => {
+                    const aType = a.type === sortBy ? 1 : 0;
+                    const bType = b.type === sortBy ? 1 : 0;
+
+                    const aText = a.filename;
+                    const bText = b.filename;
+
+
+                    // Sort here by alphabetical order if the types are the same
+                    if (aType !== bType) {
+                        return aType > bType ? -1 : 1;
+                    } else {
+                        return (aText < bText) ? -1 : (aText > bText) ? 1 : 0;
+                    }
+                })
+            }
+
             return res.status(200).json({
                 status: true,
                 data: entry

@@ -1,4 +1,4 @@
-import { Link, TableBody, TableCell, TableRow } from '@mui/material';
+import { Box, Link, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableContainer from '@mui/material/TableContainer';
@@ -15,20 +15,26 @@ export default function DirectoryViewer({ entries, basePath, filename }: Props):
     return (
         <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                <TableHead>
+                    <TableRow>
+                        <TableCell width={'80%'}>Filename</TableCell>
+                        <TableCell align={"right"} width={'20%'}>Last modified</TableCell>
+                    </TableRow>
+                </TableHead>
                 <TableBody>
                     {entries.map((entry) => {
                         const fullPath = `${basePath}/tree/${filename}/${entry.filename}`.replace(/([^:]\/)\/+/g, '$1');
 
                         return (
                             <TableRow key={fullPath}>
-                                <TableCell>
-                                    {entry.type === 'directory' ? <RiFolderFill /> : <SiTypescript />}
-                                </TableCell>
-                                <TableCell>
+                                <TableCell sx={{display: 'flex', flexDirection: 'row'}}>
+                                    <Box sx={{ mr: 1 }}>
+                                        {entry.type === 'directory' ? <RiFolderFill /> : <SiTypescript />}
+                                    </Box>
                                     <Link href={fullPath}>{entry.filename}</Link>
                                 </TableCell>
-                                <TableCell>
-                                    {formatDistance(new Date(), entry.updatedAt, { addSuffix: true })}
+                                <TableCell align={"right"} width={'20%'}>
+                                    {formatDistance(entry.updatedAt, new Date(), { addSuffix: true })}
                                 </TableCell>
                             </TableRow>
                         );

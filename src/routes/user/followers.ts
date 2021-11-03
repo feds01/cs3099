@@ -204,7 +204,7 @@ registerRoute(router, '/:username/followers', {
     },
 });
 
-registerRoute(router, '/:username/followers', {
+registerRoute(router, '/:username/following', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),

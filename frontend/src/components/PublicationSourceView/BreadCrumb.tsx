@@ -1,7 +1,7 @@
+import React, { ReactElement } from 'react';
+import Link from '@mui/material/Link';
 import { Typography } from '@mui/material';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
-import Link from '@mui/material/Link';
-import React, { ReactElement, useEffect, useState } from 'react';
 import { PublicationIndex } from '../../lib/utils/publications';
 
 interface Props {

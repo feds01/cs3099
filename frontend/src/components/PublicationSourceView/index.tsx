@@ -7,6 +7,7 @@ import { constructBasePath, PublicationIndex } from '../../lib/utils/publication
 import { ContentState } from '../../types/requests';
 import DirectoryViewer from '../DirectoryViewer';
 import FileViewer from '../FileViewer';
+import MarkdownRenderer from '../MarkdownRenderer';
 import BreadCrumb from './BreadCrumb';
 
 interface SourceViewerProps {

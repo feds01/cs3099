@@ -16,6 +16,10 @@ import { transformQueryIntoContentState } from '../../wrappers/react-query';
 import Container from '@mui/material/Container';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
+import MarkdownRenderer from '../../components/MarkdownRenderer';
+import Divider from '@mui/material/Divider';
+import Chip from '@mui/material/Chip';
+import Box from '@mui/material/Box';
 
 interface Props {}
 
@@ -84,11 +88,19 @@ function PublicationView() {
         }
         case 'ok': {
             return (
-                <PublicationViewSource
-                    index={{ username, name, revision }}
-                    filename={path || '/'}
-                    contents={publicationSource}
-                />
+                <>
+                    <Box sx={{display: 'flex', alignItems: 'center'}}>
+                        <MarkdownRenderer contents={publication.data.publication.title} />
+                        <Chip sx={{ml: 1}} label={publication.data.publication.revision || "current"} variant="outlined" />
+                    </Box>
+                    <MarkdownRenderer contents={publication.data.publication.introduction} />
+                    <Divider />
+                    <PublicationViewSource
+                        index={{ username, name, revision }}
+                        filename={path || '/'}
+                        contents={publicationSource}
+                    />
+                </>
             );
         }
     }
