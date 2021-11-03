@@ -85,7 +85,7 @@ paths:
     /sg/sso/callback:
         post:
             summary: Successful external login endpoint.
-            description: This endpoint is used to notify the journal that the external login was successful and we should proceed with authenticating the external user. This might mean that there is an internal process of registering the user on the platofrm.
+            description: This endpoint is used to notify the journal that the external login was successful and we should proceed with authenticating the external user. This might mean that there is an internal process of registering the user on the platform.
             tags:
                 - external
             parameters:
@@ -616,10 +616,328 @@ paths:
                     $ref: '#/components/responses/NotFound'
                 '500':
                     $ref: '#/components/responses/InternalServerError'
-    /resources/upload/{username}/{type}:
+    /publication:
         post:
-            summary: Upload a generic file resource
-            description: Endpoint for uploading media to Iamus from multiple sources including publications, comments, profile pictures, etc.
+            summary: Create a publication
+            description: Create a new publication resource for a given user account.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                description: Provide information about the upload
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreatePublicationRequest'
+            responses:
+                '302':
+                    description: Returns information about the created publication.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreatePublicationResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /publication/{username}/{name}:
+        delete:
+            summary: Delete a publication
+            description: Create a new publication resource for a given user account.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+            responses:
+                '200':
+                    $ref: '#/components/responses/DeletionResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+        get:
+            summary: Get a publication
+            description: Get a publication resource for a given user account with the specified name. This will return the most recent publication revision.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+            responses:
+                '200':
+                    description: Returns the requested publication.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - publication
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    publication:
+                                        $ref: '#/components/schemas/Publication'
+
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /publication/{username}:
+        get:
+            summary: Get a user's publications
+            description: Get a list of publications that the user owns.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: Returns the requested publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - data
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    data:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Publication'
+
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /publication/{username}/{name}/tree/{path}:
+        get:
+            summary: Get a file from a publication
+            description: Get a publication resource file for a given user account with the specified name. This will return the most recent publication revision.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: path
+                  name: path
+                  schema:
+                      type: string
+                      example: 'src/server.ts'
+                  required: true
+            responses:
+                '200':
+                    $ref: '#/components/responses/ResourceResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /publication/{username}/{name}/{revision}:
+        delete:
+            summary: Delete a specific revision of a publication
+            description: Create a new publication resource for a given user account.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: path
+                  name: revision
+                  schema:
+                      type: string
+                  required: true
+                  description: Get a specific revision of a given publication.
+            responses:
+                '200':
+                    $ref: '#/components/responses/DeletionResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+        get:
+            summary: Get a specific revision of a publication
+            description: Get a publication resource for a given user account with the specified name and the particular revision.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: path
+                  name: revision
+                  schema:
+                      type: string
+                  required: true
+                  description: Get a specific revision of a given publication.
+            responses:
+                '200':
+                    description: Returns the requested publication.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - publication
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    publication:
+                                        $ref: '#/components/schemas/Publication'
+
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /publication/{username}/{name}/{revision}/tree/{path}:
+        get:
+            summary: Get a file from a publication
+            description: Get a publication resource file for a given user account with the specified name and the particular revision.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: path
+                  name: revision
+                  schema:
+                      type: string
+                  required: true
+                  description: Get a specific revision of a given publication.
+                - in: path
+                  name: path
+                  schema:
+                      type: string
+                      example: 'src/server.ts'
+                  required: true
+            responses:
+                '200':
+                    $ref: '#/components/responses/ResourceResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /resource/upload/{username}:
+        post:
+            summary: Upload an avatar image for a user.
+            description: Endpoint for uploading media to Iamus for user profile pictures.
             tags:
                 - resources
             security:
@@ -638,12 +956,76 @@ paths:
                       type: string
                   required: true
                   description: Username.
+            responses:
+                '302':
+                    description: Information about the uploaded resource, where it can be found.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UploadResourceResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /resource/upload/publication/{id}:
+        post:
+            summary: Upload a generic file resource
+            description: Endpoint for uploading media to Iamus from multiple sources including publications, comments, profile pictures, etc.
+            tags:
+                - resources
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                description: Provide information about the upload
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/UploadResource'
+            parameters:
                 - in: path
-                  name: type
+                  name: id
                   schema:
                       type: string
                   required: true
-                  description: The type of the upload
+                  description: The identifier of the publication.
+            responses:
+                '302':
+                    description: Information about the uploaded resource, where it can be found.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UploadResourceResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /resource/upload/review/{id}:
+        post:
+            summary: Upload a generic file as an attachment to a comment
+            description: Endpoint for uploading media to Iamus from multiple sources including publications, comments, profile pictures, etc.
+            tags:
+                - resources
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                description: Provide information about the upload
+                content:
+                    multipart/form-data:
+                        schema:
+                            $ref: '#/components/schemas/UploadResource'
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: The identifier of the publication.
             responses:
                 '302':
                     description: Information about the uploaded resource, where it can be found.
@@ -746,6 +1128,39 @@ components:
                             message:
                                 type: string
                                 example: 'Not Found'
+        DeletionResponse:
+            description: When a specified resource has been deleted.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: boolean
+                                example: true
+                            message:
+                                type: string
+                                example: 'Resource has been successfully deleted.'
+        ResourceResponse:
+            description: Returned resource for a given publication.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - data
+                        properties:
+                            status:
+                                type: boolean
+                                example: true
+                            data:
+                                oneOf:
+                                    - $ref: '#/components/schemas/FileResponse'
+                                    - $ref: '#/components/schemas/DirectoryResponse'
     schemas:
         TokenRequest:
             type: object
@@ -948,9 +1363,125 @@ components:
                     items:
                         $ref: '#/components/schemas/User'
         UploadResource:
-            # required: true
-            type: string
+            type: object
+            required:
+                - file
+            properties:
+                file:
+                    type: string
         UploadResourceResponse:
             type: object
             required:
                 - status
+            properties:
+                status:
+                    type: boolean
+                    example: true
+        Publication:
+            type: object
+            required:
+                - name
+                - title
+                - introduction
+                - collaborators
+                - createdAt
+                - revision
+            properties:
+                name:
+                    type: string
+                    example: 'Iamus'
+                title:
+                    type: string
+                    example: 'Iamus: A platform for sharing astronomy code journals.'
+                introduction:
+                    type: string
+                    example: 'Iamus is a platform for managing code journals...'
+                revision:
+                    type: string
+                    example: 'v1.0.0'
+                collaborators:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/User'
+        CreatePublicationRequest:
+            type: object
+            required:
+                - name
+                - title
+                - introduction
+                - collaborators
+            properties:
+                name:
+                    type: string
+                    example: 'Iamus'
+                title:
+                    type: string
+                    example: 'Iamus: A platform for sharing astronomy code journals.'
+                introduction:
+                    type: string
+                    example: 'Iamus is a platform for managing code journals...'
+                revision:
+                    type: string
+                    example: 'v1.0.0'
+                collaborators:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/User'
+        CreatePublicationResponse:
+            type: object
+            required:
+                - name
+                - title
+                - introduction
+                - collaborators
+            properties:
+                status:
+                    type: boolean
+                    example: true
+                publication:
+                    $ref: '#/components/schemas/Publication'
+        FileResponse:
+            type: object
+            required:
+                - type
+                - updatedAt
+                - contents
+            properties:
+                type:
+                    type: string
+                    enum: ['file']
+                    example: 'file'
+                contents:
+                    type: string
+                    example: "Hello world!\n"
+                updatedAt:
+                    type: number
+                    example: 1283723481237
+        DirectoryResponse:
+            type: object
+            required:
+                - type
+                - entries
+            properties:
+                type:
+                    type: string
+                    enum: ['directory']
+                    example: 'directory'
+                entries:
+                    type: array
+                    items:
+                        type: object
+                        required:
+                            - type
+                            - updatedAt
+                            - filename
+                        properties:
+                            type:
+                                type: string
+                                example: 'file'
+                            filename:
+                                type: string
+                                example: 'server.ts'
+                            updatedAt:
+                                type: number
+                                example: 1283723481237

@@ -3,7 +3,7 @@ import Axios, { AxiosRequestConfig } from 'axios';
 export const AXIOS_INSTANCE = Axios.create({
     baseURL: 'http://localhost:5000',
     headers: {
-        'Access-Control-Allow-Headers': '*',
+        'Access-Control-Allow-Headers': 'Authorization, x-refresh-token',
         'content-type': 'application/json',
     },
 });
@@ -17,7 +17,7 @@ AXIOS_INSTANCE.interceptors.request.use((config) => {
         headers: token
             ? {
                   ...config.headers,
-                  'x-token': token,
+                  Authorization: `Bearer ${token}`,
                   ...(refreshToken && { 'x-refresh-token': refreshToken }),
               }
             : config.headers,

@@ -8,6 +8,6 @@
 import type { TokenVerificationResponseStatus } from './tokenVerificationResponseStatus';
 
 export interface TokenVerificationResponse {
-    message: string;
     status: TokenVerificationResponseStatus;
+    message: string;
 }

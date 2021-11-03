@@ -10,14 +10,14 @@ import type {
     UnprocessableEntityResponse,
     InternalServerErrorResponse,
     EmailValidation,
-    UserAuthResponse,
+    UsernameValidation,
+    TokenResponse,
     BadRequestResponse,
     UnauthorizedResponse,
+    TokenRequest,
+    UserAuthResponse,
     UserLogin,
     UserRegistration,
-    TokenResponse,
-    TokenRequest,
-    UsernameValidation,
 } from '.././models';
 import { customInstance } from '.././mutator/custom-instance';
 
@@ -33,7 +33,7 @@ export const postAuthEmailvalidation = (emailValidation: EmailValidation) => {
 
 export const usePostAuthEmailvalidation = <
     TError = UnprocessableEntityResponse | InternalServerErrorResponse,
-    TContext = unknown,
+    TContext = unknown
 >(options?: {
     mutation?: UseMutationOptions<
         AsyncReturnType<typeof postAuthEmailvalidation>,
@@ -58,6 +58,70 @@ export const usePostAuthEmailvalidation = <
     );
 };
 /**
+ * Check if an email is valid to use when registering
+ * @summary Pre-registration username validation
+ */
+export const postAuthUsernamevalidation = (usernameValidation: UsernameValidation) => {
+    return customInstance<void>({ url: `/auth/username_validation`, method: 'post', data: usernameValidation });
+};
+
+export const usePostAuthUsernamevalidation = <
+    TError = UnprocessableEntityResponse | InternalServerErrorResponse,
+    TContext = unknown
+>(options?: {
+    mutation?: UseMutationOptions<
+        AsyncReturnType<typeof postAuthUsernamevalidation>,
+        TError,
+        { data: UsernameValidation },
+        TContext
+    >;
+}) => {
+    const { mutation: mutationOptions } = options || {};
+
+    const mutationFn: MutationFunction<
+        AsyncReturnType<typeof postAuthUsernamevalidation>,
+        { data: UsernameValidation }
+    > = (props) => {
+        const { data } = props || {};
+
+        return postAuthUsernamevalidation(data);
+    };
+
+    return useMutation<
+        AsyncReturnType<typeof postAuthUsernamevalidation>,
+        TError,
+        { data: UsernameValidation },
+        TContext
+    >(mutationFn, mutationOptions);
+};
+/**
+ * Endpoint to refresh a JWT token
+ * @summary Refresh user session
+ */
+export const postAuthToken = (tokenRequest: TokenRequest) => {
+    return customInstance<TokenResponse>({ url: `/auth/token`, method: 'post', data: tokenRequest });
+};
+
+export const usePostAuthToken = <
+    TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    TContext = unknown
+>(options?: {
+    mutation?: UseMutationOptions<AsyncReturnType<typeof postAuthToken>, TError, { data: TokenRequest }, TContext>;
+}) => {
+    const { mutation: mutationOptions } = options || {};
+
+    const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthToken>, { data: TokenRequest }> = (props) => {
+        const { data } = props || {};
+
+        return postAuthToken(data);
+    };
+
+    return useMutation<AsyncReturnType<typeof postAuthToken>, TError, { data: TokenRequest }, TContext>(
+        mutationFn,
+        mutationOptions,
+    );
+};
+/**
  * User login endpoint, returning authentication tokens.
  * @summary User Login
  */
@@ -67,7 +131,7 @@ export const postAuthLogin = (userLogin: UserLogin) => {
 
 export const usePostAuthLogin = <
     TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
-    TContext = unknown,
+    TContext = unknown
 >(options?: {
     mutation?: UseMutationOptions<AsyncReturnType<typeof postAuthLogin>, TError, { data: UserLogin }, TContext>;
 }) => {
@@ -94,7 +158,7 @@ export const postAuthRegister = (userRegistration: UserRegistration) => {
 
 export const usePostAuthRegister = <
     TError = BadRequestResponse | InternalServerErrorResponse,
-    TContext = unknown,
+    TContext = unknown
 >(options?: {
     mutation?: UseMutationOptions<
         AsyncReturnType<typeof postAuthRegister>,
@@ -117,68 +181,4 @@ export const usePostAuthRegister = <
         mutationFn,
         mutationOptions,
     );
-};
-/**
- * Endpoint to refresh a JWT token
- * @summary Refresh user session
- */
-export const postAuthToken = (tokenRequest: TokenRequest) => {
-    return customInstance<TokenResponse>({ url: `/auth/token`, method: 'post', data: tokenRequest });
-};
-
-export const usePostAuthToken = <
-    TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
-    TContext = unknown,
->(options?: {
-    mutation?: UseMutationOptions<AsyncReturnType<typeof postAuthToken>, TError, { data: TokenRequest }, TContext>;
-}) => {
-    const { mutation: mutationOptions } = options || {};
-
-    const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthToken>, { data: TokenRequest }> = (props) => {
-        const { data } = props || {};
-
-        return postAuthToken(data);
-    };
-
-    return useMutation<AsyncReturnType<typeof postAuthToken>, TError, { data: TokenRequest }, TContext>(
-        mutationFn,
-        mutationOptions,
-    );
-};
-/**
- * Check if an email is valid to use when registering
- * @summary Pre-registration username validation
- */
-export const postAuthUsernamevalidation = (usernameValidation: UsernameValidation) => {
-    return customInstance<void>({ url: `/auth/username_validation`, method: 'post', data: usernameValidation });
-};
-
-export const usePostAuthUsernamevalidation = <
-    TError = UnprocessableEntityResponse | InternalServerErrorResponse,
-    TContext = unknown,
->(options?: {
-    mutation?: UseMutationOptions<
-        AsyncReturnType<typeof postAuthUsernamevalidation>,
-        TError,
-        { data: UsernameValidation },
-        TContext
-    >;
-}) => {
-    const { mutation: mutationOptions } = options || {};
-
-    const mutationFn: MutationFunction<
-        AsyncReturnType<typeof postAuthUsernamevalidation>,
-        { data: UsernameValidation }
-    > = (props) => {
-        const { data } = props || {};
-
-        return postAuthUsernamevalidation(data);
-    };
-
-    return useMutation<
-        AsyncReturnType<typeof postAuthUsernamevalidation>,
-        TError,
-        { data: UsernameValidation },
-        TContext
-    >(mutationFn, mutationOptions);
 };

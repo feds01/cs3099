@@ -5,7 +5,7 @@ import Logger from '../../common/logger';
 import { IUserRole } from '../../models/User';
 import * as userUtils from '../../utils/users';
 import Publication from '../../models/Publication';
-import registerRoute from '../../wrappers/requests';
+import registerRoute from '../../lib/requests';
 import { joinPaths, extractFile } from '../../utils/resources';
 import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
 
@@ -167,7 +167,7 @@ registerRoute(router, '/publication/upload/:id', {
  * Endpoint for uploading attachements on reviwew commetns, items such as images/files or even
  * videos.
  */
-registerRoute(router, '/reviews/upload/:id', {
+registerRoute(router, '/review/upload/:id', {
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({}),
     body: z.any(),

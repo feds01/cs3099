@@ -1,7 +1,6 @@
-import AdmZip from 'adm-zip';
-import assert from 'assert';
 import { promises as fs } from 'fs';
-import { getPathBase, joinPaths } from '../utils/resources';
+import AdmZip, { IZipEntry } from 'adm-zip';
+import { getPathBase, getPathComponents, joinPaths, stripEndingSlash } from '../utils/resources';
 
 // Interface representing either a file entry or a directory entry
 interface DirectoryEntry {
@@ -58,8 +57,12 @@ function archiveIndexToPath(archive: ArchiveIndex): string {
  *
  * @param archive - The entry describing the archives location in the file system.
  */
-function loadArchive(archive: ArchiveIndex): AdmZip {
-    return new AdmZip(archiveIndexToPath(archive));
+function loadArchive(archive: ArchiveIndex): AdmZip | null {
+    try {
+        return new AdmZip(archiveIndexToPath(archive));
+    } catch (e: unknown) {
+        return null;
+    }
 }
 
 /**
@@ -67,6 +70,8 @@ function loadArchive(archive: ArchiveIndex): AdmZip {
  */
 export async function createArchive(archive: ArchiveIndex, filePath: string) {
     const zip = loadArchive(archive);
+    if (!zip) throw new Error("Couldn't load archive");
+
     const base = getPathBase(filePath);
 
     // TODO: assert here that the path to the resource is an actual file and has an acceptable
@@ -76,6 +81,42 @@ export async function createArchive(archive: ArchiveIndex, filePath: string) {
 
     zip.addFile(base, buf);
     zip.writeZip(savePath);
+}
+
+function filterEntries(entries: IZipEntry[], prefix: string): DirectoryEntry[] {
+    return entries
+        .filter((e) => {
+            if (!e.entryName.startsWith(prefix)) return false;
+
+            const [_, lastPath] = e.entryName.split(prefix);
+            if (typeof lastPath === 'undefined') return false;
+
+            const components = getPathComponents(lastPath);
+            return components.length === 1;
+        })
+        .map((e) => {
+            // since this library has a different concept of name for directory and filename, we
+            // have to handle the case where there is a directory; extracting the name of the
+            // dir by full path.
+            const components = getPathComponents(e.entryName);
+            const transformedName = components[components.length - 1] ?? e.entryName;
+
+            return {
+                type: e.isDirectory ? 'directory' : 'file',
+                filename: e.isDirectory ? transformedName : e.name,
+                updatedAt: e.header.time.getTime(),
+            };
+        });
+}
+
+function findEntry(zip: AdmZip, path: string) {
+    const strippedPath = stripEndingSlash(path);
+
+    return zip.getEntries().find((e) => {
+        const entryPath = stripEndingSlash(e.entryName);
+
+        return strippedPath === entryPath;
+    });
 }
 
 /**
@@ -89,46 +130,38 @@ export async function createArchive(archive: ArchiveIndex, filePath: string) {
  */
 export function getEntry(archive: ArchiveIndex, path: string): PublicationPathContent | null {
     const zip = loadArchive(archive);
-    const entry = zip.getEntry(path);
+    if (!zip) return null;
 
-    if (!entry) return null;
-
-    // check if the entry is a directory or a string
-    if (entry.isDirectory) {
-        const prefix = entry.entryName;
-
-        // get all the paths and filter out all the entries that don't begin with that name...
-        const entries: DirectoryEntry[] = zip
-            .getEntries()
-            .filter((e) => {
-                if (!e.entryName.startsWith(prefix)) return false;
-
-                const [_, lastPath] = e.entryName.split(prefix);
-                if (typeof lastPath === 'undefined') return false;
-
-                const components = lastPath.split('/').filter((x) => x !== '');
-                return components.length === 1;
-            })
-            .map((e) => {
-                // since this library has a different concept of name for directory and filename, we
-                // have to handle the case where there is a directory; extracting the name of the
-                // dir by full path.
-                const components = entry.entryName.split('/').filter((x) => x !== '');
-                const transformedName = components[components.length - 1];
-                assert(typeof transformedName !== 'undefined');
-
-                return {
-                    type: e.isDirectory ? 'directory' : 'file',
-                    filename: e.isDirectory ? transformedName : e.name,
-                    updatedAt: e.header.time.getTime(),
-                };
-            });
+    // We have to handle a special case here where the actual path provided is '/'.
+    // In this situation, we essentially have to find all the top level (probably only)
+    // a single entry name.
+    if (path === '') {
+        const entries = filterEntries(
+            zip.getEntries().filter((x) => getPathComponents(x.entryName).length === 1),
+            '',
+        );
 
         return {
             type: 'directory',
             entries,
         };
     }
+
+    const entry = findEntry(zip, path);
+    if (!entry) return null;
+
+    // check if the entry is a directory or a string
+    if (entry.isDirectory) {
+        // get all the paths and filter out all the entries that don't begin with that name...
+        const entries: DirectoryEntry[] = filterEntries(zip.getEntries(), entry.entryName);
+
+        return {
+            type: 'directory',
+            entries,
+        };
+    }
+
+    // Extract the contents of the file and return it...
     const contents = entry.getData().toString();
 
     return {
