@@ -9,11 +9,8 @@
  */
 
 import express from 'express';
-import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
-import { ZodError } from 'zod';
-import Logger from '../common/logger';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { config } from '../server';
-import { IJwtSchema } from '../validators/auth';
 
 export interface TokenPayload {
     token: string;
@@ -62,20 +59,11 @@ export const createTokens = (payload: TokenData): TokenPayload => {
  * @returns {Object} The object contains the new token, new refresh token and the decoded user data
  * @error if the refreshToken is stale, the method will return an empty object.
  * */
-export function refreshTokens(refreshToken: string): TokenPayload | string {
-    try {
-        const decodedToken = jwt.verify(refreshToken, config.jwtRefreshSecret) as JwtPayload;
-        // generate new token values to replace old token's with refreshed ones.
-        return createTokens(decodedToken.data);
-    } catch (e: unknown) {
-        if (e instanceof TokenExpiredError) {
-            return e.message;
-        }
+export function refreshTokens(refreshToken: string): TokenPayload {
+    const decodedToken = jwt.verify(refreshToken, config.jwtRefreshSecret) as JwtPayload;
 
-        // This is unexpected...
-        Logger.error(e);
-        return 'Failed to refresh tokens';
-    }
+    // generate new token values to replace old token's with refreshed ones.
+    return createTokens(decodedToken.data);
 }
 
 /**
@@ -87,32 +75,18 @@ export function refreshTokens(refreshToken: string): TokenPayload | string {
 export function getTokensFromHeader(
     req: express.Request,
     res: express.Response,
-): JwtPayload | string {
-    const bearer = req.get('Authorization');
-    const refreshToken = req.get('x-refresh-token');
+): JwtPayload | null {
+    const token = req.headers['x-token']; // TODO: use BearerAuth instead
+    const refreshToken = req.headers['x-refresh-token'];
 
     try {
-        const token = IJwtSchema.parse(bearer);
-
         // Decode the sent over JWT key using our secret key stored in the process' runtime.
         // Then carry on, even if the data is incorrect for the given request, since this does
         // not interpret the validity of the request.
-        return jwt.verify(token, config.jwtSecret) as JwtPayload;
+        return jwt.verify(<string>token, config.jwtSecret) as JwtPayload;
     } catch (e: unknown) {
-        if (e instanceof ZodError) {
-            return 'Invalid JWT provided.';
-        }
-
-        if (typeof refreshToken !== 'string') {
-            return "Couldn't refresh stale token as no refresh token is provided.";
-        }
-
+        if (typeof refreshToken !== 'string') return null;
         const newTokens = refreshTokens(refreshToken);
-
-        // Exit early if refreshing tokens failed...
-        if (typeof newTokens === 'string') {
-            return newTokens;
-        }
 
         // if new tokens were provided, update the access and refresh tokens
         res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');

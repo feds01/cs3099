@@ -10,7 +10,7 @@ import {
     IUsernameValidity,
     IUsernameValiditySchema,
 } from '../../validators/auth';
-import { createTokens } from '../../lib/auth';
+import { createTokens } from '../../wrappers/auth';
 import {
     IUserLoginRequest,
     IUserLoginRequestSchema,
@@ -350,10 +350,10 @@ router.post('/login', async (req, res) => {
             }
 
             // If the sent over password matches the hashed password within the database, generate the
-            // token and refreshToken JWT's . Also, update the 'last_login' timestamp and record
+            // 'x-token' and 'x-refresh-token' JWT's . Also, update the 'last_login' timestamp and record
             // an entry for the user logging in into the system.
             if (response) {
-                const { token, refreshToken } = createTokens({
+                const { token, refreshToken } = await createTokens({
                     email: result.email,
                     username: result.username,
                     id: result.id,

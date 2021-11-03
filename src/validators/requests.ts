@@ -10,6 +10,3 @@ const modes = ['username', 'id'] as const;
 export const ModeSchema = z.enum(modes).optional();
 
 export type UserRequestMode = z.infer<typeof ModeSchema>;
-
-const sorts = ['directory', 'file'] as const;
-export const ResourceSortSchema = z.enum(sorts).optional();

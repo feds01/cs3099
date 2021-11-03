@@ -8,13 +8,7 @@
 import { rest } from 'msw';
 
 export const getResourcesMSW = () => [
-    rest.post('*/resource/upload/:username', (req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'));
-    }),
-    rest.post('*/resource/upload/publication/:id', (req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'));
-    }),
-    rest.post('*/resource/upload/review/:id', (req, res, ctx) => {
+    rest.post('*/resources/upload/:username/:type', (req, res, ctx) => {
         return res(ctx.delay(1000), ctx.status(200, 'Mocked status'));
     }),
 ];

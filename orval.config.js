@@ -14,6 +14,6 @@ module.exports = {
                 },
             },
         },
-        input: './swagger.yaml',
+        input: './swagger.json',
     },
 };

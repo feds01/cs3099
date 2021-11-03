@@ -1,56 +1,45 @@
 import { z } from 'zod';
 import express from 'express';
 import Logger from '../../common/logger';
-import * as zip from "../../lib/zip";
+import * as zip from "./../../wrappers/zip";
 import User, { IUserRole } from '../../models/User';
 import * as errors from "./../../common/errors";
 import * as userUtils from "./../../utils/users";
-import registerRoute from '../../lib/requests';
+import registerRoute from '../../wrappers/requests';
 import Publication from '../../models/Publication';
-import { ModeSchema, ResourceSortSchema } from '../../validators/requests';
+import { ModeSchema } from '../../validators/requests';
 import {
-    IPublicationCreationSchema,
+    IPublicationPostRequestSchema,
 } from '../../validators/publications';
 import searchRouter from './search';
-import { comparePermissions } from '../../lib/permissions';
 
 const router = express.Router();
 
 // Register the follower routes
 router.use('/', searchRouter);
 
-registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
+registerRoute(router, '/:username/:title/:revision?/tree/:path(*)', {
     method: 'get',
-    params: z.object({ username: z.string(), name: z.string(), path: z.string().optional(), revision: z.string().optional(), }),
-    query: z.object({ mode: ModeSchema, sortBy: ResourceSortSchema }),
+    params: z.object({ username: z.string(), title: z.string(), path: z.string().optional(), revision: z.string().optional(), }),
+    query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
-        const { name, revision, path } = req.params;
+        const { title, revision, path } = req.params;
 
-        const publication = await Publication.findOne({
-            owner: user.id,
-            name,
-            ...(typeof revision !== 'undefined' && { revision })
-        }).sort({ _id: -1 }).exec();
-
-        if (!publication) {
-            return res.status(404).json({
-                status: false,
-                message: errors.RESOURCE_NOT_FOUND,
-            });
-        }
+        // TODO: We need to check that the actual revision exists
+        // TODO: We need to get the actual publication entry
 
         let archive = {
             userId: user.id!,
-            name,
+            name: title,
             ...(typeof revision !== 'undefined' && { revision })
         }
 
-        const transformedPath = path ?? "";
-        let entry = zip.getEntry(archive, transformedPath);
+        const transformedPath = path ?? "/";
+        const entry = zip.getEntry(archive, transformedPath === "" ? "/" : transformedPath);
 
         if (!entry) {
             return res.status(404).json({
@@ -58,28 +47,6 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
                 message: errors.RESOURCE_NOT_FOUND,
             })
         } else {
-
-            // Here we need to apply sorting to the particular entry if the entry is a directory type
-            if (entry.type === "directory") {
-                const sortBy = req.query.sortBy ?? "directory";
-
-                entry.entries = entry.entries.sort((a, b) => {
-                    const aType = a.type === sortBy ? 1 : 0;
-                    const bType = b.type === sortBy ? 1 : 0;
-
-                    const aText = a.filename;
-                    const bText = b.filename;
-
-
-                    // Sort here by alphabetical order if the types are the same
-                    if (aType !== bType) {
-                        return aType > bType ? -1 : 1;
-                    } else {
-                        return (aText < bText) ? -1 : (aText > bText) ? 1 : 0;
-                    }
-                })
-            }
-
             return res.status(200).json({
                 status: true,
                 data: entry
@@ -109,11 +76,11 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
 registerRoute(router, '/', {
     method: 'post',
     params: z.object({}),
-    body: IPublicationCreationSchema,
+    body: IPublicationPostRequestSchema,
     query: z.object({}),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { name, collaborators, revision } = req.body
+        const { name, collaborators, revision, draft } = req.body
         const { id: owner } = req.token.data;
 
         // Check if the publication is already in use...
@@ -121,6 +88,7 @@ registerRoute(router, '/', {
             owner,
             name,
             revision,
+            draft,
         }).exec();
 
         if (existingPublication > 0) {
@@ -147,7 +115,6 @@ registerRoute(router, '/', {
 
         const newPublication = new Publication({
             ...req.body,
-            draft: true,
             collaborators: collaboratorDocs.map((doc) => doc.id),
             owner,
         });
@@ -178,13 +145,13 @@ registerRoute(router, '/:username/:name/:revision?', {
         name: z.string().nonempty(),
         revision: z.string().optional(),
     }),
-    query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).optional() }),
+    query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).default('false') }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const requester = req.requester;
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
+        const draft = req.query.draft === 'true';
         const { name, revision } = req.params;
 
         // sort by id in descending order since this is actually faster than using a 'createdAt' field because 
@@ -193,6 +160,7 @@ registerRoute(router, '/:username/:name/:revision?', {
         const publication = await Publication.findOne({
             owner: user.id,
             name,
+            draft,
             ...(typeof revision !== 'undefined' && { revision })
         }).sort({ _id: -1 }).exec();
 
@@ -201,33 +169,6 @@ registerRoute(router, '/:username/:name/:revision?', {
                 status: false,
                 message: errors.NON_EXISTENT_PUBLICATION,
             });
-        }
-
-
-        // So we don't need to actually specify the draft flag to the query
-        // if the owner of the publication is a draft. However, if the callee
-        // not the owner of the current publication and doesn't have moderator 
-        // privileges, they can't get the publication. Only the owner should be able
-        // to retrieve their draft. This behaviour is entirely overridden if the query
-        // flag 'draft' is specified.
-        const isOwner = publication.owner._id.toString() === user.id;
-
-        if (publication.draft && (!isOwner && !comparePermissions(requester.role, IUserRole.Moderator))) {
-            return res.status(404).json({
-                status: false,
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
-        } else if (typeof req.query.draft !== 'undefined') {
-            const draft = req.query.draft === 'true';
-
-            // So now here we can allow explicit filtering by draft or not...
-            if (publication.draft !== draft) {
-                return res.status(404).json({
-                    status: false,
-                    message: errors.NON_EXISTENT_PUBLICATION,
-                });
-            }
-
         }
 
         return res.status(200).json({
