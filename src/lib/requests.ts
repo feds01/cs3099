@@ -3,7 +3,8 @@ import express from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import * as errors from '../common/errors';
 import { getTokensFromHeader } from './auth';
-import User, { IUserRole } from '../models/User';
+import { IUser, IUserRole } from '../models/User';
+import { ensureValidPermissions } from './permissions';
 
 // Request method types
 type RequestMethodWithBody = 'post' | 'put' | 'patch';
@@ -20,6 +21,7 @@ interface BasicRequest<P, Q> {
     params: P;
     query: Q;
     token: JwtPayload;
+    requester: IUser;
     raw: express.Request;
 }
 
@@ -45,32 +47,6 @@ type RegisterRoute<P, B, Q, M extends RequestMethod> = M extends RequestMethodWi
     : M extends RequestMethodWithoutBody
     ? RegisterRouteWithoutBody<P, Q, M>
     : never;
-
-async function ensureValidPermissions(permission: IUserRole, token: JwtPayload): Promise<boolean> {
-    // Lookup the user in the current request
-    const user = await User.findById(token.data.id);
-
-    if (!user || user.role !== permission) {
-        return false;
-    }
-
-    // // Now we need to get the current resource specified and check if the current user
-    // // has the appropriate permissions on the resource
-    // if (permission === IUserRole.Default) {
-    //     switch (resource) {
-    //         case "comment": {
-
-    //         }
-    //         case "publication": {
-
-    //         }
-    //         case "comment": {
-
-    //         }
-    //     }
-    // }
-    return true;
-}
 
 export default function registerRoute<P, B, Q, M extends RequestMethod>(
     router: express.Router,
@@ -109,18 +85,17 @@ export default function registerRoute<P, B, Q, M extends RequestMethod>(
 
         const token = getTokensFromHeader(req, res);
 
-        if (!token) {
+        if (typeof token === 'string') {
             return res.status(401).json({
                 status: false,
-                message:
-                    "Unauthorized. User doesn't have sufficient permissions to perform this request",
+                message: token,
             });
         }
 
         // Now validate the permissions
-        const permissionsValid = await ensureValidPermissions(registrar.permission, token);
+        const permissions = await ensureValidPermissions(registrar.permission, token.data.id);
 
-        if (!permissionsValid) {
+        if (!permissions.valid) {
             return res.status(401).json({
                 status: false,
                 message: errors.UNAUTHORIZED,
@@ -130,6 +105,7 @@ export default function registerRoute<P, B, Q, M extends RequestMethod>(
         const basicRequest = {
             query: query.data,
             params: params.data,
+            requester: permissions.user,
             token,
             raw: req,
         };

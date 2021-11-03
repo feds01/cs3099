@@ -22,7 +22,6 @@ const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublicati
         title: { type: String, required: true },
         introduction: { type: String, required: true },
         owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
-        attachment: { type: String },
         draft: { type: Boolean, required: true },
         collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
     },

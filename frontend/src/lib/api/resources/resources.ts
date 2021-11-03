@@ -18,42 +18,122 @@ import { customInstance } from '.././mutator/custom-instance';
 type AsyncReturnType<T extends (...args: any) => Promise<any>> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 /**
- * Endpoint for uploading media to Iamus from multiple sources including publications, comments, profile pictures, etc.
- * @summary Upload a generic file resource
+ * Endpoint for uploading media to Iamus for user profile pictures.
+ * @summary Upload an avatar image for a user.
  */
-export const postResourcesUploadUsernameType = (username: string, type: string, uploadResource: UploadResource) => {
+export const postResourceUploadUsername = (username: string, uploadResource: UploadResource) => {
     const formData = new FormData();
-    formData.append('data', uploadResource);
+    formData.append('file', uploadResource.file);
 
-    return customInstance<unknown>({ url: `/resources/upload/${username}/${type}`, method: 'post', data: formData });
+    return customInstance<unknown>({ url: `/resource/upload/${username}`, method: 'post', data: formData });
 };
 
-export const usePostResourcesUploadUsernameType = <
+export const usePostResourceUploadUsername = <
     TError = UploadResourceResponse | BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
-    TContext = unknown,
+    TContext = unknown
 >(options?: {
     mutation?: UseMutationOptions<
-        AsyncReturnType<typeof postResourcesUploadUsernameType>,
+        AsyncReturnType<typeof postResourceUploadUsername>,
         TError,
-        { username: string; type: string; data: UploadResource },
+        { username: string; data: UploadResource },
         TContext
     >;
 }) => {
     const { mutation: mutationOptions } = options || {};
 
     const mutationFn: MutationFunction<
-        AsyncReturnType<typeof postResourcesUploadUsernameType>,
-        { username: string; type: string; data: UploadResource }
+        AsyncReturnType<typeof postResourceUploadUsername>,
+        { username: string; data: UploadResource }
     > = (props) => {
-        const { username, type, data } = props || {};
+        const { username, data } = props || {};
 
-        return postResourcesUploadUsernameType(username, type, data);
+        return postResourceUploadUsername(username, data);
     };
 
     return useMutation<
-        AsyncReturnType<typeof postResourcesUploadUsernameType>,
+        AsyncReturnType<typeof postResourceUploadUsername>,
         TError,
-        { username: string; type: string; data: UploadResource },
+        { username: string; data: UploadResource },
+        TContext
+    >(mutationFn, mutationOptions);
+};
+/**
+ * Endpoint for uploading media to Iamus from multiple sources including publications, comments, profile pictures, etc.
+ * @summary Upload a generic file resource
+ */
+export const postResourceUploadPublicationId = (id: string, uploadResource: UploadResource) => {
+    const formData = new FormData();
+    formData.append('file', uploadResource.file);
+
+    return customInstance<unknown>({ url: `/resource/upload/publication/${id}`, method: 'post', data: formData });
+};
+
+export const usePostResourceUploadPublicationId = <
+    TError = UploadResourceResponse | BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    TContext = unknown
+>(options?: {
+    mutation?: UseMutationOptions<
+        AsyncReturnType<typeof postResourceUploadPublicationId>,
+        TError,
+        { id: string; data: UploadResource },
+        TContext
+    >;
+}) => {
+    const { mutation: mutationOptions } = options || {};
+
+    const mutationFn: MutationFunction<
+        AsyncReturnType<typeof postResourceUploadPublicationId>,
+        { id: string; data: UploadResource }
+    > = (props) => {
+        const { id, data } = props || {};
+
+        return postResourceUploadPublicationId(id, data);
+    };
+
+    return useMutation<
+        AsyncReturnType<typeof postResourceUploadPublicationId>,
+        TError,
+        { id: string; data: UploadResource },
+        TContext
+    >(mutationFn, mutationOptions);
+};
+/**
+ * Endpoint for uploading media to Iamus from multiple sources including publications, comments, profile pictures, etc.
+ * @summary Upload a generic file as an attachment to a comment
+ */
+export const postResourceUploadReviewId = (id: string, uploadResource: UploadResource) => {
+    const formData = new FormData();
+    formData.append('file', uploadResource.file);
+
+    return customInstance<unknown>({ url: `/resource/upload/review/${id}`, method: 'post', data: formData });
+};
+
+export const usePostResourceUploadReviewId = <
+    TError = UploadResourceResponse | BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    TContext = unknown
+>(options?: {
+    mutation?: UseMutationOptions<
+        AsyncReturnType<typeof postResourceUploadReviewId>,
+        TError,
+        { id: string; data: UploadResource },
+        TContext
+    >;
+}) => {
+    const { mutation: mutationOptions } = options || {};
+
+    const mutationFn: MutationFunction<
+        AsyncReturnType<typeof postResourceUploadReviewId>,
+        { id: string; data: UploadResource }
+    > = (props) => {
+        const { id, data } = props || {};
+
+        return postResourceUploadReviewId(id, data);
+    };
+
+    return useMutation<
+        AsyncReturnType<typeof postResourceUploadReviewId>,
+        TError,
+        { id: string; data: UploadResource },
         TContext
     >(mutationFn, mutationOptions);
 };

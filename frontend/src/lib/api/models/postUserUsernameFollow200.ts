@@ -7,6 +7,6 @@
  */
 
 export type PostUserUsernameFollow200 = {
-    message: string;
     status: boolean;
+    message: string;
 };

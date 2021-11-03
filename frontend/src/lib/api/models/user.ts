@@ -7,12 +7,12 @@
  */
 
 export interface User {
-    about?: string;
-    email: string;
-    firstName: string;
     id: string;
+    email: string;
+    username: string;
+    firstName: string;
     lastName: string;
     profilePictureUrl?: string;
     status?: string;
-    username: string;
+    about?: string;
 }
