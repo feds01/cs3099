@@ -10,17 +10,12 @@ import {
 } from 'msw'
 import faker from 'faker'
 
-export const getPostSgSsoLoginMock = () => ({refreshToken: faker.random.word(), status: faker.helpers.randomize([faker.datatype.boolean(), undefined]), token: faker.random.word(), user: {about: faker.helpers.randomize([faker.random.word(), undefined]), email: faker.random.word(), firstName: faker.random.word(), id: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), username: faker.random.word()}})
+export const getPostSgSsoLoginMock = () => ({status: faker.helpers.randomize([faker.datatype.boolean(), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
 
-export const getPostSgSsoVerifyMock = () => ({message: faker.random.word(), status: faker.helpers.randomize(['ok','error'])})
+export const getPostSgSsoVerifyMock = () => ({status: faker.helpers.randomize(['ok','error']), message: faker.random.word()})
 
 export const getExternalMSW = () => [
-rest.post('*/sg/sso/callback', (req, res, ctx) => {
-        return res(
-          ctx.delay(1000),
-          ctx.status(200, 'Mocked status'),
-        )
-      }),rest.post('*/sg/sso/login', (req, res, ctx) => {
+rest.post('*/sg/sso/login', (req, res, ctx) => {
         return res(
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),
@@ -31,5 +26,10 @@ ctx.json(getPostSgSsoLoginMock()),
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),
 ctx.json(getPostSgSsoVerifyMock()),
+        )
+      }),rest.post('*/sg/sso/callback', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
         )
       }),]

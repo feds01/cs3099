@@ -9,10 +9,12 @@ const CollaboratorArraySchema = ExistUsernameSchema.array().refine(
 export const IPublicationCreationSchema = z.object({
     revision: z.string().nonempty(),
     title: z.string().nonempty(),
-    name: z.string().nonempty(),
+    name: z
+        .string()
+        .nonempty()
+        .transform((x) => x.toLowerCase()),
     introduction: z.string().nonempty(),
     collaborators: CollaboratorArraySchema,
-    draft: z.boolean().optional().default(false),
 });
 
 // TODO: Implement better schema

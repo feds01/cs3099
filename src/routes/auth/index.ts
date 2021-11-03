@@ -10,7 +10,7 @@ import {
     IUsernameValidity,
     IUsernameValiditySchema,
 } from '../../validators/auth';
-import { createTokens } from '../../wrappers/auth';
+import { createTokens } from '../../lib/auth';
 import {
     IUserLoginRequest,
     IUserLoginRequestSchema,

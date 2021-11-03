@@ -14,14 +14,14 @@ import type {
   UnprocessableEntityResponse,
   InternalServerErrorResponse,
   EmailValidation,
-  UserAuthResponse,
+  UsernameValidation,
+  TokenResponse,
   BadRequestResponse,
   UnauthorizedResponse,
-  UserLogin,
-  UserRegistration,
-  TokenResponse,
   TokenRequest,
-  UsernameValidation
+  UserAuthResponse,
+  UserLogin,
+  UserRegistration
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
 
@@ -59,6 +59,66 @@ export const postAuthEmailvalidation = (
         }
 
       return useMutation<AsyncReturnType<typeof postAuthEmailvalidation>, TError, {data: EmailValidation}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
+ * Check if an email is valid to use when registering
+ * @summary Pre-registration username validation
+ */
+export const postAuthUsernamevalidation = (
+    usernameValidation: UsernameValidation,
+ ) => {
+      return customInstance<void>(
+      {url: `/auth/username_validation`, method: 'post',
+      data: usernameValidation
+    },
+      );
+    }
+  
+
+
+    export const usePostAuthUsernamevalidation = <TError = UnprocessableEntityResponse | InternalServerErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthUsernamevalidation>, TError,{data: UsernameValidation}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthUsernamevalidation>, {data: UsernameValidation}> = (props) => {
+          const {data} = props || {};
+
+          return  postAuthUsernamevalidation(data,)
+        }
+
+      return useMutation<AsyncReturnType<typeof postAuthUsernamevalidation>, TError, {data: UsernameValidation}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
+ * Endpoint to refresh a JWT token
+ * @summary Refresh user session
+ */
+export const postAuthToken = (
+    tokenRequest: TokenRequest,
+ ) => {
+      return customInstance<TokenResponse>(
+      {url: `/auth/token`, method: 'post',
+      data: tokenRequest
+    },
+      );
+    }
+  
+
+
+    export const usePostAuthToken = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthToken>, TError,{data: TokenRequest}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthToken>, {data: TokenRequest}> = (props) => {
+          const {data} = props || {};
+
+          return  postAuthToken(data,)
+        }
+
+      return useMutation<AsyncReturnType<typeof postAuthToken>, TError, {data: TokenRequest}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * User login endpoint, returning authentication tokens.
@@ -119,65 +179,5 @@ export const postAuthRegister = (
         }
 
       return useMutation<AsyncReturnType<typeof postAuthRegister>, TError, {data: UserRegistration}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
- * Endpoint to refresh a JWT token
- * @summary Refresh user session
- */
-export const postAuthToken = (
-    tokenRequest: TokenRequest,
- ) => {
-      return customInstance<TokenResponse>(
-      {url: `/auth/token`, method: 'post',
-      data: tokenRequest
-    },
-      );
-    }
-  
-
-
-    export const usePostAuthToken = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthToken>, TError,{data: TokenRequest}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
-
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthToken>, {data: TokenRequest}> = (props) => {
-          const {data} = props || {};
-
-          return  postAuthToken(data,)
-        }
-
-      return useMutation<AsyncReturnType<typeof postAuthToken>, TError, {data: TokenRequest}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
- * Check if an email is valid to use when registering
- * @summary Pre-registration username validation
- */
-export const postAuthUsernamevalidation = (
-    usernameValidation: UsernameValidation,
- ) => {
-      return customInstance<void>(
-      {url: `/auth/username_validation`, method: 'post',
-      data: usernameValidation
-    },
-      );
-    }
-  
-
-
-    export const usePostAuthUsernamevalidation = <TError = UnprocessableEntityResponse | InternalServerErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthUsernamevalidation>, TError,{data: UsernameValidation}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
-
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthUsernamevalidation>, {data: UsernameValidation}> = (props) => {
-          const {data} = props || {};
-
-          return  postAuthUsernamevalidation(data,)
-        }
-
-      return useMutation<AsyncReturnType<typeof postAuthUsernamevalidation>, TError, {data: UsernameValidation}, TContext>(mutationFn, mutationOptions)
     }
     

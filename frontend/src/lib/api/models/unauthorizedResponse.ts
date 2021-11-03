@@ -7,6 +7,6 @@
  */
 
 export type UnauthorizedResponse = {
-  message: string;
   status: boolean;
+  message: string;
 };

@@ -22,13 +22,13 @@ import type {
   PatchUserUsername200,
   BadRequestResponse,
   UserPatchRequest,
-  DeleteUserUsernameFollow200,
+  GetUserUsernameRole200,
+  PatchUserUsernameRole200,
   GetUserUsernameFollow200,
   PostUserUsernameFollow200,
+  DeleteUserUsernameFollow200,
   GetUserUsernameFollowers200,
-  GetUserUsernameFollowing200,
-  GetUserUsernameRole200,
-  PatchUserUsernameRole200
+  GetUserUsernameFollowing200
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
 
@@ -133,33 +133,69 @@ export const patchUserUsername = (
       return useMutation<AsyncReturnType<typeof patchUserUsername>, TError, {username: string;data: UserPatchRequest}, TContext>(mutationFn, mutationOptions)
     }
     /**
- * Endpoint for current user to unfollow another legit user.
- * @summary Unfollowing another user.
+ * Endpoint for getting user role by id.
+ * @summary Get user role
  */
-export const deleteUserUsernameFollow = (
+export const getUserUsernameRole = (
     username: string,
  ) => {
-      return customInstance<DeleteUserUsernameFollow200>(
-      {url: `/user/${username}/follow`, method: 'delete'
+      return customInstance<GetUserUsernameRole200>(
+      {url: `/user/${username}/role`, method: 'get'
+    },
+      );
+    }
+  
+
+export const getGetUserUsernameRoleQueryKey = (username: string,) => [`/user/${username}/role`];
+
+    
+export const useGetUserUsernameRole = <TData = AsyncReturnType<typeof getUserUsernameRole>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+ username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameRole>, TError, TData>, }
+
+  ) => {
+
+  const {query: queryOptions} = options || {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameRoleQueryKey(username);
+  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameRole>> = () => getUserUsernameRole(username, );
+
+  const query = useQuery<AsyncReturnType<typeof getUserUsernameRole>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
+
+  return {
+    queryKey,
+    ...query
+  }
+}
+
+/**
+ * Endpoint for updating user role by id.
+ * @summary Update user role
+ */
+export const patchUserUsernameRole = (
+    username: string,
+ ) => {
+      return customInstance<PatchUserUsernameRole200>(
+      {url: `/user/${username}/role`, method: 'patch',
+      data: undefined
     },
       );
     }
   
 
 
-    export const useDeleteUserUsernameFollow = <TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+    export const usePatchUserUsernameRole = <TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
     
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deleteUserUsernameFollow>, TError,{username: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof patchUserUsernameRole>, TError,{username: string}, TContext>, }
 ) => {
       const {mutation: mutationOptions} = options || {}
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof deleteUserUsernameFollow>, {username: string}> = (props) => {
+      const mutationFn: MutationFunction<AsyncReturnType<typeof patchUserUsernameRole>, {username: string}> = (props) => {
           const {username} = props || {};
 
-          return  deleteUserUsernameFollow(username,)
+          return  patchUserUsernameRole(username,)
         }
 
-      return useMutation<AsyncReturnType<typeof deleteUserUsernameFollow>, TError, {username: string}, TContext>(mutationFn, mutationOptions)
+      return useMutation<AsyncReturnType<typeof patchUserUsernameRole>, TError, {username: string}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * Endpoint for checking if the current user is following another user specified by the given id.
@@ -225,6 +261,35 @@ export const postUserUsernameFollow = (
         }
 
       return useMutation<AsyncReturnType<typeof postUserUsernameFollow>, TError, {username: string}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
+ * Endpoint for current user to unfollow another legit user.
+ * @summary Unfollowing another user.
+ */
+export const deleteUserUsernameFollow = (
+    username: string,
+ ) => {
+      return customInstance<DeleteUserUsernameFollow200>(
+      {url: `/user/${username}/follow`, method: 'delete'
+    },
+      );
+    }
+  
+
+
+    export const useDeleteUserUsernameFollow = <TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deleteUserUsernameFollow>, TError,{username: string}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof deleteUserUsernameFollow>, {username: string}> = (props) => {
+          const {username} = props || {};
+
+          return  deleteUserUsernameFollow(username,)
+        }
+
+      return useMutation<AsyncReturnType<typeof deleteUserUsernameFollow>, TError, {username: string}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * Endpoint for getting any user's follower list.
@@ -296,69 +361,3 @@ export const useGetUserUsernameFollowing = <TData = AsyncReturnType<typeof getUs
   }
 }
 
-/**
- * Endpoint for getting user role by id.
- * @summary Get user role
- */
-export const getUserUsernameRole = (
-    username: string,
- ) => {
-      return customInstance<GetUserUsernameRole200>(
-      {url: `/user/${username}/role`, method: 'get'
-    },
-      );
-    }
-  
-
-export const getGetUserUsernameRoleQueryKey = (username: string,) => [`/user/${username}/role`];
-
-    
-export const useGetUserUsernameRole = <TData = AsyncReturnType<typeof getUserUsernameRole>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
- username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameRole>, TError, TData>, }
-
-  ) => {
-
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameRoleQueryKey(username);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameRole>> = () => getUserUsernameRole(username, );
-
-  const query = useQuery<AsyncReturnType<typeof getUserUsernameRole>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
-
-/**
- * Endpoint for updating user role by id.
- * @summary Update user role
- */
-export const patchUserUsernameRole = (
-    username: string,
- ) => {
-      return customInstance<PatchUserUsernameRole200>(
-      {url: `/user/${username}/role`, method: 'patch',
-      data: undefined
-    },
-      );
-    }
-  
-
-
-    export const usePatchUserUsernameRole = <TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof patchUserUsernameRole>, TError,{username: string}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
-
-      const mutationFn: MutationFunction<AsyncReturnType<typeof patchUserUsernameRole>, {username: string}> = (props) => {
-          const {username} = props || {};
-
-          return  patchUserUsernameRole(username,)
-        }
-
-      return useMutation<AsyncReturnType<typeof patchUserUsernameRole>, TError, {username: string}, TContext>(mutationFn, mutationOptions)
-    }
-    

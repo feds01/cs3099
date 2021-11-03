@@ -8,9 +8,9 @@
 import type { User } from './user';
 
 export interface Publication {
-  collaborators: User[];
-  introduction: string;
   name: string;
-  revision: string;
   title: string;
+  introduction: string;
+  revision: string;
+  collaborators: User[];
 }

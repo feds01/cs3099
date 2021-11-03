@@ -6,8 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { DirectoryResponseDataEntriesItem } from './directoryResponseDataEntriesItem';
+import type { DirectoryResponseDataType } from './directoryResponseDataType';
 
 export type DirectoryResponseData = {
-  entries?: DirectoryResponseDataEntriesItem[];
-  type: string;
+  entries: DirectoryResponseDataEntriesItem[];
+  type: DirectoryResponseDataType;
 };

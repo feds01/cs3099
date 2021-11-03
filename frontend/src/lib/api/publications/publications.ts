@@ -19,10 +19,10 @@ import type {
   UnauthorizedResponse,
   InternalServerErrorResponse,
   CreatePublicationRequest,
-  GetPublicationUsername200,
-  NotFoundResponse,
   DeletionResponseResponse,
+  NotFoundResponse,
   GetPublicationUsernameName200,
+  GetPublicationUsername200,
   ResourceResponseResponse,
   GetPublicationUsernameNameRevision200
 } from '.././models'
@@ -64,41 +64,6 @@ export const postPublication = (
       return useMutation<AsyncReturnType<typeof postPublication>, TError, {data: CreatePublicationRequest}, TContext>(mutationFn, mutationOptions)
     }
     /**
- * Get a list of publications that the user owns.
- * @summary Get a user's publications
- */
-export const getPublicationUsername = (
-    username: string,
- ) => {
-      return customInstance<GetPublicationUsername200>(
-      {url: `/publication/${username}`, method: 'get'
-    },
-      );
-    }
-  
-
-export const getGetPublicationUsernameQueryKey = (username: string,) => [`/publication/${username}`];
-
-    
-export const useGetPublicationUsername = <TData = AsyncReturnType<typeof getPublicationUsername>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
- username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsername>, TError, TData>, }
-
-  ) => {
-
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameQueryKey(username);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsername>> = () => getPublicationUsername(username, );
-
-  const query = useQuery<AsyncReturnType<typeof getPublicationUsername>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
-
-/**
  * Create a new publication resource for a given user account.
  * @summary Delete a publication
  */
@@ -159,6 +124,41 @@ export const useGetPublicationUsernameName = <TData = AsyncReturnType<typeof get
   const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameName>> = () => getPublicationUsernameName(username,name, );
 
   const query = useQuery<AsyncReturnType<typeof getPublicationUsernameName>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name), ...queryOptions})
+
+  return {
+    queryKey,
+    ...query
+  }
+}
+
+/**
+ * Get a list of publications that the user owns.
+ * @summary Get a user's publications
+ */
+export const getPublicationUsername = (
+    username: string,
+ ) => {
+      return customInstance<GetPublicationUsername200>(
+      {url: `/publication/${username}`, method: 'get'
+    },
+      );
+    }
+  
+
+export const getGetPublicationUsernameQueryKey = (username: string,) => [`/publication/${username}`];
+
+    
+export const useGetPublicationUsername = <TData = AsyncReturnType<typeof getPublicationUsername>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+ username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsername>, TError, TData>, }
+
+  ) => {
+
+  const {query: queryOptions} = options || {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameQueryKey(username);
+  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsername>> = () => getPublicationUsername(username, );
+
+  const query = useQuery<AsyncReturnType<typeof getPublicationUsername>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
 
   return {
     queryKey,

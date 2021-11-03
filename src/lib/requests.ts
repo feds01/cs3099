@@ -3,7 +3,8 @@ import express from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import * as errors from '../common/errors';
 import { getTokensFromHeader } from './auth';
-import User, { IUserRole } from '../models/User';
+import { IUser, IUserRole } from '../models/User';
+import { ensureValidPermissions } from './permissions';
 
 // Request method types
 type RequestMethodWithBody = 'post' | 'put' | 'patch';
@@ -20,6 +21,7 @@ interface BasicRequest<P, Q> {
     params: P;
     query: Q;
     token: JwtPayload;
+    requester: IUser;
     raw: express.Request;
 }
 
@@ -45,29 +47,6 @@ type RegisterRoute<P, B, Q, M extends RequestMethod> = M extends RequestMethodWi
     : M extends RequestMethodWithoutBody
     ? RegisterRouteWithoutBody<P, Q, M>
     : never;
-
-function permissionToInt(permission: IUserRole) {
-    switch (permission) {
-        case IUserRole.Moderator:
-            return 1;
-        case IUserRole.Administrator:
-            return 2;
-        default:
-            return 0;
-    }
-}
-
-async function ensureValidPermissions(permission: IUserRole, token: JwtPayload): Promise<boolean> {
-    // Lookup the user in the current request
-    const user = await User.findById(token.data.id);
-
-    if (!user) return false;
-
-    const requiredPermission = permissionToInt(permission);
-    const acquiredPermission = permissionToInt(user.role);
-
-    return acquiredPermission >= requiredPermission;
-}
 
 export default function registerRoute<P, B, Q, M extends RequestMethod>(
     router: express.Router,
@@ -114,9 +93,9 @@ export default function registerRoute<P, B, Q, M extends RequestMethod>(
         }
 
         // Now validate the permissions
-        const permissionsValid = await ensureValidPermissions(registrar.permission, token);
+        const permissions = await ensureValidPermissions(registrar.permission, token.data.id);
 
-        if (!permissionsValid) {
+        if (!permissions.valid) {
             return res.status(401).json({
                 status: false,
                 message: errors.UNAUTHORIZED,
@@ -126,6 +105,7 @@ export default function registerRoute<P, B, Q, M extends RequestMethod>(
         const basicRequest = {
             query: query.data,
             params: params.data,
+            requester: permissions.user,
             token,
             raw: req,
         };

@@ -8,6 +8,6 @@
 import type { Publication } from './publication';
 
 export type GetPublicationUsernameName200 = {
-  publication: Publication;
   status: boolean;
+  publication: Publication;
 };

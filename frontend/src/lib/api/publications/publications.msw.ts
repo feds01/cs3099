@@ -10,31 +10,25 @@ import {
 } from 'msw'
 import faker from 'faker'
 
-export const getGetPublicationUsernameMock = () => ({data: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({about: faker.helpers.randomize([faker.random.word(), undefined]), email: faker.random.word(), firstName: faker.random.word(), id: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), username: faker.random.word()})), introduction: faker.random.word(), name: faker.random.word(), revision: faker.random.word(), title: faker.random.word()})), status: faker.datatype.boolean()})
+export const getDeletePublicationUsernameNameMock = () => ({status: faker.datatype.boolean(), message: faker.random.word()})
 
-export const getDeletePublicationUsernameNameMock = () => ({message: faker.random.word(), status: faker.datatype.boolean()})
+export const getGetPublicationUsernameNameMock = () => ({status: faker.datatype.boolean(), publication: {name: faker.random.word(), title: faker.random.word(), introduction: faker.random.word(), revision: faker.random.word(), collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}))}})
 
-export const getGetPublicationUsernameNameMock = () => ({publication: {collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({about: faker.helpers.randomize([faker.random.word(), undefined]), email: faker.random.word(), firstName: faker.random.word(), id: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), username: faker.random.word()})), introduction: faker.random.word(), name: faker.random.word(), revision: faker.random.word(), title: faker.random.word()}, status: faker.datatype.boolean()})
+export const getGetPublicationUsernameMock = () => ({status: faker.datatype.boolean(), data: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({name: faker.random.word(), title: faker.random.word(), introduction: faker.random.word(), revision: faker.random.word(), collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}))}))})
 
-export const getGetPublicationUsernameNameTreePathMock = () => ({data: faker.helpers.randomize([{data: {contents: faker.random.word(), type: faker.random.word(), updatedAt: faker.datatype.number()}, status: faker.datatype.boolean()},{data: {entries: faker.helpers.randomize([[...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({filename: faker.random.word(), type: faker.random.word(), updatedAt: faker.datatype.number()})), undefined]), type: faker.random.word()}, status: faker.datatype.boolean()}]), status: faker.datatype.boolean()})
+export const getGetPublicationUsernameNameTreePathMock = () => ({status: faker.datatype.boolean(), data: faker.helpers.randomize([{type: faker.helpers.randomize(['file']), contents: faker.random.word(), updatedAt: faker.datatype.number()},{type: faker.helpers.randomize(['directory']), entries: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({type: faker.random.word(), filename: faker.random.word(), updatedAt: faker.datatype.number()}))}])})
 
-export const getDeletePublicationUsernameNameRevisionMock = () => ({message: faker.random.word(), status: faker.datatype.boolean()})
+export const getDeletePublicationUsernameNameRevisionMock = () => ({status: faker.datatype.boolean(), message: faker.random.word()})
 
-export const getGetPublicationUsernameNameRevisionMock = () => ({publication: {collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({about: faker.helpers.randomize([faker.random.word(), undefined]), email: faker.random.word(), firstName: faker.random.word(), id: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), username: faker.random.word()})), introduction: faker.random.word(), name: faker.random.word(), revision: faker.random.word(), title: faker.random.word()}, status: faker.datatype.boolean()})
+export const getGetPublicationUsernameNameRevisionMock = () => ({status: faker.datatype.boolean(), publication: {name: faker.random.word(), title: faker.random.word(), introduction: faker.random.word(), revision: faker.random.word(), collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}))}})
 
-export const getGetPublicationUsernameNameRevisionTreePathMock = () => ({data: faker.helpers.randomize([{data: {contents: faker.random.word(), type: faker.random.word(), updatedAt: faker.datatype.number()}, status: faker.datatype.boolean()},{data: {entries: faker.helpers.randomize([[...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({filename: faker.random.word(), type: faker.random.word(), updatedAt: faker.datatype.number()})), undefined]), type: faker.random.word()}, status: faker.datatype.boolean()}]), status: faker.datatype.boolean()})
+export const getGetPublicationUsernameNameRevisionTreePathMock = () => ({status: faker.datatype.boolean(), data: faker.helpers.randomize([{type: faker.helpers.randomize(['file']), contents: faker.random.word(), updatedAt: faker.datatype.number()},{type: faker.helpers.randomize(['directory']), entries: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({type: faker.random.word(), filename: faker.random.word(), updatedAt: faker.datatype.number()}))}])})
 
 export const getPublicationsMSW = () => [
 rest.post('*/publication', (req, res, ctx) => {
         return res(
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),
-        )
-      }),rest.get('*/publication/:username', (req, res, ctx) => {
-        return res(
-          ctx.delay(1000),
-          ctx.status(200, 'Mocked status'),
-ctx.json(getGetPublicationUsernameMock()),
         )
       }),rest.delete('*/publication/:username/:name', (req, res, ctx) => {
         return res(
@@ -47,6 +41,12 @@ ctx.json(getDeletePublicationUsernameNameMock()),
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),
 ctx.json(getGetPublicationUsernameNameMock()),
+        )
+      }),rest.get('*/publication/:username', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetPublicationUsernameMock()),
         )
       }),rest.get('*/publication/:username/:name/tree/:path', (req, res, ctx) => {
         return res(

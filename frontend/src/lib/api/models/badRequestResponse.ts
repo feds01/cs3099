@@ -8,7 +8,7 @@
 import type { BadRequestResponseExtra } from './badRequestResponseExtra';
 
 export type BadRequestResponse = {
-  extra?: BadRequestResponseExtra;
-  message: string;
   status: boolean;
+  message: string;
+  extra?: BadRequestResponseExtra;
 };

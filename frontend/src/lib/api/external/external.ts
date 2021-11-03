@@ -11,15 +11,15 @@ import {
   MutationFunction
 } from 'react-query'
 import type {
-  InternalServerErrorResponse,
-  PostSgSsoCallbackParams,
   UserAuthResponse,
   BadRequestResponse,
   UnauthorizedResponse,
+  InternalServerErrorResponse,
   UserLogin,
   PostSgSsoLoginParams,
   TokenVerificationResponse,
-  PostSgSsoVerifyParams
+  PostSgSsoVerifyParams,
+  PostSgSsoCallbackParams
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
 
@@ -29,37 +29,6 @@ T extends (...args: any) => Promise<any>
 
 
 /**
- * This endpoint is used to notify the journal that the external login was successful and we should proceed with authenticating the external user. This might mean that there is an internal process of registering the user on the platform.
- * @summary Successful external login endpoint.
- */
-export const postSgSsoCallback = (
-    params?: PostSgSsoCallbackParams,
- ) => {
-      return customInstance<void>(
-      {url: `/sg/sso/callback`, method: 'post',
-      data: undefined,
-        params,
-    },
-      );
-    }
-  
-
-
-    export const usePostSgSsoCallback = <TError = InternalServerErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postSgSsoCallback>, TError,{params?: PostSgSsoCallbackParams}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
-
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postSgSsoCallback>, {params?: PostSgSsoCallbackParams}> = (props) => {
-          const {params} = props || {};
-
-          return  postSgSsoCallback(params,)
-        }
-
-      return useMutation<AsyncReturnType<typeof postSgSsoCallback>, TError, {params?: PostSgSsoCallbackParams}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
  * Endpoint for external services to authenticate with this service.
  * @summary External login endpoint
  */
@@ -121,5 +90,36 @@ export const postSgSsoVerify = (
         }
 
       return useMutation<AsyncReturnType<typeof postSgSsoVerify>, TError, {params?: PostSgSsoVerifyParams}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
+ * This endpoint is used to notify the journal that the external login was successful and we should proceed with authenticating the external user. This might mean that there is an internal process of registering the user on the platform.
+ * @summary Successful external login endpoint.
+ */
+export const postSgSsoCallback = (
+    params?: PostSgSsoCallbackParams,
+ ) => {
+      return customInstance<void>(
+      {url: `/sg/sso/callback`, method: 'post',
+      data: undefined,
+        params,
+    },
+      );
+    }
+  
+
+
+    export const usePostSgSsoCallback = <TError = InternalServerErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postSgSsoCallback>, TError,{params?: PostSgSsoCallbackParams}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postSgSsoCallback>, {params?: PostSgSsoCallbackParams}> = (props) => {
+          const {params} = props || {};
+
+          return  postSgSsoCallback(params,)
+        }
+
+      return useMutation<AsyncReturnType<typeof postSgSsoCallback>, TError, {params?: PostSgSsoCallbackParams}, TContext>(mutationFn, mutationOptions)
     }
     

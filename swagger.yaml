@@ -1443,62 +1443,45 @@ components:
         FileResponse:
             type: object
             required:
-                - status
-                - data
+                - type
+                - updatedAt
+                - contents
             properties:
-                status:
-                    type: boolean
-                    example: true
-                data:
-                    type: object
-                    required:
-                        - type
-                        - updatedAt
-                        - contents
-                    properties:
-                        type:
-                            type: string
-                            example: 'file'
-                        contents:
-                            type: string
-                            example: "Hello world!\n"
-                        updatedAt:
-                            type: number
-                            example: 1283723481237
+                type:
+                    type: string
+                    enum: ['file']
+                    example: 'file'
+                contents:
+                    type: string
+                    example: "Hello world!\n"
+                updatedAt:
+                    type: number
+                    example: 1283723481237
         DirectoryResponse:
             type: object
             required:
-                - status
-                - data
+                - type
+                - entries
             properties:
-                status:
-                    type: boolean
-                    example: true
-                data:
-                    type: object
-                    required:
-                        - type
-                        - updatedAt
-                        - contents
-                    properties:
-                        type:
-                            type: string
-                            example: 'directory'
-                        entries:
-                            type: array
-                            items:
-                                type: object
-                                required:
-                                    - type
-                                    - updatedAt
-                                    - filename
-                                properties:
-                                    type:
-                                        type: string
-                                        example: 'file'
-                                    filename:
-                                        type: string
-                                        example: 'server.ts'
-                                    updatedAt:
-                                        type: number
-                                        example: 1283723481237
+                type:
+                    type: string
+                    enum: ['directory']
+                    example: 'directory'
+                entries:
+                    type: array
+                    items:
+                        type: object
+                        required:
+                            - type
+                            - updatedAt
+                            - filename
+                        properties:
+                            type:
+                                type: string
+                                example: 'file'
+                            filename:
+                                type: string
+                                example: 'server.ts'
+                            updatedAt:
+                                type: number
+                                example: 1283723481237

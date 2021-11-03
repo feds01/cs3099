@@ -25,6 +25,39 @@ T extends (...args: any) => Promise<any>
 
 
 /**
+ * Endpoint for uploading media to Iamus for user profile pictures.
+ * @summary Upload an avatar image for a user.
+ */
+export const postResourceUploadUsername = (
+    username: string,
+    uploadResource: UploadResource,
+ ) => {const formData = new FormData();
+formData.append('file', uploadResource.file)
+
+      return customInstance<unknown>(
+      {url: `/resource/upload/${username}`, method: 'post',
+       data: formData
+    },
+      );
+    }
+  
+
+
+    export const usePostResourceUploadUsername = <TError = UploadResourceResponse | BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postResourceUploadUsername>, TError,{username: string;data: UploadResource}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postResourceUploadUsername>, {username: string;data: UploadResource}> = (props) => {
+          const {username,data} = props || {};
+
+          return  postResourceUploadUsername(username,data,)
+        }
+
+      return useMutation<AsyncReturnType<typeof postResourceUploadUsername>, TError, {username: string;data: UploadResource}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
  * Endpoint for uploading media to Iamus from multiple sources including publications, comments, profile pictures, etc.
  * @summary Upload a generic file resource
  */
@@ -89,38 +122,5 @@ formData.append('file', uploadResource.file)
         }
 
       return useMutation<AsyncReturnType<typeof postResourceUploadReviewId>, TError, {id: string;data: UploadResource}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
- * Endpoint for uploading media to Iamus for user profile pictures.
- * @summary Upload an avatar image for a user.
- */
-export const postResourceUploadUsername = (
-    username: string,
-    uploadResource: UploadResource,
- ) => {const formData = new FormData();
-formData.append('file', uploadResource.file)
-
-      return customInstance<unknown>(
-      {url: `/resource/upload/${username}`, method: 'post',
-       data: formData
-    },
-      );
-    }
-  
-
-
-    export const usePostResourceUploadUsername = <TError = UploadResourceResponse | BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postResourceUploadUsername>, TError,{username: string;data: UploadResource}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
-
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postResourceUploadUsername>, {username: string;data: UploadResource}> = (props) => {
-          const {username,data} = props || {};
-
-          return  postResourceUploadUsername(username,data,)
-        }
-
-      return useMutation<AsyncReturnType<typeof postResourceUploadUsername>, TError, {username: string;data: UploadResource}, TContext>(mutationFn, mutationOptions)
     }
     

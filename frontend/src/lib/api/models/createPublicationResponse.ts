@@ -8,6 +8,6 @@
 import type { Publication } from './publication';
 
 export interface CreatePublicationResponse {
-  publication?: Publication;
   status?: boolean;
+  publication?: Publication;
 }

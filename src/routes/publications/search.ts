@@ -3,7 +3,7 @@ import express from 'express';
 import { z } from 'zod';
 import { IUserRole } from '../../models/User';
 import { SearchQuerySchema } from '../../validators/publications';
-import registerRoute from '../../wrappers/requests';
+import registerRoute from '../../lib/requests';
 
 const router = express.Router({ mergeParams: true });
 

@@ -5,7 +5,7 @@ import Logger from '../../common/logger';
 import { IUserRole } from '../../models/User';
 import * as userUtils from '../../utils/users';
 import Publication from '../../models/Publication';
-import registerRoute from '../../wrappers/requests';
+import registerRoute from '../../lib/requests';
 import { joinPaths, extractFile } from '../../utils/resources';
 import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
 

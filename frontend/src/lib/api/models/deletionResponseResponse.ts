@@ -7,6 +7,6 @@
  */
 
 export type DeletionResponseResponse = {
-  message: string;
   status: boolean;
+  message: string;
 };

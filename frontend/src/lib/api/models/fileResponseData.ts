@@ -5,9 +5,10 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
+import type { FileResponseDataType } from './fileResponseDataType';
 
 export type FileResponseData = {
   contents: string;
-  type: string;
+  type: FileResponseDataType;
   updatedAt: number;
 };

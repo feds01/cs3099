@@ -59,3 +59,8 @@ export * from './directoryResponse';
 export * from './deletionResponseResponse';
 export * from './resourceResponseResponseData';
 export * from './getPublicationUsernameNameRevision200';
+export * from './fileResponseDataType';
+export * from './directoryResponseDataType';
+export * from './fileResponseType';
+export * from './directoryResponseEntriesItem';
+export * from './directoryResponseType';
