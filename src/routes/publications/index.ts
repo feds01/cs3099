@@ -247,10 +247,10 @@ registerRoute(router, '/:username/:name/:revision?', {
     query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).default('false') }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const requester = req.requester;
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
+        const requester = req.requester;
         const { name, revision } = req.params;
         const draft = req.query.draft === 'true';
         const isOwner = user.id === req.requester.id;
