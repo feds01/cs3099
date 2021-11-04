@@ -192,7 +192,7 @@ registerRoute(router, '/:username/:name/:revision?', {
         // are here: https://stackoverflow.com/a/54741405
         const publication = await Publication.findOne({
             owner: user.id,
-            name,
+            name: name.toLowerCase(),
             ...(typeof revision !== 'undefined' && { revision })
         }).sort({ _id: -1 }).exec();
 
@@ -233,6 +233,47 @@ registerRoute(router, '/:username/:name/:revision?', {
         return res.status(200).json({
             status: true,
             publication,
+        });
+    },
+});
+
+registerRoute(router, '/:username/:name/:revision?', {
+    method: 'delete',
+    params: z.object({
+        username: z.string().nonempty(),
+        name: z.string().nonempty(),
+        revision: z.string().optional(),
+    }),
+    query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).default('false') }),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const requester = req.requester;
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        const { name, revision } = req.params;
+        const draft = req.query.draft === 'true';
+        const isOwner = user.id === req.requester.id;
+
+        if (isOwner || comparePermissions(requester.role, IUserRole.Moderator)) {
+            const publication = await Publication.findOneAndDelete({
+                owner: user.id,
+                name: name.toLowerCase(),
+                draft,
+                ...(typeof revision !== 'undefined' && { revision })
+            }).sort({ _id: -1 }).exec(); // get the most recent document
+
+            if (publication) {
+                return res.status(200).json({
+                    status: true,
+                    message: 'Successfully deleted publication.',
+                });
+            }
+        }
+
+        return res.status(404).json({
+            status: false,
+            message: errors.NON_EXISTENT_PUBLICATION,
         });
     },
 });

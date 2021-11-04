@@ -15,6 +15,7 @@ export const IPublicationCreationSchema = z.object({
         .transform((x) => x.toLowerCase()),
     introduction: z.string().nonempty(),
     collaborators: CollaboratorArraySchema,
+    current: z.boolean().default(true),
 });
 
 // TODO: Implement better schema
