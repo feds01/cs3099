@@ -9,28 +9,24 @@ describe('User endpoint tests ', () => {
     // create a user and login before all tests
     beforeAll(async () => {
         // call register api
-        const registerRespoinse = await request
-            .post('/auth/register')
-            .send({
-                email: 'test@email.com',
-                username: 'test',
-                firstName: 'test',
-                lastName: 'test',
-                password: 'Passwordexample123!',
-                about: 'Nothing to say',
-                profilePictureUrl: 'https://nothing-to-show.com',
-            });
+        const registerRespoinse = await request.post('/auth/register').send({
+            email: 'test@email.com',
+            username: 'test',
+            firstName: 'test',
+            lastName: 'test',
+            password: 'Passwordexample123!',
+            about: 'Nothing to say',
+            profilePictureUrl: 'https://nothing-to-show.com',
+        });
 
         // expect register to be successful
         expect(registerRespoinse.status).toBe(201);
 
         // call login api
-        const loginResponse = await request
-            .post('/auth/login')
-            .send({
-                username: 'test',
-                password: 'Passwordexample123!',
-            });
+        const loginResponse = await request.post('/auth/login').send({
+            username: 'test',
+            password: 'Passwordexample123!',
+        });
 
         // expect login successfully
         expect(loginResponse.status).toBe(200);
@@ -47,12 +43,10 @@ describe('User endpoint tests ', () => {
     // delete the test user after all tests
     afterAll(async () => {
         // call delete user api
-        const deleteUserResponse = await request
-            .delete('/user/test');
+        const deleteUserResponse = await request.delete('/user/test');
 
         // expect delete to be successful
         expect(deleteUserResponse.status).toBe(200);
-
     });
 
     it('Getting Non-existing user with name', async () => {
@@ -74,7 +68,4 @@ describe('User endpoint tests ', () => {
         const response = await request.get(`/user/${testUserId}?mode=id`);
         expect(response.status).toBe(200);
     });
-
-
-
 });
