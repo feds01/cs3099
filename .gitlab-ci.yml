@@ -29,6 +29,7 @@ linting:
     - yarn lint
 
 tests:
+  extends: install
   stage: test
   script:
     - yarn test
