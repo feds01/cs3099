@@ -51,11 +51,7 @@ paths:
                             $ref: '#/components/schemas/UserLogin'
             responses:
                 '200':
-                    description: Authentication tokens with user information.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UserAuthResponse'
+                    $ref: '#/components/responses/UserAuthResponse'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -73,15 +69,18 @@ paths:
                   required: true
                   name: token
                   schema:
-                      type: integer
+                      type: string
                       description: JWT to check
             responses:
                 '200':
-                    description: Authentication tokens with user information.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/TokenVerificationResponse'
+                    $ref: '#/components/responses/TokenVerificationResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+
     /sg/sso/callback:
         post:
             summary: Successful external login endpoint.
@@ -106,12 +105,59 @@ paths:
                     description: No Content
                 '500':
                     $ref: '#/components/responses/InternalServerError'
+    /sg/resources/export/{id}:
+        get:
+            summary: Endpoint to download an archive representing the publication sources.
+            tags:
+                - external
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: The identifier of the publication.
+            responses:
+                '200':
+                    $ref: '#/components/responses/PublicationExportResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+
+    /sg/resources/export/{id}/metadata:
+        get:
+            summary: Endpoint to download the publication metadata
+            tags:
+                - external
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: The identifier of the publication.
+            responses:
+                '200':
+                    $ref: '#/components/responses/PublicationMetadataResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
     /auth/email_validation:
         post:
             summary: Pre-registration email validation
             description: Check if an email is valid to use when registering
             tags:
-                - auth
+                - external
             requestBody:
                 required: true
                 description: Provide a email to be checked
@@ -187,11 +233,7 @@ paths:
                             $ref: '#/components/schemas/UserLogin'
             responses:
                 '200':
-                    description: Authentication tokens with user information.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UserAuthResponse'
+                    $ref: '#/components/responses/UserAuthResponse'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -213,11 +255,7 @@ paths:
                             $ref: '#/components/schemas/UserRegistration'
             responses:
                 '201':
-                    description: Created. Authentication tokens with user information.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UserAuthResponse'
+                    $ref: '#/components/responses/UserAuthResponse'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '500':
@@ -1128,6 +1166,29 @@ components:
                             message:
                                 type: string
                                 example: 'Not Found'
+        UserAuthResponse:
+            description: Authentication tokens with user information.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        description: Successful authentication, returning a token, and a refreshToken.
+                        required:
+                            - user
+                            - token
+                            - refreshToken
+                        properties:
+                            status:
+                                type: boolean
+                                example: true
+                            token:
+                                type: string
+                                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                            refreshToken:
+                                type: string
+                                example: ABCDE921312DAB23AE
+                            user:
+                                $ref: '#/components/schemas/User'
         DeletionResponse:
             description: When a specified resource has been deleted.
             content:
@@ -1161,6 +1222,25 @@ components:
                                 oneOf:
                                     - $ref: '#/components/schemas/FileResponse'
                                     - $ref: '#/components/schemas/DirectoryResponse'
+        TokenVerificationResponse:
+            description: Response from fetching publication information.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
+                            message:
+                                type: string
+                                example: 'Token is valid'
+                            user:
+                                $ref: '#/components/schemas/User'
     schemas:
         TokenRequest:
             type: object
@@ -1187,19 +1267,6 @@ components:
                 refreshToken:
                     type: string
                     example: 'refresh-token'
-        TokenVerificationResponse:
-            type: object
-            required:
-                - status
-                - message
-            properties:
-                status:
-                    type: string
-                    example: 'ok'
-                    enum: ['ok', 'error']
-                message:
-                    type: string
-                    example: 'Token is valid'
         UsernameValidation:
             type: object
             required:
@@ -1280,25 +1347,6 @@ components:
                 password:
                     type: string
                     example: 'Password1!'
-        UserAuthResponse:
-            type: object
-            description: Successful authentication, returning a token, and a refreshToken.
-            required:
-                - user
-                - token
-                - refreshToken
-            properties:
-                status:
-                    type: boolean
-                    example: true
-                token:
-                    type: string
-                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-                refreshToken:
-                    type: string
-                    example: ABCDE921312DAB23AE
-                user:
-                    $ref: '#/components/schemas/User'
         User:
             type: object
             required:
@@ -1485,3 +1533,56 @@ components:
                             updatedAt:
                                 type: number
                                 example: 1283723481237
+        Review:
+            type: object
+            required:
+                - owner
+                - threads
+                - createdAt
+            properties:
+                owner:
+                    $ref: '#/components/schemas/User'
+                createdAt:
+                    type: number
+                    example: 1636065460
+                threads:
+                    type: array
+                    items:
+                        type: array
+                        items:
+                            $ref: '#/components/schemas/Comment'
+        Comment:
+            type: object
+            required:
+                - filename
+                - contents
+                - thread
+                - author
+                - postedAt
+            properties:
+                filename:
+                    type: string
+                    example: 'src/server.ts'
+                anchor:
+                    type: object
+                    required:
+                        - start
+                        - end
+                    properties:
+                        start:
+                            type: number
+                            example: 1
+                        end:
+                            type: number
+                            example: 2
+                contents:
+                    type: string
+                    example: 'This is a comment'
+                thread:
+                    type: number
+                    example: 0
+                author:
+                    $ref: '#/components/schemas/User'
+                postedAt:
+                    type: number
+                    example: 1636065460

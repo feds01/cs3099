@@ -13,7 +13,7 @@ import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 import { ZodError } from 'zod';
 import Logger from '../common/logger';
 import { config } from '../server';
-import { IJwtSchema } from '../validators/auth';
+import { IAuthHeaderSchema } from '../validators/auth';
 
 export interface TokenPayload {
     token: string;
@@ -92,7 +92,7 @@ export function getTokensFromHeader(
     const refreshToken = req.get('x-refresh-token');
 
     try {
-        const token = IJwtSchema.parse(bearer);
+        const token = IAuthHeaderSchema.parse(bearer);
 
         // Decode the sent over JWT key using our secret key stored in the process' runtime.
         // Then carry on, even if the data is incorrect for the given request, since this does

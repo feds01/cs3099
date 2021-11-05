@@ -1,57 +1,55 @@
 import { z } from 'zod';
 import express from 'express';
-import { JwtPayload } from 'jsonwebtoken';
+import assert from 'assert';
 import * as errors from '../common/errors';
 import { getTokensFromHeader } from './auth';
 import { IUserDocument, IUserRole } from '../models/User';
 import { ensureValidPermissions } from './permissions';
 
-// Request method types
 type RequestMethodWithBody = 'post' | 'put' | 'patch';
 type RequestMethodWithoutBody = 'delete' | 'get';
 type RequestMethod = RequestMethodWithBody | RequestMethodWithoutBody;
 
-interface RegisterRouteBase<P, Q> {
-    params: z.Schema<P>;
-    query: z.Schema<Q>;
-    permission: IUserRole;
-}
-
-interface BasicRequest<P, Q> {
-    params: P;
-    query: Q;
-    token: JwtPayload;
-    requester: IUserDocument;
+interface Request<Params, Query, Requester, Body> {
+    params: Params;
+    query: Query;
     raw: express.Request;
+    requester: Requester;
+    body: Body;
 }
 
-interface RequestWithBody<P, B, Q> extends BasicRequest<P, Q> {
-    body: B;
-}
+type RegisterRoute<
+    Params,
+    Query,
+    Method extends RequestMethod,
+    Body,
+    Permission extends IUserRole | null,
+> = {
+    method: Method;
+    permission: Permission;
+    params: z.Schema<Params>;
+    query: z.Schema<Query>;
+    handler: (
+        req: Request<
+            Params,
+            Query,
+            Permission extends null ? null : IUserDocument,
+            Method extends RequestMethodWithBody ? Body : null
+        >,
+        res: express.Response,
+    ) => Promise<unknown>;
+} & (Method extends RequestMethodWithBody ? { body: z.Schema<Body> } : {});
 
-interface RegisterRouteWithBody<P, B, Q, M extends RequestMethodWithBody>
-    extends RegisterRouteBase<P, Q> {
-    method: M;
-    body: z.Schema<B>;
-    handler: (req: RequestWithBody<P, B, Q>, res: express.Response) => Promise<unknown>;
-}
-
-interface RegisterRouteWithoutBody<P, Q, M extends RequestMethodWithoutBody>
-    extends RegisterRouteBase<P, Q> {
-    method: M;
-    handler: (req: BasicRequest<P, Q>, res: express.Response) => Promise<unknown>;
-}
-
-type RegisterRoute<P, B, Q, M extends RequestMethod> = M extends RequestMethodWithBody
-    ? RegisterRouteWithBody<P, B, Q, M>
-    : M extends RequestMethodWithoutBody
-    ? RegisterRouteWithoutBody<P, Q, M>
-    : never;
-
-export default function registerRoute<P, B, Q, M extends RequestMethod>(
+export default function registerRoute<
+    Params,
+    Query,
+    Method extends RequestMethod,
+    Body,
+    Permission extends IUserRole | null,
+>(
     router: express.Router,
     path: string,
-    registrar: RegisterRoute<P, B, Q, M>,
+    registrar: RegisterRoute<Params, Query, Method, Body, Permission>,
 ) {
     const wrappedHandler = async (req: express.Request, res: express.Response) => {
         const params = await registrar.params.safeParseAsync(req.params);
@@ -92,25 +90,35 @@ export default function registerRoute<P, B, Q, M extends RequestMethod>(
             });
         }
 
-        // Now validate the permissions
+        // Validate the permissions, but skip it if there are no specified permissions for the
+        // current request.
         const permissions = await ensureValidPermissions(registrar.permission, token.data.id);
 
-        if (!permissions.valid) {
+        if (registrar.permission !== null && !permissions.valid) {
             return res.status(401).json({
                 status: false,
                 message: errors.UNAUTHORIZED,
             });
         }
+        if (registrar.permission !== null) {
+            assert(0);
+        }
 
         const basicRequest = {
             query: query.data,
             params: params.data,
-            requester: permissions.user,
-            token,
             raw: req,
         };
+
         if ('body' in registrar) {
-            const body = await registrar.body.safeParseAsync(req.body);
+            const registrarWithBody = registrar as RegisterRoute<
+                Params,
+                Query,
+                RequestMethodWithBody,
+                Body,
+                Permission
+            >;
+            const body = await registrarWithBody.body.safeParseAsync(req.body);
 
             // If the body parsing wasn't successful, fail here
             if (!body.success) {
@@ -125,9 +133,60 @@ export default function registerRoute<P, B, Q, M extends RequestMethod>(
                 });
             }
 
-            return await registrar.handler({ ...basicRequest, body: body.data }, res);
+            if (registrarWithBody.permission === null) {
+                const r = registrar as RegisterRoute<
+                    Params,
+                    Query,
+                    RequestMethodWithBody,
+                    Body,
+                    null
+                >;
+                return await r.handler({ ...basicRequest, requester: null, body: body.data }, res);
+            }
+
+            // We only have to do this because typescript isn't smart enough to coerce types yet
+            // in the way we want to.
+            assert(permissions.valid);
+            const r = registrar as RegisterRoute<
+                Params,
+                Query,
+                RequestMethodWithBody,
+                Body,
+                IUserRole
+            >;
+
+            return await r.handler(
+                { ...basicRequest, requester: permissions.user, body: body.data },
+                res,
+            );
         }
-        return await registrar.handler(basicRequest, res);
+
+        if (registrar.permission === null) {
+            const registrarWithoutBody = registrar as unknown as RegisterRoute<
+                Params,
+                Query,
+                RequestMethodWithoutBody,
+                Body,
+                null
+            >;
+            return await registrarWithoutBody.handler(
+                { ...basicRequest, requester: null, body: null },
+                res,
+            );
+        }
+
+        assert(permissions.valid);
+        const registrarWithBody = registrar as unknown as RegisterRoute<
+            Params,
+            Query,
+            RequestMethodWithoutBody,
+            Body,
+            IUserRole
+        >;
+        return await registrarWithBody.handler(
+            { ...basicRequest, requester: permissions.user, body: null },
+            res,
+        );
     };
 
     // now add the method to the router

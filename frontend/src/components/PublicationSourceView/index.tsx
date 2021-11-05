@@ -1,14 +1,14 @@
-import { Alert, AlertTitle, Divider } from '@mui/material';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
+import { Alert, AlertTitle, Divider } from '@mui/material';
 import React, { ReactElement, useEffect, useState } from 'react';
+
+import BreadCrumb from './BreadCrumb';
+import FileViewer from '../FileViewer';
+import DirectoryViewer from '../DirectoryViewer';
+import { ContentState } from '../../types/requests';
 import { ResourceResponseResponse } from '../../lib/api/models';
 import { constructBasePath, PublicationIndex } from '../../lib/utils/publications';
-import { ContentState } from '../../types/requests';
-import DirectoryViewer from '../DirectoryViewer';
-import FileViewer from '../FileViewer';
-import MarkdownRenderer from '../MarkdownRenderer';
-import BreadCrumb from './BreadCrumb';
 
 interface SourceViewerProps {
     filename: string;

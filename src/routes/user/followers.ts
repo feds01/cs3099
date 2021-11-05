@@ -39,7 +39,7 @@ registerRoute(router, '/:username/follow', {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
-        const { id: followerId } = req.token.data;
+        const { id: followerId } = req.requester;
 
         // check if the user is already following the other user, if so
         // then exit early and don't create the new follower link.
@@ -100,7 +100,7 @@ registerRoute(router, '/:username/follow', {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
-        const { id: followerId } = req.token.data;
+        const { id: followerId } = req.requester;
 
         // check if the user is already following the other user, if so
         // then exit early and don't create the new follower link.
@@ -141,7 +141,7 @@ registerRoute(router, '/:username/follow', {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
-        const { id: followerId } = req.token['data'];
+        const { id: followerId } = req.requester;
 
         // check if the user is already following the other user, if so
         // then exit early and don't create the new follower link.

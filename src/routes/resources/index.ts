@@ -95,7 +95,7 @@ registerRoute(router, '/publication/upload/:id', {
     handler: async (req, res) => {
         const { id } = req.params;
         const { revision } = req.query;
-        const { id: userId } = req.token;
+        const { id: userId } = req.requester;
         const file = extractFile(req.raw);
 
         if (!file) {
@@ -175,7 +175,7 @@ registerRoute(router, '/review/upload/:id', {
     permission: IUserRole.Default,
     handler: async (req, res) => {
         const { id } = req.params;
-        const { id: userId } = req.token.data;
+        const { id: userId } = req.requester;
 
         console.log(id, userId);
 
