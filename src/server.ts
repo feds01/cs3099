@@ -20,6 +20,8 @@ const rawConfig = {
     jwtSecret: process.env.JWT_SECRET_KEY,
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET_KEY,
     resourcesFolder: process.env.RESOURCES_FOLDER,
+    teamName: 't06',
+    frontendURI: process.env.FRONT_END_URI,
 }
 
 function validateConfig() {

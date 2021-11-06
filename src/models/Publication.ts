@@ -1,4 +1,5 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
+import User from './User';
 
 export interface IPublication {
     revision: string;
@@ -14,7 +15,9 @@ export interface IPublication {
 
 export interface IPublicationDocument extends IPublication, Document {}
 
-interface IPublicationModel extends Model<IPublicationDocument> {}
+interface IPublicationModel extends Model<IPublicationDocument> {
+    project: (user: IPublication) => Promise<Partial<IPublication>>;
+}
 
 const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublication>(
     {
@@ -29,5 +32,23 @@ const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublicati
     },
     { timestamps: true },
 );
+
+PublicationSchema.statics.project = async (publication: IPublicationDocument) => {
+    const { name, title, introduction, draft, owner: ownerId, collaborators } = publication;
+
+    // Resolve the owner name...
+    const owner = await User.findById(ownerId).exec();
+
+    return {
+        name,
+        title,
+        introduction,
+        owner,
+        draft,
+
+        // TODO: project collaborators too...
+        collaborators,
+    };
+};
 
 export default mongoose.model<IPublication, IPublicationModel>('publication', PublicationSchema);

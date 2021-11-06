@@ -23,7 +23,8 @@ export interface IUser {
 export interface IUserDocument extends IUser, Document<string> {}
 
 export interface IUserModel extends Model<IUserDocument> {
-    project: (user: IUser) => Partial<IUser>;
+    project: (user: IUser, omitId?: boolean) => Partial<IUser>;
+    projectAsSg: (user: IUser) => { name: string; email: string };
 }
 
 const UserSchema = new Schema<IUser, IUserModel, IUser>(
@@ -49,13 +50,13 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
  * @param user The user Document that is to be projected.
  * @returns A partial user object with selected fields that are to be projected.
  */
-UserSchema.statics.project = (user: IUserDocument) => {
+UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
     const { profilePictureUrl, about, status } = user;
 
     strict.strict(typeof user.id === 'string');
 
     return {
-        id: user.id,
+        ...(!omitId && { id: user.id }),
         email: user.email,
         username: user.username,
         firstName: user.firstName,
@@ -63,6 +64,23 @@ UserSchema.statics.project = (user: IUserDocument) => {
         ...(typeof profilePictureUrl !== 'undefined' && { profilePictureUrl }),
         ...(typeof about !== 'undefined' && { about }),
         ...(typeof status !== 'undefined' && { status }),
+    };
+};
+
+/**
+ * Function that projects a user document into the Supergroup format so that it can
+ * be returned in responses within Supergroup endpoints.
+ *
+ * @param user The user Document that is to be projected.
+ * @returns A partial user object with selected fields that are to be projected.
+ */
+UserSchema.statics.projectAsSg = (user: IUserDocument) => {
+    const { firstName, lastName, email, profilePictureUrl } = user;
+
+    return {
+        name: `${firstName} ${lastName}`,
+        email,
+        ...(typeof profilePictureUrl !== 'undefined' && { profilePictureUrl }),
     };
 };
 

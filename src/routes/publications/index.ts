@@ -2,17 +2,15 @@ import { z } from 'zod';
 import express from 'express';
 import Logger from '../../common/logger';
 import * as zip from "../../lib/zip";
+import searchRouter from './search';
 import User, { IUserRole } from '../../models/User';
 import * as errors from "./../../common/errors";
 import * as userUtils from "./../../utils/users";
 import registerRoute from '../../lib/requests';
 import Publication from '../../models/Publication';
-import { ModeSchema, ResourceSortSchema } from '../../validators/requests';
-import {
-    IPublicationCreationSchema,
-} from '../../validators/publications';
-import searchRouter from './search';
 import { comparePermissions } from '../../lib/permissions';
+import { ModeSchema, ResourceSortSchema } from '../../validators/requests';
+import { IPublicationCreationSchema } from '../../validators/publications';
 
 const router = express.Router();
 
@@ -158,7 +156,7 @@ registerRoute(router, '/', {
             return res.status(201).json({
                 status: true,
                 message: 'Successfully submitted new publication.',
-                publication,
+                publication: await Publication.project(publication),
             });
         } catch (e) {
             Logger.error(e);
@@ -232,7 +230,7 @@ registerRoute(router, '/:username/:name/:revision?', {
 
         return res.status(200).json({
             status: true,
-            publication,
+            publication: await Publication.project(publication),
         });
     },
 });

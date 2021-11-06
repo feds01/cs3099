@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import express from 'express';
-import assert from 'assert';
 import * as errors from '../common/errors';
 import { getTokensFromHeader } from './auth';
 import { IUserDocument, IUserRole } from '../models/User';
@@ -59,7 +58,8 @@ export default function registerRoute<
         if (!params.success) {
             return res.status(400).json({
                 status: false,
-                message: "Bad request, parameter didn't match.",
+                message:
+                    "Bad request, endpoint path parameter schema didn't match to provided path parameters.",
                 extra: {
                     errors: {
                         ...params.error,
@@ -72,7 +72,8 @@ export default function registerRoute<
         if (!query.success) {
             return res.status(400).json({
                 status: false,
-                message: "Bad request, parameter didn't match.",
+                message:
+                    "Bad request, endpoint query schema didn't match to provided query fields.",
                 extra: {
                     errors: {
                         ...query.error,
@@ -81,27 +82,27 @@ export default function registerRoute<
             });
         }
 
-        const token = getTokensFromHeader(req, res);
+        let permissions;
 
-        if (typeof token === 'string') {
-            return res.status(401).json({
-                status: false,
-                message: token,
-            });
-        }
-
-        // Validate the permissions, but skip it if there are no specified permissions for the
-        // current request.
-        const permissions = await ensureValidPermissions(registrar.permission, token.data.id);
-
-        if (registrar.permission !== null && !permissions.valid) {
-            return res.status(401).json({
-                status: false,
-                message: errors.UNAUTHORIZED,
-            });
-        }
         if (registrar.permission !== null) {
-            assert(0);
+            const token = getTokensFromHeader(req, res);
+            if (typeof token === 'string') {
+                return res.status(401).json({
+                    status: false,
+                    message: token,
+                });
+            }
+
+            // Validate the permissions, but skip it if there are no specified permissions for the
+            // current request.
+            permissions = await ensureValidPermissions(registrar.permission, token.data.id);
+
+            if (!permissions.valid) {
+                return res.status(401).json({
+                    status: false,
+                    message: errors.UNAUTHORIZED,
+                });
+            }
         }
 
         const basicRequest = {
@@ -124,7 +125,7 @@ export default function registerRoute<
             if (!body.success) {
                 return res.status(400).json({
                     status: false,
-                    message: "Bad request, parameter didn't match.",
+                    message: "Bad request, endpoint body schema didn't match to provided body.",
                     extra: {
                         errors: {
                             ...body.error,
@@ -133,7 +134,7 @@ export default function registerRoute<
                 });
             }
 
-            if (registrarWithBody.permission === null) {
+            if (typeof permissions === 'undefined') {
                 const r = registrar as RegisterRoute<
                     Params,
                     Query,
@@ -146,7 +147,6 @@ export default function registerRoute<
 
             // We only have to do this because typescript isn't smart enough to coerce types yet
             // in the way we want to.
-            assert(permissions.valid);
             const r = registrar as RegisterRoute<
                 Params,
                 Query,
@@ -161,7 +161,7 @@ export default function registerRoute<
             );
         }
 
-        if (registrar.permission === null) {
+        if (typeof permissions === 'undefined') {
             const registrarWithoutBody = registrar as unknown as RegisterRoute<
                 Params,
                 Query,
@@ -175,7 +175,6 @@ export default function registerRoute<
             );
         }
 
-        assert(permissions.valid);
         const registrarWithBody = registrar as unknown as RegisterRoute<
             Params,
             Query,

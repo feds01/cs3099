@@ -2,7 +2,7 @@
     "name": "iamus-api",
     "version": "1.0.0",
     "description": "Iamus REST API. CS3099 Project sources.",
-    "main": "dist/index.js",
+    "main": "dist/src/server.js",
     "scripts": {
         "build": "tsc",
         "start": "tsc & node .",
