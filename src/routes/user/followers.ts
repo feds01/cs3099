@@ -52,6 +52,7 @@ registerRoute(router, '/:username/follow', {
             });
         }
 
+        // if the user is trying to follow itself
         // Just return a NoContent since we don't need to create anything
         if (follower.id === user.id) {
             return res.status(204).json({
