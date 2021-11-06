@@ -774,6 +774,14 @@ paths:
                       type: string
                   required: true
                   description: Username.
+                - in: query
+                  required: false
+                  name: pinned
+                  schema:
+                      type: string
+                      example: "false"
+                      enum: ["true", "false"]
+                      description: Filter by pinned used publications.
             responses:
                 '200':
                     description: Returns the requested publications.
@@ -1434,6 +1442,7 @@ components:
                 - collaborators
                 - createdAt
                 - revision
+                - owner
             properties:
                 name:
                     type: string
@@ -1447,10 +1456,13 @@ components:
                 revision:
                     type: string
                     example: 'v1.0.0'
+                owner:
+                    $ref: '#/components/schemas/User'
                 collaborators:
                     type: array
                     items:
-                        $ref: '#/components/schemas/User'
+                        type: string # TODO: maybe resolve collaborators later?
+                        example: "jdoe1"
         CreatePublicationRequest:
             type: object
             required:

@@ -146,6 +146,7 @@ registerRoute(router, '/', {
         const newPublication = new Publication({
             ...req.body,
             draft: true,
+            current: true,
             collaborators: collaboratorDocs.map((doc) => doc.id),
             owner,
         });
@@ -169,6 +170,43 @@ registerRoute(router, '/', {
     },
 });
 
+
+registerRoute(router, "/:username", {
+    method: "get",
+    params: z.object({ username: z.string() }),
+    query: z.object({ mode: ModeSchema, pinned: z.enum(["true", "false"]).default("false") }), // @@TODO: use a boolean schema here
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        const isPinned = req.query.pinned === "true";
+
+        // @@TODO: we might want to include revisions in the future with some options.
+        const result = await Publication.find({
+            owner: user.id,
+            $or: [{ 'pinned': { $exists: false } }, { 'pinned': isPinned }],
+            current: true
+        })
+            .limit(50)
+            .exec();
+
+
+        // @@Performance: we're querying for each owner in the loop 
+        // project each publication and then return it
+        const publications = result.map((link) => Publication.projectWith(link as typeof result[number], user));
+
+        return res.status(200).json({
+            status: true,
+            data: {
+                publications,
+            },
+        });
+
+
+    }
+})
+
 registerRoute(router, '/:username/:name/:revision?', {
     method: 'get',
     params: z.object({
@@ -190,7 +228,7 @@ registerRoute(router, '/:username/:name/:revision?', {
         // are here: https://stackoverflow.com/a/54741405
         const publication = await Publication.findOne({
             owner: user.id,
-            name,
+            name: name.toLowerCase(),
             ...(typeof revision !== 'undefined' && { revision })
         }).sort({ _id: -1 }).exec();
 
@@ -231,6 +269,85 @@ registerRoute(router, '/:username/:name/:revision?', {
         return res.status(200).json({
             status: true,
             publication: await Publication.project(publication),
+        });
+    },
+});
+
+// endpoint to delete the entire series of publications revisions
+registerRoute(router, '/:username/:name/all', {
+    method: 'delete',
+    params: z.object({
+        username: z.string().nonempty(),
+        name: z.string().nonempty(),
+    }),
+    query: z.object({ mode: ModeSchema }),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        const requester = req.requester;
+        const { name } = req.params;
+        const isOwner = user.id === req.requester.id;
+
+        if (isOwner || comparePermissions(requester.role, IUserRole.Moderator)) {
+            const publications = await Publication.deleteMany({
+                owner: user.id,
+                name: name.toLowerCase(),
+            }).exec();
+
+            if (publications.deletedCount > 0) {
+                return res.status(200).json({
+                    status: true,
+                    message: 'Successfully deleted all revision of publications.',
+                });
+            }
+        }
+
+        return res.status(404).json({
+            status: false,
+            message: errors.NON_EXISTENT_PUBLICATION,
+        });
+    },
+});
+
+registerRoute(router, '/:username/:name/:revision?', {
+    method: 'delete',
+    params: z.object({
+        username: z.string().nonempty(),
+        name: z.string().nonempty(),
+        revision: z.string().optional(),
+    }),
+    query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).default('false') }),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        const requester = req.requester;
+        const { name, revision } = req.params;
+        const draft = req.query.draft === 'true';
+        const isOwner = user.id === req.requester.id;
+
+        if (isOwner || comparePermissions(requester.role, IUserRole.Moderator)) {
+            const publication = await Publication.findOneAndDelete({
+                owner: user.id,
+                name: name.toLowerCase(),
+                draft,
+                ...(typeof revision !== 'undefined' && { revision })
+            }).sort({ _id: -1 }).exec(); // get the most recent document
+
+            if (publication) {
+                return res.status(200).json({
+                    status: true,
+                    message: 'Successfully deleted publication.',
+                });
+            }
+        }
+
+        return res.status(404).json({
+            status: false,
+            message: errors.NON_EXISTENT_PUBLICATION,
         });
     },
 });
