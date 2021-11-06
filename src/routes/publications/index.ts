@@ -114,7 +114,7 @@ registerRoute(router, '/', {
     permission: IUserRole.Default,
     handler: async (req, res) => {
         const { name, collaborators, revision } = req.body
-        const { id: owner } = req.token.data;
+        const { id: owner } = req.requester;
 
         // Check if the publication is already in use...
         const existingPublication = await Publication.count({
