@@ -64,3 +64,5 @@ export * from './directoryResponseDataType';
 export * from './fileResponseType';
 export * from './directoryResponseEntriesItem';
 export * from './directoryResponseType';
+export * from './getPublicationUsernameParams';
+export * from './getPublicationUsernamePinned';

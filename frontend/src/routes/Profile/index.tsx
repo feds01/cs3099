@@ -23,11 +23,11 @@ const TabMap = (user: User) => {
     return {
         [`/profile/${user.username}`]: {
             label: 'Overview',
-            component: (user: User) => <Overview id={user.id} user={user} />,
+            component: (user: User) => <Overview user={user} />,
         },
         [`/profile/${user.username}/activity`]: {
             label: 'Activity',
-            component: (user: User) => <Activity title={'Most Recent Activity'} id={user.id} />,
+            component: (user: User) => <Activity title={'Most Recent Activity'} username={user.username} />,
         },
         [`/profile/${user.username}/publications`]: {
             label: 'Publications',
@@ -35,15 +35,15 @@ const TabMap = (user: User) => {
         },
         [`/profile/${user.username}/reviews`]: {
             label: 'Reviews',
-            component: (user: User) => <Reviews id={user.id} />,
+            component: (user: User) => <Reviews username={user.username} />,
         },
         [`/profile/${user.username}/followers`]: {
             label: 'Followers',
-            component: (user: User) => <Follows type="followers" id={user.id} />,
+            component: (user: User) => <Follows type="followers" username={user.username} />,
         },
         [`/profile/${user.username}/following`]: {
             label: 'Following',
-            component: (user: User) => <Follows type="following" id={user.id} />,
+            component: (user: User) => <Follows type="following" username={user.username} />,
         },
     };
 };

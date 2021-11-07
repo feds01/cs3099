@@ -8,6 +8,6 @@
 import type { ResourceResponseResponseData } from './resourceResponseResponseData';
 
 export type ResourceResponseResponse = {
-  status: boolean;
-  data: ResourceResponseResponseData;
+    status: boolean;
+    data: ResourceResponseResponseData;
 };

@@ -11,23 +11,23 @@ import Astronaut from './../../../static/images/spacewalk.svg';
 
 interface Props {
     type: 'followers' | 'following';
-    id: string;
+    username: string;
 }
 
-export default function Follows({ type, id }: Props): ReactElement {
+export default function Follows({ type, username }: Props): ReactElement {
     const { session } = useAuth();
     const [followers, setFollowers] = useState<ContentState<User[], any>>({ state: 'loading' });
 
     // TODO(alex): Creating both queries is very unclean but because you can't call hooks
     //             in react conditionally, we have to create two instances of the hooks (lazy version)
     //             and call it on demand using the refetch...
-    const followerQuery = useGetUserUsernameFollowers(id, {
+    const followerQuery = useGetUserUsernameFollowers(username, {
         query: {
             enabled: false,
         },
     });
 
-    const followingQuery = useGetUserUsernameFollowing(id, {
+    const followingQuery = useGetUserUsernameFollowing(username, {
         query: {
             enabled: false,
         },
@@ -43,7 +43,7 @@ export default function Follows({ type, id }: Props): ReactElement {
         }
 
         loadData();
-    }, [id]);
+    }, [username]);
 
     useEffect(() => {
         if (type === 'followers') {
@@ -82,12 +82,12 @@ export default function Follows({ type, id }: Props): ReactElement {
                         />
                         <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                             {type === 'followers'
-                                ? session.username === id
+                                ? session.username === username
                                     ? 'You currently have no followers'
-                                    : `@${id} has no followers yet.`
-                                : session.username === id
+                                    : `@${username} has no followers yet.`
+                                : session.username === username
                                 ? "You're not following anyone yet"
-                                : `@${id} isn't following anyone yet`}
+                                : `@${username} isn't following anyone yet`}
                         </Typography>
                     </Container>
                 );

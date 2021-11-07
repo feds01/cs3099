@@ -1395,6 +1395,7 @@ components:
                 - createdAt
                 - revision
                 - owner
+                - draft
             properties:
                 name:
                     type: string
@@ -1408,13 +1409,16 @@ components:
                 revision:
                     type: string
                     example: 'v1.0.0'
+                draft:
+                    type: boolean
+                    example: true
                 owner:
                     $ref: '#/components/schemas/User'
                 collaborators:
                     type: array
                     items:
                         type: string # TODO: maybe resolve collaborators later?
-                        example: "jdoe1"
+                        example: 'jdoe1'
         CreatePublicationRequest:
             type: object
             required:
