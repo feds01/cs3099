@@ -207,11 +207,7 @@ paths:
                             $ref: '#/components/schemas/TokenRequest'
             responses:
                 '200':
-                    description: Authentication tokens with user information.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/TokenResponse'
+                    $ref: '#/components/responses/TokenResponse'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -284,8 +280,9 @@ paths:
                                 type: object
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     description:
                                         type: string
                                         example: 'User deleted'
@@ -320,8 +317,9 @@ paths:
                                     - follows
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     user:
                                         $ref: '#/components/schemas/User'
                                     follows:
@@ -363,8 +361,9 @@ paths:
                                     - user
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     user:
                                         $ref: '#/components/schemas/User'
                 '400':
@@ -402,8 +401,9 @@ paths:
                                     - role
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     role:
                                         type: string
                                         example: 'default'
@@ -442,8 +442,9 @@ paths:
                                     - message
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     message:
                                         type: string
                                         example: 'Successfully updated user role.'
@@ -485,8 +486,9 @@ paths:
                                     - following
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     following:
                                         type: boolean
                                         example: true
@@ -524,8 +526,9 @@ paths:
                                     - message
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     message:
                                         type: string
                                         example: 'Successfully added new follows.'
@@ -563,8 +566,9 @@ paths:
                                     - message
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     message:
                                         type: string
                                         example: 'User was unfollowed'
@@ -603,8 +607,9 @@ paths:
                                     - status
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     data:
                                         $ref: '#/components/schemas/FollowerListData'
                 '400':
@@ -642,8 +647,9 @@ paths:
                                     - data
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     data:
                                         $ref: '#/components/schemas/FollowingListData'
                 '400':
@@ -746,8 +752,9 @@ paths:
                                     - publication
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     publication:
                                         $ref: '#/components/schemas/Publication'
 
@@ -779,8 +786,8 @@ paths:
                   name: pinned
                   schema:
                       type: string
-                      example: "false"
-                      enum: ["true", "false"]
+                      example: 'false'
+                      enum: ['true', 'false']
                       description: Filter by pinned used publications.
             responses:
                 '200':
@@ -794,8 +801,9 @@ paths:
                                     - data
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     data:
                                         type: array
                                         items:
@@ -923,8 +931,9 @@ paths:
                                     - publication
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        type: string
+                                        example: "ok"
+                                        enum: ["ok"]
                                     publication:
                                         $ref: '#/components/schemas/Publication'
 
@@ -1103,8 +1112,9 @@ components:
                             - message
                         properties:
                             status:
-                                type: boolean
-                                example: false
+                                type: string
+                                example: 'error'
+                                enum: ['error']
                             message:
                                 type: string
                                 example: 'Malformed request body'
@@ -1121,8 +1131,9 @@ components:
                             - message
                         properties:
                             status:
-                                type: boolean
-                                example: false
+                                type: string
+                                example: 'error'
+                                enum: ['error']
                             message:
                                 type: string
                                 example: 'Unauthorized'
@@ -1137,8 +1148,9 @@ components:
                             - message
                         properties:
                             status:
-                                type: boolean
-                                example: false
+                                type: string
+                                example: 'error'
+                                enum: ['error']
                             message:
                                 type: string
                                 example: 'UnprocessableEntity'
@@ -1153,8 +1165,9 @@ components:
                             - message
                         properties:
                             status:
-                                type: boolean
-                                example: false
+                                type: string
+                                example: 'error'
+                                enum: ['error']
                             message:
                                 type: string
                                 example: 'Internal Server Error'
@@ -1169,8 +1182,9 @@ components:
                             - message
                         properties:
                             status:
-                                type: boolean
-                                example: false
+                                type: string
+                                example: 'error'
+                                enum: ['error']
                             message:
                                 type: string
                                 example: 'Not Found'
@@ -1187,8 +1201,9 @@ components:
                             - refreshToken
                         properties:
                             status:
-                                type: boolean
-                                example: true
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
                             token:
                                 type: string
                                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
@@ -1208,8 +1223,9 @@ components:
                             - message
                         properties:
                             status:
-                                type: boolean
-                                example: true
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
                             message:
                                 type: string
                                 example: 'Resource has been successfully deleted.'
@@ -1224,12 +1240,34 @@ components:
                             - data
                         properties:
                             status:
-                                type: boolean
-                                example: true
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
                             data:
                                 oneOf:
                                     - $ref: '#/components/schemas/FileResponse'
                                     - $ref: '#/components/schemas/DirectoryResponse'
+        TokenResponse:
+            description: Response from fetching publication information.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - token
+                            - refreshToken
+                        properties:
+                            status:
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
+                            token:
+                                type: string
+                                example: 'Token is valid'
+                            refreshToken:
+                                type: string
+                                example: 'refresh-token'
         TokenVerificationResponse:
             description: Response from fetching publication information.
             content:
@@ -1249,6 +1287,41 @@ components:
                                 example: 'Token is valid'
                             user:
                                 $ref: '#/components/schemas/User'
+
+        PublicationExportResponse:
+            description: Response archive file.
+            content:
+                application/zip:
+                    schema:
+                        type: string
+                        format: binary
+                        example: 56 50 26 50 80 57 4e 4a 12 04
+        PublicationMetadataResponse:
+            description: Response from fetching publication information.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - data
+                        properties:
+                            status:
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
+                            data:
+                                type: object
+                                required:
+                                    - publication
+                                    - reviews
+                                properties:
+                                    publication:
+                                        $ref: '#/components/schemas/Publication'
+                                    reviews:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Review'
     schemas:
         TokenRequest:
             type: object
@@ -1259,22 +1332,6 @@ components:
                 refreshToken:
                     type: string
                     example: ABCDE921312DAB23AE
-        TokenResponse:
-            type: object
-            required:
-                - status
-                - token
-                - refreshToken
-            properties:
-                status:
-                    type: boolean
-                    example: true
-                token:
-                    type: string
-                    example: 'Token is valid'
-                refreshToken:
-                    type: string
-                    example: 'refresh-token'
         UsernameValidation:
             type: object
             required:
@@ -1431,8 +1488,9 @@ components:
                 - status
             properties:
                 status:
-                    type: boolean
-                    example: true
+                    type: string
+                    example: "ok"
+                    enum: ["ok"]
         Publication:
             type: object
             required:
@@ -1462,7 +1520,7 @@ components:
                     type: array
                     items:
                         type: string # TODO: maybe resolve collaborators later?
-                        example: "jdoe1"
+                        example: 'jdoe1'
         CreatePublicationRequest:
             type: object
             required:
@@ -1496,8 +1554,9 @@ components:
                 - collaborators
             properties:
                 status:
-                    type: boolean
-                    example: true
+                    type: string
+                    example: "ok"
+                    enum: ["ok"]
                 publication:
                     $ref: '#/components/schemas/Publication'
         FileResponse:

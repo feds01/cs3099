@@ -5,124 +5,90 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import { rest } from 'msw';
-import faker from 'faker';
+import {
+  rest
+} from 'msw'
+import faker from 'faker'
 
-export const getDeleteUserUsernameMock = () => ({
-    status: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
-    description: faker.helpers.randomize([faker.random.word(), undefined]),
-});
+export const getDeleteUserUsernameMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(['ok']), undefined]), description: faker.helpers.randomize([faker.random.word(), undefined])})
 
-export const getGetUserUsernameMock = () => ({
-    status: faker.datatype.boolean(),
-    user: {
-        id: faker.random.word(),
-        email: faker.random.word(),
-        username: faker.random.word(),
-        firstName: faker.random.word(),
-        lastName: faker.random.word(),
-        profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
-        status: faker.helpers.randomize([faker.random.word(), undefined]),
-        about: faker.helpers.randomize([faker.random.word(), undefined]),
-    },
-    follows: { followers: faker.datatype.number(), following: faker.datatype.number() },
-});
+export const getGetUserUsernameMock = () => ({status: faker.helpers.randomize(['ok']), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, follows: {followers: faker.datatype.number(), following: faker.datatype.number()}})
 
-export const getPatchUserUsernameMock = () => ({
-    status: faker.datatype.boolean(),
-    user: {
-        id: faker.random.word(),
-        email: faker.random.word(),
-        username: faker.random.word(),
-        firstName: faker.random.word(),
-        lastName: faker.random.word(),
-        profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
-        status: faker.helpers.randomize([faker.random.word(), undefined]),
-        about: faker.helpers.randomize([faker.random.word(), undefined]),
-    },
-});
+export const getPatchUserUsernameMock = () => ({status: faker.helpers.randomize(['ok']), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
 
-export const getGetUserUsernameRoleMock = () => ({ status: faker.datatype.boolean(), role: faker.random.word() });
+export const getGetUserUsernameRoleMock = () => ({status: faker.helpers.randomize(['ok']), role: faker.random.word()})
 
-export const getPatchUserUsernameRoleMock = () => ({
-    status: faker.datatype.boolean(),
-    message: faker.random.word(),
-    role: faker.random.word(),
-});
+export const getPatchUserUsernameRoleMock = () => ({status: faker.helpers.randomize(['ok']), message: faker.random.word(), role: faker.random.word()})
 
-export const getGetUserUsernameFollowMock = () => ({
-    status: faker.datatype.boolean(),
-    following: faker.datatype.boolean(),
-});
+export const getGetUserUsernameFollowMock = () => ({status: faker.helpers.randomize(['ok']), following: faker.datatype.boolean()})
 
-export const getPostUserUsernameFollowMock = () => ({ status: faker.datatype.boolean(), message: faker.random.word() });
+export const getPostUserUsernameFollowMock = () => ({status: faker.helpers.randomize(['ok']), message: faker.random.word()})
 
-export const getDeleteUserUsernameFollowMock = () => ({
-    status: faker.datatype.boolean(),
-    message: faker.random.word(),
-});
+export const getDeleteUserUsernameFollowMock = () => ({status: faker.helpers.randomize(['ok']), message: faker.random.word()})
 
-export const getGetUserUsernameFollowersMock = () => ({
-    status: faker.datatype.boolean(),
-    data: {
-        followers: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
-            id: faker.random.word(),
-            email: faker.random.word(),
-            username: faker.random.word(),
-            firstName: faker.random.word(),
-            lastName: faker.random.word(),
-            profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
-            status: faker.helpers.randomize([faker.random.word(), undefined]),
-            about: faker.helpers.randomize([faker.random.word(), undefined]),
-        })),
-    },
-});
+export const getGetUserUsernameFollowersMock = () => ({status: faker.helpers.randomize(['ok']), data: {followers: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}))}})
 
-export const getGetUserUsernameFollowingMock = () => ({
-    status: faker.datatype.boolean(),
-    data: {
-        following: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
-            id: faker.random.word(),
-            email: faker.random.word(),
-            username: faker.random.word(),
-            firstName: faker.random.word(),
-            lastName: faker.random.word(),
-            profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
-            status: faker.helpers.randomize([faker.random.word(), undefined]),
-            about: faker.helpers.randomize([faker.random.word(), undefined]),
-        })),
-    },
-});
+export const getGetUserUsernameFollowingMock = () => ({status: faker.helpers.randomize(['ok']), data: {following: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}))}})
 
 export const getUsersMSW = () => [
-    rest.delete('*/user/:username', (req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getDeleteUserUsernameMock()));
-    }),
-    rest.get('*/user/:username', (req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetUserUsernameMock()));
-    }),
-    rest.patch('*/user/:username', (req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPatchUserUsernameMock()));
-    }),
-    rest.get('*/user/:username/role', (req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetUserUsernameRoleMock()));
-    }),
-    rest.patch('*/user/:username/role', (req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPatchUserUsernameRoleMock()));
-    }),
-    rest.get('*/user/:username/follow', (req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetUserUsernameFollowMock()));
-    }),
-    rest.post('*/user/:username/follow', (req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPostUserUsernameFollowMock()));
-    }),
-    rest.delete('*/user/:username/follow', (req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getDeleteUserUsernameFollowMock()));
-    }),
-    rest.get('*/user/:username/followers', (req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetUserUsernameFollowersMock()));
-    }),
-    rest.get('*/user/:username/following', (req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetUserUsernameFollowingMock()));
-    }),
-];
+rest.delete('*/user/:username', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getDeleteUserUsernameMock()),
+        )
+      }),rest.get('*/user/:username', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetUserUsernameMock()),
+        )
+      }),rest.patch('*/user/:username', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getPatchUserUsernameMock()),
+        )
+      }),rest.get('*/user/:username/role', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetUserUsernameRoleMock()),
+        )
+      }),rest.patch('*/user/:username/role', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getPatchUserUsernameRoleMock()),
+        )
+      }),rest.get('*/user/:username/follow', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetUserUsernameFollowMock()),
+        )
+      }),rest.post('*/user/:username/follow', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getPostUserUsernameFollowMock()),
+        )
+      }),rest.delete('*/user/:username/follow', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getDeleteUserUsernameFollowMock()),
+        )
+      }),rest.get('*/user/:username/followers', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetUserUsernameFollowersMock()),
+        )
+      }),rest.get('*/user/:username/following', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetUserUsernameFollowingMock()),
+        )
+      }),]

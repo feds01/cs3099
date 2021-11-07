@@ -50,7 +50,7 @@ router.get('/username_validity', async (req, res) => {
     } catch (e) {
         if (e instanceof ZodError) {
             return res.status(400).json({
-                status: false,
+                status: "error",
                 message: error.BAD_REQUEST,
                 errors: e.errors,
             });
@@ -58,7 +58,7 @@ router.get('/username_validity', async (req, res) => {
 
         Logger.error(e);
         return res.status(500).json({
-            status: false,
+            status: "error",
             message: error.INTERNAL_SERVER_ERROR,
         });
     }
@@ -68,14 +68,14 @@ router.get('/username_validity', async (req, res) => {
     // If the user wasn't found, then return a not found status.
     if (!result) {
         return res.status(200).json({
-            status: false,
+            status: "error",
             message: 'No user with given username exists',
         });
     }
 
     // Unprocessable entity
     return res.status(422).json({
-        status: true,
+        status: "ok",
         message: 'Username exists',
     });
 });
@@ -110,7 +110,7 @@ router.get('/email_validity', async (req, res) => {
     } catch (e) {
         if (e instanceof ZodError) {
             return res.status(400).json({
-                status: false,
+                status: "error",
                 message: error.BAD_REQUEST,
                 errors: e.errors,
             });
@@ -118,7 +118,7 @@ router.get('/email_validity', async (req, res) => {
 
         Logger.error(e);
         return res.status(500).json({
-            status: false,
+            status: "error",
             message: error.INTERNAL_SERVER_ERROR,
         });
     }
@@ -128,13 +128,13 @@ router.get('/email_validity', async (req, res) => {
     // If the email wasn't found, then return a not found status.
     if (!result) {
         return res.status(404).json({
-            status: false,
+            status: "error",
             message: 'Email address not in use',
         });
     }
 
     return res.status(200).json({
-        status: true,
+        status: "ok",
         message: 'Email exists',
     });
 });
@@ -183,7 +183,7 @@ router.post('/register', async (req, res) => {
     } catch (e: any) {
         if (e instanceof ZodError) {
             return res.status(400).json({
-                status: false,
+                status: "error",
                 message: error.BAD_REQUEST,
                 errors: e.errors,
             });
@@ -191,7 +191,7 @@ router.post('/register', async (req, res) => {
 
         Logger.error(e);
         return res.status(500).json({
-            status: false,
+            status: "error",
             message: error.INTERNAL_SERVER_ERROR,
         });
     }
@@ -209,14 +209,14 @@ router.post('/register', async (req, res) => {
     if (resultUser) {
         if (resultUser.username == username) {
             return res.status(409).json({
-                status: false,
+                status: "error",
                 message: error.REGISTRATION_FAILED,
                 extra: error.USER_EXISTS,
             });
         }
         if (resultUser.email == email) {
             return res.status(409).json({
-                status: false,
+                status: "error",
                 message: error.REGISTRATION_FAILED,
                 extra: error.MAIL_EXISTS,
             });
@@ -231,7 +231,7 @@ router.post('/register', async (req, res) => {
             Logger.error(err);
 
             return res.status(500).json({
-                status: false,
+                status: "error",
                 message: error.INTERNAL_SERVER_ERROR,
             });
         }
@@ -249,7 +249,7 @@ router.post('/register', async (req, res) => {
             });
 
             return res.status(201).json({
-                status: true,
+                status: "ok",
                 message: 'Successfully created new user account.',
                 username,
                 email,
@@ -260,7 +260,7 @@ router.post('/register', async (req, res) => {
             Logger.error(e);
 
             return res.status(500).json({
-                status: false,
+                status: "error",
                 message: error.INTERNAL_SERVER_ERROR,
             });
         }
@@ -315,7 +315,7 @@ router.post('/login', async (req, res) => {
     } catch (e) {
         if (e instanceof ZodError) {
             return res.status(400).json({
-                status: false,
+                status: "error",
                 message: error.BAD_REQUEST,
                 errors: e.errors,
             });
@@ -323,7 +323,7 @@ router.post('/login', async (req, res) => {
 
         Logger.error(e);
         return res.status(500).json({
-            status: false,
+            status: "error",
             message: error.INTERNAL_SERVER_ERROR,
         });
     }
@@ -344,7 +344,7 @@ router.post('/login', async (req, res) => {
                 Logger.error(err);
 
                 return res.status(500).json({
-                    status: false,
+                    status: "error",
                     message: error.INTERNAL_SERVER_ERROR,
                 });
             }
@@ -360,7 +360,7 @@ router.post('/login', async (req, res) => {
                 });
 
                 return res.status(200).json({
-                    status: true,
+                    status: "ok",
                     message: 'Authentication successful',
                     user: User.project(result),
                     token,
@@ -369,14 +369,14 @@ router.post('/login', async (req, res) => {
             }
             // password did not match the stored hashed password within the database
             return res.status(401).json({
-                status: false,
+                status: "error",
                 message: error.AUTHENTICATION_FAILED,
                 extra: error.MISMATCHING_LOGIN,
             });
         });
     } else {
         return res.status(401).json({
-            status: false,
+            status: "error",
             message: error.AUTHENTICATION_FAILED,
             extra: error.MISMATCHING_LOGIN,
         });

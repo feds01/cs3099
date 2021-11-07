@@ -6,7 +6,7 @@
     "scripts": {
         "build": "tsc",
         "start": "tsc & node .",
-        "dev": "ts-node-dev  --trace-warnings --  ./src/server.ts",
+        "dev": "ts-node-dev  --respawn --trace-warnings --  ./src/server.ts",
         "test": "jest --ci",
         "test:coverage": "jest --collect-coverage --ci",
         "lint": "eslint src/*/**.ts",

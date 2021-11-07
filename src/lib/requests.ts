@@ -26,6 +26,7 @@ type RegisterRoute<
 > = {
     method: Method;
     permission: Permission;
+    sgMode?: boolean;
     params: z.Schema<Params>;
     query: z.Schema<Query>;
     handler: (
@@ -57,7 +58,7 @@ export default function registerRoute<
         // If the parameter parsing wasn't successful, fail here
         if (!params.success) {
             return res.status(400).json({
-                status: false,
+                status: "error",
                 message:
                     "Bad request, endpoint path parameter schema didn't match to provided path parameters.",
                 extra: {
@@ -71,7 +72,7 @@ export default function registerRoute<
         // If the query parsing wasn't successful, fail here
         if (!query.success) {
             return res.status(400).json({
-                status: false,
+                status: "error",
                 message:
                     "Bad request, endpoint query schema didn't match to provided query fields.",
                 extra: {
@@ -88,7 +89,7 @@ export default function registerRoute<
             const token = getTokensFromHeader(req, res);
             if (typeof token === 'string') {
                 return res.status(401).json({
-                    status: false,
+                    status: "error",
                     message: token,
                 });
             }
@@ -99,7 +100,7 @@ export default function registerRoute<
 
             if (!permissions.valid) {
                 return res.status(401).json({
-                    status: false,
+                    status: "error",
                     message: errors.UNAUTHORIZED,
                 });
             }
@@ -124,7 +125,7 @@ export default function registerRoute<
             // If the body parsing wasn't successful, fail here
             if (!body.success) {
                 return res.status(400).json({
-                    status: false,
+                    status: "error",
                     message: "Bad request, endpoint body schema didn't match to provided body.",
                     extra: {
                         errors: {

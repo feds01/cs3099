@@ -47,7 +47,7 @@ registerRoute(router, '/:username/follow', {
 
         if (!follower) {
             return res.status(404).json({
-                status: false,
+                status: "error",
                 message: error.NON_EXISTENT_USER,
             });
         }
@@ -55,7 +55,7 @@ registerRoute(router, '/:username/follow', {
         // Just return a NoContent since we don't need to create anything
         if (follower.id === user.id) {
             return res.status(204).json({
-                status: true,
+                status: "ok",
             });
         }
 
@@ -67,7 +67,7 @@ registerRoute(router, '/:username/follow', {
 
         if (doc) {
             return res.status(401).json({
-                status: false,
+                status: "error",
                 message: error.ALREADY_FOLLOWED,
             });
         }
@@ -77,14 +77,14 @@ registerRoute(router, '/:username/follow', {
             newFollow.save();
 
             return res.status(201).json({
-                status: true,
+                status: "ok",
                 message: 'Successfully followed user.',
             });
         } catch (e) {
             Logger.error(e);
 
             return res.status(500).json({
-                status: false,
+                status: "error",
                 message: error.INTERNAL_SERVER_ERROR,
             });
         }
@@ -108,7 +108,7 @@ registerRoute(router, '/:username/follow', {
 
         if (!follower) {
             return res.status(404).json({
-                status: false,
+                status: "error",
                 message: error.NON_EXISTENT_USER,
             });
         }
@@ -120,13 +120,13 @@ registerRoute(router, '/:username/follow', {
 
         if (!link) {
             return res.status(404).json({
-                status: true,
+                status: "ok",
                 message: "User isn't following the other user",
             });
         }
 
         return res.status(200).json({
-            status: true,
+            status: "ok",
             message: 'User was unfollowed',
         });
     },
@@ -149,7 +149,7 @@ registerRoute(router, '/:username/follow', {
 
         if (!follower) {
             return res.status(404).json({
-                status: false,
+                status: "error",
                 message: error.NON_EXISTENT_USER,
             });
         }
@@ -161,13 +161,13 @@ registerRoute(router, '/:username/follow', {
 
         if (!link) {
             return res.status(404).json({
-                status: true,
+                status: "ok",
                 following: false,
                 message: "User isn't following the other user",
             });
         } else {
             return res.status(200).json({
-                status: true,
+                status: "ok",
                 following: true,
                 message: 'User is following the other user',
             });
@@ -196,7 +196,7 @@ registerRoute(router, '/:username/followers', {
         );
 
         return res.status(200).json({
-            status: true,
+            status: "ok",
             data: {
                 followers,
             },
@@ -226,7 +226,7 @@ registerRoute(router, '/:username/following', {
         );
 
         return res.status(200).json({
-            status: true,
+            status: "ok",
             data: {
                 following: followers,
             },

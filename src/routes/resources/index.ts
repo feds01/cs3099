@@ -35,7 +35,7 @@ registerRoute(router, '/upload/:username', {
 
         if (!file) {
             return res.status(400).json({
-                status: false,
+                status: "error",
                 message: errors.BAD_REQUEST,
                 extra: "No file sent."
             });
@@ -47,7 +47,7 @@ registerRoute(router, '/upload/:username', {
         // only accept jpg/png images...
         if (file.mimetype !== "image/png" && file.mimetype !== "image/jpeg") {
             return res.status(400).json({
-                status: false,
+                status: "error",
                 message: errors.BAD_REQUEST,
                 extra: "Invalid file mimetype sent. Image upload only accepts 'png' or 'jpeg'."
             });
@@ -62,14 +62,14 @@ registerRoute(router, '/upload/:username', {
                 Logger.error(err);
 
                 return res.status(500).json({
-                    status: false,
+                    status: "error",
                     message: errors.INTERNAL_SERVER_ERROR,
                 });
             }
 
             Logger.info('Successfully saved uploaded file to filesystem');
             return res.status(200).json({
-                status: false,
+                status: "ok",
                 message: 'Successfully uploaded file.',
             });
         });
@@ -100,7 +100,7 @@ registerRoute(router, '/publication/upload/:id', {
 
         if (!file) {
             return res.status(400).json({
-                status: false,
+                status: "error",
                 message: 'Bad Request. No file sent',
             });
         }
@@ -112,7 +112,7 @@ registerRoute(router, '/publication/upload/:id', {
         // and we don't allow binary data uploads (at the moment).
         if (file.mimetype !== 'application/zip' || !file.mimetype.startsWith('text/')) {
             return res.status(400).json({
-                status: false,
+                status: "error",
                 message: errors.BAD_REQUEST,
                 extra: "Invalid file mimetype sent. Publication uploads only accept 'text' or 'application/zip' mimetypes."
             })
@@ -122,7 +122,7 @@ registerRoute(router, '/publication/upload/:id', {
 
         if (!publication) {
             return res.status(404).json({
-                status: false,
+                status: "error",
                 message: errors.RESOURCE_NOT_FOUND,
             });
         }
@@ -142,14 +142,14 @@ registerRoute(router, '/publication/upload/:id', {
                 Logger.error(err);
 
                 return res.status(500).json({
-                    status: false,
+                    status: "error",
                     message: errors.INTERNAL_SERVER_ERROR,
                 });
             }
 
             Logger.info('Successfully saved uploaded file to filesystem');
             return res.status(200).json({
-                status: false,
+                status: "ok",
                 message: 'Successfully uploaded file.',
             });
         });
@@ -181,7 +181,7 @@ registerRoute(router, '/review/upload/:id', {
 
 
         return res.status(503).json({
-            status: false,
+            status: "error",
             message: "Service Unavailable"
         })
     },

@@ -1,6 +1,6 @@
 import helmet from 'helmet';
+import express from 'express';
 import fileUpload from 'express-fileupload';
-import express, { Application } from 'express';
 
 // Import relevant modules to Swagger UI
 import Swagger from 'swagger-jsdoc';
@@ -21,7 +21,7 @@ import publicationsRouter from './routes/publications';
 import morganMiddleware from './config/morganMiddleware';
 
 // Create the express application
-const app: Application = express();
+const app = express();
 
 // Add swagger to the Express app
 const options = {
@@ -55,7 +55,7 @@ app.use((_req: express.Request, res: express.Response, next: express.NextFunctio
     next();
 });
 
-app.get('/version', (_req, res) => {
+app.get('/version', (_req: express.Request, res: express.Response) => {
     res.status(200).json({
         status: true,
         version: {
@@ -75,7 +75,6 @@ app.use('/publication', publicationsRouter);
 app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     // This check makes sure this is a JSON parsing issue, but it might be
     // coming from any middleware, not just body-parser:
-
     if (
         errors.isExpressError(err) &&
         err instanceof SyntaxError &&
@@ -86,9 +85,20 @@ app.use((err: any, _req: express.Request, res: express.Response, next: express.N
 
         // Bad request
         return res.status(400).json({
-            status: false,
+            status: "error",
             message: errors.BAD_REQUEST,
         });
+    }
+
+    // Check if there is a general error, and if so return a 500 since all other errors should
+    // be handled by the routes.
+    if (err) {
+        Logger.error(err);
+
+        return res.status(500).json({
+            status: "error",
+            message: errors.INTERNAL_SERVER_ERROR,
+        })
     }
 
     next();
@@ -96,9 +106,10 @@ app.use((err: any, _req: express.Request, res: express.Response, next: express.N
 });
 
 // catch 404 and forward to error handler
-app.use((_req, res) => {
+app.use((_req: express.Request, res: express.Response) => {
     res.status(404).send({
-        status: false,
+        status: "error",
+        message: errors.RESOURCE_NOT_FOUND
     });
 });
 

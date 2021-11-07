@@ -13,6 +13,7 @@ registerRoute(router, "/sso/login",  {
     method: "get",
     params: z.object({}),
     query: z.object({from: z.string().url(), state: z.string()}),
+    sgMode: true,
     permission: null,
     handler: async (req, res) => {
         const {from, state} = req.query;
@@ -26,6 +27,7 @@ registerRoute(router, "/sso/callback",  {
     method: "get",
     params: z.object({}),
     query: z.object({from: z.string().url(), state: z.string()}),
+    sgMode: true,
     permission: null,
     handler: async (req, res) => {
         const {from, state} = req.query;
@@ -48,6 +50,7 @@ registerRoute(router, "/sso/verify", {
     params: z.object({}),
     query: z.object({token: IJwtSchema}),
     body: z.object({}),
+    sgMode: true,
     permission: null,
     handler: async (req, res) => {
         const { token } = req.query;
