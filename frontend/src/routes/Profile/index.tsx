@@ -19,31 +19,31 @@ import FollowerButton from '../../components/FollowerButton';
 
 interface Props {}
 
-const TabMap = (username: string) => {
+const TabMap = (user: User) => {
     return {
-        [`/profile/${username}`]: {
+        [`/profile/${user.username}`]: {
             label: 'Overview',
-            component: (id: string) => <Overview id={id} />,
+            component: (user: User) => <Overview id={user.id} user={user} />,
         },
-        [`/profile/${username}/activity`]: {
+        [`/profile/${user.username}/activity`]: {
             label: 'Activity',
-            component: (id: string) => <Activity title={'Most Recent Activity'} id={id} />,
+            component: (user: User) => <Activity title={'Most Recent Activity'} id={user.id} />,
         },
-        [`/profile/${username}/publications`]: {
+        [`/profile/${user.username}/publications`]: {
             label: 'Publications',
-            component: (id: string) => <Publications id={id} />,
+            component: (user: User) => <Publications user={user} />,
         },
-        [`/profile/${username}/reviews`]: {
+        [`/profile/${user.username}/reviews`]: {
             label: 'Reviews',
-            component: (id: string) => <Reviews id={id} />,
+            component: (user: User) => <Reviews id={user.id} />,
         },
-        [`/profile/${username}/followers`]: {
+        [`/profile/${user.username}/followers`]: {
             label: 'Followers',
-            component: (id: string) => <Follows type="followers" id={id} />,
+            component: (user: User) => <Follows type="followers" id={user.id} />,
         },
-        [`/profile/${username}/following`]: {
+        [`/profile/${user.username}/following`]: {
             label: 'Following',
-            component: (id: string) => <Follows type="following" id={id} />,
+            component: (user: User) => <Follows type="following" id={user.id} />,
         },
     };
 };
@@ -171,7 +171,8 @@ export default function Profile(props: Props): ReactElement {
             </Box>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={location.pathname} centered>
-                    {Object.entries(TabMap(id)).map(([path, props]) => {
+                    {profileData.state === 'ok' && 
+                      Object.entries(TabMap(profileData.data.user)).map(([path, props]) => {
                         return <Tab key={path} component={Link} to={path} value={path} label={props.label} />;
                     })}
                 </Tabs>
@@ -188,7 +189,7 @@ export default function Profile(props: Props): ReactElement {
             >
                 <Switch>
                     {profileData.state === 'ok' &&
-                        Object.entries(TabMap(profileData.data.user.username)).map(([path, props]) => {
+                        Object.entries(TabMap(profileData.data.user)).map(([path, props]) => {
                             return (
                                 <Route
                                     exact
@@ -197,7 +198,7 @@ export default function Profile(props: Props): ReactElement {
                                     render={(routeProps) => (
                                         <>
                                             <Box sx={{ width: '100%', alignSelf: 'stretch' }}>
-                                                {props.component(id)}
+                                                {props.component(profileData.data.user)}
                                             </Box>
                                             <div></div>
                                         </>
