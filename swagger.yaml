@@ -741,8 +741,8 @@ paths:
                   name: pinned
                   schema:
                       type: string
-                      example: "false"
-                      enum: ["true", "false"]
+                      example: 'false'
+                      enum: ['true', 'false']
                       description: Filter by pinned used publications.
             responses:
                 '200':
@@ -762,7 +762,58 @@ paths:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/Publication'
-
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /publication/{username}/{name}/revisions:
+        get:
+            summary: Get a list of revisions for a publication
+            description: Get a paginated list of publication revisions.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+            responses:
+                '200':
+                    description: Returns the requested publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - data
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    data:
+                                        type: object
+                                        required:
+                                            - revisions
+                                        properties:
+                                            revisions:
+                                                type: array
+                                                items:
+                                                    $ref: '#/components/schemas/Publication'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -1414,7 +1465,7 @@ components:
                     type: array
                     items:
                         type: string # TODO: maybe resolve collaborators later?
-                        example: "jdoe1"
+                        example: 'jdoe1'
         CreatePublicationRequest:
             type: object
             required:
