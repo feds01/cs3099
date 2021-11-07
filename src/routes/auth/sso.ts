@@ -6,6 +6,7 @@ import Logger from '../../common/logger';
 import registerRoute from '../../lib/requests';
 import { IJwtSchema } from '../../validators/auth';
 import { JwtError, verifyToken } from '../../lib/auth';
+import State from '../../models/State';
 
 const router = express.Router();
 
@@ -13,7 +14,6 @@ registerRoute(router, "/sso/login",  {
     method: "get",
     params: z.object({}),
     query: z.object({from: z.string().url(), state: z.string()}),
-    sgMode: true,
     permission: null,
     handler: async (req, res) => {
         const {from, state} = req.query;
@@ -27,21 +27,24 @@ registerRoute(router, "/sso/callback",  {
     method: "get",
     params: z.object({}),
     query: z.object({from: z.string().url(), state: z.string()}),
-    sgMode: true,
     permission: null,
     handler: async (req, res) => {
         const {from, state} = req.query;
 
         // We need to verify that the state is correct with the transaction table...
-        // the state will store the original selected url, createdAt and updatedAt fields...
-        console.log(from, state);
+        const stateLink = await State.findOne({ from, state }).exec();
 
+        if (!stateLink) {
+            return res.status(401).json({
+                status: "error",
+                message: "Invalid state."
+            })
+        }
+        
         // We also need to make a verify request to the from service 
         // Here we need to create or update the user and invalid the state so it can't be re-used.
 
-
-
-        res.redirect(config.frontendURI)
+        return res.redirect(config.frontendURI);
     }
 })
 
@@ -50,7 +53,6 @@ registerRoute(router, "/sso/verify", {
     params: z.object({}),
     query: z.object({token: IJwtSchema}),
     body: z.object({}),
-    sgMode: true,
     permission: null,
     handler: async (req, res) => {
         const { token } = req.query;
