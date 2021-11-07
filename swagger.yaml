@@ -1446,6 +1446,7 @@ components:
                 - createdAt
                 - revision
                 - owner
+                - draft
             properties:
                 name:
                     type: string
@@ -1459,6 +1460,9 @@ components:
                 revision:
                     type: string
                     example: 'v1.0.0'
+                draft:
+                    type: boolean
+                    example: true
                 owner:
                     $ref: '#/components/schemas/User'
                 collaborators:
