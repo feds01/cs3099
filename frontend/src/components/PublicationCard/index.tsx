@@ -12,7 +12,6 @@ interface Props {
 }
 
 export default function PublicationCard({pub, user}: Props): ReactElement {
-    if(pub.draft){
         return (
             <Card>
                 <CardContent sx={{p: "0.4rem", "backgroundColor": "#f5fafc"}}>
@@ -20,7 +19,7 @@ export default function PublicationCard({pub, user}: Props): ReactElement {
                         <Box sx={{ width: '100%', paddingLeft: 0.5}}>
                             <Link to={`/${user.username}/${pub.name}`} >
                                 <Typography sx={{fontSize: "0.75rem", fontStyle: "bold", display:"inline-block"}}>
-                                <Chip sx={{fontSize:"0.75rem", fontVariant:"small-caps", height: "1rem", marginRight: "0.3rem"}} label="draft" color="primary" size="small"/><b>{pub.name}</b>
+                                {pub.draft && <Chip sx={{fontSize:"0.75rem", fontVariant:"small-caps", height: "1rem", marginRight: "0.3rem"}} label="draft" color="primary" size="small"/>} <b>{pub.name}</b>
                                 </Typography>
                             </Link>
                             <Typography sx={{fontSize: "0.6rem", margin: "0.5rem"}}>
@@ -31,26 +30,5 @@ export default function PublicationCard({pub, user}: Props): ReactElement {
                 </CardContent>
             </Card>
         );
-    } else {
-        return (
-            <Card>
-                <CardContent sx={{p: "0.4rem"}}>
-                    <Box sx={{ display: 'flex', flexDirection: 'row'}}>
-                        <Box sx={{ width: '100%', paddingLeft: 0.5}}>
-                            <Link to={`/${user.username}/${pub.name}`} >
-    
-                                <Typography sx={{fontSize: "0.75rem", fontStyle: "bold", display:"inline-block"}}>
-                                    <b>{pub.name}</b>
-                                </Typography>
-                            </Link>
-                            <Typography sx={{fontSize: "0.6rem", margin: "0.5rem"}}>
-                                {pub.introduction}
-                            </Typography>
-                        </Box>
-                    </Box>
-                </CardContent>
-            </Card>
-        );
-    }
     
 }
