@@ -71,8 +71,7 @@
         "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
     },
     "files": [
-        "src/types/request.d.ts",
         "src/types/auth.d.ts",
     ],
-    "include": ["src/**/*", "src/types/request.d.ts"]
+    "include": ["src/**/*"]
 }

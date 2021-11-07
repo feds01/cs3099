@@ -12,6 +12,7 @@ export interface User {
   username: string;
   firstName: string;
   lastName: string;
+  createdAt: number;
   profilePictureUrl?: string;
   status?: string;
   about?: string;

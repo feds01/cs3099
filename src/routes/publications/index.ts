@@ -174,18 +174,21 @@ registerRoute(router, '/', {
 registerRoute(router, "/:username", {
     method: "get",
     params: z.object({ username: z.string() }),
-    query: z.object({ mode: ModeSchema, pinned: z.enum(["true", "false"]).default("false") }), // @@TODO: use a boolean schema here
+    query: z.object({ mode: ModeSchema, pinned: z.enum(["true", "false"]).optional() }), // @@TODO: use a boolean schema here
     permission: IUserRole.Default,
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
-
-        const isPinned = req.query.pinned === "true";
+        
+        const {pinned} = req.query;
+        const isPinned = pinned === "true";
 
         // @@TODO: we might want to include revisions in the future with some options.
         const result = await Publication.find({
             owner: user.id,
-            $or: [{ 'pinned': { $exists: false } }, { 'pinned': isPinned }],
+            ...(typeof pinned !== "undefined" && {
+                $or: [...(!isPinned ? [{ 'pinned': { $exists: false } }] : []), { 'pinned': isPinned }],
+            }),
             current: true
         })
             .limit(50)

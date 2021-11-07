@@ -12,6 +12,7 @@ export interface Publication {
   title: string;
   introduction: string;
   revision: string;
+  draft: boolean;
   owner: User;
   collaborators: string[];
 }

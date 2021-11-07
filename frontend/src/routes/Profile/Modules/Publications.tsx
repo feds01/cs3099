@@ -1,6 +1,7 @@
+import React, { ReactElement } from 'react';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
-import React, { ReactElement } from 'react';
+import { useGetPublicationUsername } from '../../../lib/api/publications/publications';
 
 interface Props {
     id: string;
@@ -8,6 +9,10 @@ interface Props {
 }
 
 export default function Publications({ id, mode = 'all' }: Props): ReactElement {
+    const pubQuery = useGetPublicationUsername(id, {
+        ...(mode === 'pinned' && { pinned: 'true' }),
+    });
+
     return (
         <div>
             <Typography variant="h4">Publications</Typography>

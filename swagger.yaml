@@ -1420,6 +1420,7 @@ components:
                 - username
                 - firstName
                 - lastName
+                - createdAt
             properties:
                 id:
                     type: string
@@ -1436,6 +1437,9 @@ components:
                 lastName:
                     type: string
                     example: 'Doe'
+                createdAt:
+                    type: number
+                    example: 2387238172812
                 profilePictureUrl:
                     type: string
                     example: https://some-cdn.some-company.com/profiles/avatar.jpg

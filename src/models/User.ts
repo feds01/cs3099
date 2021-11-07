@@ -18,6 +18,8 @@ export interface IUser {
     about?: string;
     status?: string;
     externalId?: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface IUserDocument extends IUser, Document<string> {}
@@ -40,7 +42,9 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
         externalId: { type: String },
         role: { type: String, enum: IUserRole, default: IUserRole.Default },
     },
-    { timestamps: true },
+    {
+        timestamps: { createdAt: true, updatedAt: false },
+    },
 );
 
 /**
@@ -61,6 +65,7 @@ UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
         username: user.username,
         firstName: user.firstName,
         lastName: user.lastName,
+        createdAt: user.createdAt.getTime(),
         ...(typeof profilePictureUrl !== 'undefined' && { profilePictureUrl }),
         ...(typeof about !== 'undefined' && { about }),
         ...(typeof status !== 'undefined' && { status }),
