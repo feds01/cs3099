@@ -115,8 +115,8 @@ registerRoute(router, '/', {
     query: z.object({}),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { name, collaborators, revision } = req.body;
-        const { id: owner } = req.token.data;
+        const { name, collaborators, revision } = req.body
+        const { id: owner } = req.requester;
 
         // Check if the publication is already in use...
         const existingPublication = await Publication.count({
@@ -197,7 +197,6 @@ registerRoute(router, '/:username', {
             .limit(50)
             .exec();
 
-        // @@Performance: we're querying for each owner in the loop
         // project each publication and then return it
         const publications = result.map((link) =>
             Publication.projectWith(link as typeof result[number], user),
@@ -207,8 +206,42 @@ registerRoute(router, '/:username', {
             status: true,
             data: publications,
         });
-    },
-});
+    }
+})
+
+registerRoute(router, "/:username/:name/revisions", {
+    method: "get",
+    params: z.object({ username: z.string(), name: z.string() }),
+    query: z.object({ mode: ModeSchema }), // @@TODO: use a boolean schema here
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        const { name } = req.params;
+
+        // @@TODO: we might want to include revisions in the future with some options.
+        const result = await Publication.find({
+            owner: user.id,
+            name,
+        })
+            .limit(50)
+            .exec();
+
+
+        // project each publication and then return it
+        const revisions = result.map((link) => Publication.projectWith(link as typeof result[number], user));
+
+        return res.status(200).json({
+            status: true,
+            data: {
+                revisions,
+            },
+        });
+
+
+    }
+})
 
 registerRoute(router, '/:username/:name/:revision?', {
     method: 'get',
