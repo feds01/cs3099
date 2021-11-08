@@ -1,9 +1,7 @@
-import { Box, Card, CardContent, Chip, Typography } from '@mui/material';
+import { Link } from 'react-router-dom';
 import React, { ReactElement } from 'react';
 import { Publication, User } from '../../lib/api/models';
-import { Link } from 'react-router-dom';
-import EditIcon from '@mui/icons-material/Edit';
-import PublishedWithChanges from '@mui/icons-material/PublishedWithChanges';
+import { Box, Card, CardContent, Chip, Typography } from '@mui/material';
 
 
 interface Props {

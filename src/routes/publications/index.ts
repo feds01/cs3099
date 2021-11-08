@@ -10,12 +10,14 @@ import Publication from '../../models/Publication';
 import { ModeSchema, ResourceSortSchema } from '../../validators/requests';
 import { IPublicationCreationSchema } from '../../validators/publications';
 import searchRouter from './search';
+import bookmarkRouter from './bookmarks';
 import { comparePermissions } from '../../lib/permissions';
 
 const router = express.Router();
 
-// Register the follower routes
+// Register the follower & bookmark routes
 router.use('/', searchRouter);
+router.use('/', bookmarkRouter);
 
 registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
     method: 'get',

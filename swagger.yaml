@@ -15,11 +15,15 @@ tags:
     - name: auth
       description: Authentication related endpoints for external services.
     - name: users
-      description: Secured Admin-only calls
+      description: Endpoints relating to user information.
+    - name: followers
+      description: Endpoints relating to managing followers.
     - name: reviews
-      description: Calls relating to submission reviews.
+      description: Endpoints relating to submission reviews.
     - name: publications
-      description: Calls relating to publications.
+      description: Endpoints relating to publications.
+    - name: bookmarks
+      description: Endpoints relating to bookmarks.
     - name: resources
       description: Endpoints related to managing uploaded resources.
 paths:
@@ -425,7 +429,7 @@ paths:
             summary: Get the current user's follow status.
             description: Endpoint for checking if the current user is following another user specified by the given id.
             tags:
-                - users
+                - followers
             security:
                 - BearerAuth: []
             parameters:
@@ -543,7 +547,7 @@ paths:
             summary: Get a user's follower list.
             description: Endpoint for getting any user's follower list.
             tags:
-                - users
+                - followers
             security:
                 - BearerAuth: []
             parameters:
@@ -582,7 +586,7 @@ paths:
             summary: Get a user's following list.
             description: Endpoint for fetching a user's follows list
             tags:
-                - users
+                - followers
             security:
                 - BearerAuth: []
             parameters:
@@ -993,6 +997,194 @@ paths:
                     $ref: '#/components/responses/NotFound'
                 '500':
                     $ref: '#/components/responses/InternalServerError'
+    /publication/{username}/{name}/bookmark:
+        delete:
+            summary: Un-bookmark a publication
+            security:
+                - BearerAuth: []
+            tags:
+                - bookmarks
+            parameters:
+                - in: path
+                  name: username
+                  description: The username of the publisher
+                  required: true
+                  schema:
+                      type: string
+                - in: path
+                  name: name
+                  description: The name of the publication.
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '204':
+                    $ref: '#/components/responses/NoContent'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+        get:
+            summary: Check is publication is bookmarked
+            description: Get information if the bookmark a publication
+            tags:
+                - bookmarks
+            parameters:
+                - in: path
+                  name: username
+                  description: The username of the publisher
+                  required: true
+                  schema:
+                      type: string
+                - in: path
+                  name: name
+                  description: The name of the publication.
+                  required: true
+                  schema:
+                      type: string
+            security:
+                - BearerAuth: []
+            responses:
+                '200':
+                    description: Publication is bookmarked.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - bookmarked
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    bookmarked:
+                                        type: boolean
+                                        example: true
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+        post:
+            summary: Bookmark a certain publication
+            security:
+                - BearerAuth: []
+            tags:
+                - bookmarks
+            parameters:
+                - in: path
+                  name: username
+                  description: The username of the publisher
+                  required: true
+                  schema:
+                      type: string
+                - in: path
+                  name: name
+                  description: The name of the publication.
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '204':
+                    $ref: '#/components/responses/NoContent'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /publication/{username}/{name}/bookmarkers:
+        get:
+            summary: Check who has bookmarked the publication
+            security:
+                - BearerAuth: []
+            tags:
+                - bookmarks
+            parameters:
+                - in: path
+                  name: username
+                  description: The username of the publisher
+                  required: true
+                  schema:
+                      type: string
+                - in: path
+                  name: name
+                  description: The name of the publication.
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: List of users.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - bookmarks
+                                properties:
+                                    status:
+                                        type: string
+                                        enum: ['ok']
+                                        example: 'ok'
+                                    bookmarks:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/User'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /publication/{username}/bookmarks:
+        get:
+            summary: Check bookmarked publications by a user.
+            security:
+                - BearerAuth: []
+            tags:
+                - bookmarks
+            parameters:
+                - description: The username of bookmarks to check.
+                  in: path
+                  name: username
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: List of publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - bookmarks
+                                properties:
+                                    status:
+                                        type: string
+                                        enum: ['ok']
+                                        example: 'ok'
+                                    bookmarked:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Publication'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
     /resource/upload/{username}:
         post:
             summary: Upload an avatar image for a user.
@@ -1105,6 +1297,8 @@ components:
             type: http
             scheme: bearer
     responses:
+        NoContent:
+            description: No Content. Server acknowledges request but has no return body.
         BadRequest:
             description: Bad Request. Provided request parameters were invalid.
             content:
