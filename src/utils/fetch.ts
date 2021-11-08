@@ -1,5 +1,6 @@
-import fetch, { FetchError } from 'node-fetch';
 import { z } from 'zod';
+import qs from 'query-string';
+import fetch, { FetchError } from 'node-fetch';
 import Logger from '../common/logger';
 
 const RawResponseSchema = z.union([
@@ -17,18 +18,27 @@ type ServiceResponse<T> =
           data: T;
       };
 
-export async function makeRequest<T>(
+export async function makeRequest<I, O>(
     baseUrl: string,
     endpoint: string,
-    schema: z.Schema<T>,
-): Promise<ServiceResponse<T>> {
+    schema: z.Schema<O, z.ZodTypeDef, I>,
+    additional?: { query?: Record<string, string>; headers?: Record<string, string> },
+): Promise<ServiceResponse<O>> {
     const url = new URL(endpoint, baseUrl);
+
+    const endpointUri = qs.stringifyUrl({
+        url: url.toString(),
+        ...(typeof additional?.query !== 'undefined' && { query: additional.query }),
+    });
 
     // TODO: assert here that the baseUrl is a valid supergroup url.
     Logger.info(`Attempting to request external service at: ${url.toString()}`);
 
     try {
-        const rawResponse = await fetch(url.toString());
+        const rawResponse = await fetch(endpointUri, {
+            ...(typeof additional?.headers !== 'undefined' && { headers: additional.headers }),
+        });
+
         const json = await rawResponse.json();
 
         const validation = RawResponseSchema.safeParse(json);

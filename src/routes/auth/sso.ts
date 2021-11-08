@@ -7,29 +7,32 @@ import registerRoute from '../../lib/requests';
 import { IJwtSchema } from '../../validators/auth';
 import { JwtError, verifyToken } from '../../lib/auth';
 import State from '../../models/State';
+import { makeRequest } from '../../utils/fetch';
+import { SgUserSchema } from '../../validators/sg';
+import { transformSgUserToInternal } from '../../transformers/sg';
 
 const router = express.Router();
 
-registerRoute(router, "/sso/login",  {
+registerRoute(router, "/sso/login", {
     method: "get",
     params: z.object({}),
-    query: z.object({from: z.string().url(), state: z.string()}),
+    query: z.object({ from: z.string().url(), state: z.string() }),
     permission: null,
     handler: async (req, res) => {
-        const {from, state} = req.query;
+        const { from, state } = req.query;
 
         // just forward the request with the query parameters to the frontend login endpoint.
         res.redirect(`${config.frontendURI}/login?from=${from}&state=${state}`);
     }
 });
 
-registerRoute(router, "/sso/callback",  {
+registerRoute(router, "/sso/callback", {
     method: "get",
     params: z.object({}),
-    query: z.object({from: z.string().url(), state: z.string()}),
+    query: z.object({ from: z.string().url(), state: z.string(), token: z.string() }),
     permission: null,
     handler: async (req, res) => {
-        const {from, state} = req.query;
+        const { from, state, token } = req.query;
 
         // We need to verify that the state is correct with the transaction table...
         const stateLink = await State.findOne({ from, state }).exec();
@@ -40,18 +43,41 @@ registerRoute(router, "/sso/callback",  {
                 message: "Invalid state."
             })
         }
-        
-        // We also need to make a verify request to the from service 
-        // Here we need to create or update the user and invalid the state so it can't be re-used.
 
-        return res.redirect(config.frontendURI);
+        // We also need to make a verify request to the from service 
+        const response = await makeRequest(stateLink.from, "/api/sg/sso/verify", SgUserSchema, { query: { token } });
+
+        if (response.status === "error") {
+            return res.status(400).json({
+                status: "error",
+                message: `request failed due to: ${response.type}`
+            })
+        }
+
+        const { data } = response;
+
+        // try to find the user 
+        const externalUser = await User.findOne({ email: data.email, externalId: `${data.id.id}:${data.id.group}` }).exec();
+        const transformedUser = transformSgUserToInternal(data);
+
+        if (!externalUser) {
+            // we need to create the new user...
+            const doc = new User(transformedUser);
+            await doc.save();
+        } else {
+            await User.findByIdAndUpdate(externalUser.id, transformedUser, {}).exec();
+        }
+
+        // Here we need to create or update the user and invalid the state so it can't be re-used.
+        const path = new URL(stateLink.path, config.frontendURI);
+        return res.redirect(path.toString());
     }
 })
 
 registerRoute(router, "/sso/verify", {
     method: "post",
     params: z.object({}),
-    query: z.object({token: IJwtSchema}),
+    query: z.object({ token: IJwtSchema }),
     body: z.object({}),
     permission: null,
     handler: async (req, res) => {
@@ -78,7 +104,7 @@ registerRoute(router, "/sso/verify", {
             })
         } catch (e: unknown) {
             if (e instanceof JwtError) {
-                
+
                 // Specifically mention that the jwt has expired.
                 if (e.type === "expired") {
                     return res.status(401).json({

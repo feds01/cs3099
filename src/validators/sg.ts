@@ -1,5 +1,5 @@
+import assert from 'assert/strict';
 import { z } from 'zod';
-import assert from 'assert';
 
 const SG_ID_REGEX = /(.+?(?=:)):(t\d{2})$/;
 
@@ -16,8 +16,8 @@ export const SgUserIdSchema = z
         assert(components?.length === 2);
 
         return {
-            id: components[0],
-            group: components[1],
+            id: components[0] as string,
+            group: components[1] as string,
         };
     });
 
