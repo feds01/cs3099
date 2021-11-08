@@ -108,7 +108,18 @@ describe('Follower endpoints testing ', () => {
     it('Get followee\'s follower list', async () => {
         const followerListResponse = await request.get('/user/followee/followers').auth(follower1Res.body.token, { type: 'bearer' });
         expect(followerListResponse.status).toBe(200);
-        // TODO: expect(followerListResponse.body.data.followers).toEqual([]);
+        expect(followerListResponse.body.data.followers).toEqual([follower1Res.body.user]);
     });
 
+    it('Get follower1\'s following list', async () => {
+        const followingListResponse = await request.get('/user/follower1/following').auth(follower1Res.body.token, { type: 'bearer' });
+        expect(followingListResponse.status).toBe(200);
+        expect(followingListResponse.body.data.following).toEqual([followeeRes.body.user]);
+    });
+
+    it('Get follower2\'s following list', async () => {
+        const followingListResponse = await request.get('/user/follower2/following').auth(follower2Res.body.token, { type: 'bearer' });
+        expect(followingListResponse.status).toBe(200);
+        expect(followingListResponse.body.data.following).toEqual([]);
+    });
 });
