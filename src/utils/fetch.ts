@@ -39,8 +39,7 @@ export async function makeRequest<I, O>(
             ...(typeof additional?.headers !== 'undefined' && { headers: additional.headers }),
         });
 
-        const json = await rawResponse.json();
-
+        const json: unknown = await rawResponse.json();
         const validation = RawResponseSchema.safeParse(json);
 
         if (!validation.success) {

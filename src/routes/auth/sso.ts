@@ -27,9 +27,10 @@ registerRoute(router, "/sso/login", {
 });
 
 registerRoute(router, "/sso/callback", {
-    method: "get",
+    method: "post",
     params: z.object({}),
     query: z.object({ from: z.string().url(), state: z.string(), token: z.string() }),
+    body: z.object({}),
     permission: null,
     handler: async (req, res) => {
         const { from, state, token } = req.query;

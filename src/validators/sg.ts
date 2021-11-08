@@ -1,4 +1,4 @@
-import assert from 'assert/strict';
+import assert from 'assert';
 import { z } from 'zod';
 
 const SG_ID_REGEX = /(.+?(?=:)):(t\d{2})$/;
