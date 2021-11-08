@@ -5,7 +5,7 @@ import React, { ReactElement, useEffect, useState } from 'react';
 import FollowerCard from '../../../components/FollowerCard';
 import { useAuth } from '../../../hooks/auth';
 import { User } from '../../../lib/api/models';
-import { useGetUserUsernameFollowers, useGetUserUsernameFollowing } from '../../../lib/api/users/users';
+import { useGetUserUsernameFollowers, useGetUserUsernameFollowing } from '../../../lib/api/followers/followers';
 import { ContentState } from '../../../types/requests';
 import Astronaut from './../../../static/images/spacewalk.svg';
 
