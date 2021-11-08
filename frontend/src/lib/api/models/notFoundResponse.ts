@@ -7,6 +7,6 @@
  */
 
 export type NotFoundResponse = {
-    status: boolean;
-    message: string;
+  status: boolean;
+  message: string;
 };

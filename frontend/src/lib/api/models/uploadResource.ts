@@ -7,5 +7,5 @@
  */
 
 export interface UploadResource {
-    file: string;
+  file: string;
 }

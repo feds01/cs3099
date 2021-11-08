@@ -7,5 +7,5 @@
  */
 
 export interface UploadResourceResponse {
-    status: boolean;
+  status: boolean;
 }
