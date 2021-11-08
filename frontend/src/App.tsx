@@ -1,4 +1,3 @@
-import React from 'react';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -9,6 +8,7 @@ import { AuthProvider } from './hooks/auth';
 import LoginRoute from './routes/Auth/Login';
 import * as routeConfig from './config/routes';
 import AppliedRoute from './components/AppliedRoute';
+import SingleSignOnRoute from './routes/Auth/SingleSignOn';
 import RegisterRoute from './routes/Auth/Register';
 import PrivateRoute from './components/PrivateRoute';
 import ErrorContainer from './components/ErrorContainer';
@@ -85,6 +85,7 @@ function App() {
                     <Router>
                         <Switch>
                             <AppliedRoute exact path={'/login'} component={LoginRoute} />
+                            <AppliedRoute exact path={'/login/sso'} component={SingleSignOnRoute} />
                             <AppliedRoute exact path={'/register'} component={RegisterRoute} />
                             <Route>
                                 <ErrorContainer>

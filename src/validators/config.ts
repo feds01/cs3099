@@ -9,7 +9,7 @@ export const ConfigSchema = z.object({
     jwtRefreshSecret: z.string(),
     resourcesFolder: z.string().min(1),
     frontendURI: z.string().url(),
-    port: z.number().int().nonnegative(),
+    port: z.preprocess((val) => parseInt(String(val), 10), z.number().int().nonnegative()),
 });
 
 export type ServerConfig = z.infer<typeof ConfigSchema>;

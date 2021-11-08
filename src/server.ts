@@ -32,7 +32,10 @@ function validateConfig() {
 
     try {
         Logger.info('Loading server configuration');
-        return ConfigSchema.parse({ ...rawConfig, port: options.port });
+        return ConfigSchema.parse({ 
+            ...rawConfig, 
+            ...(typeof options.port !== 'undefined' && {port: options.port}) 
+        });
     } catch (e) {
         if (e instanceof ZodError) {
             Logger.error(`Server config validation failed: ${e}`);

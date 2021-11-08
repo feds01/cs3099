@@ -218,6 +218,36 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                 '500':
                     $ref: '#/components/responses/InternalServerError'
+    /auth/sso:
+        post:
+            summary: Begin the SSO process.
+            description: Make a request to the server with the selected external service in order to login with their external identity provider.
+            tags:
+                - auth
+            parameters:
+                 - in: query
+                   required: true
+                   name: from
+                   schema:
+                      type: string
+                      description: Callback URL of where to respond
+                      example: "http://localhost:8000"
+                 - in: query
+                   required: false
+                   name: path
+                   schema:
+                      type: string
+                      description: Resource path where to send the user back to.
+                      example: /jdoe1/publication
+            responses:
+                '304':
+                    description: Service redirects the client to the external journal provider login page.
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
     /auth/login:
         post:
             summary: User Login

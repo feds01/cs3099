@@ -1,3 +1,4 @@
+import cors from 'cors';
 import helmet from 'helmet';
 import express from 'express';
 import fileUpload from 'express-fileupload';
@@ -40,6 +41,7 @@ app.use('/docs', SwaggerUI.serve, SwaggerUI.setup(specs));
 
 // Setup express middleware
 app.use(helmet({}));
+app.use(cors());
 app.use(morganMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -47,13 +49,13 @@ app.use(express.urlencoded({ extended: true }));
 // File uploads
 app.use(fileUpload());
 
-app.use((_req: express.Request, res: express.Response, next: express.NextFunction) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', '*');
-    res.header('Access-Control-Allow-Methods', 'POST, PUT, GET, OPTIONS, DELETE, PATCH');
+// app.use((_req: express.Request, res: express.Response, next: express.NextFunction) => {
+//     res.header('Access-Control-Allow-Origin', '*');
+//     res.header('Access-Control-Allow-Headers', '*');
+//     res.header('Access-Control-Allow-Methods', 'POST, PUT, GET, OPTIONS, DELETE, PATCH');
 
-    next();
-});
+//     next();
+// });
 
 app.get('/version', (_req: express.Request, res: express.Response) => {
     res.status(200).json({

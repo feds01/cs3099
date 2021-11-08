@@ -253,20 +253,20 @@ router.post('/register', async (req, res) => {
     // Check if username or email is already in use
 
     const searchQueryUser = {
-        $or: [{ username }, { email }],
+        $or: [{ username }, { email, externalId: { $exists: false } }],
     };
 
     const resultUser = await User.findOne(searchQueryUser).exec();
 
     if (resultUser) {
-        if (resultUser.username == username) {
+        if (resultUser.username === username) {
             return res.status(409).json({
                 status: "error",
                 message: error.REGISTRATION_FAILED,
                 extra: error.USER_EXISTS,
             });
         }
-        if (resultUser.email == email) {
+        if (resultUser.email === email) {
             return res.status(409).json({
                 status: "error",
                 message: error.REGISTRATION_FAILED,
