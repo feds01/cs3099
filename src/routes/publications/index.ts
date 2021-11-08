@@ -2,24 +2,32 @@ import { z } from 'zod';
 import express from 'express';
 import Logger from '../../common/logger';
 import * as zip from "../../lib/zip";
-import searchRouter from './search';
-import User, { IUserRole } from '../../models/User';
-import * as errors from "./../../common/errors";
-import * as userUtils from "./../../utils/users";
+import * as errors from './../../common/errors';
+import * as userUtils from './../../utils/users';
 import registerRoute from '../../lib/requests';
+import User, { IUserRole } from '../../models/User';
 import Publication from '../../models/Publication';
 import { comparePermissions } from '../../lib/permissions';
 import { ModeSchema, ResourceSortSchema } from '../../validators/requests';
 import { IPublicationCreationSchema } from '../../validators/publications';
 
+import searchRouter from './search';
+import bookmarkRouter from './bookmarks';
+
 const router = express.Router();
 
-// Register the follower routes
+// Register the follower & bookmark routes
 router.use('/', searchRouter);
+router.use('/', bookmarkRouter);
 
 registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
     method: 'get',
-    params: z.object({ username: z.string(), name: z.string(), path: z.string().optional(), revision: z.string().optional(), }),
+    params: z.object({
+        username: z.string(),
+        name: z.string(),
+        path: z.string().optional(),
+        revision: z.string().optional(),
+    }),
     query: z.object({ mode: ModeSchema, sortBy: ResourceSortSchema }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
@@ -31,8 +39,10 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
         const publication = await Publication.findOne({
             owner: user.id,
             name,
-            ...(typeof revision !== 'undefined' && { revision })
-        }).sort({ _id: -1 }).exec();
+            ...(typeof revision !== 'undefined' && { revision }),
+        })
+            .sort({ _id: -1 })
+            .exec();
 
         if (!publication) {
             return res.status(404).json({
@@ -44,22 +54,21 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
         let archive = {
             userId: user.id!,
             name,
-            ...(!publication.current && typeof revision !== 'undefined' && { revision })
+            ...(!publication.current && typeof revision !== 'undefined' && { revision }),
         };
 
-        const transformedPath = path ?? "";
+        const transformedPath = path ?? '';
         let entry = zip.getEntry(archive, transformedPath);
 
         if (!entry) {
             return res.status(404).json({
                 status: "error",
                 message: errors.RESOURCE_NOT_FOUND,
-            })
+            });
         } else {
-
             // Here we need to apply sorting to the particular entry if the entry is a directory type
-            if (entry.type === "directory") {
-                const sortBy = req.query.sortBy ?? "directory";
+            if (entry.type === 'directory') {
+                const sortBy = req.query.sortBy ?? 'directory';
 
                 entry.entries = entry.entries.sort((a, b) => {
                     const aType = a.type === sortBy ? 1 : 0;
@@ -68,14 +77,13 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
                     const aText = a.filename;
                     const bText = b.filename;
 
-
                     // Sort here by alphabetical order if the types are the same
                     if (aType !== bType) {
                         return aType > bType ? -1 : 1;
                     } else {
-                        return (aText < bText) ? -1 : (aText > bText) ? 1 : 0;
+                        return aText < bText ? -1 : aText > bText ? 1 : 0;
                     }
-                })
+                });
             }
 
             return res.status(200).json({
@@ -83,9 +91,8 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
                 data: entry
             })
         }
-    }
+    },
 });
-
 
 /**
  * @version v1.0.0
@@ -101,7 +108,7 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
  *   "collaborators": ["user1", "user2"],
  *   "draft": true
  * }
- * 
+ *
  * @description Route to create a new publication entry in the database.
  */
 registerRoute(router, '/', {
@@ -170,8 +177,42 @@ registerRoute(router, '/', {
     },
 });
 
+registerRoute(router, '/:username', {
+    method: 'get',
+    params: z.object({ username: z.string() }),
+    query: z.object({ mode: ModeSchema, pinned: z.enum(['true', 'false']).optional() }), // @@TODO: use a boolean schema here
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
 
-registerRoute(router, "/:username", {
+        const { pinned } = req.query;
+        const isPinned = pinned === 'true';
+
+        // @@TODO: we might want to include revisions in the future with some options.
+        const result = await Publication.find({
+            owner: user.id,
+            ...(typeof pinned !== 'undefined' && {
+                $or: [...(!isPinned ? [{ pinned: { $exists: false } }] : []), { pinned: isPinned }],
+            }),
+            current: true,
+        })
+            .limit(50)
+            .exec();
+
+        // project each publication and then return it
+        const publications = result.map((link) =>
+            Publication.projectWith(link as typeof result[number], user),
+        );
+
+        return res.status(200).json({
+            status: true,
+            data: publications,
+        });
+    }
+})
+
+registerRoute(router, "/:username/:name/revisions", {
     method: "get",
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema, pinned: z.enum(["true", "false"]).optional() }), // @@TODO: use a boolean schema here
@@ -195,14 +236,13 @@ registerRoute(router, "/:username", {
             .exec();
 
 
-        // @@Performance: we're querying for each owner in the loop 
         // project each publication and then return it
-        const publications = result.map((link) => Publication.projectWith(link as typeof result[number], user));
+        const revisions = result.map((link) => Publication.projectWith(link as typeof result[number], user));
 
         return res.status(200).json({
             status: "ok",
             data: {
-                publications,
+                revisions,
             },
         });
 
@@ -226,14 +266,16 @@ registerRoute(router, '/:username/:name/:revision?', {
 
         const { name, revision } = req.params;
 
-        // sort by id in descending order since this is actually faster than using a 'createdAt' field because 
+        // sort by id in descending order since this is actually faster than using a 'createdAt' field because
         // ObjectID's in MongoDB have a natural ascending order of time. More information about the details
         // are here: https://stackoverflow.com/a/54741405
         const publication = await Publication.findOne({
             owner: user.id,
             name: name.toLowerCase(),
-            ...(typeof revision !== 'undefined' && { revision })
-        }).sort({ _id: -1 }).exec();
+            ...(typeof revision !== 'undefined' && { revision }),
+        })
+            .sort({ _id: -1 })
+            .exec();
 
         if (!publication) {
             return res.status(404).json({
@@ -242,16 +284,19 @@ registerRoute(router, '/:username/:name/:revision?', {
             });
         }
 
-
         // So we don't need to actually specify the draft flag to the query
         // if the owner of the publication is a draft. However, if the callee
-        // not the owner of the current publication and doesn't have moderator 
+        // not the owner of the current publication and doesn't have moderator
         // privileges, they can't get the publication. Only the owner should be able
         // to retrieve their draft. This behaviour is entirely overridden if the query
         // flag 'draft' is specified.
         const isOwner = publication.owner._id.toString() === req.requester.id;
 
-        if (publication.draft && (!isOwner && !comparePermissions(requester.role, IUserRole.Moderator))) {
+        if (
+            publication.draft &&
+            !isOwner &&
+            !comparePermissions(requester.role, IUserRole.Moderator)
+        ) {
             return res.status(404).json({
                 status: "error",
                 message: errors.NON_EXISTENT_PUBLICATION,
@@ -266,7 +311,6 @@ registerRoute(router, '/:username/:name/:revision?', {
                     message: errors.NON_EXISTENT_PUBLICATION,
                 });
             }
-
         }
 
         return res.status(200).json({
@@ -337,8 +381,10 @@ registerRoute(router, '/:username/:name/:revision?', {
                 owner: user.id,
                 name: name.toLowerCase(),
                 draft,
-                ...(typeof revision !== 'undefined' && { revision })
-            }).sort({ _id: -1 }).exec(); // get the most recent document
+                ...(typeof revision !== 'undefined' && { revision }),
+            })
+                .sort({ _id: -1 })
+                .exec(); // get the most recent document
 
             if (publication) {
                 return res.status(200).json({

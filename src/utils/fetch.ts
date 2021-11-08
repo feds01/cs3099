@@ -9,13 +9,13 @@ const RawResponseSchema = z.union([
 
 type ServiceResponse<T> =
     | {
-        status: 'error';
-        type: 'fetch' | 'service' | 'unknown';
-    }
+          status: 'error';
+          type: 'fetch' | 'service' | 'unknown';
+      }
     | {
-        status: 'ok';
-        data: T;
-    };
+          status: 'ok';
+          data: T;
+      };
 
 export async function makeRequest<T>(
     baseUrl: string,
@@ -29,7 +29,7 @@ export async function makeRequest<T>(
 
     try {
         const rawResponse = await fetch(url.toString());
-        const json = (await rawResponse.json());
+        const json = await rawResponse.json();
 
         const validation = RawResponseSchema.safeParse(json);
 

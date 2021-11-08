@@ -14,11 +14,11 @@ const router = express.Router();
 /**
  * @version v1.0.0
  * @method POST
- * 
+ *
  * @url /api/resources/upload/:username
  * @example
  * https://af268.cs.st-andrews.ac.uk/api/resources/upload/feds01
- * 
+ *
  * @description Endpoint for uploading avatar to the server.
  */
 registerRoute(router, '/upload/:username', {
@@ -37,22 +37,21 @@ registerRoute(router, '/upload/:username', {
             return res.status(400).json({
                 status: "error",
                 message: errors.BAD_REQUEST,
-                extra: "No file sent."
+                extra: 'No file sent.',
             });
         }
 
         // @@Security: Ensure that the actual uploaded file is sane and don't just rely on mimetype.
 
-        // check here that the correct mime type is set on the file, for now we 
+        // check here that the correct mime type is set on the file, for now we
         // only accept jpg/png images...
-        if (file.mimetype !== "image/png" && file.mimetype !== "image/jpeg") {
+        if (file.mimetype !== 'image/png' && file.mimetype !== 'image/jpeg') {
             return res.status(400).json({
                 status: "error",
                 message: errors.BAD_REQUEST,
-                extra: "Invalid file mimetype sent. Image upload only accepts 'png' or 'jpeg'."
+                extra: "Invalid file mimetype sent. Image upload only accepts 'png' or 'jpeg'.",
             });
         }
-
 
         const uploadPath = joinPaths('avatar', user.username, 'avatar');
 
@@ -79,11 +78,11 @@ registerRoute(router, '/upload/:username', {
 /**
  * @version v1.0.0
  * @method POST
- * 
+ *
  * @url /api/resources/publication/upload?revision=...
  * @example
  * https://af268.cs.st-andrews.ac.uk/api/resources/publication/upload/some-name?revision=v1.0.0
- * 
+ *
  * @description Endpoint for uploading resources to publications
  */
 registerRoute(router, '/publication/upload/:id', {
@@ -114,8 +113,8 @@ registerRoute(router, '/publication/upload/:id', {
             return res.status(400).json({
                 status: "error",
                 message: errors.BAD_REQUEST,
-                extra: "Invalid file mimetype sent. Publication uploads only accept 'text' or 'application/zip' mimetypes."
-            })
+                extra: "Invalid file mimetype sent. Publication uploads only accept 'text' or 'application/zip' mimetypes.",
+            });
         }
 
         const publication = await Publication.findOne({ id });
@@ -159,11 +158,11 @@ registerRoute(router, '/publication/upload/:id', {
 /**
  * @version v1.0.0
  * @method POST
- * 
+ *
  * @url /api/resources/reviews/upload/:id
  * @example
  * https://af268.cs.st-andrews.ac.uk/api/resources/reviews/upload/617ec2675afcca834c21b5fd
- * 
+ *
  * Endpoint for uploading attachements on reviwew commetns, items such as images/files or even
  * videos.
  */
@@ -178,7 +177,6 @@ registerRoute(router, '/review/upload/:id', {
         const { id: userId } = req.requester;
 
         console.log(id, userId);
-
 
         return res.status(503).json({
             status: "error",

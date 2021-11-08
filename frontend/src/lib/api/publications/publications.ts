@@ -24,6 +24,7 @@ import type {
   GetPublicationUsernameName200,
   GetPublicationUsername200,
   GetPublicationUsernameParams,
+  GetPublicationUsernameNameRevisions200,
   ResourceResponseResponse,
   GetPublicationUsernameNameRevision200
 } from '.././models'
@@ -164,6 +165,44 @@ export const useGetPublicationUsername = <TData = AsyncReturnType<typeof getPubl
   const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsername>> = () => getPublicationUsername(username,params, );
 
   const query = useQuery<AsyncReturnType<typeof getPublicationUsername>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
+
+  return {
+    queryKey,
+    ...query
+  }
+}
+
+/**
+ * Get a paginated list of publication revisions.
+ * @summary Get a list of revisions for a publication
+ */
+export const getPublicationUsernameNameRevisions = (
+    username: string,
+    name: string,
+ ) => {
+      return customInstance<GetPublicationUsernameNameRevisions200>(
+      {url: `/publication/${username}/${name}/revisions`, method: 'get'
+    },
+      );
+    }
+  
+
+export const getGetPublicationUsernameNameRevisionsQueryKey = (username: string,
+    name: string,) => [`/publication/${username}/${name}/revisions`];
+
+    
+export const useGetPublicationUsernameNameRevisions = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+ username: string,
+    name: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError, TData>, }
+
+  ) => {
+
+  const {query: queryOptions} = options || {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameRevisionsQueryKey(username,name);
+  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameRevisions>> = () => getPublicationUsernameNameRevisions(username,name, );
+
+  const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name), ...queryOptions})
 
   return {
     queryKey,

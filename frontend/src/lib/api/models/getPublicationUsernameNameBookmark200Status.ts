@@ -5,14 +5,10 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import type { User } from './user';
 
-/**
- * Successful authentication, returning a token, and a refreshToken.
- */
-export interface UserAuthResponse {
-  status?: boolean;
-  token: string;
-  refreshToken: string;
-  user: User;
-}
+export type GetPublicationUsernameNameBookmark200Status = 'ok';
+
+
+export const GetPublicationUsernameNameBookmark200Status = {
+  ok: 'ok' as GetPublicationUsernameNameBookmark200Status,
+};

@@ -24,11 +24,8 @@ import type {
   UserPatchRequest,
   GetUserUsernameRole200,
   PatchUserUsernameRole200,
-  GetUserUsernameFollow200,
   PostUserUsernameFollow200,
-  DeleteUserUsernameFollow200,
-  GetUserUsernameFollowers200,
-  GetUserUsernameFollowing200
+  DeleteUserUsernameFollow200
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
 
@@ -198,41 +195,6 @@ export const patchUserUsernameRole = (
       return useMutation<AsyncReturnType<typeof patchUserUsernameRole>, TError, {username: string}, TContext>(mutationFn, mutationOptions)
     }
     /**
- * Endpoint for checking if the current user is following another user specified by the given id.
- * @summary Get the current user's follow status.
- */
-export const getUserUsernameFollow = (
-    username: string,
- ) => {
-      return customInstance<GetUserUsernameFollow200>(
-      {url: `/user/${username}/follow`, method: 'get'
-    },
-      );
-    }
-  
-
-export const getGetUserUsernameFollowQueryKey = (username: string,) => [`/user/${username}/follow`];
-
-    
-export const useGetUserUsernameFollow = <TData = AsyncReturnType<typeof getUserUsernameFollow>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
- username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollow>, TError, TData>, }
-
-  ) => {
-
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowQueryKey(username);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollow>> = () => getUserUsernameFollow(username, );
-
-  const query = useQuery<AsyncReturnType<typeof getUserUsernameFollow>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
-
-/**
  * Endpoint for current user to follow another legit user.
  * @summary Follow another user
  */
@@ -291,73 +253,4 @@ export const deleteUserUsernameFollow = (
 
       return useMutation<AsyncReturnType<typeof deleteUserUsernameFollow>, TError, {username: string}, TContext>(mutationFn, mutationOptions)
     }
-    /**
- * Endpoint for getting any user's follower list.
- * @summary Get a user's follower list.
- */
-export const getUserUsernameFollowers = (
-    username: string,
- ) => {
-      return customInstance<GetUserUsernameFollowers200>(
-      {url: `/user/${username}/followers`, method: 'get'
-    },
-      );
-    }
-  
-
-export const getGetUserUsernameFollowersQueryKey = (username: string,) => [`/user/${username}/followers`];
-
     
-export const useGetUserUsernameFollowers = <TData = AsyncReturnType<typeof getUserUsernameFollowers>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
- username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowers>, TError, TData>, }
-
-  ) => {
-
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowersQueryKey(username);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollowers>> = () => getUserUsernameFollowers(username, );
-
-  const query = useQuery<AsyncReturnType<typeof getUserUsernameFollowers>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
-
-/**
- * Endpoint for fetching a user's follows list
- * @summary Get a user's following list.
- */
-export const getUserUsernameFollowing = (
-    username: string,
- ) => {
-      return customInstance<GetUserUsernameFollowing200>(
-      {url: `/user/${username}/following`, method: 'get'
-    },
-      );
-    }
-  
-
-export const getGetUserUsernameFollowingQueryKey = (username: string,) => [`/user/${username}/following`];
-
-    
-export const useGetUserUsernameFollowing = <TData = AsyncReturnType<typeof getUserUsernameFollowing>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
- username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowing>, TError, TData>, }
-
-  ) => {
-
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowingQueryKey(username);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollowing>> = () => getUserUsernameFollowing(username, );
-
-  const query = useQuery<AsyncReturnType<typeof getUserUsernameFollowing>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
-

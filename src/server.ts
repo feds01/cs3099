@@ -11,7 +11,6 @@ require('dotenv').config(); // Import our environment variables
 //initialize a simple http server
 const server = createServer(app);
 
-
 // Here we create a config object and try to validate it using the config validator...
 const rawConfig = {
     mongoURI: process.env.MONGODB_CONNECTION_URI,
@@ -26,13 +25,13 @@ const rawConfig = {
 
 function validateConfig() {
     try {
-        Logger.info("Loading server configuration")
+        Logger.info('Loading server configuration');
         return ConfigSchema.parse(rawConfig);
     } catch (e) {
         if (e instanceof ZodError) {
-            Logger.error(`Server config validation failed: ${e}`)
+            Logger.error(`Server config validation failed: ${e}`);
         }
-        process.exit(1);       
+        process.exit(1);
     }
 }
 

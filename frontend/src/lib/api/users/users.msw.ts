@@ -20,15 +20,9 @@ export const getGetUserUsernameRoleMock = () => ({status: faker.helpers.randomiz
 
 export const getPatchUserUsernameRoleMock = () => ({status: faker.helpers.randomize(['ok']), message: faker.random.word(), role: faker.random.word()})
 
-export const getGetUserUsernameFollowMock = () => ({status: faker.helpers.randomize(['ok']), following: faker.datatype.boolean()})
-
 export const getPostUserUsernameFollowMock = () => ({status: faker.helpers.randomize(['ok']), message: faker.random.word()})
 
 export const getDeleteUserUsernameFollowMock = () => ({status: faker.helpers.randomize(['ok']), message: faker.random.word()})
-
-export const getGetUserUsernameFollowersMock = () => ({status: faker.helpers.randomize(['ok']), data: {followers: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}))}})
-
-export const getGetUserUsernameFollowingMock = () => ({status: faker.helpers.randomize(['ok']), data: {following: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}))}})
 
 export const getUsersMSW = () => [
 rest.delete('*/user/:username', (req, res, ctx) => {
@@ -61,12 +55,6 @@ ctx.json(getGetUserUsernameRoleMock()),
           ctx.status(200, 'Mocked status'),
 ctx.json(getPatchUserUsernameRoleMock()),
         )
-      }),rest.get('*/user/:username/follow', (req, res, ctx) => {
-        return res(
-          ctx.delay(1000),
-          ctx.status(200, 'Mocked status'),
-ctx.json(getGetUserUsernameFollowMock()),
-        )
       }),rest.post('*/user/:username/follow', (req, res, ctx) => {
         return res(
           ctx.delay(1000),
@@ -78,17 +66,5 @@ ctx.json(getPostUserUsernameFollowMock()),
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),
 ctx.json(getDeleteUserUsernameFollowMock()),
-        )
-      }),rest.get('*/user/:username/followers', (req, res, ctx) => {
-        return res(
-          ctx.delay(1000),
-          ctx.status(200, 'Mocked status'),
-ctx.json(getGetUserUsernameFollowersMock()),
-        )
-      }),rest.get('*/user/:username/following', (req, res, ctx) => {
-        return res(
-          ctx.delay(1000),
-          ctx.status(200, 'Mocked status'),
-ctx.json(getGetUserUsernameFollowingMock()),
         )
       }),]

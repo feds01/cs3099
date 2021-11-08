@@ -1,8 +1,8 @@
 import Button from '@mui/material/Button';
-import React, { ReactElement, useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/auth';
-import { useGetUserUsernameFollow } from '../../lib/api/users/users';
 import { ContentState } from '../../types/requests';
+import React, { ReactElement, useEffect, useState } from 'react';
+import { useGetUserUsernameFollow } from '../../lib/api/followers/followers';
 
 interface Props {
     username: string;
