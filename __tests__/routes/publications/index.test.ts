@@ -126,8 +126,24 @@ describe('Publications endpoints testing', () => {
     // Tests for GET /publication/:username/:name/:revision?/tree/:path(*)
 
     // Tests for GET /publication/:username/
+    it("should get all publications of a user", async () => {
+        const response = await request.get('/publication/owner').auth(ownerRes.body.token, {type: 'bearer'});
+        expect(response.status).toBe(200)
+        expect(response.body.data).toHaveLength(2);
+        // expect no duplicate in response.body.data (Should change the implementation of the API)
+        // expect(response.body.data).toHaveLength(new Set(response.body.data.map(JSON.stringify)).size);
+    });
 
     // Tests for GET /publication/:username/:name/revisions
+    // TODO: change the implementation of API to fit this test
+    // it("should get all revisions of a publication", async () => {
+    //     const response = await request.get('/publication/owner/test-name').auth(ownerRes.body.token, {type: 'bearer'});
+    //     expect(response.status).toBe(200);
+    //     expect(response.body.data).toHaveLength(2);
+    //     expect(response.body.data[0].revision).toBe('v1');
+    //     expect(response.body.data[1].revision).toBe('v2');
+    // });
 
     // Tests for GET /publication/:username/:revision?
+    
 });
