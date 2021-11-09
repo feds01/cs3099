@@ -166,11 +166,11 @@ router.get('/email_validity', async (req, res) => {
 registerRoute(router, "/sso", {
     method: "post",
     permission: null,
-    body: z.object({ to: z.string().url(), path: z.string().optional() }),
+    query: z.object({ to: z.string().url(), path: z.string().optional() }),
     params: z.object({}),
-    query: z.object({}),
+    body: z.object({}),
     handler: async (req, res) => {
-        const { to, path } = req.body;
+        const { to, path } = req.query;
 
         // @@Security: assert that the to URL is valid and exists in the supergroup service map.
 
@@ -187,6 +187,7 @@ registerRoute(router, "/sso", {
 
         // re-direct the user to the external service to begin the sso process...
         const url = new URL(`/api/sg/sso/login?state=${stateString}&from=${config.frontendURI}`, to);
+        console.log(url.toString());
         res.redirect(url.toString());
     }
 });

@@ -110,3 +110,4 @@ export * from './getPublicationUsernameNameBookmark200Status';
 export * from './getUserUsername200Status';
 export * from './commentAnchor';
 export * from './review';
+export * from './postAuthSsoParams';
