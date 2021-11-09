@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';
@@ -9,8 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
-import React, { ReactElement, useEffect, useState } from 'react';
-import { z } from 'zod';
+import { ReactElement, useEffect, useState } from 'react';
 import ErrorBanner from '../../components/ErrorBanner';
 import { ContentState } from '../../types/requests';
 import LogoImage from './../../static/images/logos/logo.svg';
@@ -37,14 +37,8 @@ export default function SingleSignOn(props: Props): ReactElement {
 
     useEffect(() => {
         async function onLoad() {
-            await fetch(teamEndpointSchema, {
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                },
-            })
-                // .then((res) => res.json())
+            await fetch(teamEndpointSchema)
+                .then((res) => res.json())
                 .then((res) => {
                     let teamEndpoints: TeamEndpoints = {};
 
@@ -102,7 +96,7 @@ export default function SingleSignOn(props: Props): ReactElement {
                 <Box sx={{ height: '100%', width: '100%', display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
                     <Container>
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 1 }}>
-                            <img src={LogoImage} width={96} height={96}/>
+                            <img src={LogoImage} width={96} height={96} alt="iamus"/>
                             <Typography variant="h4">Select a journal</Typography>
                             <Typography>Use an external service to log into Iamus</Typography>
                         </Box>

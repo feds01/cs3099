@@ -22,7 +22,7 @@ registerRoute(router, "/sso/login", {
         const { from, state } = req.query;
 
         // just forward the request with the query parameters to the frontend login endpoint.
-        res.redirect(`${config.frontendURI}/login?from=${from}&state=${state}`);
+        res.redirect(`${config.frontendURI}/login?from=${from}&state=${state}`); // @@TODO: use URL
     }
 });
 
