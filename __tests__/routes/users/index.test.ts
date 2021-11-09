@@ -8,7 +8,7 @@ describe('User endpoint tests ', () => {
     let testUserId: string;
 
     // create a user and login before all tests
-    beforeAll(async () => {
+    it('should create a user', async () => {
         // call register api
         const registerRespoinse = await request.post('/auth/register').send({
             email: 'test@email.com',
@@ -42,15 +42,6 @@ describe('User endpoint tests ', () => {
         request.set({ 'x-refresh-token': loginResponse.body.refreshToken });
 
         testUserId = loginResponse.body.user.id;
-    });
-
-    // delete the test user after all tests
-    afterAll(async () => {
-        // call delete user api
-        const deleteUserResponse = await request.delete('/user/test');
-
-        // expect delete to be successful
-        expect(deleteUserResponse.status).toBe(200);
     });
 
     // Tests for  GET /user/:username
@@ -110,5 +101,14 @@ describe('User endpoint tests ', () => {
             role: IUserRole.Administrator,
         });
         expect(response.status).toBe(401);
+    });
+
+    // delete the test user after all tests
+    it('should delete the test user', async () => {
+        // call delete user api
+        const deleteUserResponse = await request.delete('/user/test');
+
+        // expect delete to be successful
+        expect(deleteUserResponse.status).toBe(200);
     });
 });

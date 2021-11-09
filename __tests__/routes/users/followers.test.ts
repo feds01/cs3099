@@ -14,7 +14,7 @@ describe('Follower endpoints testing ', () => {
     let follower1Res: Response;
     let follower2Res: Response;
 
-    beforeAll(async () => {
+    it('should create a followee and two followers', async () => {
         async function createAndLogin(username: string): Promise<Response> {
             const registerResponse = await request.post('/auth/register').send({
                 email: `${username}@email.com`,
@@ -43,30 +43,6 @@ describe('Follower endpoints testing ', () => {
         followee = await User.findOne({ username: 'followee' });
         follower1 = await User.findOne({ username: 'follower1' });
         follower2 = await User.findOne({ username: 'follower2' });
-    });
-
-    afterAll(async () => {
-        const deleteFollowee = await request
-            .delete('/user/followee')
-            .auth(followeeRes.body.token, { type: 'bearer' });
-        const deleteFollower1 = await request
-            .delete('/user/follower1')
-            .auth(follower1Res.body.token, { type: 'bearer' });
-        const deleteFollower2 = await request
-            .delete('/user/follower2')
-            .auth(follower2Res.body.token, { type: 'bearer' });
-        expect(deleteFollowee.status).toBe(200);
-        expect(deleteFollower1.status).toBe(200);
-        expect(deleteFollower2.status).toBe(200);
-
-        // deleted user should not exist in followers collection
-        const followDoc = await Follower.count({
-            $or: [
-                { follower: { $in: [follower1!.id, follower2!.id] } },
-                { followee: followee!.id },
-            ],
-        });
-        expect(followDoc).toBe(0);
     });
 
     // Tests for POST /username/follow
@@ -157,5 +133,29 @@ describe('Follower endpoints testing ', () => {
             .auth(follower2Res.body.token, { type: 'bearer' });
         expect(followingListResponse.status).toBe(200);
         expect(followingListResponse.body.data.following).toEqual([]);
+    });
+
+    it('should delete all users and all following maps', async () => {
+        const deleteFollowee = await request
+            .delete('/user/followee')
+            .auth(followeeRes.body.token, { type: 'bearer' });
+        const deleteFollower1 = await request
+            .delete('/user/follower1')
+            .auth(follower1Res.body.token, { type: 'bearer' });
+        const deleteFollower2 = await request
+            .delete('/user/follower2')
+            .auth(follower2Res.body.token, { type: 'bearer' });
+        expect(deleteFollowee.status).toBe(200);
+        expect(deleteFollower1.status).toBe(200);
+        expect(deleteFollower2.status).toBe(200);
+
+        // deleted user should not exist in followers collection
+        const followDoc = await Follower.count({
+            $or: [
+                { follower: { $in: [follower1!.id, follower2!.id] } },
+                { followee: followee!.id },
+            ],
+        });
+        expect(followDoc).toBe(0);
     });
 });

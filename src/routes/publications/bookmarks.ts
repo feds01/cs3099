@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import express from 'express';
 import Logger from '../../common/logger';
-import * as errors from "./../../common/errors";
+import * as errors from './../../common/errors';
 import * as userUtils from '../../utils/users';
 import registerRoute from '../../lib/requests';
 import User, { IUser, IUserRole } from '../../models/User';
@@ -33,7 +33,7 @@ registerRoute(router, '/:username/:name/bookmark', {
     method: 'post',
     params: z.object({
         username: z.string().nonempty(),
-        name: z.string().nonempty()
+        name: z.string().nonempty(),
     }),
     body: z.object({}),
     query: z.object({ mode: ModeSchema }),
@@ -46,7 +46,6 @@ registerRoute(router, '/:username/:name/bookmark', {
 
         // check if the publication exists, if not then exit early.
         const publication = await Publication.findOne({ username, name }).exec();
-
 
         if (!publication) {
             return res.status(404).json({
@@ -63,7 +62,7 @@ registerRoute(router, '/:username/:name/bookmark', {
 
         if (doc) {
             return res.status(204).json({
-                status: true
+                status: true,
             });
         }
 
@@ -108,7 +107,7 @@ registerRoute(router, '/:username/:name/bookmark', {
     method: 'delete',
     params: z.object({
         username: z.string().nonempty(),
-        name: z.string().nonempty()
+        name: z.string().nonempty(),
     }),
     query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
@@ -120,7 +119,6 @@ registerRoute(router, '/:username/:name/bookmark', {
 
         // check if the publication exists, if not then exit early.
         const publication = await Publication.findOne({ username, name }).exec();
-
 
         if (!publication) {
             return res.status(404).json({
@@ -160,7 +158,7 @@ registerRoute(router, '/:username/:name/bookmark', {
     method: 'get',
     params: z.object({
         username: z.string().nonempty(),
-        name: z.string().nonempty()
+        name: z.string().nonempty(),
     }),
     query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
@@ -213,7 +211,7 @@ registerRoute(router, '/:username/:name/bookmarkers', {
     method: 'get',
     params: z.object({
         username: z.string().nonempty(),
-        name: z.string().nonempty()
+        name: z.string().nonempty(),
     }),
     query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
@@ -238,13 +236,11 @@ registerRoute(router, '/:username/:name/bookmarkers', {
             .limit(50);
 
         // Project all the users into actual data...
-        const bookmarks = result.map((link) =>
-            User.project((link as typeof result[number]).user),
-        );
+        const bookmarks = result.map((link) => User.project((link as typeof result[number]).user));
 
         return res.status(200).json({
             status: true,
-            bookmarks
+            bookmarks,
         });
     },
 });
@@ -277,9 +273,14 @@ registerRoute(router, '/:username/bookmarks', {
             .limit(50);
 
         // project each publication and then return it
-        const bookmarked = await Promise.all(result.map(async (bookmark) =>
-            await Publication.project(bookmark.publication as typeof result[number]['publication']),
-        ));
+        const bookmarked = await Promise.all(
+            result.map(
+                async (bookmark) =>
+                    await Publication.project(
+                        bookmark.publication as typeof result[number]['publication'],
+                    ),
+            ),
+        );
 
         return res.status(200).json({
             status: true,

@@ -117,7 +117,7 @@ registerRoute(router, '/', {
     query: z.object({}),
     permission: IUserRole.Default,
     handler: async (req, res) => {
-        const { name, collaborators, revision } = req.body
+        const { name, collaborators, revision } = req.body;
         const { id: owner } = req.requester;
 
         // Check if the publication is already in use...
@@ -208,11 +208,11 @@ registerRoute(router, '/:username', {
             status: true,
             data: publications,
         });
-    }
-})
+    },
+});
 
-registerRoute(router, "/:username/:name/revisions", {
-    method: "get",
+registerRoute(router, '/:username/:name/revisions', {
+    method: 'get',
     params: z.object({ username: z.string(), name: z.string() }),
     query: z.object({ mode: ModeSchema }), // @@TODO: use a boolean schema here
     permission: IUserRole.Default,
@@ -230,9 +230,10 @@ registerRoute(router, "/:username/:name/revisions", {
             .limit(50)
             .exec();
 
-
         // project each publication and then return it
-        const revisions = result.map((link) => Publication.projectWith(link as typeof result[number], user));
+        const revisions = result.map((link) =>
+            Publication.projectWith(link as typeof result[number], user),
+        );
 
         return res.status(200).json({
             status: true,
@@ -240,10 +241,8 @@ registerRoute(router, "/:username/:name/revisions", {
                 revisions,
             },
         });
-
-
-    }
-})
+    },
+});
 
 registerRoute(router, '/:username/:name/:revision?', {
     method: 'get',
