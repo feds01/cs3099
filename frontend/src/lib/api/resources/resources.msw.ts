@@ -8,21 +8,31 @@
 import {
   rest
 } from 'msw'
+import faker from 'faker'
+
+export const getPostResourceUploadUsernameMock = () => ({status: faker.datatype.boolean()})
+
+export const getPostResourceUploadPublicationIdMock = () => ({status: faker.datatype.boolean()})
+
+export const getPostResourceUploadReviewIdMock = () => ({status: faker.datatype.boolean()})
 
 export const getResourcesMSW = () => [
 rest.post('*/resource/upload/:username', (req, res, ctx) => {
         return res(
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),
+ctx.json(getPostResourceUploadUsernameMock()),
         )
       }),rest.post('*/resource/upload/publication/:id', (req, res, ctx) => {
         return res(
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),
+ctx.json(getPostResourceUploadPublicationIdMock()),
         )
       }),rest.post('*/resource/upload/review/:id', (req, res, ctx) => {
         return res(
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),
+ctx.json(getPostResourceUploadReviewIdMock()),
         )
       }),]
