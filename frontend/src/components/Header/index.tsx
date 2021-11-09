@@ -9,7 +9,7 @@ import ProfileMenu from '../ProfileMenu';
 import UserAvatar from '../UserAvatar';
 import { useAuth } from '../../hooks/auth';
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
-import LogoImage from './../../static/images/logos/logo.jpg';
+import LogoImage from './../../static/images/logos/logo.png';
 
 const AppBar = styled(MuiAppBar)(({ theme }) => ({
     zIndex: theme.zIndex.drawer + 1,

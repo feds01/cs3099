@@ -7,7 +7,7 @@ import { range } from '../../../lib/utils/arrays';
 import { ContentState } from '../../../types/requests';
 
 interface Props {
-    id: string;
+    username: string;
     limit?: number;
     withDivider?: boolean;
     title: string;
@@ -18,7 +18,7 @@ type UserActivity = {
     title: string;
 };
 
-export default function Activity({ title, withDivider = false, id, limit = 20 }: Props): ReactElement {
+export default function Activity({ title, withDivider = false, username, limit = 20 }: Props): ReactElement {
     const [activities] = useState<ContentState<UserActivity[], Error>>({ state: 'loading' });
 
     switch (activities.state) {

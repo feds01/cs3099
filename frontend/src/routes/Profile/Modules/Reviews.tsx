@@ -1,9 +1,9 @@
 import React, { ReactElement } from 'react';
 
 interface Props {
-    id: string;
+    username: string;
 }
 
-export default function Reviews({ id }: Props): ReactElement {
-    return <div>Reviews - {id}</div>;
+export default function Reviews({ username }: Props): ReactElement {
+    return <div>Reviews - {username}</div>;
 }
