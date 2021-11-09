@@ -1687,7 +1687,8 @@ components:
                 collaborators:
                     type: array
                     items:
-                        $ref: '#/components/schemas/User'
+                        type: string
+                        example: jdoe1
         CreatePublicationResponse:
             type: object
             required:
