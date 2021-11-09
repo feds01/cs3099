@@ -12,6 +12,24 @@ type RoutesShape = {
     [key: string]: RouteProps;
 };
 
+type RedirectRoute = {
+    from: string;
+    to: string;
+};
+
+// Defined re-directs for the router to render prior to the routes. This is used
+// when to define re-mappings of routes from one location to another.
+export const redirects: RedirectRoute[] = [
+    {
+        from: '/:username/:name',
+        to: '/:username/:name/tree/',
+    },
+    {
+        from: '/:username/:name/tree',
+        to: '/:username/:name/tree/',
+    },
+];
+
 export type Routes = Extends<RoutesShape, typeof routes>;
 
 export const routes = {

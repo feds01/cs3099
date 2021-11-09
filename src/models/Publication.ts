@@ -3,16 +3,17 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 import User, { IUserDocument } from './User';
 
 export interface IPublication {
-    revision: string;
+    revision?: string;
     owner: mongoose.Types.ObjectId;
     title: string;
     name: string;
-    introduction: string;
-    attachment?: string;
+    introduction?: string;
     draft: boolean;
     current: boolean;
     pinned: boolean;
     collaborators: mongoose.Types.ObjectId[];
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface IPublicationDocument extends IPublication, Document {}
@@ -24,10 +25,10 @@ interface IPublicationModel extends Model<IPublicationDocument> {
 
 const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublication>(
     {
-        revision: { type: String, required: true },
+        revision: { type: String },
         name: { type: String, required: true },
         title: { type: String, required: true },
-        introduction: { type: String, required: true },
+        introduction: { type: String },
         owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
         draft: { type: Boolean, required: true },
         current: { type: Boolean, required: true },
@@ -49,9 +50,8 @@ PublicationSchema.statics.project = async (publication: IPublicationDocument) =>
         introduction,
         owner,
         draft,
-
-        // TODO: project collaborators too...
-        collaborators,
+        collaborators, // TODO: project collaborators too...
+        createdAt: publication.createdAt.getTime(),
     };
 };
 

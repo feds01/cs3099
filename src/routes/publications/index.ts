@@ -163,7 +163,7 @@ registerRoute(router, '/', {
             return res.status(201).json({
                 status: true,
                 message: 'Successfully submitted new publication.',
-                publication,
+                publication: Publication.projectWith(publication, req.requester),
             });
         } catch (e) {
             Logger.error(e);
@@ -179,7 +179,7 @@ registerRoute(router, '/', {
 registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
-    query: z.object({ mode: ModeSchema, pinned: z.enum(['true', 'false']).optional() }), // @@TODO: use a boolean schema here
+    query: z.object({ mode: ModeSchema, pinned: z.enum(['true', 'false']).optional() }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);

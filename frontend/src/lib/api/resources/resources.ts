@@ -34,7 +34,7 @@ export const postResourceUploadUsername = (
  ) => {const formData = new FormData();
 formData.append('file', uploadResource.file)
 
-      return customInstance<unknown>(
+      return customInstance<UploadResourceResponse>(
       {url: `/resource/upload/${username}`, method: 'post',
        data: formData
     },
@@ -43,7 +43,7 @@ formData.append('file', uploadResource.file)
   
 
 
-    export const usePostResourceUploadUsername = <TError = UploadResourceResponse | BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostResourceUploadUsername = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postResourceUploadUsername>, TError,{username: string;data: UploadResource}, TContext>, }
 ) => {
@@ -67,7 +67,7 @@ export const postResourceUploadPublicationId = (
  ) => {const formData = new FormData();
 formData.append('file', uploadResource.file)
 
-      return customInstance<unknown>(
+      return customInstance<UploadResourceResponse>(
       {url: `/resource/upload/publication/${id}`, method: 'post',
        data: formData
     },
@@ -76,7 +76,7 @@ formData.append('file', uploadResource.file)
   
 
 
-    export const usePostResourceUploadPublicationId = <TError = UploadResourceResponse | BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostResourceUploadPublicationId = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postResourceUploadPublicationId>, TError,{id: string;data: UploadResource}, TContext>, }
 ) => {
@@ -100,7 +100,7 @@ export const postResourceUploadReviewId = (
  ) => {const formData = new FormData();
 formData.append('file', uploadResource.file)
 
-      return customInstance<unknown>(
+      return customInstance<UploadResourceResponse>(
       {url: `/resource/upload/review/${id}`, method: 'post',
        data: formData
     },
@@ -109,7 +109,7 @@ formData.append('file', uploadResource.file)
   
 
 
-    export const usePostResourceUploadReviewId = <TError = UploadResourceResponse | BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostResourceUploadReviewId = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postResourceUploadReviewId>, TError,{id: string;data: UploadResource}, TContext>, }
 ) => {

@@ -1,28 +1,35 @@
-import React, { ReactElement } from 'react';
 import { z } from 'zod';
+import { ReactElement, useEffect } from 'react';
 import Grid from '@mui/material/Grid';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { Autocomplete, Box, Divider, TextField, Typography } from '@mui/material';
-import { usePostPublication } from '../../lib/api/publications/publications';
 import { useAuth } from '../../hooks/auth';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
+import ControlledTextField from '../ControlledTextField';
+import ControlledAutocomplete from '../ControlledAutocomplete';
+import { usePostPublication } from '../../lib/api/publications/publications';
+import ErrorBanner from '../ErrorBanner';
+import { useHistory } from 'react-router';
 
 type Props = {};
 
 const CreatePublicationSchema = z.object({
-    name: z.string().max(32),
-    title: z.string().max(32),
-    introduction: z.string(),
-    revision: z.string().max(200).optional(),
+    name: z
+        .string()
+        .min(1)
+        .regex(/^[a-zA-Z0-9_-]*$/, { message: 'Name must be URL safe.' }),
+    title: z.string().min(1).max(200),
+    introduction: z.string().optional(),
+    revision: z.string().optional(),
     collaborators: z.array(z.string()),
 });
 
 type CreatePublication = z.infer<typeof CreatePublicationSchema>;
 
-export default function CreatePublicationForm({}: Props): ReactElement {
+export default function CreatePublicationForm(props: Props): ReactElement {
     const auth = useAuth();
 
-    const createPublicationQuery = usePostPublication();
+    const history = useHistory();
     const {
         control,
         handleSubmit,
@@ -34,152 +41,74 @@ export default function CreatePublicationForm({}: Props): ReactElement {
         },
     });
 
-    const { isLoading, isError, data: response, error, mutateAsync } = usePostPublication();
-    // const onSubmit: SubmitHandler<CreatePublication> = async (data) => await mutateAsync({ data });
-    const onSubmit: SubmitHandler<CreatePublication> = async (data) => console.log(data);
+    const { isLoading, isError, data, error, mutateAsync } = usePostPublication();
+
+    const onSubmit: SubmitHandler<CreatePublication> = async (data) => await mutateAsync({ data });
+    
+    // When the request completes, we want to re-direct the user to the publication page
+    useEffect(() => {
+        if (!isError && typeof data !== 'undefined') {
+            history.push({pathname: `/${auth.session.username}/${data.publication.name}`})
+        }
+    }, [data])
 
     return (
-        <form style={{ width: '100%' }} onSubmit={handleSubmit(onSubmit)}>
-            <Typography variant={'h4'}>Create Publication</Typography>
-            <Divider />
-            <Typography>Upload new publication to Iamus</Typography>
-            <Grid item xs={12} sm={7}>
-                <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                    Publication name Name
-                </Typography>
-                <Typography variant={'body2'}>This will be used to publicly identify the publication.</Typography>
-                <Grid item xs={12} sm={8} md={6}>
-                    <Controller
-                        name="name"
-                        control={control}
-                        render={({ field }) => (
-                            <TextField
-                                {...field}
-                                {...(errors.name && {
-                                    error: true,
-                                    helperText: errors.name.message,
-                                })}
-                                InputProps={{
-                                    startAdornment: <Box>{auth.session.username}</Box>,
-                                }}
-                                size="small"
-                                fullWidth
-                                sx={{
-                                    marginTop: 1,
-                                    marginBottom: 1,
-                                }}
-                            />
-                        )}
-                    />
+        <form style={{ width: '100%', marginTop: '8px' }} onSubmit={handleSubmit(onSubmit)}>
+            <Grid container maxWidth={'lg'}>
+                <Grid item xs={12}>
+                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
+                        Publication Name
+                    </Typography>
+                    <Typography variant={'body2'}>This will be used to publicly identify the publication.</Typography>
+                    <ControlledTextField name="name" control={control} />
                 </Grid>
-            </Grid>
-            <Grid item xs={12} sm={7}>
-                <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                    Publication Title
-                </Typography>
-                <Grid item xs={12} sm={8} md={6}>
-                    <Controller
-                        name="title"
-                        control={control}
-                        render={({ field }) => (
-                            <TextField
-                                {...field}
-                                {...(errors.title && {
-                                    error: true,
-                                    helperText: errors.title.message,
-                                })}
-                                size="small"
-                                fullWidth
-                                sx={{
-                                    marginTop: 1,
-                                    marginBottom: 1,
-                                }}
-                            />
-                        )}
-                    />
+                <Grid item xs={12}>
+                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
+                        Publication Title
+                    </Typography>
+                    <Typography variant={'body2'}>This is the title of the publication.</Typography>
+                    <ControlledTextField name="title" control={control} />
                 </Grid>
-            </Grid>
-            <Grid item xs={12} sm={7}>
-                <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                    Introduction
-                </Typography>
-                <Grid item xs={12} sm={8} md={6}>
-                    <Controller
+                <Grid item xs={12}>
+                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
+                        Introduction
+                    </Typography>
+                    <Typography variant={'body2'}>Write a small introduction for the publication</Typography>
+                    <ControlledTextField
                         name="introduction"
                         control={control}
-                        render={({ field }) => (
-                            <TextField
-                                {...field}
-                                helperText={'Publication introduction'}
-                                {...(errors.introduction && {
-                                    error: true,
-                                    helperText: errors.introduction.message,
-                                })}
-                                size="small"
-                                multiline
-                                rows={4}
-                                fullWidth
-                                sx={{
-                                    marginTop: 1,
-                                    marginBottom: 1,
-                                }}
-                            />
-                        )}
+                        textFieldProps={{
+                            rows: 4,
+                            multiline: true,
+                        }}
                     />
                 </Grid>
-            </Grid>
-            <Grid item xs={12} sm={7}>
-                <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                    Revision
-                </Typography>
-                <Grid item xs={12} sm={8} md={6}>
-                    <Controller
-                        name="revision"
-                        control={control}
-                        render={({ field }) => (
-                            <TextField
-                                {...field}
-                                {...(errors.revision && {
-                                    error: true,
-                                    helperText: errors.revision.message,
-                                })}
-                                size="small"
-                                fullWidth
-                                sx={{
-                                    marginTop: 1,
-                                    marginBottom: 1,
-                                }}
-                            />
-                        )}
-                    />
+                <Grid item xs={12}>
+                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
+                        Revision
+                    </Typography>
+                    <Typography variant={'body2'}>Add a revision tag to the publication</Typography>
+                    <ControlledTextField name="revision" control={control} />
                 </Grid>
-            </Grid>
-            <Grid item xs={12} sm={7}>
-                <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                    Collaborators
-                </Typography>
-                <Grid item xs={12} sm={8} md={6}>
-                    <Controller
-                        name="collaborators"
-                        control={control}
-                        render={({ field }) => (
-                            <Autocomplete
-                                multiple
-                                options={[]} // @@TODO: convert this to a user search input
-                                freeSolo
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        {...field}
-                                        {...(errors.revision && {
-                                            error: true,
-                                            helperText: errors.revision.message,
-                                        })}
-                                    />
-                                )}
-                            />
-                        )}
-                    />
+                <Grid item xs={12}>
+                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
+                        Collaborators
+                    </Typography>
+                    <Typography variant={'body2'}>Add collaborators to publication</Typography>
+                    <ControlledAutocomplete name="collaborators" control={control} />
+                </Grid>
+                <Grid item xs={12}>
+                    <Box>
+                        <Button disabled={isLoading} sx={{ mt: 1, mr: 1 }} variant="contained" type={'submit'}>
+                            {isLoading ? ( <CircularProgress variant="determinate" color="inherit" size={14} /> ) : "Create"}
+                        </Button>
+                        <Button disabled={isLoading} sx={{ mt: 1 }} variant="outlined" type={'submit'}>
+                            Cancel
+                        </Button>
+                    </Box>
+                    {isError && (
+                        <ErrorBanner message={error?.message || "Something went wrong."} />
+                    )}
                 </Grid>
             </Grid>
         </form>
