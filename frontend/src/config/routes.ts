@@ -4,6 +4,7 @@ import HomeRoute from './../routes/Home';
 import ProfileRoute from './../routes/Profile';
 import AccountRoute from './../routes/Account';
 import PublicationRoute from '../routes/Publication';
+import CreatePublicationRoute from '../routes/CreatePublication';
 
 type Extends<T, U extends T> = U;
 
@@ -23,6 +24,11 @@ export const routes = {
         exact: false,
         title: 'Profile',
         component: ProfileRoute,
+    },
+    '/publication/create': {
+        exact: true,
+        title: 'Create publication',
+        component: CreatePublicationRoute,
     },
     '/account': {
         exact: true,
