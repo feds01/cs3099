@@ -9,6 +9,6 @@ import type { CreatePublicationResponseStatus } from './createPublicationRespons
 import type { Publication } from './publication';
 
 export interface CreatePublicationResponse {
-  status?: CreatePublicationResponseStatus;
-  publication?: Publication;
+  status: boolean;
+  publication: Publication;
 }
