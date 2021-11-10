@@ -27,16 +27,16 @@ registerRoute(router, '/sso/login', {
 });
 
 registerRoute(router, '/sso/callback', {
-    method: 'post',
+    method: 'get',
     params: z.object({}),
     query: z.object({ from: z.string().url(), state: z.string(), token: z.string() }),
-    body: z.object({}),
     permission: null,
     handler: async (req, res) => {
         const { from, state, token } = req.query;
+        Logger.info(`Processing request from: ${from} with state: ${state}`);
 
         // We need to verify that the state is correct with the transaction table...
-        const stateLink = await State.findOne({ from, state }).exec();
+        const stateLink = await State.findOne({ state }).exec();
 
         if (!stateLink) {
             return res.status(401).json({
@@ -48,12 +48,14 @@ registerRoute(router, '/sso/callback', {
         // We also need to make a verify request to the from service
         const response = await makeRequest(stateLink.from, '/api/sg/sso/verify', SgUserSchema, {
             query: { token },
+            method: 'post',
         });
 
         if (response.status === 'error') {
             return res.status(400).json({
                 status: 'error',
                 message: `request failed due to: ${response.type}`,
+                ...(typeof response.errors !== 'undefined' && { extra: response.errors }),
             });
         }
 
@@ -62,9 +64,11 @@ registerRoute(router, '/sso/callback', {
         // try to find the user
         const externalUser = await User.findOne({
             email: data.email,
-            externalId: `${data.id.id}:${data.id.group}`,
+            externalId: `${data.user_id.id}:${data.user_id.group}`,
         }).exec();
         const transformedUser = transformSgUserToInternal(data);
+
+        console.log(transformedUser);
 
         if (!externalUser) {
             // we need to create the new user...
@@ -73,6 +77,8 @@ registerRoute(router, '/sso/callback', {
         } else {
             await User.findByIdAndUpdate(externalUser.id, transformedUser, {}).exec();
         }
+
+        await State.findByIdAndDelete(stateLink.id).exec();
 
         // Here we need to create or update the user and invalid the state so it can't be re-used.
         const path = new URL(stateLink.path, config.frontendURI);
@@ -83,8 +89,8 @@ registerRoute(router, '/sso/callback', {
 registerRoute(router, '/sso/verify', {
     method: 'post',
     params: z.object({}),
-    query: z.object({ token: IJwtSchema }),
     body: z.object({}),
+    query: z.object({ token: IJwtSchema }),
     permission: null,
     handler: async (req, res) => {
         const { token } = req.query;

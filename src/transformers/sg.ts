@@ -9,18 +9,18 @@ import { SgUser } from '../validators/sg';
  * @returns - Internal user model.
  */
 export function transformSgUserToInternal(user: SgUser): IUser {
-    const { name, email, id, profilePictureUrl } = user;
+    const { name, email, user_id, profilePictureUrl } = user;
 
     const firstName = name.substr(0, name.indexOf(' '));
     const lastName = name.substr(name.indexOf(' ') + 1);
 
     return new User({
-        username: id.id, // TODO: this is somewhat flaky since what if the username is already taken?
+        username: user_id.id, // TODO: this is somewhat flaky since what if the username is already taken?
         firstName,
         lastName,
         password: '',
         profilePictureUrl,
         email,
-        externalId: `${id.id}:${id.group}`,
+        externalId: `${user_id.id}:${user_id.group}`,
     });
 }

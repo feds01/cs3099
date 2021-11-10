@@ -13,11 +13,11 @@ export const SgUserIdSchema = z
     })
     .transform((x) => {
         const components = SG_ID_REGEX.exec(x);
-        assert(components?.length === 2);
+        assert(components?.length === 3);
 
         return {
-            id: components[0] as string,
-            group: components[1] as string,
+            id: components[1] as string,
+            group: components[2] as string,
         };
     });
 
@@ -29,7 +29,7 @@ export type SgUserId = z.infer<typeof SgUserIdSchema>;
 export const SgUserSchema = z.object({
     name: z.string().min(1),
     email: z.string().email(),
-    id: SgUserIdSchema,
+    user_id: SgUserIdSchema,
     profilePictureUrl: z.string().url().optional(),
 });
 

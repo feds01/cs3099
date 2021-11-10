@@ -35,7 +35,7 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
         username: { type: String, required: true, unique: true },
         firstName: { type: String, required: true, minLength: 1 },
         lastName: { type: String, required: true, minLength: 1 },
-        password: { type: String, required: true },
+        password: { type: String, default: "" },
         profilePictureUrl: { type: String },
         about: { type: String },
         status: { type: String },

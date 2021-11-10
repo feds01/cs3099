@@ -111,3 +111,5 @@ export * from './getUserUsername200Status';
 export * from './commentAnchor';
 export * from './review';
 export * from './postAuthSsoParams';
+export * from './postAuthSso200';
+export * from './postAuthSso200Status';
