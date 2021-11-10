@@ -14,7 +14,7 @@ describe('Publications endpoints testing', () => {
     let collabo1Res: Response;
     let collabo2Res: Response;
 
-    beforeAll(async () => {
+    it('should create a owner and two collaborators', async () => {
         async function createAndLogin(username: string): Promise<Response> {
             const registerResponse = await request.post('/auth/register').send({
                 email: `${username}@email.com`,
@@ -43,21 +43,6 @@ describe('Publications endpoints testing', () => {
         owner = await User.findOne({ username: 'owner' });
         collabo1 = await User.findOne({ username: 'collabo1' });
         collabo2 = await User.findOne({ username: 'collabo2' });
-    });
-
-    afterAll(async () => {
-        const deleteOwner = await request
-            .delete('/user/owner')
-            .auth(ownerRes.body.token, { type: 'bearer' });
-        const deleteCollabo1 = await request
-            .delete('/user/collabo1')
-            .auth(collabo1Res.body.token, { type: 'bearer' });
-        const deleteCollabo2 = await request
-            .delete('/user/collabo2')
-            .auth(collabo2Res.body.token, { type: 'bearer' });
-        expect(deleteOwner.status).toBe(200);
-        expect(deleteCollabo1.status).toBe(200);
-        expect(deleteCollabo2.status).toBe(200);
     });
 
     // Tests for POST /publication/
@@ -163,4 +148,19 @@ describe('Publications endpoints testing', () => {
     // });
 
     // Tests for GET /publication/:username/:revision?
+
+    it('should delete the owner and two collaborators', async () => {
+        const deleteOwner = await request
+            .delete('/user/owner')
+            .auth(ownerRes.body.token, { type: 'bearer' });
+        const deleteCollabo1 = await request
+            .delete('/user/collabo1')
+            .auth(collabo1Res.body.token, { type: 'bearer' });
+        const deleteCollabo2 = await request
+            .delete('/user/collabo2')
+            .auth(collabo2Res.body.token, { type: 'bearer' });
+        expect(deleteOwner.status).toBe(200);
+        expect(deleteCollabo1.status).toBe(200);
+        expect(deleteCollabo2.status).toBe(200);
+    });
 });
