@@ -45,6 +45,7 @@ export const NON_EXISTENT_REVIEW = 'No review was found';
 
 // Comment endpoints
 export const NON_EXISTENT_COMMENT = 'No comment was found';
+export const NON_EXISTENT_THREAD = 'No thread with the given id exists';
 
 // General request errors
 export const RESOURCE_NOT_FOUND = 'Resource could not be found.';
