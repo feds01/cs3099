@@ -22,8 +22,7 @@ registerRoute(router, '/:id', {
         if (!comments) {
             return res.status(404).json({
                 status: 'error',
-                message: errors.NON_EXISTENT_COMMENT,
-                extra: errors.NON_EXISTENT_THREAD,
+                message: errors.NON_EXISTENT_THREAD,
             })
         }
         return res.status(200).json({
@@ -43,10 +42,10 @@ registerRoute(router, '/:id', {
     handler: async (req, res) => {
         const { id } = req.params;
         const thread = Comment.deleteMany({ thread: new Schema.Types.ObjectId(id) });
+
         if (!thread) {
             return res.status(404).json({
                 status: 'error',
-                message: errors.NON_EXISTENT_COMMENT,
                 extra: errors.NON_EXISTENT_THREAD,
             })
         }
