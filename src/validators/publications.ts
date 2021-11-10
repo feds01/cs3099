@@ -11,9 +11,10 @@ export const IPublicationCreationSchema = z.object({
     title: z.string().nonempty(),
     name: z
         .string()
-        .nonempty()
+        .min(1)
+        .regex(/^[a-zA-Z0-9_-]*$/, { message: 'Name must be URL safe.' })
         .transform((x) => x.toLowerCase()),
-    introduction: z.string().nonempty(),
+    introduction: z.string().optional(),
     collaborators: CollaboratorArraySchema,
 });
 

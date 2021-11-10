@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type PostSgSsoVerifyParams = { token: number };
+export type PostSgSsoVerifyParams = { token: string };

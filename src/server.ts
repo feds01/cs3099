@@ -2,9 +2,10 @@ import app from './app';
 import { createServer } from 'http';
 import { AddressInfo } from 'net';
 import mongoose from 'mongoose';
+import { ZodError } from 'zod';
 import Logger from './common/logger';
 import { ConfigSchema } from './validators/config';
-import { ZodError } from 'zod';
+import program from './config/commander';
 
 require('dotenv').config(); // Import our environment variables
 
@@ -19,12 +20,22 @@ const rawConfig = {
     jwtSecret: process.env.JWT_SECRET_KEY,
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET_KEY,
     resourcesFolder: process.env.RESOURCES_FOLDER,
+    teamName: 't06',
+    port: process.env.PORT,
+    frontendURI: process.env.FRONT_END_URI,
 };
 
 function validateConfig() {
+    // Parse command-line arguments.
+    program.parse(process.argv);
+    const options = program.opts();
+
     try {
         Logger.info('Loading server configuration');
-        return ConfigSchema.parse(rawConfig);
+        return ConfigSchema.parse({
+            ...rawConfig,
+            ...(typeof options.port !== 'undefined' && { port: options.port }),
+        });
     } catch (e) {
         if (e instanceof ZodError) {
             Logger.error(`Server config validation failed: ${e}`);
@@ -35,29 +46,37 @@ function validateConfig() {
 
 export const config = validateConfig();
 
+function startServer() {
+    server.listen(config.port, () => {
+        const port = (server.address() as AddressInfo).port;
+
+        Logger.info(
+            `Server started on ${port}! (environment: ${process.env['NODE_ENV'] || 'dev'})`,
+        );
+        Logger.info('Attempting connection with MongoDB service');
+
+        // TODO(alex): Try to load the current federations configuration from disk, but if we don't
+        //             have it, then we make a request to the supergroup info endpoint at:
+        //             --> https://gbs3.host.cs.st-andrews.ac.uk/cs3099-journals.json
+
+        mongoose.connect(
+            config.mongoURI,
+            {
+                connectTimeoutMS: 30000,
+            },
+            (err: any) => {
+                if (err) {
+                    Logger.error(`Failed to connect to MongoDB: ${err.message}`);
+                    process.exit(1);
+                }
+
+                Logger.info('Established connection with MongoDB service');
+            },
+        );
+    });
+}
+
 //start our server
-server.listen(process.env['PORT'] || 5000, () => {
-    const port = (server.address() as AddressInfo).port;
-
-    Logger.info(`Server started on ${port}! (environment: ${process.env['NODE_ENV'] || 'dev'})`);
-    Logger.info('Attempting connection with MongoDB service');
-
-    // TODO(alex): Try to load the current federations configuration from disk, but if we don't
-    //             have it, then we make a request to the supergroup info endpoint at:
-    //             --> https://gbs3.host.cs.st-andrews.ac.uk/cs3099-journals.json
-
-    mongoose.connect(
-        process.env['MONGODB_CONNECTION_URI']!,
-        {
-            connectTimeoutMS: 30000,
-        },
-        (err: any) => {
-            if (err) {
-                Logger.error(`Failed to connect to MongoDB: ${err.message}`);
-                process.exit(1);
-            }
-
-            Logger.info('Established connection with MongoDB service');
-        },
-    );
-});
+if (process.env.NODE_ENV !== 'test') {
+    startServer();
+}

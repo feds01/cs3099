@@ -59,7 +59,7 @@ registerRoute(router, '/:username', {
         const followerCount = await Follower.count({ following: user.id }).exec();
 
         return res.status(200).json({
-            status: true,
+            status: 'ok',
             user: User.project(user),
             follows: {
                 followers: followerCount,
@@ -119,7 +119,7 @@ registerRoute(router, '/:username', {
             if (err) {
                 if (err instanceof mongoose.Error.ValidationError) {
                     return res.status(400).json({
-                        status: false,
+                        status: 'error',
                         message: error.BAD_REQUEST,
                         extra: err.errors,
                     });
@@ -128,7 +128,7 @@ registerRoute(router, '/:username', {
                 // Something went wrong...
                 Logger.error(err);
                 return res.status(500).json({
-                    status: false,
+                    status: 'error',
                     message: error.INTERNAL_SERVER_ERROR,
                 });
             }
@@ -136,13 +136,13 @@ registerRoute(router, '/:username', {
             // If we couldn't find the user.
             if (!newUser) {
                 return res.status(404).json({
-                    status: false,
+                    status: 'error',
                     message: error.NON_EXISTENT_USER,
                 });
             }
 
             return res.status(200).json({
-                status: true,
+                status: 'ok',
                 message: 'Successfully updated user details.',
                 user: User.project(newUser),
             });
@@ -177,7 +177,7 @@ registerRoute(router, '/:username', {
 
         if (!deletedUser) {
             return res.status(404).json({
-                status: false,
+                status: 'error',
                 message: error.NON_EXISTENT_USER,
             });
         }
@@ -186,7 +186,7 @@ registerRoute(router, '/:username', {
         await Follower.deleteMany({ $or: [{ following: user.id }, { follower: user.id }] }).exec();
 
         return res.status(200).json({
-            status: true,
+            status: 'ok',
             message: 'Successfully deleted user account.',
         });
     },
@@ -219,7 +219,7 @@ registerRoute(router, '/:username/role', {
         if (!user) return;
 
         return res.status(200).json({
-            status: true,
+            status: 'ok',
             role: user.role,
         });
     },
@@ -267,7 +267,7 @@ registerRoute(router, '/:username/role', {
             if (err) {
                 if (err instanceof mongoose.Error.ValidationError) {
                     return res.status(400).json({
-                        status: false,
+                        status: 'error',
                         message: error.BAD_REQUEST,
                         extra: err.errors,
                     });
@@ -276,7 +276,7 @@ registerRoute(router, '/:username/role', {
                 // Something went wrong...
                 Logger.error(err);
                 return res.status(500).json({
-                    status: false,
+                    status: 'error',
                     message: error.INTERNAL_SERVER_ERROR,
                 });
             }
@@ -284,13 +284,13 @@ registerRoute(router, '/:username/role', {
             // If we couldn't find the user.
             if (!newUser) {
                 return res.status(404).json({
-                    status: false,
+                    status: 'error',
                     message: error.NON_EXISTENT_USER,
                 });
             }
 
             return res.status(200).json({
-                status: true,
+                status: 'ok',
                 message: 'Successfully updated user role.',
                 role: newUser.role,
             });

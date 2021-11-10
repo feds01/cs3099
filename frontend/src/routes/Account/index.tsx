@@ -35,7 +35,10 @@ function AccountUpdateForm({ session }: { session: User }) {
         defaultValues: { ...session },
     });
 
+    // This is the query to the backend
     const { isLoading, isError, data: response, error, mutateAsync } = usePatchUserUsername();
+    
+    // This function will be called once the form is ready to submit
     const onSubmit: SubmitHandler<AccountUpdate> = async (data) =>
         await mutateAsync({ username: session.username, data });
 

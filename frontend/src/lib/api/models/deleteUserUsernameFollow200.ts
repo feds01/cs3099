@@ -5,8 +5,9 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
+import type { DeleteUserUsernameFollow200Status } from './deleteUserUsernameFollow200Status';
 
 export type DeleteUserUsernameFollow200 = {
-  status: boolean;
+  status: DeleteUserUsernameFollow200Status;
   message: string;
 };

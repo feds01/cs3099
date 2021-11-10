@@ -10,19 +10,14 @@ import {
 } from 'msw'
 import faker from 'faker'
 
-export const getPostAuthTokenMock = () => ({status: faker.datatype.boolean(), token: faker.random.word(), refreshToken: faker.random.word()})
+export const getPostAuthTokenMock = () => ({status: faker.helpers.randomize(['ok']), token: faker.random.word(), refreshToken: faker.random.word()})
 
-export const getPostAuthLoginMock = () => ({status: faker.helpers.randomize([faker.datatype.boolean(), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
+export const getPostAuthLoginMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(['ok']), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
 
-export const getPostAuthRegisterMock = () => ({status: faker.helpers.randomize([faker.datatype.boolean(), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
+export const getPostAuthRegisterMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(['ok']), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
 
 export const getAuthMSW = () => [
-rest.post('*/auth/email_validation', (req, res, ctx) => {
-        return res(
-          ctx.delay(1000),
-          ctx.status(200, 'Mocked status'),
-        )
-      }),rest.post('*/auth/username_validation', (req, res, ctx) => {
+rest.post('*/auth/username_validation', (req, res, ctx) => {
         return res(
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),
@@ -32,6 +27,11 @@ rest.post('*/auth/email_validation', (req, res, ctx) => {
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),
 ctx.json(getPostAuthTokenMock()),
+        )
+      }),rest.post('*/auth/sso', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
         )
       }),rest.post('*/auth/login', (req, res, ctx) => {
         return res(

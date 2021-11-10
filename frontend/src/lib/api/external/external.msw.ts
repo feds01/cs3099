@@ -10,9 +10,13 @@ import {
 } from 'msw'
 import faker from 'faker'
 
-export const getPostSgSsoLoginMock = () => ({status: faker.helpers.randomize([faker.datatype.boolean(), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
+export const getPostSgSsoLoginMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(['ok']), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
 
-export const getPostSgSsoVerifyMock = () => ({status: faker.helpers.randomize(['ok','error']), message: faker.random.word()})
+export const getPostSgSsoVerifyMock = () => ({status: faker.helpers.randomize(['ok']), message: faker.random.word(), user: faker.helpers.randomize([{id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, undefined])})
+
+export const getGetSgResourcesExportIdMock = () => (faker.random.word())
+
+export const getGetSgResourcesExportIdMetadataMock = () => ({status: faker.helpers.randomize(['ok']), data: {publication: {name: faker.random.word(), title: faker.random.word(), introduction: faker.helpers.randomize([faker.random.word(), undefined]), revision: faker.helpers.randomize([faker.random.word(), undefined]), draft: faker.datatype.boolean(), owner: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => (faker.random.word()))}, reviews: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({owner: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, createdAt: faker.datatype.number(), threads: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ([...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({filename: faker.random.word(), anchor: faker.helpers.randomize([{start: faker.datatype.number(), end: faker.datatype.number()}, undefined]), contents: faker.random.word(), thread: faker.datatype.number(), author: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, postedAt: faker.datatype.number()}))))}))}})
 
 export const getExternalMSW = () => [
 rest.post('*/sg/sso/login', (req, res, ctx) => {
@@ -28,6 +32,23 @@ ctx.json(getPostSgSsoLoginMock()),
 ctx.json(getPostSgSsoVerifyMock()),
         )
       }),rest.post('*/sg/sso/callback', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+        )
+      }),rest.get('*/sg/resources/export/:id', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetSgResourcesExportIdMock()),
+        )
+      }),rest.get('*/sg/resources/export/:id/metadata', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetSgResourcesExportIdMetadataMock()),
+        )
+      }),rest.post('*/auth/email_validation', (req, res, ctx) => {
         return res(
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),

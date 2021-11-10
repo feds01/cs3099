@@ -14,8 +14,9 @@ registerRoute(router, '/search', {
     permission: IUserRole.Default,
     handler: async (_req, res) => {
         // TODO: Implement search endpoint
-        return res.status(200).json({
-            status: true,
+        return res.status(503).json({
+            status: 'error',
+            message: 'Service Unavailable',
         });
     },
 });
