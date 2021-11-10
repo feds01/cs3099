@@ -2,7 +2,7 @@ import { z, ZodError } from 'zod';
 import { nanoid } from 'nanoid';
 import bcrypt from 'bcryptjs';
 import express from 'express';
-import User from '../../models/User';
+import User, { IUserRole } from '../../models/User';
 import Logger from '../../common/logger';
 import { config } from "./../../server";
 import * as error from '../../common/errors';
@@ -12,7 +12,7 @@ import {
     IUsernameValidity,
     IUsernameValiditySchema,
 } from '../../validators/auth';
-import { createTokens } from '../../lib/auth';
+import { createTokens, JwtError, refreshTokens, verifyToken } from '../../lib/auth';
 import {
     IUserLoginRequest,
     IUserLoginRequestSchema,
@@ -127,9 +127,9 @@ router.get('/email_validity', async (req, res) => {
         });
     }
 
-    const result = await User.findOne({ 
-        email: request.email, 
-        externalId: { $exists: false } 
+    const result = await User.findOne({
+        email: request.email,
+        externalId: { $exists: false }
     }).exec();
 
     // If the email wasn't found, then return a not found status.
@@ -146,6 +146,70 @@ router.get('/email_validity', async (req, res) => {
         message: 'Email exists',
     });
 });
+
+/**
+ * @version v1.0.0
+ * @method POST
+ * @url /api/auth/session
+ * @example
+ * https://af268.cs.st-andrews.ac.uk/api/auth/session
+ *
+ * @description This route is used to essentially refresh provided tokens and return a 
+ * user session with refreshed tokens.
+ */
+registerRoute(router, "/session", {
+    method: "post",
+    body: z.object({ token: z.string(), refreshToken: z.string() }),
+    params: z.object({}),
+    query: z.object({}),
+    permission: null,
+    handler: async (req, res) => {
+        const { token, refreshToken } = req.body;
+
+        // attempt to refresh the tokens and create a user state from it.
+        try {
+            const verifiedToken = await verifyToken(token);
+
+            // find the user with this token information
+            const user = await User.findById(verifiedToken.id);
+
+            if (!user) {
+                return res.status(400).json({
+                    status: "error",
+                    message: "Invalid JWT",
+                })
+            }
+
+            const refreshedTokens = refreshTokens(refreshToken);
+
+            if (typeof refreshedTokens === 'string') {
+                return res.status(400).json({
+                    status: "error",
+                    message: refreshTokens
+                })
+            }
+
+            return res.status(200).json({
+                status: "ok",
+                user: User.project(user),
+                ...refreshedTokens
+            });
+        } catch (e: unknown) {
+            if (e instanceof JwtError) {
+                return res.status(400).json({
+                    status: "error",
+                    message: e.type,
+                })
+            }
+
+            return res.status(500).json({
+                status: "error",
+                message: error.INTERNAL_SERVER_ERROR
+            })
+        }
+
+    }
+})
 
 
 /**

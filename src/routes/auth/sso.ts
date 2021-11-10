@@ -1,11 +1,12 @@
 import { z } from 'zod';
+import qs from "query-string";
 import express from 'express';
 import User from '../../models/User';
 import { config } from '../../server';
 import Logger from '../../common/logger';
 import registerRoute from '../../lib/requests';
 import { IJwtSchema } from '../../validators/auth';
-import { JwtError, verifyToken } from '../../lib/auth';
+import { createTokens, JwtError, verifyToken } from '../../lib/auth';
 import State from '../../models/State';
 import { makeRequest } from '../../utils/fetch';
 import { SgUserSchema } from '../../validators/sg';
@@ -61,16 +62,25 @@ registerRoute(router, "/sso/callback", {
         const externalUser = await User.findOne({ email: data.email, externalId: `${data.id.id}:${data.id.group}` }).exec();
         const transformedUser = transformSgUserToInternal(data);
 
+        let id;
+
         if (!externalUser) {
             // we need to create the new user...
             const doc = new User(transformedUser);
             await doc.save();
+
+            id = doc.id;
         } else {
             await User.findByIdAndUpdate(externalUser.id, transformedUser, {}).exec();
+            id = externalUser.id;
         }
 
+        // create the tokens
+        const tokens = createTokens({id, email: transformedUser.email, username: transformedUser.username });
+        const stringifiedTokens = qs.stringify(tokens);
+
         // Here we need to create or update the user and invalid the state so it can't be re-used.
-        const path = new URL(stateLink.path, config.frontendURI);
+        const path = new URL(`/auth/session?redirect=${stateLink.path}&${stringifiedTokens}`, config.frontendURI);
         return res.redirect(path.toString());
     }
 })

@@ -18,19 +18,17 @@ export default function Publications({ user, mode = 'all' }: Props): ReactElemen
         ...(mode === "pinned" && { pinned: "true" }),
     });
     
-    const [pubs, setPubs] = useState<ContentState<Publication[], any>>({ state: 'loading' });
+    const [publications, setPublications] = useState<ContentState<Publication[], any>>({ state: 'loading' });
 
     useEffect(() => {
         if (pubQuery.isError) {
-            console.log("error");
-            setPubs({ state: 'error', error: pubQuery.error });
+            setPublications({ state: 'error', error: pubQuery.error });
         } else if (pubQuery.data && !pubQuery.isLoading) {
-            console.log("ok");
-            setPubs({ state: 'ok', data: pubQuery.data.data});
+            setPublications({ state: 'ok', data: pubQuery.data.data});
         }
     }, [pubQuery.data]);
 
-    switch (pubs.state){
+    switch (publications.state){
         case 'loading':
             return <>Loading...</>;
         case 'error':
@@ -43,19 +41,11 @@ export default function Publications({ user, mode = 'all' }: Props): ReactElemen
                     <Box 
                         sx={{ 
                             display: 'flex', 
-                            flexDirection: 'column',
-                            backgroundColor: '#E5E5E5', 
-                            width:'40%',
-                            minWidth: '700px',
-                            margin: "0 auto",
-                            marginTop: "2rem",
-                            borderRadius: "1rem",
-                            padding: "0.75rem",
-                            overflow: "auto",
-                            }}>
-                    <Typography variant="h6">{user.username}'s Publications</Typography>
+                            flexDirection: 'column'
+                        }}>
+                    <Typography variant="body1">{user.username}'s Publications</Typography>
                     <Grid container spacing={1} columns={{ xs: 1, sm: 1, md: 1 }} sx={{marginTop:"0.25rem"}}>
-                        {pubs.data.map((pub) => {
+                        {publications.data.map((pub) => {
                             return (
                                 <Grid key={pub.name} item xs={2} sm={3} md={3}>
                                     <PublicationCard key={pub.name} user={user} pub={pub} />
