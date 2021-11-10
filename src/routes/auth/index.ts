@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import express from 'express';
 import User from '../../models/User';
 import Logger from '../../common/logger';
-import { config } from "./../../server";
+import { config } from './../../server';
 import * as error from '../../common/errors';
 import {
     IEmailValidity,
@@ -54,7 +54,7 @@ router.get('/username_validity', async (req, res) => {
     } catch (e) {
         if (e instanceof ZodError) {
             return res.status(400).json({
-                status: "error",
+                status: 'error',
                 message: error.BAD_REQUEST,
                 errors: e.errors,
             });
@@ -62,7 +62,7 @@ router.get('/username_validity', async (req, res) => {
 
         Logger.error(e);
         return res.status(500).json({
-            status: "error",
+            status: 'error',
             message: error.INTERNAL_SERVER_ERROR,
         });
     }
@@ -72,14 +72,14 @@ router.get('/username_validity', async (req, res) => {
     // If the user wasn't found, then return a not found status.
     if (!result) {
         return res.status(200).json({
-            status: "error",
+            status: 'error',
             message: 'No user with given username exists',
         });
     }
 
     // Unprocessable entity
     return res.status(422).json({
-        status: "ok",
+        status: 'ok',
         message: 'Username exists',
     });
 });
@@ -114,7 +114,7 @@ router.get('/email_validity', async (req, res) => {
     } catch (e) {
         if (e instanceof ZodError) {
             return res.status(400).json({
-                status: "error",
+                status: 'error',
                 message: error.BAD_REQUEST,
                 errors: e.errors,
             });
@@ -122,27 +122,27 @@ router.get('/email_validity', async (req, res) => {
 
         Logger.error(e);
         return res.status(500).json({
-            status: "error",
+            status: 'error',
             message: error.INTERNAL_SERVER_ERROR,
         });
     }
 
     const result = await User.findOne({
         email: request.email,
-        externalId: { $exists: false }
+        externalId: { $exists: false },
     }).exec();
 
     // If the email wasn't found, then return a not found status.
     if (!result) {
         return res.status(404).json({
-            status: "ok",
+            status: 'ok',
             message: 'Email address not in use',
         });
     }
 
     // Unprocessable Entity
     return res.status(422).json({
-        status: "ok",
+        status: 'ok',
         message: 'Email exists',
     });
 });
@@ -154,11 +154,11 @@ router.get('/email_validity', async (req, res) => {
  * @example
  * https://af268.cs.st-andrews.ac.uk/api/auth/session
  *
- * @description This route is used to essentially refresh provided tokens and return a 
+ * @description This route is used to essentially refresh provided tokens and return a
  * user session with refreshed tokens.
  */
-registerRoute(router, "/session", {
-    method: "post",
+registerRoute(router, '/session', {
+    method: 'post',
     body: z.object({ token: z.string(), refreshToken: z.string() }),
     params: z.object({}),
     query: z.object({}),
@@ -175,42 +175,40 @@ registerRoute(router, "/session", {
 
             if (!user) {
                 return res.status(400).json({
-                    status: "error",
-                    message: "Invalid JWT",
-                })
+                    status: 'error',
+                    message: 'Invalid JWT',
+                });
             }
 
             const refreshedTokens = refreshTokens(refreshToken);
 
             if (typeof refreshedTokens === 'string') {
                 return res.status(400).json({
-                    status: "error",
-                    message: refreshTokens
-                })
+                    status: 'error',
+                    message: refreshTokens,
+                });
             }
 
             return res.status(200).json({
-                status: "ok",
+                status: 'ok',
                 user: User.project(user),
-                ...refreshedTokens
+                ...refreshedTokens,
             });
         } catch (e: unknown) {
             if (e instanceof JwtError) {
                 return res.status(400).json({
-                    status: "error",
+                    status: 'error',
                     message: e.type,
-                })
+                });
             }
 
             return res.status(500).json({
-                status: "error",
-                message: error.INTERNAL_SERVER_ERROR
-            })
+                status: 'error',
+                message: error.INTERNAL_SERVER_ERROR,
+            });
         }
-
-    }
-})
-
+    },
+});
 
 /**
  * @version v1.0.0
@@ -218,17 +216,17 @@ registerRoute(router, "/session", {
  * @url /api/auth/sso
  * @example
  * https://af268.cs.st-andrews.ac.uk/api/auth/sso
- * 
- * @description This route is used to internally send of a request to sign on with a different 
- * service instead of using the internal login process. It accepts a `to` url in the body which 
+ *
+ * @description This route is used to internally send of a request to sign on with a different
+ * service instead of using the internal login process. It accepts a `to` url in the body which
  * is the service that the user selects to login as, and a path which is an optional path
  * that the user tries to internally sign-in before hitting the login screen. The optional
  * path can be used to re-direct the user back to the page once they've signed up and redirected
  * back.
- * 
+ *
  */
-registerRoute(router, "/sso", {
-    method: "post",
+registerRoute(router, '/sso', {
+    method: 'post',
     permission: null,
     query: z.object({ to: z.string().url(), path: z.string().optional() }),
     params: z.object({}),
@@ -244,15 +242,18 @@ registerRoute(router, "/sso", {
         const state = new State({
             state: stateString,
             from: to,
-            path: path ?? "/" // re-direct the user back to / if the path isn't provided.
-        })
+            path: path ?? '/', // re-direct the user back to / if the path isn't provided.
+        });
 
         await state.save();
 
         // re-direct the user to the external service to begin the sso process...
-        const url = new URL(`/api/sg/sso/login?state=${stateString}&from=${config.frontendURI}`, to);
+        const url = new URL(
+            `/api/sg/sso/login?state=${stateString}&from=${config.frontendURI}`,
+            to,
+        );
         res.redirect(url.toString());
-    }
+    },
 });
 
 /**
@@ -299,7 +300,7 @@ router.post('/register', async (req, res) => {
     } catch (e: any) {
         if (e instanceof ZodError) {
             return res.status(400).json({
-                status: "error",
+                status: 'error',
                 message: error.BAD_REQUEST,
                 errors: e.errors,
             });
@@ -307,7 +308,7 @@ router.post('/register', async (req, res) => {
 
         Logger.error(e);
         return res.status(500).json({
-            status: "error",
+            status: 'error',
             message: error.INTERNAL_SERVER_ERROR,
         });
     }
@@ -325,14 +326,14 @@ router.post('/register', async (req, res) => {
     if (resultUser) {
         if (resultUser.username === username) {
             return res.status(409).json({
-                status: "error",
+                status: 'error',
                 message: error.REGISTRATION_FAILED,
                 extra: error.USER_EXISTS,
             });
         }
         if (resultUser.email === email) {
             return res.status(409).json({
-                status: "error",
+                status: 'error',
                 message: error.REGISTRATION_FAILED,
                 extra: error.MAIL_EXISTS,
             });
@@ -347,7 +348,7 @@ router.post('/register', async (req, res) => {
             Logger.error(err);
 
             return res.status(500).json({
-                status: "error",
+                status: 'error',
                 message: error.INTERNAL_SERVER_ERROR,
             });
         }
@@ -365,7 +366,7 @@ router.post('/register', async (req, res) => {
             });
 
             return res.status(201).json({
-                status: "ok",
+                status: 'ok',
                 user: User.project(savedUser),
                 token,
                 refreshToken,
@@ -374,7 +375,7 @@ router.post('/register', async (req, res) => {
             Logger.error(e);
 
             return res.status(500).json({
-                status: "error",
+                status: 'error',
                 message: error.INTERNAL_SERVER_ERROR,
             });
         }
@@ -429,7 +430,7 @@ router.post('/login', async (req, res) => {
     } catch (e) {
         if (e instanceof ZodError) {
             return res.status(400).json({
-                status: "error",
+                status: 'error',
                 message: error.BAD_REQUEST,
                 errors: e.errors,
             });
@@ -437,7 +438,7 @@ router.post('/login', async (req, res) => {
 
         Logger.error(e);
         return res.status(500).json({
-            status: "error",
+            status: 'error',
             message: error.INTERNAL_SERVER_ERROR,
         });
     }
@@ -458,7 +459,7 @@ router.post('/login', async (req, res) => {
                 Logger.error(err);
 
                 return res.status(500).json({
-                    status: "error",
+                    status: 'error',
                     message: error.INTERNAL_SERVER_ERROR,
                 });
             }
@@ -474,7 +475,7 @@ router.post('/login', async (req, res) => {
                 });
 
                 return res.status(200).json({
-                    status: "ok",
+                    status: 'ok',
                     message: 'Authentication successful',
                     user: User.project(result),
                     token,
@@ -483,14 +484,14 @@ router.post('/login', async (req, res) => {
             }
             // password did not match the stored hashed password within the database
             return res.status(401).json({
-                status: "error",
+                status: 'error',
                 message: error.AUTHENTICATION_FAILED,
                 extra: error.MISMATCHING_LOGIN,
             });
         });
     } else {
         return res.status(401).json({
-            status: "error",
+            status: 'error',
             message: error.AUTHENTICATION_FAILED,
             extra: error.MISMATCHING_LOGIN,
         });

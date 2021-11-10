@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import Logger from '../../common/logger';
 import followerRouter from './followers';
+import reviewRouter from './reviews';
 import * as error from '../../common/errors';
 import Follower from '../../models/Follower';
 import * as userUtils from './../../utils/users';
@@ -15,6 +16,8 @@ const router = express.Router();
 
 // Register the follower routes
 router.use('/', followerRouter);
+// Register the review routes
+router.use('/', reviewRouter);
 
 /**
  * @version v1.0.0
@@ -56,7 +59,7 @@ registerRoute(router, '/:username', {
         const followerCount = await Follower.count({ following: user.id }).exec();
 
         return res.status(200).json({
-            status: "ok",
+            status: 'ok',
             user: User.project(user),
             follows: {
                 followers: followerCount,
@@ -116,7 +119,7 @@ registerRoute(router, '/:username', {
             if (err) {
                 if (err instanceof mongoose.Error.ValidationError) {
                     return res.status(400).json({
-                        status: "error",
+                        status: 'error',
                         message: error.BAD_REQUEST,
                         extra: err.errors,
                     });
@@ -125,7 +128,7 @@ registerRoute(router, '/:username', {
                 // Something went wrong...
                 Logger.error(err);
                 return res.status(500).json({
-                    status: "error",
+                    status: 'error',
                     message: error.INTERNAL_SERVER_ERROR,
                 });
             }
@@ -133,13 +136,13 @@ registerRoute(router, '/:username', {
             // If we couldn't find the user.
             if (!newUser) {
                 return res.status(404).json({
-                    status: "error",
+                    status: 'error',
                     message: error.NON_EXISTENT_USER,
                 });
             }
 
             return res.status(200).json({
-                status: "ok",
+                status: 'ok',
                 message: 'Successfully updated user details.',
                 user: User.project(newUser),
             });
@@ -174,7 +177,7 @@ registerRoute(router, '/:username', {
 
         if (!deletedUser) {
             return res.status(404).json({
-                status: "error",
+                status: 'error',
                 message: error.NON_EXISTENT_USER,
             });
         }
@@ -183,7 +186,7 @@ registerRoute(router, '/:username', {
         await Follower.deleteMany({ $or: [{ following: user.id }, { follower: user.id }] }).exec();
 
         return res.status(200).json({
-            status: "ok",
+            status: 'ok',
             message: 'Successfully deleted user account.',
         });
     },
@@ -216,7 +219,7 @@ registerRoute(router, '/:username/role', {
         if (!user) return;
 
         return res.status(200).json({
-            status: "ok",
+            status: 'ok',
             role: user.role,
         });
     },
@@ -264,7 +267,7 @@ registerRoute(router, '/:username/role', {
             if (err) {
                 if (err instanceof mongoose.Error.ValidationError) {
                     return res.status(400).json({
-                        status: "error",
+                        status: 'error',
                         message: error.BAD_REQUEST,
                         extra: err.errors,
                     });
@@ -273,7 +276,7 @@ registerRoute(router, '/:username/role', {
                 // Something went wrong...
                 Logger.error(err);
                 return res.status(500).json({
-                    status: "error",
+                    status: 'error',
                     message: error.INTERNAL_SERVER_ERROR,
                 });
             }
@@ -281,13 +284,13 @@ registerRoute(router, '/:username/role', {
             // If we couldn't find the user.
             if (!newUser) {
                 return res.status(404).json({
-                    status: "error",
+                    status: 'error',
                     message: error.NON_EXISTENT_USER,
                 });
             }
 
             return res.status(200).json({
-                status: "ok",
+                status: 'ok',
                 message: 'Successfully updated user role.',
                 role: newUser.role,
             });
