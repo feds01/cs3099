@@ -187,7 +187,6 @@ registerRoute(router, "/sso", {
 
         // re-direct the user to the external service to begin the sso process...
         const url = new URL(`/api/sg/sso/login?state=${stateString}&from=${config.frontendURI}`, to);
-        console.log(url.toString());
         res.redirect(url.toString());
     }
 });
@@ -303,9 +302,7 @@ router.post('/register', async (req, res) => {
 
             return res.status(201).json({
                 status: "ok",
-                message: 'Successfully created new user account.',
-                username,
-                email,
+                user: User.project(savedUser),
                 token,
                 refreshToken,
             });
