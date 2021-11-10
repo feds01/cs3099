@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import Logger from '../../common/logger';
 import followerRouter from './followers';
+import reviewRouter from './reviews';
 import * as error from '../../common/errors';
 import Follower from '../../models/Follower';
 import * as userUtils from './../../utils/users';
@@ -15,6 +16,8 @@ const router = express.Router();
 
 // Register the follower routes
 router.use('/', followerRouter);
+// Register the review routes
+router.use('/', reviewRouter);
 
 /**
  * @version v1.0.0

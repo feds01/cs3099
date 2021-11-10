@@ -40,6 +40,13 @@ export const PUBLICATION_EXISTS = 'Publication of yours with the same informatio
 export const NON_EXISTENT_PUBLICATION = 'No publication with the given keyword exists';
 export const NON_EXISTENT_PUBLICATION_ID = 'No publication with the given id exists';
 
+// Review endpoints
+export const NON_EXISTENT_REVIEW = 'No review was found';
+
+// Comment endpoints
+export const NON_EXISTENT_COMMENT = 'No comment was found';
+export const NON_EXISTENT_THREAD = 'No thread with the given id exists';
+
 // General request errors
 export const RESOURCE_NOT_FOUND = 'Resource could not be found.';
 export const INTERNAL_SERVER_ERROR = 'Internal Server Error.';
