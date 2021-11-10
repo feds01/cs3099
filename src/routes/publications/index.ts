@@ -1,17 +1,18 @@
 import { z } from 'zod';
 import express from 'express';
 import Logger from '../../common/logger';
-import * as zip from '../../lib/zip';
-import User, { IUserRole } from '../../models/User';
+import * as zip from "../../lib/zip";
 import * as errors from './../../common/errors';
 import * as userUtils from './../../utils/users';
 import registerRoute from '../../lib/requests';
+import User, { IUserRole } from '../../models/User';
 import Publication from '../../models/Publication';
+import { comparePermissions } from '../../lib/permissions';
 import { ModeSchema, ResourceSortSchema } from '../../validators/requests';
 import { IPublicationCreationSchema } from '../../validators/publications';
+
 import searchRouter from './search';
 import bookmarkRouter from './bookmarks';
-import { comparePermissions } from '../../lib/permissions';
 
 const router = express.Router();
 
@@ -45,7 +46,7 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
 
         if (!publication) {
             return res.status(404).json({
-                status: false,
+                status: "error",
                 message: errors.RESOURCE_NOT_FOUND,
             });
         }
@@ -61,7 +62,7 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
 
         if (!entry) {
             return res.status(404).json({
-                status: false,
+                status: "error",
                 message: errors.RESOURCE_NOT_FOUND,
             });
         } else {
@@ -86,9 +87,9 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
             }
 
             return res.status(200).json({
-                status: true,
-                data: entry,
-            });
+                status: "ok",
+                data: entry
+            })
         }
     },
 });
@@ -129,7 +130,7 @@ registerRoute(router, '/', {
 
         if (existingPublication > 0) {
             return res.status(400).json({
-                status: false,
+                status: "error",
                 message: errors.PUBLICATION_FAILED,
                 extra: errors.PUBLICATION_EXISTS,
             });
@@ -143,7 +144,7 @@ registerRoute(router, '/', {
             const missingNames = collaborators.filter((name: string) => !namesFound.includes(name));
 
             return res.status(404).json({
-                status: false,
+                status: "error",
                 message: errors.NON_EXISTENT_USER,
                 extra: missingNames,
             });
@@ -161,7 +162,7 @@ registerRoute(router, '/', {
             const publication = await newPublication.save();
 
             return res.status(201).json({
-                status: true,
+                status: "ok",
                 message: 'Successfully submitted new publication.',
                 publication: Publication.projectWith(publication, req.requester),
             });
@@ -169,7 +170,7 @@ registerRoute(router, '/', {
             Logger.error(e);
 
             return res.status(500).json({
-                status: false,
+                status: "error",
                 message: errors.INTERNAL_SERVER_ERROR,
             });
         }
@@ -213,19 +214,23 @@ registerRoute(router, '/:username', {
 
 registerRoute(router, "/:username/:name/revisions", {
     method: "get",
-    params: z.object({ username: z.string(), name: z.string() }),
-    query: z.object({ mode: ModeSchema }), // @@TODO: use a boolean schema here
+    params: z.object({ username: z.string() }),
+    query: z.object({ mode: ModeSchema, pinned: z.enum(["true", "false"]).optional() }), // @@TODO: use a boolean schema here
     permission: IUserRole.Default,
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
-
-        const { name } = req.params;
+        
+        const {pinned} = req.query;
+        const isPinned = pinned === "true";
 
         // @@TODO: we might want to include revisions in the future with some options.
         const result = await Publication.find({
             owner: user.id,
-            name,
+            ...(typeof pinned !== "undefined" && {
+                $or: [...(!isPinned ? [{ 'pinned': { $exists: false } }] : []), { 'pinned': isPinned }],
+            }),
+            current: true
         })
             .limit(50)
             .exec();
@@ -235,7 +240,7 @@ registerRoute(router, "/:username/:name/revisions", {
         const revisions = result.map((link) => Publication.projectWith(link as typeof result[number], user));
 
         return res.status(200).json({
-            status: true,
+            status: "ok",
             data: {
                 revisions,
             },
@@ -274,7 +279,7 @@ registerRoute(router, '/:username/:name/:revision?', {
 
         if (!publication) {
             return res.status(404).json({
-                status: false,
+                status: "error",
                 message: errors.NON_EXISTENT_PUBLICATION,
             });
         }
@@ -293,7 +298,7 @@ registerRoute(router, '/:username/:name/:revision?', {
             !comparePermissions(requester.role, IUserRole.Moderator)
         ) {
             return res.status(404).json({
-                status: false,
+                status: "error",
                 message: errors.NON_EXISTENT_PUBLICATION,
             });
         } else if (typeof req.query.draft !== 'undefined') {
@@ -302,15 +307,15 @@ registerRoute(router, '/:username/:name/:revision?', {
             // So now here we can allow explicit filtering by draft or not...
             if (publication.draft !== draft) {
                 return res.status(404).json({
-                    status: false,
+                    status: "error",
                     message: errors.NON_EXISTENT_PUBLICATION,
                 });
             }
         }
 
         return res.status(200).json({
-            status: true,
-            publication,
+            status: "ok",
+            publication: await Publication.project(publication),
         });
     },
 });
@@ -340,14 +345,14 @@ registerRoute(router, '/:username/:name/all', {
 
             if (publications.deletedCount > 0) {
                 return res.status(200).json({
-                    status: true,
+                    status: "ok",
                     message: 'Successfully deleted all revision of publications.',
                 });
             }
         }
 
         return res.status(404).json({
-            status: false,
+            status: "error",
             message: errors.NON_EXISTENT_PUBLICATION,
         });
     },
@@ -383,14 +388,14 @@ registerRoute(router, '/:username/:name/:revision?', {
 
             if (publication) {
                 return res.status(200).json({
-                    status: true,
+                    status: "ok",
                     message: 'Successfully deleted publication.',
                 });
             }
         }
 
         return res.status(404).json({
-            status: false,
+            status: "error",
             message: errors.NON_EXISTENT_PUBLICATION,
         });
     },

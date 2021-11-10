@@ -1,7 +1,7 @@
 import Axios, { AxiosRequestConfig } from 'axios';
 
 export const AXIOS_INSTANCE = Axios.create({
-    baseURL: 'http://localhost:5000',
+    baseURL: process.env.REACT_APP_API_URI,
     headers: {
         'Access-Control-Allow-Headers': 'Authorization, x-refresh-token',
         'content-type': 'application/json',

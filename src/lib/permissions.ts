@@ -48,9 +48,11 @@ export function comparePermissions(left: IUserRole, right: IUserRole): boolean {
  * @returns If the user permissions are sufficient, and the user object if they are sufficient.
  */
 export async function ensureValidPermissions(
-    permission: IUserRole,
+    permission: IUserRole | null,
     id: string,
 ): Promise<ResolvedPermission> {
+    if (permission === null) return { valid: false };
+
     // Lookup the user in the current request
     const user = await User.findById(id);
 

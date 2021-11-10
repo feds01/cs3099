@@ -10,11 +10,11 @@ import {
 } from 'msw'
 import faker from 'faker'
 
-export const getPostResourceUploadUsernameMock = () => ({status: faker.datatype.boolean()})
+export const getPostResourceUploadUsernameMock = () => ({status: faker.helpers.randomize(['ok'])})
 
-export const getPostResourceUploadPublicationIdMock = () => ({status: faker.datatype.boolean()})
+export const getPostResourceUploadPublicationIdMock = () => ({status: faker.helpers.randomize(['ok'])})
 
-export const getPostResourceUploadReviewIdMock = () => ({status: faker.datatype.boolean()})
+export const getPostResourceUploadReviewIdMock = () => ({status: faker.helpers.randomize(['ok'])})
 
 export const getResourcesMSW = () => [
 rest.post('*/resource/upload/:username', (req, res, ctx) => {
