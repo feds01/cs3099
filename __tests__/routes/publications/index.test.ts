@@ -134,7 +134,9 @@ describe('Publications endpoints testing', () => {
                 collaborators: ['collabo1', 'collabo3'],
             });
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe("Bad request, endpoint body schema didn't match to provided body.");
+        expect(response.body.message).toBe(
+            "Bad request, endpoint body schema didn't match to provided body.",
+        );
     });
 
     // Tests for GET /publication/:username/:name/:revision?/tree/:path(*)

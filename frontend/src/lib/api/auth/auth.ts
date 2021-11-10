@@ -18,6 +18,7 @@ import type {
   BadRequestResponse,
   UnauthorizedResponse,
   TokenRequest,
+  PostAuthSsoParams,
   UserAuthResponseResponse,
   UserLogin,
   UserRegistration
@@ -88,6 +89,37 @@ export const postAuthToken = (
         }
 
       return useMutation<AsyncReturnType<typeof postAuthToken>, TError, {data: TokenRequest}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
+ * Make a request to the server with the selected external service in order to login with their external identity provider.
+ * @summary Begin the SSO process.
+ */
+export const postAuthSso = (
+    params?: PostAuthSsoParams,
+ ) => {
+      return customInstance<unknown>(
+      {url: `/auth/sso`, method: 'post',
+      data: undefined,
+        params,
+    },
+      );
+    }
+  
+
+
+    export const usePostAuthSso = <TError = void | BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthSso>, TError,{params?: PostAuthSsoParams}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthSso>, {params?: PostAuthSsoParams}> = (props) => {
+          const {params} = props || {};
+
+          return  postAuthSso(params,)
+        }
+
+      return useMutation<AsyncReturnType<typeof postAuthSso>, TError, {params?: PostAuthSsoParams}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * User login endpoint, returning authentication tokens.

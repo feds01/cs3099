@@ -14,8 +14,15 @@ import { ReactElement, useEffect, useState } from 'react';
 import ErrorBanner from '../../components/ErrorBanner';
 import { ContentState } from '../../types/requests';
 import LogoImage from './../../static/images/logos/logo.svg';
+import { useLocation } from 'react-router';
+import { usePostAuthSso } from '../../lib/api/auth/auth';
 
 interface Props {}
+
+interface LocationState {
+    from: { pathname: string };
+}
+
 
 type TeamEndpoints = {
     [key: string]: string;
@@ -24,16 +31,15 @@ type TeamEndpoints = {
 // This is the JSON spec that stores all of the journal endpoints.
 const teamEndpointSchema = 'https://gbs3.host.cs.st-andrews.ac.uk/cs3099-journals.json';
 const teamName = 't06';
-const initialEndpoints = { t15: 'http://localhost:8000' };
 
 export default function SingleSignOn(props: Props): ReactElement {
+    const location = useLocation<LocationState>();
+    let { from } = location.state || { from: { pathname: '/' } };
+
+    const { mutate } = usePostAuthSso();
+
     const [endpoints, setEndpoints] = useState<ContentState<TeamEndpoints, any>>({ state: 'loading' });
-
-    const handleSelect = (url: string) => {
-        console.log(url);
-
-        // form transition here??
-    };
+    const handleSelect = (url: string) => mutate({params: {  to: url, path: from.pathname }});
 
     useEffect(() => {
         async function onLoad() {
@@ -59,7 +65,7 @@ export default function SingleSignOn(props: Props): ReactElement {
                     });
 
                     // @@Temporary since we have hard-coded initial team endpoints (for testing).
-                    setEndpoints({ state: 'ok', data: { ...initialEndpoints, ...teamEndpoints } });
+                    setEndpoints({ state: 'ok', data: teamEndpoints });
                 })
                 .catch((res: unknown) => {
                     setEndpoints({ state: 'error', error: res });

@@ -165,11 +165,11 @@ router.get('/email_validity', async (req, res) => {
 registerRoute(router, '/sso', {
     method: 'post',
     permission: null,
-    body: z.object({ to: z.string().url(), path: z.string().optional() }),
+    query: z.object({ to: z.string().url(), path: z.string().optional() }),
     params: z.object({}),
-    query: z.object({}),
+    body: z.object({}),
     handler: async (req, res) => {
-        const { to, path } = req.body;
+        const { to, path } = req.query;
 
         // @@Security: assert that the to URL is valid and exists in the supergroup service map.
 
@@ -304,9 +304,7 @@ router.post('/register', async (req, res) => {
 
             return res.status(201).json({
                 status: 'ok',
-                message: 'Successfully created new user account.',
-                username,
-                email,
+                user: User.project(savedUser),
                 token,
                 refreshToken,
             });

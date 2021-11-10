@@ -227,10 +227,10 @@ paths:
             parameters:
                  - in: query
                    required: true
-                   name: from
+                   name: to
                    schema:
                       type: string
-                      description: Callback URL of where to respond
+                      description: Callback URL of where to send user.
                       example: "http://localhost:8000"
                  - in: query
                    required: false
