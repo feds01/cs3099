@@ -3,11 +3,7 @@ import { Link } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import { User } from '../../lib/api/models';
 import { ContentState } from '../../types/requests';
-import Overview from './Modules/Overview';
-import Follows from './Modules/Follows';
-import Reviews from './Modules/Reviews';
-import Activity from './Modules/Activity';
-import Publications from './Modules/Publications';
+import FollowerButton from '../../components/FollowerButton';
 import { useGetUserUsername } from '../../lib/api/users/users';
 import PageLayout from '../../components/PageLayout';
 import UserAvatar from '../../components/UserAvatar';
@@ -15,7 +11,14 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { ReactElement, useEffect, useState } from 'react';
 import { Route, Switch, useLocation, useParams } from 'react-router';
 import { Divider, Skeleton, Tab, Tabs } from '@mui/material';
-import FollowerButton from '../../components/FollowerButton';
+
+
+// Views
+import Overview from '../../views/Overview';
+import Activity from '../../views/Activity';
+import Follows from '../../views/Follows';
+import Reviews from '../../views/Reviews';
+import Publications from '../../views/Publications';
 
 interface Props {}
 
@@ -35,7 +38,7 @@ const TabMap = (user: User) => {
         },
         [`/profile/${user.username}/reviews`]: {
             label: 'Reviews',
-            component: (user: User) => <Reviews username={user.username} />,
+            component: (user: User) => <Reviews user={user} />,
         },
         [`/profile/${user.username}/followers`]: {
             label: 'Followers',
@@ -171,10 +174,10 @@ export default function Profile(props: Props): ReactElement {
             </Box>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={location.pathname} centered>
-                    {profileData.state === 'ok' && 
-                      Object.entries(TabMap(profileData.data.user)).map(([path, props]) => {
-                        return <Tab key={path} component={Link} to={path} value={path} label={props.label} />;
-                    })}
+                    {profileData.state === 'ok' &&
+                        Object.entries(TabMap(profileData.data.user)).map(([path, props]) => {
+                            return <Tab key={path} component={Link} to={path} value={path} label={props.label} />;
+                        })}
                 </Tabs>
             </Box>
             <Box
@@ -188,24 +191,26 @@ export default function Profile(props: Props): ReactElement {
                 color="text"
             >
                 <Switch>
-                    {profileData.state === 'ok' &&
-                        Object.entries(TabMap(profileData.data.user)).map(([path, props]) => {
-                            return (
-                                <Route
-                                    exact
-                                    key={path}
-                                    path={path}
-                                    render={(routeProps) => (
-                                        <>
-                                            <Box sx={{ width: '100%', alignSelf: 'stretch' }}>
-                                                {props.component(profileData.data.user)}
-                                            </Box>
-                                            <div></div>
-                                        </>
-                                    )}
-                                />
-                            );
-                        })}
+                    {profileData.state === 'ok' && (
+                        <>
+                            {Object.entries(TabMap(profileData.data.user)).map(([path, props]) => {
+                                return (
+                                    <Route
+                                        exact
+                                        key={path}
+                                        path={path}
+                                        render={(routeProps) => (
+                                            <>
+                                                <Box sx={{ width: '100%', alignSelf: 'stretch' }}>
+                                                    {props.component(profileData.data.user)}
+                                                </Box>
+                                            </>
+                                        )}
+                                    />
+                                );
+                            })}
+                        </>
+                    )}
                 </Switch>
             </Box>
         </PageLayout>

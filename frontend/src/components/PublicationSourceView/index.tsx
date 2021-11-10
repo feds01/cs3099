@@ -51,13 +51,14 @@ type Props = {
     filename: string;
 };
 
-export default function PublicationViewSource({ contents, filename, index }: Props): ReactElement {
+export default function  PublicationViewSource({ contents, filename, index }: Props): ReactElement {
     const [basePath, setBasePath] = useState<string>(constructBasePath(index));
 
     useEffect(() => {
         setBasePath(constructBasePath(index));
     }, [index]);
 
+    // TODO: add upload button here...
     return (
         <Container>
             <BreadCrumb index={index} basePath={basePath} filename={filename} />

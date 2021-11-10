@@ -32,6 +32,9 @@ type TeamEndpoints = {
 const teamEndpointSchema = 'https://gbs3.host.cs.st-andrews.ac.uk/cs3099-journals.json';
 const teamName = 't06';
 
+// const dummy = {'dummy': 'https://cs3099user06.host.cs.st-andrews.ac.uk/'};
+const dummy = {};
+
 export default function SingleSignOn(props: Props): ReactElement {
     const location = useLocation<LocationState>();
     let { from } = location.state || { from: { pathname: '/' } };
@@ -65,7 +68,7 @@ export default function SingleSignOn(props: Props): ReactElement {
                     });
 
                     // @@Temporary since we have hard-coded initial team endpoints (for testing).
-                    setEndpoints({ state: 'ok', data: teamEndpoints });
+                    setEndpoints({ state: 'ok', data: {...dummy, ...teamEndpoints} });
                 })
                 .catch((res: unknown) => {
                     setEndpoints({ state: 'error', error: res });

@@ -111,3 +111,6 @@ export * from './getUserUsername200Status';
 export * from './commentAnchor';
 export * from './review';
 export * from './postAuthSsoParams';
+export * from './getSgSsoVerifyParams';
+export * from './getSgSsoLoginParams';
+export * from './getSgSsoCallbackParams';

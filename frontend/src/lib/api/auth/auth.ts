@@ -14,12 +14,11 @@ import type {
   UnprocessableEntityResponse,
   InternalServerErrorResponse,
   UsernameValidation,
-  TokenResponseResponse,
+  UserAuthResponseResponse,
   BadRequestResponse,
   UnauthorizedResponse,
   TokenRequest,
   PostAuthSsoParams,
-  UserAuthResponseResponse,
   UserLogin,
   UserRegistration
 } from '.././models'
@@ -64,11 +63,11 @@ export const postAuthUsernamevalidation = (
  * Endpoint to refresh a JWT token
  * @summary Refresh user session
  */
-export const postAuthToken = (
+export const postAuthSession = (
     tokenRequest: TokenRequest,
  ) => {
-      return customInstance<TokenResponseResponse>(
-      {url: `/auth/token`, method: 'post',
+      return customInstance<UserAuthResponseResponse>(
+      {url: `/auth/session`, method: 'post',
       data: tokenRequest
     },
       );
@@ -76,19 +75,19 @@ export const postAuthToken = (
   
 
 
-    export const usePostAuthToken = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostAuthSession = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
     
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthToken>, TError,{data: TokenRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthSession>, TError,{data: TokenRequest}, TContext>, }
 ) => {
       const {mutation: mutationOptions} = options || {}
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthToken>, {data: TokenRequest}> = (props) => {
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthSession>, {data: TokenRequest}> = (props) => {
           const {data} = props || {};
 
-          return  postAuthToken(data,)
+          return  postAuthSession(data,)
         }
 
-      return useMutation<AsyncReturnType<typeof postAuthToken>, TError, {data: TokenRequest}, TContext>(mutationFn, mutationOptions)
+      return useMutation<AsyncReturnType<typeof postAuthSession>, TError, {data: TokenRequest}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * Make a request to the server with the selected external service in order to login with their external identity provider.

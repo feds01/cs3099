@@ -28,7 +28,7 @@ tags:
       description: Endpoints related to managing uploaded resources.
 paths:
     /sg/sso/login:
-        post:
+        get:
             summary: External login endpoint
             description: Endpoint for external services to authenticate with this service.
             tags:
@@ -63,7 +63,7 @@ paths:
                 '500':
                     $ref: '#/components/responses/InternalServerError'
     /sg/sso/verify:
-        post:
+        get:
             summary: Refresh user session
             description: Endpoint to refresh a JWT token
             tags:
@@ -86,7 +86,7 @@ paths:
                     $ref: '#/components/responses/InternalServerError'
 
     /sg/sso/callback:
-        post:
+        get:
             summary: Successful external login endpoint.
             description: This endpoint is used to notify the journal that the external login was successful and we should proceed with authenticating the external user. This might mean that there is an internal process of registering the user on the platform.
             tags:
@@ -196,7 +196,7 @@ paths:
                     $ref: '#/components/responses/UnprocessableEntity'
                 '500':
                     $ref: '#/components/responses/InternalServerError'
-    /auth/token:
+    /auth/session:
         post:
             summary: Refresh user session
             description: Endpoint to refresh a JWT token
@@ -211,7 +211,7 @@ paths:
                             $ref: '#/components/schemas/TokenRequest'
             responses:
                 '200':
-                    $ref: '#/components/responses/TokenResponse'
+                    $ref: '#/components/responses/UserAuthResponse'
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':
@@ -1780,6 +1780,7 @@ components:
                 - createdAt
                 - owner
                 - draft
+                - pinned
             properties:
                 name:
                     type: string
@@ -1793,6 +1794,9 @@ components:
                 revision:
                     type: string
                     example: 'v1.0.0'
+                pinned:
+                    type: boolean
+                    example: false
                 draft:
                     type: boolean
                     example: true

@@ -1,13 +1,12 @@
-import { Container, Typography } from '@mui/material';
-import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import React, { ReactElement, useEffect, useState } from 'react';
-import FollowerCard from '../../../components/FollowerCard';
-import { useAuth } from '../../../hooks/auth';
-import { User } from '../../../lib/api/models';
-import { useGetUserUsernameFollowers, useGetUserUsernameFollowing } from '../../../lib/api/followers/followers';
-import { ContentState } from '../../../types/requests';
-import Astronaut from './../../../static/images/spacewalk.svg';
+import { useAuth } from '../hooks/auth';
+import { User } from '../lib/api/models';
+import { Container, Typography } from '@mui/material';
+import { ReactElement, useEffect, useState } from 'react';
+import { ContentState } from '../types/requests';
+import FollowerCard from '../components/FollowerCard';
+import Astronaut from '../static/images/spacewalk.svg';
+import { useGetUserUsernameFollowers, useGetUserUsernameFollowing } from '../lib/api/followers/followers';
 
 interface Props {
     type: 'followers' | 'following';
@@ -72,14 +71,7 @@ export default function Follows({ type, username }: Props): ReactElement {
                         component={'div'}
                         sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                     >
-                        <Box
-                            sx={{
-                                margin: 0,
-                                width: 80,
-                                height: 80,
-                                background: `url(${Astronaut})`,
-                            }}
-                        />
+                        <img src={Astronaut} width={96} height={96} alt="nothing" />
                         <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                             {type === 'followers'
                                 ? session.username === username
