@@ -7,6 +7,8 @@ import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-d
 
 import { AuthProvider } from './hooks/auth';
 import LoginRoute from './routes/Auth/Login';
+import SessionRoute from './routes/Auth/Session';
+import SingleSignOnRoute from './routes/Auth/SingleSignOn';
 import * as routeConfig from './config/routes';
 import AppliedRoute from './components/AppliedRoute';
 import RegisterRoute from './routes/Auth/Register';
@@ -86,6 +88,8 @@ function App(): ReactElement {
                         <Switch>
                             <AppliedRoute exact path={'/login'} component={LoginRoute} />
                             <AppliedRoute exact path={'/register'} component={RegisterRoute} />
+                            <AppliedRoute exact path={'/login/sso'} component={SingleSignOnRoute} />
+                            <AppliedRoute exact path={'/auth/session'} component={SessionRoute} />
                             <Route>
                                 <ErrorContainer>
                                     <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
@@ -101,9 +105,6 @@ function App(): ReactElement {
                                     </Box>
                                 </ErrorContainer>
                             </Route>
-                            {/* {routeConfig.redirects.map((redirect, index) => {
-                                return <Redirect exact strict {...redirect} key={index} />;
-                            })} */}
                         </Switch>
                     </Router>
                 </ThemeProvider>

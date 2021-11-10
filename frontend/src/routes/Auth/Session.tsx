@@ -1,6 +1,6 @@
 import { z } from "zod";
 import qs from "query-string";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { useDispatchAuth } from "../../hooks/auth";
 import { ReactElement, useEffect, useState } from 'react';
 import { usePostAuthSession } from "../../lib/api/auth/auth";
@@ -15,6 +15,7 @@ const SessionSchema = z.object({
 
 export default function Session(props: Props): ReactElement {
     const history = useHistory();
+    const location = useLocation();
     const sessionQuery = usePostAuthSession();
     const authDispatcher = useDispatchAuth();
 

@@ -1,8 +1,9 @@
-import React, { ReactElement, useState } from 'react'
 import { useAuth } from '../../../hooks/auth';
+import { ReactElement, useState } from 'react'
 import { Publication } from '../../../lib/api/models';
-import { useGetPublicationUsername } from '../../../lib/api/publications/publications';
 import { ContentState } from '../../../types/requests';
+import { useGetPublicationUsername } from '../../../lib/api/publications/publications';
+import SkeletonList from '../../../components/SkeletonList';
 
 interface Props {
     
@@ -17,7 +18,7 @@ export default function PublicationList({}: Props): ReactElement {
 
     switch (publications.state){
         case 'loading':
-            return <>Loading...</>;
+            return <SkeletonList rows={3} />;
         case 'error':
             return <>Something went wrong :(</>;
         case 'ok':

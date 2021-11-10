@@ -73,7 +73,6 @@ export const SgCommentSchema = z.object({
             }
         }),
     contents: z.string().min(1),
-    thread: z.number().int().nonnegative(),
     author: SgUserIdSchema,
     postedAt: z.number().int().nonnegative(),
 });
@@ -81,18 +80,12 @@ export const SgCommentSchema = z.object({
 export type SgComment = z.infer<typeof SgCommentSchema>;
 
 /**
- * Type representing a thread of comments.
- */
-export const SgCommentThreadSchema = z.array(SgCommentSchema).min(1);
-export type SgCommentThread = z.infer<typeof SgCommentThreadSchema>;
-
-/**
  * Type representing a Super-group review on a publication.
  */
 export const SgReviewSchema = z.object({
     owner: SgUserIdSchema,
     createdAt: z.number().int().nonnegative(),
-    threads: SgCommentThreadSchema,
+    comments: z.array(SgCommentSchema),
 });
 
 export type SgReview = z.infer<typeof SgReviewSchema>;

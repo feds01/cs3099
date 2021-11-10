@@ -32,7 +32,8 @@ type TeamEndpoints = {
 const teamEndpointSchema = 'https://gbs3.host.cs.st-andrews.ac.uk/cs3099-journals.json';
 const teamName = 't06';
 
-const dummy = {'dummy': 'https://cs3099user06.host.cs.st-andrews.ac.uk/'}
+// const dummy = {'dummy': 'https://cs3099user06.host.cs.st-andrews.ac.uk/'};
+const dummy = {};
 
 export default function SingleSignOn(props: Props): ReactElement {
     const location = useLocation<LocationState>();
