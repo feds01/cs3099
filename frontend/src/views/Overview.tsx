@@ -2,7 +2,7 @@ import Grid from '@mui/material/Grid';
 import Activity from './Activity';
 import React, { ReactElement } from 'react';
 import Publications from './Publications';
-import { User } from '../../../lib/api/models';
+import { User } from '../lib/api/models';
 
 interface Props {
     user: User;

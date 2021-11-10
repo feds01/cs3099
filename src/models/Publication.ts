@@ -49,7 +49,7 @@ PublicationSchema.statics.project = async (publication: IPublicationDocument) =>
         title,
         introduction,
         owner,
-        pinned: publication.pinned ?? false,
+        pinned: publication.pinned,
         draft,
         collaborators, // TODO: project collaborators too...
         createdAt: publication.createdAt.getTime(),

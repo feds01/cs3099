@@ -2,8 +2,8 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import { ReactElement, useState } from 'react';
 import Typography from '@mui/material/Typography';
-import { ContentState } from '../../../types/requests';
-import Stars from '../../../static/images/stars.svg';
+import { ContentState } from '../types/requests';
+import Stars from '../static/images/stars.svg';
 
 interface Props {
     username: string;
