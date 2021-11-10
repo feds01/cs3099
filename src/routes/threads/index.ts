@@ -56,3 +56,5 @@ registerRoute(router, '/:id', {
         });
     }
 });
+
+export default router;

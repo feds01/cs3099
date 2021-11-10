@@ -15,6 +15,7 @@ import * as SwaggerOptions from '../swagger.json';
 import userRouter from './routes/user';
 import authRouter from './routes/auth';
 import ssoRouter from './routes/auth/sso';
+import threadsRouter from './routes/threads';
 import reviewsRouter from './routes/reviews';
 import resourcesRouter from './routes/resources';
 import publicationsRouter from './routes/publications';
@@ -32,6 +33,7 @@ const options = {
         './routes/auth/sso.ts',
         './routes/reviews/index.ts',
         './routes/publications/index.ts',
+        './routes/threads/index.ts',
     ],
 };
 
@@ -71,6 +73,7 @@ app.use('/user', userRouter);
 app.use('/review', reviewsRouter);
 app.use('/resource', resourcesRouter);
 app.use('/publication', publicationsRouter);
+app.use('/thread', threadsRouter)
 
 app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     // This check makes sure this is a JSON parsing issue, but it might be
