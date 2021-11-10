@@ -1,15 +1,13 @@
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
+import { ReactElement, useState } from 'react';
 import Typography from '@mui/material/Typography';
-import React, { ReactElement, useState } from 'react';
-import ActivityCard from '../../../components/ActivityCard';
-import { range } from '../../../lib/utils/arrays';
-import { ContentState } from '../../../types/requests';
+import { ContentState } from '../types/requests';
+import Stars from '../static/images/stars.svg';
 
 interface Props {
     username: string;
     limit?: number;
-    withDivider?: boolean;
     title: string;
 }
 
@@ -18,7 +16,7 @@ type UserActivity = {
     title: string;
 };
 
-export default function Activity({ title, withDivider = false, username, limit = 20 }: Props): ReactElement {
+export default function Activity({ title, username, limit = 20 }: Props): ReactElement {
     const [activities] = useState<ContentState<UserActivity[], Error>>({ state: 'loading' });
 
     switch (activities.state) {
@@ -26,11 +24,18 @@ export default function Activity({ title, withDivider = false, username, limit =
             return (
                 <div>
                     <Typography variant="h4">{title}</Typography>
-                    {withDivider && <Divider />}
-                    <Box sx={{ display: 'flex', paddingTop: 1, flexDirection: 'column' }}>
-                        {range(10).map((idx) => {
-                            return <ActivityCard key={idx} />;
-                        })}
+                    <Divider />
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            paddingTop: 1,
+                            width: '100%',
+                            alignItems: 'center',
+                            flexDirection: 'column',
+                        }}
+                    >
+                        <img src={Stars} height={96} width={96} alt="unavailable" />
+                        <Typography variant="body2">Service is unavailable.</Typography>
                     </Box>
                 </div>
             );

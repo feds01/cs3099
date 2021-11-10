@@ -5,9 +5,7 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 
-interface Props {}
-
-export default function CreatePublicationRoute({}: Props): ReactElement {
+export default function CreatePublicationRoute(): ReactElement {
     return (
         <PageLayout>
             <Container maxWidth={'md'} sx={{mt: 2}}>
