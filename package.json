@@ -6,6 +6,7 @@
     "scripts": {
         "build": "tsc",
         "start": "tsc & node .",
+        "start:all": "(yarn start &) && cd frontend && (yarn start &)",
         "dev": "ts-node-dev  --respawn --trace-warnings --  ./src/server.ts",
         "test": "jest --ci",
         "test:coverage": "jest --collect-coverage --ci",

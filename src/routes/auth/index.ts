@@ -2,7 +2,7 @@ import { z, ZodError } from 'zod';
 import { nanoid } from 'nanoid';
 import bcrypt from 'bcryptjs';
 import express from 'express';
-import User, { IUserRole } from '../../models/User';
+import User from '../../models/User';
 import Logger from '../../common/logger';
 import { config } from "./../../server";
 import * as error from '../../common/errors';

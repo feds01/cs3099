@@ -109,9 +109,7 @@ registerRoute(router, "/sso/verify", {
             return res.status(200).json({
                 status: "ok",
                 user_id: `${user.id}:${config.teamName}`,
-                user: {
-                    ...User.projectAsSg(user)
-                }
+                ...User.projectAsSg(user)
             })
         } catch (e: unknown) {
             if (e instanceof JwtError) {
