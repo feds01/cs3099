@@ -23,13 +23,13 @@ registerRoute(router, '/:id', {
             return res.status(404).json({
                 status: 'error',
                 message: errors.NON_EXISTENT_THREAD,
-            })
+            });
         }
         return res.status(200).json({
             status: 'ok',
             comments,
         });
-    }
+    },
 });
 
 // DELETE /thread/:id
@@ -47,13 +47,13 @@ registerRoute(router, '/:id', {
             return res.status(404).json({
                 status: 'error',
                 extra: errors.NON_EXISTENT_THREAD,
-            })
+            });
         }
         return res.status(200).json({
             status: 'ok',
             message: 'Successfully deleted thread',
         });
-    }
+    },
 });
 
 export default router;

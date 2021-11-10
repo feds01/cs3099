@@ -27,7 +27,10 @@ registerRoute(router, '/:username/:name/reviews', {
             name,
         });
 
-        const reviews = await Review.find({ publication: {$in: publications.map(p => p.id)}, status: IReviewStatus.Completed });
+        const reviews = await Review.find({
+            publication: { $in: publications.map((p) => p.id) },
+            status: IReviewStatus.Completed,
+        });
         if (!reviews) {
             return res.status(404).json({
                 status: false,
@@ -39,5 +42,5 @@ registerRoute(router, '/:username/:name/reviews', {
             status: true,
             reviews,
         });
-    }
+    },
 });

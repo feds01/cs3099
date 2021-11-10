@@ -2,7 +2,7 @@ import { z } from 'zod';
 import express from 'express';
 import * as errors from '../../common/errors';
 import Review, { IReviewStatus } from '../../models/Review';
-import Comment from '../../models/Comment'
+import Comment from '../../models/Comment';
 import * as userUtils from '../../utils/users';
 import registerRoute from '../../lib/requests';
 import { IUserRole } from '../../models/User';
@@ -30,7 +30,7 @@ registerRoute(router, '/:username/reviews', {
             status: true,
             reviews,
         });
-    }
+    },
 });
 
 registerRoute(router, '/:username/comments', {
@@ -54,7 +54,7 @@ registerRoute(router, '/:username/comments', {
             status: true,
             comments,
         });
-    }
+    },
 });
 
 export default router;
