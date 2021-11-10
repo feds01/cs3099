@@ -136,7 +136,14 @@ export default function LoginForm({ onSuccess }: Props): ReactElement {
                     />
                     <Link to="/auth/forgot-password">Forgot Password?</Link>
                 </Box>
-                <Button type={'submit'} disabled={isLoading} variant="contained" color="primary" fullWidth>
+                <Button
+                    type={'submit'}
+                    sx={{ fontWeight: 'bold' }}
+                    disabled={isLoading}
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                >
                     {!isLoading ? 'Sign in' : <CircularProgress variant="determinate" color="inherit" size={14} />}
                 </Button>
             </Box>

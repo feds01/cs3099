@@ -109,7 +109,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                         >
                             <Typography>@{profileData.user.username}</Typography>
                             <Divider orientation="vertical" sx={{ margin: '0 4px' }} />
-                            <Typography>Member since {formatDate(Date.now())}</Typography>
+                            <Typography>Member since {formatDate(profileData.user.createdAt)}</Typography>
                         </Box>
                         <Box
                             sx={{

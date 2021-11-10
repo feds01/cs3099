@@ -6,20 +6,27 @@
  * OpenAPI spec version: 1.0.0
  */
 import {
+  useQuery,
   useMutation,
+  UseQueryOptions,
   UseMutationOptions,
+  QueryFunction,
   MutationFunction
 } from 'react-query'
 import type {
-  UserAuthResponse,
+  UserAuthResponseResponse,
   BadRequestResponse,
   UnauthorizedResponse,
   InternalServerErrorResponse,
   UserLogin,
   PostSgSsoLoginParams,
-  TokenVerificationResponse,
+  TokenVerificationResponseResponse,
   PostSgSsoVerifyParams,
-  PostSgSsoCallbackParams
+  PostSgSsoCallbackParams,
+  PublicationExportResponseResponse,
+  PublicationMetadataResponseResponse,
+  UnprocessableEntityResponse,
+  EmailValidation
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
 
@@ -36,7 +43,7 @@ export const postSgSsoLogin = (
     userLogin: UserLogin,
     params?: PostSgSsoLoginParams,
  ) => {
-      return customInstance<UserAuthResponse>(
+      return customInstance<UserAuthResponseResponse>(
       {url: `/sg/sso/login`, method: 'post',
       data: userLogin,
         params,
@@ -67,7 +74,7 @@ export const postSgSsoLogin = (
 export const postSgSsoVerify = (
     params?: PostSgSsoVerifyParams,
  ) => {
-      return customInstance<TokenVerificationResponse>(
+      return customInstance<TokenVerificationResponseResponse>(
       {url: `/sg/sso/verify`, method: 'post',
       data: undefined,
         params,
@@ -77,7 +84,7 @@ export const postSgSsoVerify = (
   
 
 
-    export const usePostSgSsoVerify = <TError = unknown,
+    export const usePostSgSsoVerify = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postSgSsoVerify>, TError,{params?: PostSgSsoVerifyParams}, TContext>, }
 ) => {
@@ -121,5 +128,103 @@ export const postSgSsoCallback = (
         }
 
       return useMutation<AsyncReturnType<typeof postSgSsoCallback>, TError, {params?: PostSgSsoCallbackParams}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
+ * @summary Endpoint to download an archive representing the publication sources.
+ */
+export const getSgResourcesExportId = (
+    id: string,
+ ) => {
+      return customInstance<PublicationExportResponseResponse>(
+      {url: `/sg/resources/export/${id}`, method: 'get'
+    },
+      );
+    }
+  
+
+export const getGetSgResourcesExportIdQueryKey = (id: string,) => [`/sg/resources/export/${id}`];
+
+    
+export const useGetSgResourcesExportId = <TData = AsyncReturnType<typeof getSgResourcesExportId>, TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse>(
+ id: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getSgResourcesExportId>, TError, TData>, }
+
+  ) => {
+
+  const {query: queryOptions} = options || {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetSgResourcesExportIdQueryKey(id);
+  const queryFn: QueryFunction<AsyncReturnType<typeof getSgResourcesExportId>> = () => getSgResourcesExportId(id, );
+
+  const query = useQuery<AsyncReturnType<typeof getSgResourcesExportId>, TError, TData>(queryKey, queryFn, {enabled: !!(id), ...queryOptions})
+
+  return {
+    queryKey,
+    ...query
+  }
+}
+
+/**
+ * @summary Endpoint to download the publication metadata
+ */
+export const getSgResourcesExportIdMetadata = (
+    id: string,
+ ) => {
+      return customInstance<PublicationMetadataResponseResponse>(
+      {url: `/sg/resources/export/${id}/metadata`, method: 'get'
+    },
+      );
+    }
+  
+
+export const getGetSgResourcesExportIdMetadataQueryKey = (id: string,) => [`/sg/resources/export/${id}/metadata`];
+
+    
+export const useGetSgResourcesExportIdMetadata = <TData = AsyncReturnType<typeof getSgResourcesExportIdMetadata>, TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse>(
+ id: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getSgResourcesExportIdMetadata>, TError, TData>, }
+
+  ) => {
+
+  const {query: queryOptions} = options || {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetSgResourcesExportIdMetadataQueryKey(id);
+  const queryFn: QueryFunction<AsyncReturnType<typeof getSgResourcesExportIdMetadata>> = () => getSgResourcesExportIdMetadata(id, );
+
+  const query = useQuery<AsyncReturnType<typeof getSgResourcesExportIdMetadata>, TError, TData>(queryKey, queryFn, {enabled: !!(id), ...queryOptions})
+
+  return {
+    queryKey,
+    ...query
+  }
+}
+
+/**
+ * Check if an email is valid to use when registering
+ * @summary Pre-registration email validation
+ */
+export const postAuthEmailvalidation = (
+    emailValidation: EmailValidation,
+ ) => {
+      return customInstance<void>(
+      {url: `/auth/email_validation`, method: 'post',
+      data: emailValidation
+    },
+      );
+    }
+  
+
+
+    export const usePostAuthEmailvalidation = <TError = UnprocessableEntityResponse | InternalServerErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthEmailvalidation>, TError,{data: EmailValidation}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthEmailvalidation>, {data: EmailValidation}> = (props) => {
+          const {data} = props || {};
+
+          return  postAuthEmailvalidation(data,)
+        }
+
+      return useMutation<AsyncReturnType<typeof postAuthEmailvalidation>, TError, {data: EmailValidation}, TContext>(mutationFn, mutationOptions)
     }
     

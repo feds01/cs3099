@@ -10,19 +10,19 @@ import {
 } from 'msw'
 import faker from 'faker'
 
-export const getDeleteUserUsernameMock = () => ({status: faker.helpers.randomize([faker.datatype.boolean(), undefined]), description: faker.helpers.randomize([faker.random.word(), undefined])})
+export const getDeleteUserUsernameMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(['ok']), undefined]), description: faker.helpers.randomize([faker.random.word(), undefined])})
 
-export const getGetUserUsernameMock = () => ({status: faker.datatype.boolean(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, follows: {followers: faker.datatype.number(), following: faker.datatype.number()}})
+export const getGetUserUsernameMock = () => ({status: faker.helpers.randomize(['ok']), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, follows: {followers: faker.datatype.number(), following: faker.datatype.number()}})
 
-export const getPatchUserUsernameMock = () => ({status: faker.datatype.boolean(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
+export const getPatchUserUsernameMock = () => ({status: faker.helpers.randomize(['ok']), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
 
-export const getGetUserUsernameRoleMock = () => ({status: faker.datatype.boolean(), role: faker.random.word()})
+export const getGetUserUsernameRoleMock = () => ({status: faker.helpers.randomize(['ok']), role: faker.random.word()})
 
-export const getPatchUserUsernameRoleMock = () => ({status: faker.datatype.boolean(), message: faker.random.word(), role: faker.random.word()})
+export const getPatchUserUsernameRoleMock = () => ({status: faker.helpers.randomize(['ok']), message: faker.random.word(), role: faker.random.word()})
 
-export const getPostUserUsernameFollowMock = () => ({status: faker.datatype.boolean(), message: faker.random.word()})
+export const getPostUserUsernameFollowMock = () => ({status: faker.helpers.randomize(['ok']), message: faker.random.word()})
 
-export const getDeleteUserUsernameFollowMock = () => ({status: faker.datatype.boolean(), message: faker.random.word()})
+export const getDeleteUserUsernameFollowMock = () => ({status: faker.helpers.randomize(['ok']), message: faker.random.word()})
 
 export const getUsersMSW = () => [
 rest.delete('*/user/:username', (req, res, ctx) => {

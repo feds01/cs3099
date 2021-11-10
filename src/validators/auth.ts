@@ -2,7 +2,14 @@ import { z } from 'zod';
 
 export const IJwtSchema = z
     .string()
-    .regex(/^Bearer ([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-+/=]*)/, 'Invalid JWT.')
+    .regex(/^([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-+/=]*)/, 'Invalid JSON Web Token.');
+
+export const IAuthHeaderSchema = z
+    .string()
+    .regex(
+        /^Bearer ([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_=]+)\.([a-zA-Z0-9_\-+/=]*)/,
+        'Invalid JSON Web Token.',
+    )
     .transform((x) => {
         const [_, token] = x.split(' ');
 

@@ -1,22 +1,39 @@
-import React from 'react';
+import { ReactElement, useState } from 'react';
 import { Box } from '@mui/system';
-
-import { Link, useHistory, useLocation } from 'react-router-dom';
+import qs from 'query-string';
+import Button from '@mui/material/Button';
 import { User } from '../../lib/api/models';
 import Typography from '@mui/material/Typography';
+import { useDispatchAuth } from '../../hooks/auth';
 import LoginForm from '../../components/LoginForm';
 import LoginCover from './../../static/images/login.svg';
-import { useDispatchAuth } from '../../hooks/auth';
+import { Link, useHistory, useLocation } from 'react-router-dom';
+import { SsoQuerySchema } from '../../lib/validators/ssoQuery';
+import Divider from '@mui/material/Divider';
 
 interface LocationState {
     from: { pathname: string };
 }
 
-// TODO: Support callbackUrl parameter... This involves forwarding the returned tokens
-// and details from the server back to the callbackUrl. If the callbackUrl is specified,
-// we should ignore the 'from' parameter (if it's provided).
-function Login() {
+interface Props {}
+
+// Type denoting the state of SSO attempt
+type SsoAttempt =
+    | {
+          attempt: false;
+      }
+    | {
+          attempt: true;
+          state: string;
+          from: string;
+          token: string;
+          url: string;
+      };
+
+function Login(props: Props): ReactElement {
     const authDispatcher = useDispatchAuth();
+
+    const [showSsoAgreement, setShowSsoAgreement] = useState<SsoAttempt>({ attempt: false });
 
     // extract the 'from' part of the redirect if it's present. We use this path
     // to redirect the user back to where they tried to go.
@@ -26,7 +43,30 @@ function Login() {
 
     const handleSuccess = (session: User, token: string, refreshToken: string, rememberUser: boolean) => {
         authDispatcher({ type: 'login', rememberUser, data: { session, token, refreshToken } });
-        history.push(from);
+
+        // It might be the case that we get a 'from' and 'state' parameter passed with this.
+        const parsedQuery = qs.parse(location.search.replace(/^\?/, ''));
+        const validator = SsoQuerySchema.safeParse(parsedQuery);
+
+        if (validator.success) {
+            const { state, from } = validator.data;
+
+            const query = qs.stringify({ from: window.location.protocol + window.location.hostname, token, state });
+
+            // Paths are stupid!
+            const fromUrl = new URL(from);
+            const url = new URL(`${fromUrl.pathname.replace(/\/+$/, '')}/api/sg/sso/callback?${query}`, from);
+
+            setShowSsoAgreement({
+                attempt: true,
+                state,
+                from,
+                token,
+                url: url.toString(),
+            });
+        } else {
+            history.push(from);
+        }
     };
 
     return (
@@ -61,17 +101,67 @@ function Login() {
                     paddingRight: 2,
                 }}
             >
-                <Typography sx={{ marginBottom: 8 }} variant={'h4'}>
-                    Login
-                </Typography>
-                <Typography variant={'h5'}>Login to your account</Typography>
-                <Typography variant={'caption'}>
-                    Publish scientific works, papers, review and checkout the most recent works in astronomy today.
-                </Typography>
-                <LoginForm onSuccess={handleSuccess} />
-                <Typography variant="body1">
-                    Don't have an account yet? <Link to={{ pathname: '/register', state: { from } }}>Join Iamus</Link>
-                </Typography>
+                {showSsoAgreement.attempt ? (
+                    <>
+                        <Box sx={{ pb: 2 }}>
+                            <Typography sx={{ marginBottom: 1 }} variant={'h4'}>
+                                Confirm authorisation
+                            </Typography>
+                            <Typography variant={'body1'}>
+                                You're about to authorise a foreign journal to access your data.
+                            </Typography>
+                        </Box>
+
+                        <Typography variant={'h5'}>
+                            Journal: <code style={{ wordBreak: 'break-all' }}>{showSsoAgreement.from}</code>
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', pt: 2 }}>
+                            <Button
+                                variant="contained"
+                                size="small"
+                                sx={{ m: 1 }}
+                                color="success"
+                                href={showSsoAgreement.url}
+                            >
+                                Agree
+                            </Button>
+                            <Button variant="outlined" size="small" sx={{ ml: 1, mr: 1 }} href={from.pathname}>
+                                Cancel
+                            </Button>
+                        </Box>
+                    </>
+                ) : (
+                    <>
+                        <Typography sx={{ marginBottom: 8 }} variant={'h4'}>
+                            Login
+                        </Typography>
+                        <Typography variant={'h5'}>Login to your account</Typography>
+                        <Typography variant={'caption'}>
+                            Publish scientific works, papers, review and checkout the most recent works in astronomy
+                            today.
+                        </Typography>
+                        <LoginForm onSuccess={handleSuccess} />
+                        <Typography variant="body1">
+                            Don't have an account yet?{' '}
+                            <Link style={{ color: 'blue' }} to={{ pathname: '/register', state: { from } }}>
+                                Join Iamus
+                            </Link>
+                        </Typography>
+                        <Box>
+                            <Divider sx={{ mt: 2, mb: 2 }}>OR</Divider>
+
+                            <Button
+                                fullWidth
+                                variant={'contained'}
+                                color={'secondary'}
+                                sx={{ fontWeight: 'bold' }}
+                                href={'/login/sso'}
+                            >
+                                Sign in with a journal
+                            </Button>
+                        </Box>
+                    </>
+                )}
             </Box>
         </Box>
     );

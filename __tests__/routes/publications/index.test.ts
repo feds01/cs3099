@@ -69,20 +69,19 @@ describe('Publications endpoints testing', () => {
             .send({
                 revision: 'v1',
                 title: 'Test title',
-                name: 'Test name',
+                name: 'Test-name',
                 introduction: 'Introduction here',
                 collaborators: ['collabo1', 'collabo2'],
             });
         expect(response.status).toBe(201);
         expect(response.body.message).toBe('Successfully submitted new publication.');
-        expect(response.body.publication.revision).toBe('v1');
         expect(response.body.publication.title).toBe('Test title');
-        expect(response.body.publication.name).toBe('test name');
+        expect(response.body.publication.name).toBe('test-name');
         expect(response.body.publication.introduction).toBe('Introduction here');
         expect(response.body.publication.collaborators).toEqual([collabo1!.id, collabo2!.id]);
-        expect(response.body.publication.owner).toBe(owner!.id);
+        expect(response.body.publication.owner).toStrictEqual(User.project(owner as IUserDocument));
 
-        const publication = await Publication.count({ name: 'test name', revision: 'v1' });
+        const publication = await Publication.count({ name: 'test-name', revision: 'v1' });
         expect(publication).toBe(1);
     });
 
@@ -93,15 +92,14 @@ describe('Publications endpoints testing', () => {
             .send({
                 revision: 'v2',
                 title: 'Test title',
-                name: 'Test name',
+                name: 'Test-name',
                 introduction: 'Introduction here',
                 collaborators: ['collabo1', 'collabo2'],
             });
         expect(response.status).toBe(201);
         expect(response.body.message).toBe('Successfully submitted new publication.');
-        expect(response.body.publication.revision).toBe('v2');
 
-        const publication = await Publication.count({ name: 'test name', revision: 'v2' });
+        const publication = await Publication.count({ name: 'test-name', revision: 'v2' });
         expect(publication).toBe(1);
     });
 
@@ -112,7 +110,7 @@ describe('Publications endpoints testing', () => {
             .send({
                 revision: 'v1',
                 title: 'Test title',
-                name: 'test name',
+                name: 'Test-name',
                 introduction: 'Introduction here',
                 collaborators: ['collabo1', 'collabo2'],
             });
@@ -120,7 +118,7 @@ describe('Publications endpoints testing', () => {
         expect(response.body.message).toBe(errors.PUBLICATION_FAILED);
         expect(response.body.extra).toBe(errors.PUBLICATION_EXISTS);
 
-        const publicationNum = await Publication.count({ name: 'test name', revision: 'v1' });
+        const publicationNum = await Publication.count({ name: 'test-name', revision: 'v1' });
         expect(publicationNum).toBe(1);
     });
 
@@ -131,12 +129,12 @@ describe('Publications endpoints testing', () => {
             .send({
                 revision: 'v1',
                 title: 'Test title',
-                name: 'Test name 2',
+                name: 'Test-name-2',
                 introduction: 'Introduction here',
                 collaborators: ['collabo1', 'collabo3'],
             });
-        expect(response.status).toBe(404);
-        expect(response.body.message).toBe(errors.NON_EXISTENT_USER);
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe("Bad request, endpoint body schema didn't match to provided body.");
     });
 
     // Tests for GET /publication/:username/:name/:revision?/tree/:path(*)

@@ -6,6 +6,6 @@ describe('Server Litmus test', () => {
         const response = await request(app).get('/version');
 
         expect(response.status).toBe(200);
-        expect(response.body.status).toBe(true);
+        expect(response.body.status).toBe('ok');
     });
 });

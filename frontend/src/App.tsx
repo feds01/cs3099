@@ -1,17 +1,18 @@
-import React from 'react';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { QueryCache, QueryClient, QueryClientProvider } from 'react-query';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 
 import { AuthProvider } from './hooks/auth';
 import LoginRoute from './routes/Auth/Login';
 import * as routeConfig from './config/routes';
 import AppliedRoute from './components/AppliedRoute';
+import SingleSignOnRoute from './routes/Auth/SingleSignOn';
 import RegisterRoute from './routes/Auth/Register';
 import PrivateRoute from './components/PrivateRoute';
 import ErrorContainer from './components/ErrorContainer';
+import { redirects } from './config/routes';
 
 // API querying client.
 const queryCache = new QueryCache();
@@ -85,7 +86,11 @@ function App() {
                     <Router>
                         <Switch>
                             <AppliedRoute exact path={'/login'} component={LoginRoute} />
+                            <AppliedRoute exact path={'/login/sso'} component={SingleSignOnRoute} />
                             <AppliedRoute exact path={'/register'} component={RegisterRoute} />
+                            {redirects.map((redirect, index) => {
+                                return <Redirect exact strict {...redirect} key={index} />;
+                            })}
                             <Route>
                                 <ErrorContainer>
                                     <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>

@@ -1,0 +1,427 @@
+openapi: 3.0.0
+servers:
+    - description: Local development
+      url: https://localhost:5000
+info:
+    description: A REST API for communicating between groups within the Supergroup C. This aims to standardise authentication, and communication between the services.
+    version: '1.0.0'
+    title: Supergroup C API
+    license:
+        name: MIT
+        url: https://spdx.org/licenses/MIT.html
+tags:
+    - name: authentication
+      description: SSO Authentication endpoints.
+    - name: resources
+      description: Resource management endpoints.
+paths:
+    /sg/sso/login:
+        post:
+            summary: External login endpoint
+            description: Endpoint for external services to authenticate with this service.
+            tags:
+                - authentication
+            parameters:
+                - in: query
+                  required: true
+                  name: from
+                  schema:
+                      type: string
+                      description: Callback URL of where to respond
+                - in: query
+                  required: true
+                  name: state
+                  schema:
+                      type: string
+                      description: Session state
+            requestBody:
+                required: true
+                description: Login endpoint for external services
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UserLogin'
+            responses:
+                '200':
+                    $ref: '#/components/responses/UserAuthResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /sg/sso/verify:
+        post:
+            summary: Refresh user session
+            description: Endpoint to refresh a JWT token
+            tags:
+                - authentication
+            parameters:
+                - in: query
+                  required: true
+                  name: token
+                  schema:
+                      type: string
+                      description: JWT to check
+            responses:
+                '200':
+                    $ref: '#/components/responses/TokenVerificationResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+
+    /sg/sso/callback:
+        post:
+            summary: Successful external login endpoint.
+            description: This endpoint is used to notify the journal that the external login was successful and we should proceed with authenticating the external user. This might mean that there is an internal process of registering the user on the platform.
+            tags:
+                - authentication
+            parameters:
+                - in: query
+                  required: true
+                  name: from
+                  schema:
+                      type: string
+                      description: Callback URL of where to respond
+                - in: query
+                  required: true
+                  name: state
+                  schema:
+                      type: string
+                      description: Session state
+            responses:
+                '204':
+                    description: No Content
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /sg/resources/export/{id}:
+        get:
+            summary: Endpoint to download an archive representing the publication sources.
+            tags:
+                - resources
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: The identifier of the publication.
+            responses:
+                '200':
+                    $ref: '#/components/responses/PublicationExportResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+
+    /sg/resources/export/{id}/metadata:
+        get:
+            summary: Endpoint to download the publication metadata
+            tags:
+                - resources
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: The identifier of the publication.
+            responses:
+                '200':
+                    $ref: '#/components/responses/PublicationMetadataResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+
+components:
+    securitySchemes:
+        BearerAuth:
+            type: http
+            scheme: bearer
+    responses:
+        BadRequest:
+            description: Bad Request. Provided request parameters were invalid.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: string
+                                example: 'error'
+                                enum: ['error']
+                            message:
+                                type: string
+                                example: 'Malformed request'
+        Unauthorized:
+            description: Unauthorized. Requester doesn't have sufficient permissions to perform this action.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: string
+                                example: 'error'
+                                enum: ['error']
+                            message:
+                                type: string
+                                example: 'Unauthorized'
+        InternalServerError:
+            description: Internal Server Error. Information retrieval failed, server unexpectedly returned an error.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: string
+                                example: 'error'
+                                enum: ['error']
+                            message:
+                                type: string
+                                example: 'Internal Server Error'
+        NotFound:
+            description: Specified resource does not exist in the scope of the requesters permissions.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: string
+                                example: 'error'
+                                enum: ['error']
+                            message:
+                                type: string
+                                example: 'Not Found'
+        PublicationExportResponse:
+            description: Response archive file.
+            content:
+                application/zip:
+                    schema:
+                        type: string
+                        format: binary
+                        example: 56 50 26 50 80 57 4e 4a 12 04
+        PublicationMetadataResponse:
+            description: Response from fetching publication information.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - data
+                        properties:
+                            status:
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
+                            data:
+                                type: object
+                                required:
+                                    - publication
+                                    - reviews
+                                properties:
+                                    publication:
+                                        $ref: '#/components/schemas/Publication'
+                                    reviews:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Review'
+        TokenVerificationResponse:
+            description: Response from fetching publication information.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
+                            message:
+                                type: string
+                                example: 'Token is valid'
+                            user:
+                                $ref: '#/components/schemas/User'
+        UserAuthResponse:
+            description: Authentication tokens with user information.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        description: Successful authentication, returning a token, and a refreshToken.
+                        required:
+                            - user
+                            - token
+                            - refreshToken
+                        properties:
+                            status:
+                                type: boolean
+                                example: true
+                            token:
+                                type: string
+                                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                            refreshToken:
+                                type: string
+                                example: ABCDE921312DAB23AE
+                            user:
+                                $ref: '#/components/schemas/User'
+
+    schemas:
+        UserLogin:
+            type: object
+            description: The username can either be the actual username or the user's email.
+            required:
+                - password
+                - username
+            properties:
+                username:
+                    type: string
+                    example: 'jdoe1'
+                password:
+                    type: string
+                    example: 'Password1!'
+        User:
+            type: object
+            required:
+                - id
+                - email
+                - username
+                - firstName
+                - lastName
+            properties:
+                id:
+                    type: string
+                    example: '507f1f77bcf86cd799439011'
+                email:
+                    type: string
+                    example: 'jon.doe@email.com'
+                username:
+                    type: string
+                    example: 'jdoe1'
+                firstName:
+                    type: string
+                    example: 'John'
+                lastName:
+                    type: string
+                    example: 'Doe'
+                profilePictureUrl:
+                    type: string
+                    example: https://some-cdn.some-company.com/profiles/avatar.jpg
+                status:
+                    type: string
+                    example: "I'm working!"
+                about:
+                    type: string
+                    example: 'Professor at Example University'
+        Publication:
+            type: object
+            required:
+                - name
+                - title
+                - owner
+                - introduction
+                - collaborators
+                - createdAt
+            properties:
+                name:
+                    type: string
+                    example: 'some-url-safe-name'
+                title:
+                    type: string
+                    example: 'Journal: A code journals.'
+                owner:
+                    type: string
+                    example: 'username'
+                introduction:
+                    type: string
+                    example: 'This is a platform for managing code journals...'
+                revision:
+                    type: string
+                    example: 'v1.0.0'
+                collaborators:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/User'
+        Review:
+            type: object
+            required:
+                - owner
+                - threads
+                - createdAt
+            properties:
+                owner:
+                    $ref: '#/components/schemas/User'
+                createdAt:
+                    type: number
+                    example: 1636065460
+                threads:
+                    type: array
+                    items:
+                        type: array
+                        items:
+                            $ref: '#/components/schemas/Comment'
+        Comment:
+            type: object
+            required:
+                - filename
+                - contents
+                - thread
+                - author
+                - postedAt
+            properties:
+                filename:
+                    type: string
+                    example: 'src/server.ts'
+                anchor:
+                    type: object
+                    required:
+                        - start
+                        - end
+                    properties:
+                        start:
+                            type: number
+                            example: 1
+                        end:
+                            type: number
+                            example: 2
+                contents:
+                    type: string
+                    example: 'This is a comment'
+                thread:
+                    type: number
+                    example: 0
+                author:
+                    $ref: '#/components/schemas/User'
+                postedAt:
+                    type: number
+                    example: 1636065460

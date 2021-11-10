@@ -8,12 +8,13 @@
  *
  */
 
+import assert from 'assert';
 import express from 'express';
 import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 import { ZodError } from 'zod';
 import Logger from '../common/logger';
 import { config } from '../server';
-import { IJwtSchema } from '../validators/auth';
+import { IAuthHeaderSchema } from '../validators/auth';
 
 export interface TokenPayload {
     token: string;
@@ -24,6 +25,35 @@ export interface TokenData {
     id: string;
     username: string;
     email: string;
+}
+
+export class JwtError extends Error {
+    constructor(readonly type: 'expired' | 'unknown', readonly inner: Error) {
+        super();
+    }
+}
+
+/**
+ * Function that is used to verify the validity of a token.
+ *
+ * @param token - The token to verify
+ * @returns The token payload if the token is valid, throws an error if the token is invalid.
+ */
+export async function verifyToken(token: string): Promise<TokenData> {
+    return await new Promise((resolve, reject) =>
+        jwt.verify(token, config.jwtSecret, {}, (err, payload) => {
+            if (err) {
+                if (err.name === 'TokenExpiredError') {
+                    return reject(new JwtError('expired', err));
+                }
+                return reject(new JwtError('unknown', err));
+            }
+
+            // If there was no error, it shouldn't be undefined.
+            assert(typeof payload !== 'undefined');
+            return resolve(payload.data);
+        }),
+    );
 }
 
 /**
@@ -92,7 +122,7 @@ export function getTokensFromHeader(
     const refreshToken = req.get('x-refresh-token');
 
     try {
-        const token = IJwtSchema.parse(bearer);
+        const token = IAuthHeaderSchema.parse(bearer);
 
         // Decode the sent over JWT key using our secret key stored in the process' runtime.
         // Then carry on, even if the data is incorrect for the given request, since this does

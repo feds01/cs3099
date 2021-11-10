@@ -5,6 +5,10 @@ export interface IComment {
     owner: mongoose.ObjectId;
     content: string;
     review: mongoose.ObjectId;
+    nested?: {
+        start: number;
+        end: number;
+    };
     replying?: mongoose.ObjectId;
     thread?: mongoose.ObjectId;
 }
@@ -20,6 +24,10 @@ const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
         content: { type: String, required: true },
         thread: { type: mongoose.Schema.Types.ObjectId, required: false },
         replying: { type: mongoose.Schema.Types.ObjectId, ref: 'comment', required: false },
+        nested: {
+            start: { type: Number },
+            end: { type: Number },
+        },
         review: { type: mongoose.Schema.Types.ObjectId, ref: 'review' },
     },
     { timestamps: true },

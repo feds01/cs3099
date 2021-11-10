@@ -42,7 +42,7 @@ T extends (...args: any) => Promise<any>
 export const postPublication = (
     createPublicationRequest: CreatePublicationRequest,
  ) => {
-      return customInstance<unknown>(
+      return customInstance<CreatePublicationResponse>(
       {url: `/publication`, method: 'post',
       data: createPublicationRequest
     },
@@ -51,7 +51,7 @@ export const postPublication = (
   
 
 
-    export const usePostPublication = <TError = CreatePublicationResponse | BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostPublication = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postPublication>, TError,{data: CreatePublicationRequest}, TContext>, }
 ) => {

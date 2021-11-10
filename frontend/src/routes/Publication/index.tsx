@@ -89,11 +89,17 @@ function PublicationView() {
         case 'ok': {
             return (
                 <>
-                    <Box sx={{display: 'flex', alignItems: 'center'}}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <MarkdownRenderer contents={publication.data.publication.title} />
-                        <Chip sx={{ml: 1}} label={publication.data.publication.revision || "current"} variant="outlined" />
+                        <Chip
+                            sx={{ ml: 1 }}
+                            label={publication.data.publication.revision || 'current'}
+                            variant="outlined"
+                        />
                     </Box>
-                    <MarkdownRenderer contents={publication.data.publication.introduction} />
+                    {publication.data.publication.introduction && (
+                        <MarkdownRenderer contents={publication.data.publication.introduction} />
+                    )}
                     <Divider />
                     <PublicationViewSource
                         index={{ username, name, revision }}

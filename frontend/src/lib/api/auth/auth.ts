@@ -13,13 +13,12 @@ import {
 import type {
   UnprocessableEntityResponse,
   InternalServerErrorResponse,
-  EmailValidation,
   UsernameValidation,
-  TokenResponse,
+  TokenResponseResponse,
   BadRequestResponse,
   UnauthorizedResponse,
   TokenRequest,
-  UserAuthResponse,
+  UserAuthResponseResponse,
   UserLogin,
   UserRegistration
 } from '.././models'
@@ -31,36 +30,6 @@ T extends (...args: any) => Promise<any>
 
 
 /**
- * Check if an email is valid to use when registering
- * @summary Pre-registration email validation
- */
-export const postAuthEmailvalidation = (
-    emailValidation: EmailValidation,
- ) => {
-      return customInstance<void>(
-      {url: `/auth/email_validation`, method: 'post',
-      data: emailValidation
-    },
-      );
-    }
-  
-
-
-    export const usePostAuthEmailvalidation = <TError = UnprocessableEntityResponse | InternalServerErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthEmailvalidation>, TError,{data: EmailValidation}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
-
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthEmailvalidation>, {data: EmailValidation}> = (props) => {
-          const {data} = props || {};
-
-          return  postAuthEmailvalidation(data,)
-        }
-
-      return useMutation<AsyncReturnType<typeof postAuthEmailvalidation>, TError, {data: EmailValidation}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
  * Check if an email is valid to use when registering
  * @summary Pre-registration username validation
  */
@@ -97,7 +66,7 @@ export const postAuthUsernamevalidation = (
 export const postAuthToken = (
     tokenRequest: TokenRequest,
  ) => {
-      return customInstance<TokenResponse>(
+      return customInstance<TokenResponseResponse>(
       {url: `/auth/token`, method: 'post',
       data: tokenRequest
     },
@@ -127,7 +96,7 @@ export const postAuthToken = (
 export const postAuthLogin = (
     userLogin: UserLogin,
  ) => {
-      return customInstance<UserAuthResponse>(
+      return customInstance<UserAuthResponseResponse>(
       {url: `/auth/login`, method: 'post',
       data: userLogin
     },
@@ -157,7 +126,7 @@ export const postAuthLogin = (
 export const postAuthRegister = (
     userRegistration: UserRegistration,
  ) => {
-      return customInstance<UserAuthResponse>(
+      return customInstance<UserAuthResponseResponse>(
       {url: `/auth/register`, method: 'post',
       data: userRegistration
     },

@@ -49,7 +49,7 @@ registerRoute(router, '/:username/:name/bookmark', {
 
         if (!publication) {
             return res.status(404).json({
-                status: false,
+                status: 'error',
                 message: errors.NON_EXISTENT_PUBLICATION,
             });
         }
@@ -62,7 +62,7 @@ registerRoute(router, '/:username/:name/bookmark', {
 
         if (doc) {
             return res.status(204).json({
-                status: true,
+                status: 'ok',
             });
         }
 
@@ -71,14 +71,14 @@ registerRoute(router, '/:username/:name/bookmark', {
             newBookmark.save();
 
             return res.status(200).json({
-                status: true,
+                status: 'ok',
                 message: 'Successfully bookmarked publication.',
             });
         } catch (e) {
             Logger.error(e);
 
             return res.status(500).json({
-                status: false,
+                status: 'error',
                 message: errors.INTERNAL_SERVER_ERROR,
             });
         }
@@ -122,7 +122,7 @@ registerRoute(router, '/:username/:name/bookmark', {
 
         if (!publication) {
             return res.status(404).json({
-                status: false,
+                status: 'error',
                 message: errors.NON_EXISTENT_PUBLICATION,
             });
         }
@@ -173,7 +173,7 @@ registerRoute(router, '/:username/:name/bookmark', {
 
         if (!publication) {
             return res.status(404).json({
-                status: false,
+                status: 'error',
                 message: errors.NON_EXISTENT_PUBLICATION,
             });
         }
@@ -184,7 +184,7 @@ registerRoute(router, '/:username/:name/bookmark', {
         }).exec();
 
         return res.status(200).json({
-            status: false,
+            status: 'error',
             bookmarked: !!link,
         });
     },
@@ -226,7 +226,7 @@ registerRoute(router, '/:username/:name/bookmarkers', {
 
         if (!publication) {
             return res.status(404).json({
-                status: false,
+                status: 'error',
                 message: errors.NON_EXISTENT_PUBLICATION,
             });
         }
@@ -239,7 +239,7 @@ registerRoute(router, '/:username/:name/bookmarkers', {
         const bookmarks = result.map((link) => User.project((link as typeof result[number]).user));
 
         return res.status(200).json({
-            status: true,
+            status: 'ok',
             bookmarks,
         });
     },
@@ -283,7 +283,7 @@ registerRoute(router, '/:username/bookmarks', {
         );
 
         return res.status(200).json({
-            status: true,
+            status: 'ok',
             bookmarked,
         });
     },
