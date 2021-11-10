@@ -1,5 +1,4 @@
-import React from 'react';
-import { useAuth } from '../../hooks/auth';
+import {ReactElement} from 'react';
 import Container from '@mui/material/Container';
 import PageLayout from '../../components/PageLayout';
 import { Box, Button, Divider, Typography } from '@mui/material';
@@ -8,9 +7,7 @@ import ReviewsList from './modules/ReviewsList';
 
 interface Props {}
 
-export default function Home(props: Props) {
-    const { session } = useAuth();
-
+export default function Home(props: Props): ReactElement {
     return (
         <PageLayout title={'Home'}>
             <Container sx={{ mt: 2 }}>

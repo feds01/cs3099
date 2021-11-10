@@ -1,30 +1,28 @@
 import { useAuth } from '../../../hooks/auth';
-import { ReactElement, useState } from 'react'
-import { Publication } from '../../../lib/api/models';
+import { ReactElement, useEffect, useState } from 'react';
+import { GetPublicationUsername200 as GetPublications } from '../../../lib/api/models';
 import { ContentState } from '../../../types/requests';
-import { useGetPublicationUsername } from '../../../lib/api/publications/publications';
 import SkeletonList from '../../../components/SkeletonList';
+import ErrorBanner from '../../../components/ErrorBanner';
+import { transformQueryIntoContentState } from '../../../wrappers/react-query';
+import { useGetPublicationUsername } from '../../../lib/api/publications/publications';
 
-interface Props {
-    
-}
-
-export default function PublicationList({}: Props): ReactElement {
+export default function PublicationList(): ReactElement {
     const auth = useAuth();
 
-    const pubQuery = useGetPublicationUsername(auth.session.username);
-    
-    const [publications, setPublications] = useState<ContentState<Publication[], any>>({ state: 'loading' });
+    const getPublicationsQuery = useGetPublicationUsername(auth.session.username);
+    const [publications, setPublications] = useState<ContentState<GetPublications, any>>({ state: 'loading' });
 
-    switch (publications.state){
+    useEffect(() => {
+        setPublications(transformQueryIntoContentState(getPublicationsQuery));
+    }, [getPublicationsQuery.data, getPublicationsQuery.isLoading]);
+
+    switch (publications.state) {
         case 'loading':
             return <SkeletonList rows={3} />;
         case 'error':
-            return <>Something went wrong :(</>;
+            return <ErrorBanner message={publications.error?.message || 'unknown error occurred.'} />;
         case 'ok':
-            return (
-                <div>
-                </div>
-            );
-        }
+            return <div>{JSON.stringify(publications.data.data)}</div>;
+    }
 }

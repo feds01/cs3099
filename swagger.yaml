@@ -1780,6 +1780,7 @@ components:
                 - createdAt
                 - owner
                 - draft
+                - pinned
             properties:
                 name:
                     type: string
@@ -1793,6 +1794,9 @@ components:
                 revision:
                     type: string
                     example: 'v1.0.0'
+                pinned:
+                    type: boolean
+                    example: false
                 draft:
                     type: boolean
                     example: true

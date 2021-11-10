@@ -33,7 +33,6 @@ export default function CreatePublicationForm(props: Props): ReactElement {
     const {
         control,
         handleSubmit,
-        formState: { errors },
     } = useForm<CreatePublication>({
         resolver: zodResolver(CreatePublicationSchema),
         defaultValues: {

@@ -1,21 +1,16 @@
-import { useAuth } from '../../../hooks/auth';
+// import { useAuth } from '../../../hooks/auth';
 import { ReactElement, useState } from 'react'
 import { Publication } from '../../../lib/api/models';
 import { ContentState } from '../../../types/requests';
 import SkeletonList from '../../../components/SkeletonList';
 
-interface Props {
-    
-}
-
-export default function ReviewsList({}: Props): ReactElement {
-    const auth = useAuth();
-
+export default function ReviewsList(): ReactElement {
+    // const auth = useAuth();
     // const pubQuery = useGetPublicationUsername(auth.session.username);
     
-    const [publications, setPublications] = useState<ContentState<Publication[], any>>({ state: 'loading' });
+    const [reviews] = useState<ContentState<Publication[], any>>({ state: 'loading' });
 
-    switch (publications.state){
+    switch (reviews.state){
         case 'loading':
             return <SkeletonList rows={3} />;
         case 'error':

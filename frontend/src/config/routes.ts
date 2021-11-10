@@ -39,7 +39,7 @@ export const routes = {
         component: HomeRoute,
     },
     '/profile/:id': {
-        exact: true,
+        exact: false,
         title: 'Profile',
         component: ProfileRoute,
     },

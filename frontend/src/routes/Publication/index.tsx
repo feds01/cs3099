@@ -1,7 +1,16 @@
-import React, { ReactElement, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import PageLayout from '../../components/PageLayout';
 import { ContentState } from '../../types/requests';
+import { ReactElement, useEffect, useState } from 'react';
+
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
+import Container from '@mui/material/Container';
+import MarkdownRenderer from '../../components/MarkdownRenderer';
+import PublicationViewSource from '../../components/PublicationSourceView';
+import { transformQueryIntoContentState } from '../../wrappers/react-query';
+
 import {
     GetPublicationUsernameNameRevision200 as PublicationResponse,
     ResourceResponseResponse,
@@ -11,15 +20,7 @@ import {
     useGetPublicationUsernameNameRevisionTreePath as useGetPublicationSource,
     useGetPublicationUsernameNameTreePath as useGetRevisionlessPublicationSource,
 } from '../../lib/api/publications/publications';
-import PublicationViewSource from '../../components/PublicationSourceView';
-import { transformQueryIntoContentState } from '../../wrappers/react-query';
-import Container from '@mui/material/Container';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import MarkdownRenderer from '../../components/MarkdownRenderer';
-import Divider from '@mui/material/Divider';
-import Chip from '@mui/material/Chip';
-import Box from '@mui/material/Box';
+import ErrorBanner from '../../components/ErrorBanner';
 
 interface Props {}
 
@@ -79,12 +80,7 @@ function PublicationView() {
             );
         }
         case 'error': {
-            return (
-                <Alert severity="error">
-                    <AlertTitle>Error</AlertTitle>
-                    Failed to fetch resource: <strong>{publication.error?.message}</strong>
-                </Alert>
-            );
+            return <ErrorBanner message={publication.error?.message} />;
         }
         case 'ok': {
             return (
