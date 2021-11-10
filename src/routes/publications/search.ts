@@ -15,8 +15,8 @@ registerRoute(router, '/search', {
     handler: async (_req, res) => {
         // TODO: Implement search endpoint
         return res.status(503).json({
-            status: "error",
-            message: "Service Unavailable"
+            status: 'error',
+            message: 'Service Unavailable',
         });
     },
 });
