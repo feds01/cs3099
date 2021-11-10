@@ -14,7 +14,7 @@ type RoutesShape = {
 
 type RedirectRoute = {
     from: string;
-    to: string;
+    to: string; 
 };
 
 // Defined re-directs for the router to render prior to the routes. This is used
@@ -39,7 +39,7 @@ export const routes = {
         component: HomeRoute,
     },
     '/profile/:id': {
-        exact: false,
+        exact: true,
         title: 'Profile',
         component: ProfileRoute,
     },
