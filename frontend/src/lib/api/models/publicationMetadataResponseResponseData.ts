@@ -5,10 +5,10 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import type { Publication } from './publication';
-import type { Review } from './review';
+import type { SgPublication } from './sgPublication';
+import type { SgReview } from './sgReview';
 
 export type PublicationMetadataResponseResponseData = {
-  publication: Publication;
-  reviews: Review[];
+  publication: SgPublication;
+  reviews: SgReview[];
 };

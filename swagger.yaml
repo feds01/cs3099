@@ -20,14 +20,14 @@ tags:
       description: Endpoints relating to managing followers.
     - name: reviews
       description: Endpoints relating to submission reviews.
+    - name: comments
+      description: Endpoints related to managing user comments.
     - name: publications
       description: Endpoints relating to publications.
     - name: bookmarks
       description: Endpoints relating to bookmarks.
     - name: resources
       description: Endpoints related to managing uploaded resources.
-    - name: comments
-      description: Endpoints related to managing user comments.
 paths:
     /sg/sso/login:
         get:
@@ -71,7 +71,6 @@ paths:
                     $ref: '#/components/responses/TokenVerificationResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
-
     /sg/sso/callback:
         get:
             summary: Successful external login endpoint.
@@ -422,6 +421,39 @@ paths:
                                         enum: ['ok']
                                     user:
                                         $ref: '#/components/schemas/User'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /user/{username}/reviews:
+        get:
+            summary: Get a user's reviews.
+            description: Return a paginated list of the user's reviews.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: User owned reviews.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    reviews:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Review'
                 default:
                     $ref: '#/components/responses/ApiError'
     /user/{username}/role:
@@ -994,6 +1026,53 @@ paths:
                     $ref: '#/components/responses/ResourceResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
+    /publication/{username}/{name}/{revision}/all/:
+        get:
+            summary: Get a paginated list of sources for a publication
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: path
+                  name: revision
+                  schema:
+                      type: string
+                  required: true
+                  description: Get a specific revision of a given publication.
+            responses:
+                '200':
+                    description: Returns the requested publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - files
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    files:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/FileResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/bookmark:
         delete:
             summary: Un-bookmark a publication
@@ -1159,6 +1238,124 @@ paths:
                                             $ref: '#/components/schemas/Publication'
                 default:
                     $ref: '#/components/responses/ApiError'
+    /publication/{username}/{name}/review:
+        post:
+            summary: Create a review on a publication.
+            description: Begin a review process on a publication.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+            responses:
+                '200':
+                    description: Created a new review.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - review
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    review:
+                                        $ref: '#/components/schemas/Review'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication/{username}/{name}/{revision}/reviews:
+        get:
+            summary: Get a list of reviews on a publication
+            description: Get a paginated list of publication reviews.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: path
+                  name: revision
+                  schema:
+                      type: string
+                  required: true
+                  description: The revision of the publication.
+            responses:
+                '200':
+                    description: Returns the requested publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - reviews
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    reviews:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Review'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication/{username}/{name}/{revision}/export:
+        post:
+            summary: Initiate a process of exporting the publication
+            description: This will initialise the process of exporting a said publication.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: path
+                  name: revision
+                  schema:
+                      type: string
+                  required: true
+                  description: The revision of the publication.
+            responses:
+                '204':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /resource/upload/{username}:
         post:
             summary: Upload an avatar image for a user.
@@ -1252,17 +1449,286 @@ paths:
                                 $ref: '#/components/schemas/UploadResourceResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
+    /thread/{id}:
+        get:
+            description: Get comments for a particular thread.
+            tags:
+                - comments
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: ID of thread.
+            responses:
+                '200':
+                    description: Comment thread.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    comments:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Comment'
+
+                default:
+                    $ref: '#/components/responses/ApiError'
+        delete:
+            description: Get a paginated list of publication revisions.
+            tags:
+                - comments
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: ID of thread.
+            responses:
+                '204':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /review/{id}/comment:
+        post:
+            summary: Add a comment to a review.
+            description: Comment on a review, specified by the review id.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: review id.
+            requestBody:
+                $ref: '#/components/requestBodies/CreateCommentRequest'
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    comment:
+                                        $ref: '#/components/schemas/Comment'
+                default:
+                    $ref: '#/components/responses/ApiError'
+
+    /comment/{id}:
+        get:
+            summary: Get a comment
+            description: get comment by user id.
+            tags:
+                - comments
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: comment id.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    comment:
+                                        $ref: '#/components/schemas/Comment'
+                default:
+                    $ref: '#/components/responses/ApiError'
+        delete:
+            summary: Delete a comment
+            description: delete comment by user id.
+            tags:
+                - comments
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: comment id.
+            responses:
+                '204':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /review/{id}:
+        get:
+            summary: Get a review.
+            description: get review by user id.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: review id.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    review:
+                                        $ref: '#/components/schemas/Review'
+                default:
+                    $ref: '#/components/responses/ApiError'
+        delete:
+            summary: Delete a review
+            description: delete review by user id.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: review id.
+            responses:
+                '204':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /review/{id}/comments:
+        get:
+            summary: Get comments on a review.
+            description: get a paginated list of comments on a review.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: review id.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    comments:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Review'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /review/{id}/complete:
+        post:
+            summary: Finalise a review.
+            description: Publish the drafted review.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: review id.
+            responses:
+                '200':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
 
 components:
     securitySchemes:
         BearerAuth:
             type: http
             scheme: bearer
+    requestBodies:
+        CreateCommentRequest:
+            required: true
+            description: Provide patched user information to update user information fields. Any field can be omitted from the request
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - contents
+                        properties:
+                            replying:
+                                type: string
+                                example: 'Doe'
+                            content:
+                                type: string
+                                example: "I'm a comment"
+                            filename:
+                                type: string
+                                example: 'src/server.ts'
+                            anchor:
+                                $ref: '#/components/schemas/CommentAnchor'
+
     responses:
         NoContent:
             description: No Content. Server acknowledges request but has no return body.
         ApiError:
-            description: Bad Request. Provided request parameters were invalid.
+            description: General Error response from the API.
             content:
                 application/json:
                     schema:
@@ -1679,6 +2145,9 @@ components:
                     type: string
                     enum: ['file']
                     example: 'file'
+                filename:
+                    type: string
+                    example: 'src/server.ts'
                 contents:
                     type: string
                     example: "Hello world!\n"
@@ -1717,20 +2186,20 @@ components:
             type: object
             required:
                 - owner
-                - threads
+                - publication
                 - createdAt
+                - updatedAt
             properties:
+                publication:
+                    $ref: '#/components/schemas/Publication'
                 owner:
                     $ref: '#/components/schemas/User'
                 createdAt:
                     type: number
                     example: 1636065460
-                threads:
-                    type: array
-                    items:
-                        type: array
-                        items:
-                            $ref: '#/components/schemas/Comment'
+                updatedAt:
+                    type: number
+                    example: 1636065460
         Comment:
             type: object
             required:
@@ -1744,17 +2213,7 @@ components:
                     type: string
                     example: 'src/server.ts'
                 anchor:
-                    type: object
-                    required:
-                        - start
-                        - end
-                    properties:
-                        start:
-                            type: number
-                            example: 1
-                        end:
-                            type: number
-                            example: 2
+                    $ref: '#/components/schemas/CommentAnchor'
                 contents:
                     type: string
                     example: 'This is a comment'
@@ -1766,6 +2225,18 @@ components:
                 postedAt:
                     type: number
                     example: 1636065460
+        CommentAnchor:
+            type: object
+            required:
+                - start
+                - end
+            properties:
+                start:
+                    type: number
+                    example: 1
+                end:
+                    type: number
+                    example: 2
         SgUser:
             type: string
             example: 'ABCDE921312DAB23AE:t06'
@@ -1832,17 +2303,7 @@ components:
                     type: string
                     example: 'src/server.ts'
                 anchor:
-                    type: object
-                    required:
-                        - start
-                        - end
-                    properties:
-                        start:
-                            type: number
-                            example: 1
-                        end:
-                            type: number
-                            example: 2
+                    $ref: '#/components/schemas/CommentAnchor'
                 contents:
                     type: string
                     example: 'This is a comment'

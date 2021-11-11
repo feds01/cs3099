@@ -12,9 +12,7 @@ import {
 } from 'react-query'
 import type {
   UploadResourceResponse,
-  BadRequestResponse,
-  UnauthorizedResponse,
-  InternalServerErrorResponse,
+  ApiErrorResponse,
   UploadResource
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
@@ -43,7 +41,7 @@ formData.append('file', uploadResource.file)
   
 
 
-    export const usePostResourceUploadUsername = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostResourceUploadUsername = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postResourceUploadUsername>, TError,{username: string;data: UploadResource}, TContext>, }
 ) => {
@@ -76,7 +74,7 @@ formData.append('file', uploadResource.file)
   
 
 
-    export const usePostResourceUploadPublicationId = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostResourceUploadPublicationId = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postResourceUploadPublicationId>, TError,{id: string;data: UploadResource}, TContext>, }
 ) => {
@@ -109,7 +107,7 @@ formData.append('file', uploadResource.file)
   
 
 
-    export const usePostResourceUploadReviewId = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostResourceUploadReviewId = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postResourceUploadReviewId>, TError,{id: string;data: UploadResource}, TContext>, }
 ) => {

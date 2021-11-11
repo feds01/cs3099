@@ -15,10 +15,7 @@ import {
 } from 'react-query'
 import type {
   NoContentResponse,
-  BadRequestResponse,
-  UnauthorizedResponse,
-  NotFoundResponse,
-  InternalServerErrorResponse,
+  ApiErrorResponse,
   GetPublicationUsernameNameBookmark200,
   GetPublicationUsernameNameBookmarkers200,
   GetPublicationUsernameBookmarks200
@@ -45,7 +42,7 @@ export const deletePublicationUsernameNameBookmark = (
   
 
 
-    export const useDeletePublicationUsernameNameBookmark = <TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+    export const useDeletePublicationUsernameNameBookmark = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deletePublicationUsernameNameBookmark>, TError,{username: string;name: string}, TContext>, }
 ) => {
@@ -78,7 +75,7 @@ export const getGetPublicationUsernameNameBookmarkQueryKey = (username: string,
     name: string,) => [`/publication/${username}/${name}/bookmark`];
 
     
-export const useGetPublicationUsernameNameBookmark = <TData = AsyncReturnType<typeof getPublicationUsernameNameBookmark>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+export const useGetPublicationUsernameNameBookmark = <TData = AsyncReturnType<typeof getPublicationUsernameNameBookmark>, TError = ApiErrorResponse>(
  username: string,
     name: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameBookmark>, TError, TData>, }
 
@@ -113,7 +110,7 @@ export const postPublicationUsernameNameBookmark = (
   
 
 
-    export const usePostPublicationUsernameNameBookmark = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostPublicationUsernameNameBookmark = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postPublicationUsernameNameBookmark>, TError,{username: string;name: string}, TContext>, }
 ) => {
@@ -145,7 +142,7 @@ export const getGetPublicationUsernameNameBookmarkersQueryKey = (username: strin
     name: string,) => [`/publication/${username}/${name}/bookmarkers`];
 
     
-export const useGetPublicationUsernameNameBookmarkers = <TData = AsyncReturnType<typeof getPublicationUsernameNameBookmarkers>, TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse>(
+export const useGetPublicationUsernameNameBookmarkers = <TData = AsyncReturnType<typeof getPublicationUsernameNameBookmarkers>, TError = ApiErrorResponse>(
  username: string,
     name: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameBookmarkers>, TError, TData>, }
 
@@ -180,7 +177,7 @@ export const getPublicationUsernameBookmarks = (
 export const getGetPublicationUsernameBookmarksQueryKey = (username: string,) => [`/publication/${username}/bookmarks`];
 
     
-export const useGetPublicationUsernameBookmarks = <TData = AsyncReturnType<typeof getPublicationUsernameBookmarks>, TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse>(
+export const useGetPublicationUsernameBookmarks = <TData = AsyncReturnType<typeof getPublicationUsernameBookmarks>, TError = ApiErrorResponse>(
  username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameBookmarks>, TError, TData>, }
 
   ) => {

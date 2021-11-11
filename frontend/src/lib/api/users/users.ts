@@ -15,13 +15,11 @@ import {
 } from 'react-query'
 import type {
   DeleteUserUsername200,
-  UnauthorizedResponse,
-  InternalServerErrorResponse,
+  ApiErrorResponse,
   GetUserUsername200,
-  NotFoundResponse,
   PatchUserUsername200,
-  BadRequestResponse,
   UserPatchRequest,
+  GetUserUsernameReviews200,
   GetUserUsernameRole200,
   PatchUserUsernameRole200,
   PostUserUsernameFollow200,
@@ -49,7 +47,7 @@ export const deleteUserUsername = (
   
 
 
-    export const useDeleteUserUsername = <TError = UnauthorizedResponse | InternalServerErrorResponse,
+    export const useDeleteUserUsername = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deleteUserUsername>, TError,{username: string}, TContext>, }
 ) => {
@@ -80,7 +78,7 @@ export const getUserUsername = (
 export const getGetUserUsernameQueryKey = (username: string,) => [`/user/${username}`];
 
     
-export const useGetUserUsername = <TData = AsyncReturnType<typeof getUserUsername>, TError = NotFoundResponse | InternalServerErrorResponse>(
+export const useGetUserUsername = <TData = AsyncReturnType<typeof getUserUsername>, TError = ApiErrorResponse>(
  username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsername>, TError, TData>, }
 
   ) => {
@@ -115,7 +113,7 @@ export const patchUserUsername = (
   
 
 
-    export const usePatchUserUsername = <TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+    export const usePatchUserUsername = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof patchUserUsername>, TError,{username: string;data: UserPatchRequest}, TContext>, }
 ) => {
@@ -130,6 +128,41 @@ export const patchUserUsername = (
       return useMutation<AsyncReturnType<typeof patchUserUsername>, TError, {username: string;data: UserPatchRequest}, TContext>(mutationFn, mutationOptions)
     }
     /**
+ * Return a paginated list of the user's reviews.
+ * @summary Get a user's reviews.
+ */
+export const getUserUsernameReviews = (
+    username: string,
+ ) => {
+      return customInstance<GetUserUsernameReviews200>(
+      {url: `/user/${username}/reviews`, method: 'get'
+    },
+      );
+    }
+  
+
+export const getGetUserUsernameReviewsQueryKey = (username: string,) => [`/user/${username}/reviews`];
+
+    
+export const useGetUserUsernameReviews = <TData = AsyncReturnType<typeof getUserUsernameReviews>, TError = ApiErrorResponse>(
+ username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameReviews>, TError, TData>, }
+
+  ) => {
+
+  const {query: queryOptions} = options || {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameReviewsQueryKey(username);
+  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameReviews>> = () => getUserUsernameReviews(username, );
+
+  const query = useQuery<AsyncReturnType<typeof getUserUsernameReviews>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
+
+  return {
+    queryKey,
+    ...query
+  }
+}
+
+/**
  * Endpoint for getting user role by id.
  * @summary Get user role
  */
@@ -146,7 +179,7 @@ export const getUserUsernameRole = (
 export const getGetUserUsernameRoleQueryKey = (username: string,) => [`/user/${username}/role`];
 
     
-export const useGetUserUsernameRole = <TData = AsyncReturnType<typeof getUserUsernameRole>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+export const useGetUserUsernameRole = <TData = AsyncReturnType<typeof getUserUsernameRole>, TError = ApiErrorResponse>(
  username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameRole>, TError, TData>, }
 
   ) => {
@@ -180,7 +213,7 @@ export const patchUserUsernameRole = (
   
 
 
-    export const usePatchUserUsernameRole = <TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+    export const usePatchUserUsernameRole = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof patchUserUsernameRole>, TError,{username: string}, TContext>, }
 ) => {
@@ -210,7 +243,7 @@ export const postUserUsernameFollow = (
   
 
 
-    export const usePostUserUsernameFollow = <TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+    export const usePostUserUsernameFollow = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postUserUsernameFollow>, TError,{username: string}, TContext>, }
 ) => {
@@ -239,7 +272,7 @@ export const deleteUserUsernameFollow = (
   
 
 
-    export const useDeleteUserUsernameFollow = <TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+    export const useDeleteUserUsernameFollow = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deleteUserUsernameFollow>, TError,{username: string}, TContext>, }
 ) => {

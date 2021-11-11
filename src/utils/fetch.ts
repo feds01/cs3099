@@ -78,7 +78,9 @@ export async function makeRequest<I, O>(
     } catch (e: unknown) {
         if (e instanceof FetchError) {
             Logger.warn(
-                `Failed to fetch: ${url.toString()}, code: ${e.code ?? 'unknown'}, reason: ${e.message}`,
+                `Failed to fetch: ${url.toString()}, code: ${e.code ?? 'unknown'}, reason: ${
+                    e.message
+                }`,
             );
             return { status: 'error', type: 'fetch' };
         }

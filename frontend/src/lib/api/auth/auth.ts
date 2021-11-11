@@ -11,12 +11,10 @@ import {
   MutationFunction
 } from 'react-query'
 import type {
-  UnprocessableEntityResponse,
-  InternalServerErrorResponse,
+  ApiErrorResponse,
+  EmailValidation,
   UsernameValidation,
   UserAuthResponseResponse,
-  BadRequestResponse,
-  UnauthorizedResponse,
   TokenRequest,
   PostAuthSso200,
   PostAuthSsoParams,
@@ -32,6 +30,36 @@ T extends (...args: any) => Promise<any>
 
 /**
  * Check if an email is valid to use when registering
+ * @summary Pre-registration email validation
+ */
+export const postAuthEmailvalidation = (
+    emailValidation: EmailValidation,
+ ) => {
+      return customInstance<void>(
+      {url: `/auth/email_validation`, method: 'post',
+      data: emailValidation
+    },
+      );
+    }
+  
+
+
+    export const usePostAuthEmailvalidation = <TError = ApiErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthEmailvalidation>, TError,{data: EmailValidation}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthEmailvalidation>, {data: EmailValidation}> = (props) => {
+          const {data} = props || {};
+
+          return  postAuthEmailvalidation(data,)
+        }
+
+      return useMutation<AsyncReturnType<typeof postAuthEmailvalidation>, TError, {data: EmailValidation}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
+ * Check if an email is valid to use when registering
  * @summary Pre-registration username validation
  */
 export const postAuthUsernamevalidation = (
@@ -46,7 +74,7 @@ export const postAuthUsernamevalidation = (
   
 
 
-    export const usePostAuthUsernamevalidation = <TError = UnprocessableEntityResponse | InternalServerErrorResponse,
+    export const usePostAuthUsernamevalidation = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthUsernamevalidation>, TError,{data: UsernameValidation}, TContext>, }
 ) => {
@@ -76,7 +104,7 @@ export const postAuthSession = (
   
 
 
-    export const usePostAuthSession = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostAuthSession = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthSession>, TError,{data: TokenRequest}, TContext>, }
 ) => {
@@ -107,7 +135,7 @@ export const postAuthSso = (
   
 
 
-    export const usePostAuthSso = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostAuthSso = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthSso>, TError,{params?: PostAuthSsoParams}, TContext>, }
 ) => {
@@ -137,7 +165,7 @@ export const postAuthLogin = (
   
 
 
-    export const usePostAuthLogin = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostAuthLogin = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthLogin>, TError,{data: UserLogin}, TContext>, }
 ) => {
@@ -167,7 +195,7 @@ export const postAuthRegister = (
   
 
 
-    export const usePostAuthRegister = <TError = BadRequestResponse | InternalServerErrorResponse,
+    export const usePostAuthRegister = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthRegister>, TError,{data: UserRegistration}, TContext>, }
 ) => {

@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface CommentAnchor {
-  start: number;
-  end: number;
-}
+export type GetUserUsernameReviews200Status = 'ok';
+
+
+export const GetUserUsernameReviews200Status = {
+  ok: 'ok' as GetUserUsernameReviews200Status,
+};

@@ -6,7 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface CommentAnchor {
-  start: number;
-  end: number;
-}
+export type PostSgResourcesImportParams = { from: string; token: string; id: string };

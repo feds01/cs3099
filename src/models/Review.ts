@@ -21,7 +21,7 @@ type PopulatedReview = (IReview & {
     owner: IUser;
 };
 
-interface IReviewDocument extends IReview, Document { }
+interface IReviewDocument extends IReview, Document {}
 
 interface IReviewModel extends Model<IReviewDocument> {
     project: (review: IReview) => Partial<IReview>;

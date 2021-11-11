@@ -21,7 +21,6 @@ export const ICommentAnchor = z
 
 export const ICommentCreationSchema = z
     .object({
-        review: ObjectIdSchema,
         replying: ObjectIdSchema.optional(),
         filename: z.string().optional(),
         anchor: ICommentAnchor.optional(),

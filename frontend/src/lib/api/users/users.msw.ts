@@ -16,6 +16,8 @@ export const getGetUserUsernameMock = () => ({status: faker.helpers.randomize(['
 
 export const getPatchUserUsernameMock = () => ({status: faker.helpers.randomize(['ok']), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
 
+export const getGetUserUsernameReviewsMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(['ok']), undefined]), reviews: faker.helpers.randomize([[...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({publication: {name: faker.random.word(), title: faker.random.word(), introduction: faker.helpers.randomize([faker.random.word(), undefined]), revision: faker.helpers.randomize([faker.random.word(), undefined]), pinned: faker.datatype.boolean(), draft: faker.datatype.boolean(), owner: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => (faker.random.word()))}, owner: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, createdAt: faker.datatype.number(), updatedAt: faker.datatype.number()})), undefined])})
+
 export const getGetUserUsernameRoleMock = () => ({status: faker.helpers.randomize(['ok']), role: faker.random.word()})
 
 export const getPatchUserUsernameRoleMock = () => ({status: faker.helpers.randomize(['ok']), message: faker.random.word(), role: faker.random.word()})
@@ -42,6 +44,12 @@ ctx.json(getGetUserUsernameMock()),
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),
 ctx.json(getPatchUserUsernameMock()),
+        )
+      }),rest.get('*/user/:username/reviews', (req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetUserUsernameReviewsMock()),
         )
       }),rest.get('*/user/:username/role', (req, res, ctx) => {
         return res(

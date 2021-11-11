@@ -19,12 +19,14 @@ registerRoute(router, '/:id', {
     handler: async (req, res) => {
         const { id } = req.params;
         const comments = Comment.find({ thread: new Schema.Types.ObjectId(id) });
+
         if (!comments) {
             return res.status(404).json({
                 status: 'error',
                 message: errors.NON_EXISTENT_THREAD,
             });
         }
+
         return res.status(200).json({
             status: 'ok',
             comments,
@@ -41,7 +43,8 @@ registerRoute(router, '/:id', {
     permission: IUserRole.Moderator,
     handler: async (req, res) => {
         const { id } = req.params;
-        const thread = Comment.deleteMany({ thread: new Schema.Types.ObjectId(id) });
+
+        const thread = await Comment.deleteMany({ thread: new Schema.Types.ObjectId(id) }).exec();
 
         if (!thread) {
             return res.status(404).json({
@@ -49,7 +52,8 @@ registerRoute(router, '/:id', {
                 extra: errors.NON_EXISTENT_THREAD,
             });
         }
-        return res.status(200).json({
+
+        return res.status(204).json({
             status: 'ok',
             message: 'Successfully deleted thread',
         });

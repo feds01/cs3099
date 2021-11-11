@@ -6,7 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface CommentAnchor {
-  start: number;
-  end: number;
-}
+export type ApiErrorResponseStatus = 'error';
+
+
+export const ApiErrorResponseStatus = {
+  error: 'error' as ApiErrorResponseStatus,
+};

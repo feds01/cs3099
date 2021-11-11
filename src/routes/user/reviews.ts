@@ -1,15 +1,18 @@
 import { z } from 'zod';
 import express from 'express';
-import * as errors from '../../common/errors';
-import Review, { IReviewStatus } from '../../models/Review';
 import Comment from '../../models/Comment';
 import * as userUtils from '../../utils/users';
 import registerRoute from '../../lib/requests';
-import { IUserRole } from '../../models/User';
+import { IUser, IUserRole } from '../../models/User';
 import { ModeSchema } from '../../validators/requests';
+import Review, { IReviewStatus } from '../../models/Review';
+import { IPublication } from '../../models/Publication';
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router();
 
+/**
+ *
+ */
 registerRoute(router, '/:username/reviews', {
     method: 'get',
     params: z.object({ username: z.string() }),
@@ -19,13 +22,13 @@ registerRoute(router, '/:username/reviews', {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
-        const reviews = await Review.find({ owner: user.id, status: IReviewStatus.Completed });
-        if (reviews.length === 0) {
-            return res.status(404).json({
-                status: false,
-                message: errors.NON_EXISTENT_REVIEW,
-            });
-        }
+        const result = await Review.find({ owner: user.id, status: IReviewStatus.Completed })
+            .populate<{ owner: IUser }>('owner')
+            .populate<{ publication: IPublication }>('publication')
+            .exec();
+
+        const reviews = result.map((link) => Review.project(link as typeof result[number]));
+
         return res.status(200).json({
             status: true,
             reviews,
@@ -33,6 +36,7 @@ registerRoute(router, '/:username/reviews', {
     },
 });
 
+// TODO: Swagger docs for this endpoint, or is it even needed?
 registerRoute(router, '/:username/comments', {
     method: 'get',
     params: z.object({ username: z.string() }),
@@ -43,13 +47,10 @@ registerRoute(router, '/:username/comments', {
         if (!user) return;
 
         // TODO: Filter comments on incomplete review
-        const comments = await Comment.find({ owner: user.id });
-        if (comments.length === 0) {
-            return res.status(404).json({
-                status: false,
-                message: errors.NON_EXISTENT_COMMENT,
-            });
-        }
+        const result = await Comment.find({ owner: user.id });
+
+        const comments = result.map((link) => Comment.project(link as typeof result[number]));
+
         return res.status(200).json({
             status: true,
             comments,
