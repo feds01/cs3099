@@ -15,18 +15,17 @@ import {
 } from 'react-query'
 import type {
   CreatePublicationResponse,
-  BadRequestResponse,
-  UnauthorizedResponse,
-  InternalServerErrorResponse,
+  ApiErrorResponse,
   CreatePublicationRequest,
   DeletionResponseResponse,
-  NotFoundResponse,
   GetPublicationUsernameName200,
   GetPublicationUsername200,
   GetPublicationUsernameParams,
   GetPublicationUsernameNameRevisions200,
   ResourceResponseResponse,
-  GetPublicationUsernameNameRevision200
+  GetPublicationUsernameNameRevision200,
+  GetPublicationUsernameNameRevisionAll200,
+  NoContentResponse
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
 
@@ -51,7 +50,7 @@ export const postPublication = (
   
 
 
-    export const usePostPublication = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostPublication = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postPublication>, TError,{data: CreatePublicationRequest}, TContext>, }
 ) => {
@@ -81,7 +80,7 @@ export const deletePublicationUsernameName = (
   
 
 
-    export const useDeletePublicationUsernameName = <TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+    export const useDeletePublicationUsernameName = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deletePublicationUsernameName>, TError,{username: string;name: string}, TContext>, }
 ) => {
@@ -114,7 +113,7 @@ export const getGetPublicationUsernameNameQueryKey = (username: string,
     name: string,) => [`/publication/${username}/${name}`];
 
     
-export const useGetPublicationUsernameName = <TData = AsyncReturnType<typeof getPublicationUsernameName>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+export const useGetPublicationUsernameName = <TData = AsyncReturnType<typeof getPublicationUsernameName>, TError = ApiErrorResponse>(
  username: string,
     name: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameName>, TError, TData>, }
 
@@ -153,7 +152,7 @@ export const getGetPublicationUsernameQueryKey = (username: string,
     params?: GetPublicationUsernameParams,) => [`/publication/${username}`, ...(params ? [params]: [])];
 
     
-export const useGetPublicationUsername = <TData = AsyncReturnType<typeof getPublicationUsername>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+export const useGetPublicationUsername = <TData = AsyncReturnType<typeof getPublicationUsername>, TError = ApiErrorResponse>(
  username: string,
     params?: GetPublicationUsernameParams, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsername>, TError, TData>, }
 
@@ -191,7 +190,7 @@ export const getGetPublicationUsernameNameRevisionsQueryKey = (username: string,
     name: string,) => [`/publication/${username}/${name}/revisions`];
 
     
-export const useGetPublicationUsernameNameRevisions = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+export const useGetPublicationUsernameNameRevisions = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError = ApiErrorResponse>(
  username: string,
     name: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError, TData>, }
 
@@ -231,7 +230,7 @@ export const getGetPublicationUsernameNameTreePathQueryKey = (username: string,
     path: string,) => [`/publication/${username}/${name}/tree/${path}`];
 
     
-export const useGetPublicationUsernameNameTreePath = <TData = AsyncReturnType<typeof getPublicationUsernameNameTreePath>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+export const useGetPublicationUsernameNameTreePath = <TData = AsyncReturnType<typeof getPublicationUsernameNameTreePath>, TError = ApiErrorResponse>(
  username: string,
     name: string,
     path: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameTreePath>, TError, TData>, }
@@ -268,7 +267,7 @@ export const deletePublicationUsernameNameRevision = (
   
 
 
-    export const useDeletePublicationUsernameNameRevision = <TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse,
+    export const useDeletePublicationUsernameNameRevision = <TError = ApiErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deletePublicationUsernameNameRevision>, TError,{username: string;name: string;revision: string}, TContext>, }
 ) => {
@@ -303,7 +302,7 @@ export const getGetPublicationUsernameNameRevisionQueryKey = (username: string,
     revision: string,) => [`/publication/${username}/${name}/${revision}`];
 
     
-export const useGetPublicationUsernameNameRevision = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevision>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+export const useGetPublicationUsernameNameRevision = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevision>, TError = ApiErrorResponse>(
  username: string,
     name: string,
     revision: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevision>, TError, TData>, }
@@ -346,7 +345,7 @@ export const getGetPublicationUsernameNameRevisionTreePathQueryKey = (username: 
     path: string,) => [`/publication/${username}/${name}/${revision}/tree/${path}`];
 
     
-export const useGetPublicationUsernameNameRevisionTreePath = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevisionTreePath>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+export const useGetPublicationUsernameNameRevisionTreePath = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevisionTreePath>, TError = ApiErrorResponse>(
  username: string,
     name: string,
     revision: string,
@@ -367,3 +366,76 @@ export const useGetPublicationUsernameNameRevisionTreePath = <TData = AsyncRetur
   }
 }
 
+/**
+ * @summary Get a paginated list of sources for a publication
+ */
+export const getPublicationUsernameNameRevisionAll = (
+    username: string,
+    name: string,
+    revision: string,
+ ) => {
+      return customInstance<GetPublicationUsernameNameRevisionAll200>(
+      {url: `/publication/${username}/${name}/${revision}/all`, method: 'get'
+    },
+      );
+    }
+  
+
+export const getGetPublicationUsernameNameRevisionAllQueryKey = (username: string,
+    name: string,
+    revision: string,) => [`/publication/${username}/${name}/${revision}/all`];
+
+    
+export const useGetPublicationUsernameNameRevisionAll = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevisionAll>, TError = ApiErrorResponse>(
+ username: string,
+    name: string,
+    revision: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevisionAll>, TError, TData>, }
+
+  ) => {
+
+  const {query: queryOptions} = options || {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameRevisionAllQueryKey(username,name,revision);
+  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameRevisionAll>> = () => getPublicationUsernameNameRevisionAll(username,name,revision, );
+
+  const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameRevisionAll>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name && revision), ...queryOptions})
+
+  return {
+    queryKey,
+    ...query
+  }
+}
+
+/**
+ * This will initialise the process of exporting a said publication.
+ * @summary Initiate a process of exporting the publication
+ */
+export const postPublicationUsernameNameRevisionExport = (
+    username: string,
+    name: string,
+    revision: string,
+ ) => {
+      return customInstance<NoContentResponse>(
+      {url: `/publication/${username}/${name}/${revision}/export`, method: 'post',
+      data: undefined
+    },
+      );
+    }
+  
+
+
+    export const usePostPublicationUsernameNameRevisionExport = <TError = ApiErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postPublicationUsernameNameRevisionExport>, TError,{username: string;name: string;revision: string}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postPublicationUsernameNameRevisionExport>, {username: string;name: string;revision: string}> = (props) => {
+          const {username,name,revision} = props || {};
+
+          return  postPublicationUsernameNameRevisionExport(username,name,revision,)
+        }
+
+      return useMutation<AsyncReturnType<typeof postPublicationUsernameNameRevisionExport>, TError, {username: string;name: string;revision: string}, TContext>(mutationFn, mutationOptions)
+    }
+    

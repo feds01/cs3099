@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export interface CommentAnchor {
+export type SgCommentAnchor = {
   start: number;
   end: number;
-}
+};

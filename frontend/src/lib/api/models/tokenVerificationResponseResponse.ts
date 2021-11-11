@@ -6,10 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { TokenVerificationResponseResponseStatus } from './tokenVerificationResponseResponseStatus';
-import type { User } from './user';
 
 export type TokenVerificationResponseResponse = {
   status: TokenVerificationResponseResponseStatus;
-  message: string;
-  user?: User;
+  user_id: string;
+  name: string;
+  email: string;
+  profilePictureUrl?: string;
 };

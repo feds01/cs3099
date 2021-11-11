@@ -5,8 +5,10 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
+import type { GetReviewId200Status } from './getReviewId200Status';
+import type { Review } from './review';
 
-export interface CommentAnchor {
-  start: number;
-  end: number;
-}
+export type GetReviewId200 = {
+  status: GetReviewId200Status;
+  review?: Review;
+};

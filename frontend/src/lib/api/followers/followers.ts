@@ -12,10 +12,7 @@ import {
 } from 'react-query'
 import type {
   GetUserUsernameFollow200,
-  BadRequestResponse,
-  UnauthorizedResponse,
-  NotFoundResponse,
-  InternalServerErrorResponse,
+  ApiErrorResponse,
   GetUserUsernameFollowers200,
   GetUserUsernameFollowing200
 } from '.././models'
@@ -43,7 +40,7 @@ export const getUserUsernameFollow = (
 export const getGetUserUsernameFollowQueryKey = (username: string,) => [`/user/${username}/follow`];
 
     
-export const useGetUserUsernameFollow = <TData = AsyncReturnType<typeof getUserUsernameFollow>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+export const useGetUserUsernameFollow = <TData = AsyncReturnType<typeof getUserUsernameFollow>, TError = ApiErrorResponse>(
  username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollow>, TError, TData>, }
 
   ) => {
@@ -78,7 +75,7 @@ export const getUserUsernameFollowers = (
 export const getGetUserUsernameFollowersQueryKey = (username: string,) => [`/user/${username}/followers`];
 
     
-export const useGetUserUsernameFollowers = <TData = AsyncReturnType<typeof getUserUsernameFollowers>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+export const useGetUserUsernameFollowers = <TData = AsyncReturnType<typeof getUserUsernameFollowers>, TError = ApiErrorResponse>(
  username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowers>, TError, TData>, }
 
   ) => {
@@ -113,7 +110,7 @@ export const getUserUsernameFollowing = (
 export const getGetUserUsernameFollowingQueryKey = (username: string,) => [`/user/${username}/following`];
 
     
-export const useGetUserUsernameFollowing = <TData = AsyncReturnType<typeof getUserUsernameFollowing>, TError = BadRequestResponse | UnauthorizedResponse | NotFoundResponse | InternalServerErrorResponse>(
+export const useGetUserUsernameFollowing = <TData = AsyncReturnType<typeof getUserUsernameFollowing>, TError = ApiErrorResponse>(
  username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowing>, TError, TData>, }
 
   ) => {

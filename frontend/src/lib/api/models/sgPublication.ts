@@ -5,8 +5,13 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
+import type { SgUser } from './sgUser';
 
-export interface CommentAnchor {
-  start: number;
-  end: number;
+export interface SgPublication {
+  name: string;
+  title: string;
+  owner: SgUser;
+  introduction: string;
+  revision?: string;
+  collaborators: SgUser[];
 }

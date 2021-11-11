@@ -25,13 +25,12 @@ router.use('/', bookmarkRouter);
 /**
  *
  */
-registerRoute(router, '/:username/:name/:revision?/all/', {
+registerRoute(router, '/:username/:name/:revision/all/', {
     method: 'get',
     params: z.object({
         username: z.string(),
         name: z.string(),
-        path: z.string().optional(),
-        revision: z.string().optional(),
+        revision: z.string(),
     }),
     query: z.object({ mode: ModeSchema, sortBy: ResourceSortSchema }),
     permission: IUserRole.Default,
@@ -438,12 +437,12 @@ registerRoute(router, '/:username/:name/:revision?', {
 /**
  *
  */
-registerRoute(router, '/:username/:name/:revision?/export', {
+registerRoute(router, '/:username/:name/:revision/export', {
     method: 'post',
     params: z.object({
         username: z.string().nonempty(),
         name: z.string().nonempty(),
-        revision: z.string().optional(),
+        revision: z.string(),
     }),
     body: z.string({}),
     query: z.object({ mode: ModeSchema }),
@@ -454,14 +453,14 @@ registerRoute(router, '/:username/:name/:revision?/export', {
 /**
  *
  */
-registerRoute(router, '/:name/:username/:revision?/review', {
+registerRoute(router, '/:name/:username/:revision/review', {
     method: 'post',
     body: IReviewCreationSchema,
     query: z.object({ mode: ModeSchema }),
     params: z.object({
         username: z.string().nonempty(),
         name: z.string().nonempty(),
-        revision: z.string().optional(),
+        revision: z.string(),
     }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
@@ -474,7 +473,7 @@ registerRoute(router, '/:name/:username/:revision?/review', {
         const publication = await Publication.findOne({
             owner: user.id,
             name: name.toLowerCase(),
-            ...(typeof revision !== 'undefined' && { revision }),
+            revision,
         })
             .sort({ _id: -1 })
             .exec();

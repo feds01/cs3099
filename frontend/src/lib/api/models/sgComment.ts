@@ -5,8 +5,14 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
+import type { CommentAnchor } from './commentAnchor';
 
-export interface CommentAnchor {
-  start: number;
-  end: number;
+export interface SgComment {
+  id: number;
+  replying?: number;
+  filename?: string;
+  anchor?: CommentAnchor;
+  contents: string;
+  author: string;
+  postedAt: number;
 }

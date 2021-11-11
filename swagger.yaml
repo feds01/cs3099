@@ -20,6 +20,8 @@ tags:
       description: Endpoints relating to managing followers.
     - name: reviews
       description: Endpoints relating to submission reviews.
+    - name: comments
+      description: Endpoints related to managing user comments.
     - name: publications
       description: Endpoints relating to publications.
     - name: bookmarks
@@ -46,24 +48,13 @@ paths:
                   schema:
                       type: string
                       description: Session state
-            requestBody:
-                required: true
-                description: Login endpoint for external services
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UserLogin'
             responses:
                 '200':
                     $ref: '#/components/responses/UserAuthResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /sg/sso/verify:
-        get:
+        post:
             summary: Refresh user session
             description: Endpoint to refresh a JWT token
             tags:
@@ -78,13 +69,8 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/TokenVerificationResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
-
+                default:
+                    $ref: '#/components/responses/ApiError'
     /sg/sso/callback:
         get:
             summary: Successful external login endpoint.
@@ -107,8 +93,40 @@ paths:
             responses:
                 '204':
                     description: No Content
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /sg/resources/import:
+        post:
+            summary: Endpoint to download the publication metadata
+            tags:
+                - external
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: query
+                  required: true
+                  name: from
+                  schema:
+                      type: string
+                      description: Callback URL of where to respond
+                      example: https://t01.example.com
+                - in: query
+                  required: true
+                  name: token
+                  schema:
+                      type: string
+                      description: JWT to check
+                - in: query
+                  required: true
+                  name: id
+                  schema:
+                      type: string
+                      description: ID of the submission to import.
+            responses:
+                '204':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /sg/resources/export/{id}:
         get:
             summary: Endpoint to download an archive representing the publication sources.
@@ -126,13 +144,8 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/PublicationExportResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
-
+                default:
+                    $ref: '#/components/responses/ApiError'
     /sg/resources/export/{id}/metadata:
         get:
             summary: Endpoint to download the publication metadata
@@ -150,18 +163,32 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/PublicationMetadataResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /sg/users/{id}:
+        get:
+            summary: Endpoint to fetch user information about a particular user.
+            tags:
+                - external
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                      example: 'ABCDE921312DAB23AE:t06'
+                  required: true
+                  description: The identifier of the publication.
+            responses:
+                '200':
+                    $ref: '#/components/responses/TokenVerificationResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /auth/email_validation:
         post:
             summary: Pre-registration email validation
             description: Check if an email is valid to use when registering
             tags:
-                - external
+                - auth
             requestBody:
                 required: true
                 description: Provide a email to be checked
@@ -172,10 +199,8 @@ paths:
             responses:
                 '204':
                     description: No Content
-                '422':
-                    $ref: '#/components/responses/UnprocessableEntity'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /auth/username_validation:
         post:
             summary: Pre-registration username validation
@@ -192,10 +217,8 @@ paths:
             responses:
                 '204':
                     description: No Content
-                '422':
-                    $ref: '#/components/responses/UnprocessableEntity'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /auth/session:
         post:
             summary: Refresh user session
@@ -212,12 +235,8 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/UserAuthResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /auth/sso:
         post:
             summary: Begin the SSO process.
@@ -225,17 +244,17 @@ paths:
             tags:
                 - auth
             parameters:
-                 - in: query
-                   required: true
-                   name: to
-                   schema:
+                - in: query
+                  required: true
+                  name: to
+                  schema:
                       type: string
                       description: Callback URL of where to send user.
-                      example: "http://localhost:8000"
-                 - in: query
-                   required: false
-                   name: path
-                   schema:
+                      example: 'http://localhost:8000'
+                - in: query
+                  required: false
+                  name: path
+                  schema:
                       type: string
                       description: Resource path where to send the user back to.
                       example: /jdoe1/publication
@@ -256,14 +275,10 @@ paths:
                                         example: 'ok'
                                     follow:
                                         type: string
-                                        example: "http://localhost:8000"
+                                        example: 'http://localhost:8000'
 
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /auth/login:
         post:
             summary: User Login
@@ -280,12 +295,8 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/UserAuthResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /auth/register:
         post:
             summary: User registration
@@ -302,10 +313,8 @@ paths:
             responses:
                 '201':
                     $ref: '#/components/responses/UserAuthResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /user/{username}:
         delete:
             summary: Account deletion
@@ -331,15 +340,13 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     description:
                                         type: string
                                         example: 'User deleted'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
         get:
             summary: Account information
             description: User account information endpoint, get user details by the id.
@@ -368,16 +375,14 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     user:
                                         $ref: '#/components/schemas/User'
                                     follows:
                                         $ref: '#/components/schemas/FollowerCount'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
         patch:
             summary: Update account information
             description: Update user information endpoint, update user details for a user specified by the user id.
@@ -412,18 +417,45 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     user:
                                         $ref: '#/components/schemas/User'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /user/{username}/reviews:
+        get:
+            summary: Get a user's reviews.
+            description: Return a paginated list of the user's reviews.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: User owned reviews.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    reviews:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Review'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /user/{username}/role:
         get:
             summary: Get user role
@@ -452,19 +484,13 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     role:
                                         type: string
                                         example: 'default'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
         patch:
             summary: Update user role
             description: Endpoint for updating user role by id.
@@ -493,22 +519,16 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     message:
                                         type: string
                                         example: 'Successfully updated user role.'
                                     role:
                                         type: string
                                         example: 'default'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /user/{username}/follow:
         get:
             summary: Get the current user's follow status.
@@ -537,19 +557,13 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     following:
                                         type: boolean
                                         example: true
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
         post:
             summary: Follow another user
             description: Endpoint for current user to follow another legit user.
@@ -577,19 +591,13 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     message:
                                         type: string
                                         example: 'Successfully added new follows.'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
         delete:
             summary: Unfollowing another user.
             description: Endpoint for current user to unfollow another legit user.
@@ -617,19 +625,13 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     message:
                                         type: string
                                         example: 'User was unfollowed'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /user/{username}/followers:
         get:
             summary: Get a user's follower list.
@@ -658,18 +660,12 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     data:
                                         $ref: '#/components/schemas/FollowerListData'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /user/{username}/following:
         get:
             summary: Get a user's following list.
@@ -698,18 +694,12 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     data:
                                         $ref: '#/components/schemas/FollowingListData'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication:
         post:
             summary: Create a publication
@@ -732,12 +722,8 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CreatePublicationResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}:
         delete:
             summary: Delete a publication
@@ -762,14 +748,8 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/DeletionResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
         get:
             summary: Get a publication
             description: Get a publication resource for a given user account with the specified name. This will return the most recent publication revision.
@@ -803,19 +783,12 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     publication:
                                         $ref: '#/components/schemas/Publication'
-
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}:
         get:
             summary: Get a user's publications
@@ -852,20 +825,14 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     data:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/Publication'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/revisions:
         get:
             summary: Get a list of revisions for a publication
@@ -910,14 +877,8 @@ paths:
                                                 type: array
                                                 items:
                                                     $ref: '#/components/schemas/Publication'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/tree/{path}:
         get:
             summary: Get a file from a publication
@@ -948,14 +909,8 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/ResourceResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/{revision}:
         delete:
             summary: Delete a specific revision of a publication
@@ -986,14 +941,8 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/DeletionResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
         get:
             summary: Get a specific revision of a publication
             description: Get a publication resource for a given user account with the specified name and the particular revision.
@@ -1033,19 +982,12 @@ paths:
                                 properties:
                                     status:
                                         type: string
-                                        example: "ok"
-                                        enum: ["ok"]
+                                        example: 'ok'
+                                        enum: ['ok']
                                     publication:
                                         $ref: '#/components/schemas/Publication'
-
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/{revision}/tree/{path}:
         get:
             summary: Get a file from a publication
@@ -1082,14 +1024,55 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/ResourceResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication/{username}/{name}/{revision}/all/:
+        get:
+            summary: Get a paginated list of sources for a publication
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: path
+                  name: revision
+                  schema:
+                      type: string
+                  required: true
+                  description: Get a specific revision of a given publication.
+            responses:
+                '200':
+                    description: Returns the requested publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - files
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    files:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/FileResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/bookmark:
         delete:
             summary: Un-bookmark a publication
@@ -1113,14 +1096,8 @@ paths:
             responses:
                 '204':
                     $ref: '#/components/responses/NoContent'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
         get:
             summary: Check is publication is bookmarked
             description: Get information if the bookmark a publication
@@ -1159,14 +1136,8 @@ paths:
                                     bookmarked:
                                         type: boolean
                                         example: true
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '404':
-                    $ref: '#/components/responses/NotFound'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
         post:
             summary: Bookmark a certain publication
             security:
@@ -1189,12 +1160,8 @@ paths:
             responses:
                 '204':
                     $ref: '#/components/responses/NoContent'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/bookmarkers:
         get:
             summary: Check who has bookmarked the publication
@@ -1234,12 +1201,8 @@ paths:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/User'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/bookmarks:
         get:
             summary: Check bookmarked publications by a user.
@@ -1273,12 +1236,126 @@ paths:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/Publication'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication/{username}/{name}/review:
+        post:
+            summary: Create a review on a publication.
+            description: Begin a review process on a publication.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+            responses:
+                '200':
+                    description: Created a new review.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - review
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    review:
+                                        $ref: '#/components/schemas/Review'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication/{username}/{name}/{revision}/reviews:
+        get:
+            summary: Get a list of reviews on a publication
+            description: Get a paginated list of publication reviews.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: path
+                  name: revision
+                  schema:
+                      type: string
+                  required: true
+                  description: The revision of the publication.
+            responses:
+                '200':
+                    description: Returns the requested publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - reviews
+                                properties:
+                                    status:
+                                        type: boolean
+                                        example: true
+                                    reviews:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Review'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication/{username}/{name}/{revision}/export:
+        post:
+            summary: Initiate a process of exporting the publication
+            description: This will initialise the process of exporting a said publication.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: path
+                  name: revision
+                  schema:
+                      type: string
+                  required: true
+                  description: The revision of the publication.
+            responses:
+                '204':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /resource/upload/{username}:
         post:
             summary: Upload an avatar image for a user.
@@ -1308,12 +1385,8 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/UploadResourceResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /resource/upload/publication/{id}:
         post:
             summary: Upload a generic file resource
@@ -1343,12 +1416,8 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/UploadResourceResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /resource/upload/review/{id}:
         post:
             summary: Upload a generic file as an attachment to a comment
@@ -1378,23 +1447,288 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/UploadResourceResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /thread/{id}:
+        get:
+            description: Get comments for a particular thread.
+            tags:
+                - comments
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: ID of thread.
+            responses:
+                '200':
+                    description: Comment thread.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    comments:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Comment'
+
+                default:
+                    $ref: '#/components/responses/ApiError'
+        delete:
+            description: Get a paginated list of publication revisions.
+            tags:
+                - comments
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: ID of thread.
+            responses:
+                '204':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /review/{id}/comment:
+        post:
+            summary: Add a comment to a review.
+            description: Comment on a review, specified by the review id.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: review id.
+            requestBody:
+                $ref: '#/components/requestBodies/CreateCommentRequest'
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    comment:
+                                        $ref: '#/components/schemas/Comment'
+                default:
+                    $ref: '#/components/responses/ApiError'
+
+    /comment/{id}:
+        get:
+            summary: Get a comment
+            description: get comment by user id.
+            tags:
+                - comments
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: comment id.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    comment:
+                                        $ref: '#/components/schemas/Comment'
+                default:
+                    $ref: '#/components/responses/ApiError'
+        delete:
+            summary: Delete a comment
+            description: delete comment by user id.
+            tags:
+                - comments
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: comment id.
+            responses:
+                '204':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /review/{id}:
+        get:
+            summary: Get a review.
+            description: get review by user id.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: review id.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    review:
+                                        $ref: '#/components/schemas/Review'
+                default:
+                    $ref: '#/components/responses/ApiError'
+        delete:
+            summary: Delete a review
+            description: delete review by user id.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: review id.
+            responses:
+                '204':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /review/{id}/comments:
+        get:
+            summary: Get comments on a review.
+            description: get a paginated list of comments on a review.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: review id.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    comments:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Review'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /review/{id}/complete:
+        post:
+            summary: Finalise a review.
+            description: Publish the drafted review.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: review id.
+            responses:
+                '200':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
 
 components:
     securitySchemes:
         BearerAuth:
             type: http
             scheme: bearer
+    requestBodies:
+        CreateCommentRequest:
+            required: true
+            description: Provide patched user information to update user information fields. Any field can be omitted from the request
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - contents
+                        properties:
+                            replying:
+                                type: string
+                                example: 'Doe'
+                            content:
+                                type: string
+                                example: "I'm a comment"
+                            filename:
+                                type: string
+                                example: 'src/server.ts'
+                            anchor:
+                                $ref: '#/components/schemas/CommentAnchor'
+
     responses:
         NoContent:
             description: No Content. Server acknowledges request but has no return body.
-        BadRequest:
-            description: Bad Request. Provided request parameters were invalid.
+        ApiError:
+            description: General Error response from the API.
             content:
                 application/json:
                     schema:
@@ -1409,77 +1743,9 @@ components:
                                 enum: ['error']
                             message:
                                 type: string
-                                example: 'Malformed request body'
+                                example: 'Message describing the error.'
                             extra:
                                 type: object
-        Unauthorized:
-            description: Unauthorized. Requester doesn't have sufficient permissions to perform this action.
-            content:
-                application/json:
-                    schema:
-                        type: object
-                        required:
-                            - status
-                            - message
-                        properties:
-                            status:
-                                type: string
-                                example: 'error'
-                                enum: ['error']
-                            message:
-                                type: string
-                                example: 'Unauthorized'
-        UnprocessableEntity:
-            description: Entity is unprocessable.
-            content:
-                application/json:
-                    schema:
-                        type: object
-                        required:
-                            - status
-                            - message
-                        properties:
-                            status:
-                                type: string
-                                example: 'error'
-                                enum: ['error']
-                            message:
-                                type: string
-                                example: 'UnprocessableEntity'
-        InternalServerError:
-            description: Internal Server Error. Information retrieval failed, server unexpectedly returned an error.
-            content:
-                application/json:
-                    schema:
-                        type: object
-                        required:
-                            - status
-                            - message
-                        properties:
-                            status:
-                                type: string
-                                example: 'error'
-                                enum: ['error']
-                            message:
-                                type: string
-                                example: 'Internal Server Error'
-        NotFound:
-            description: Specified resource does not exist in the scope of the requesters permissions.
-            content:
-                application/json:
-                    schema:
-                        type: object
-                        required:
-                            - status
-                            - message
-                        properties:
-                            status:
-                                type: string
-                                example: 'error'
-                                enum: ['error']
-                            message:
-                                type: string
-                                example: 'Not Found'
         UserAuthResponse:
             description: Authentication tokens with user information.
             content:
@@ -1568,22 +1834,31 @@ components:
                         type: object
                         required:
                             - status
-                            - message
+                            - user_id
+                            - name
+                            - email
                         properties:
                             status:
                                 type: string
                                 example: 'ok'
                                 enum: ['ok']
-                            message:
+                            user_id:
                                 type: string
-                                example: 'Token is valid'
-                            user:
-                                $ref: '#/components/schemas/User'
+                                example: 'ABCDE921312DAB23AE:t06'
+                            name:
+                                type: string
+                                example: 'John Doe'
+                            email:
+                                type: string
+                                example: 'jdoe1@example.com'
+                            profilePictureUrl:
+                                type: string
+                                example: https://some-cdn.some-company.com/profiles/avatar.jpg
 
         PublicationExportResponse:
             description: Response archive file.
             content:
-                application/zip:
+                application/octet-stream:
                     schema:
                         type: string
                         format: binary
@@ -1609,11 +1884,11 @@ components:
                                     - reviews
                                 properties:
                                     publication:
-                                        $ref: '#/components/schemas/Publication'
+                                        $ref: '#/components/schemas/SgPublication'
                                     reviews:
                                         type: array
                                         items:
-                                            $ref: '#/components/schemas/Review'
+                                            $ref: '#/components/schemas/SgReview'
     schemas:
         TokenRequest:
             type: object
@@ -1785,8 +2060,8 @@ components:
             properties:
                 status:
                     type: string
-                    example: "ok"
-                    enum: ["ok"]
+                    example: 'ok'
+                    enum: ['ok']
         Publication:
             type: object
             required:
@@ -1855,8 +2130,8 @@ components:
             properties:
                 status:
                     type: string
-                    example: "ok"
-                    enum: ["ok"]
+                    example: 'ok'
+                    enum: ['ok']
                 publication:
                     $ref: '#/components/schemas/Publication'
         FileResponse:
@@ -1870,6 +2145,9 @@ components:
                     type: string
                     enum: ['file']
                     example: 'file'
+                filename:
+                    type: string
+                    example: 'src/server.ts'
                 contents:
                     type: string
                     example: "Hello world!\n"
@@ -1908,20 +2186,20 @@ components:
             type: object
             required:
                 - owner
-                - threads
+                - publication
                 - createdAt
+                - updatedAt
             properties:
+                publication:
+                    $ref: '#/components/schemas/Publication'
                 owner:
                     $ref: '#/components/schemas/User'
                 createdAt:
                     type: number
                     example: 1636065460
-                threads:
-                    type: array
-                    items:
-                        type: array
-                        items:
-                            $ref: '#/components/schemas/Comment'
+                updatedAt:
+                    type: number
+                    example: 1636065460
         Comment:
             type: object
             required:
@@ -1935,17 +2213,7 @@ components:
                     type: string
                     example: 'src/server.ts'
                 anchor:
-                    type: object
-                    required:
-                        - start
-                        - end
-                    properties:
-                        start:
-                            type: number
-                            example: 1
-                        end:
-                            type: number
-                            example: 2
+                    $ref: '#/components/schemas/CommentAnchor'
                 contents:
                     type: string
                     example: 'This is a comment'
@@ -1954,6 +2222,94 @@ components:
                     example: 0
                 author:
                     $ref: '#/components/schemas/User'
+                postedAt:
+                    type: number
+                    example: 1636065460
+        CommentAnchor:
+            type: object
+            required:
+                - start
+                - end
+            properties:
+                start:
+                    type: number
+                    example: 1
+                end:
+                    type: number
+                    example: 2
+        SgUser:
+            type: string
+            example: 'ABCDE921312DAB23AE:t06'
+        SgPublication:
+            type: object
+            required:
+                - name
+                - title
+                - owner
+                - introduction
+                - collaborators
+                - createdAt
+            properties:
+                name:
+                    type: string
+                    example: 'some-url-safe-name'
+                title:
+                    type: string
+                    example: 'Journal: A code journals.'
+                owner:
+                    $ref: '#/components/schemas/SgUser'
+                introduction:
+                    type: string
+                    example: 'This is a platform for managing code journals...'
+                revision:
+                    type: string
+                    example: 'v1.0.0'
+                collaborators:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SgUser'
+        SgReview:
+            type: object
+            required:
+                - owner
+                - threads
+                - createdAt
+            properties:
+                owner:
+                    $ref: '#/components/schemas/SgUser'
+                createdAt:
+                    type: number
+                    example: 1636065460
+                comments:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SgComment'
+        SgComment:
+            type: object
+            required:
+                - id
+                - contents
+                - thread
+                - author
+                - postedAt
+            properties:
+                id:
+                    type: number
+                    example: 1
+                replying:
+                    type: number
+                    example: 0
+                filename:
+                    type: string
+                    example: 'src/server.ts'
+                anchor:
+                    $ref: '#/components/schemas/CommentAnchor'
+                contents:
+                    type: string
+                    example: 'This is a comment'
+                author:
+                    type: string
+                    example: 'ABCDE921312DAB23AE:t06'
                 postedAt:
                     type: number
                     example: 1636065460

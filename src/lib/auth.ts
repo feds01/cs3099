@@ -10,11 +10,11 @@
 
 import assert from 'assert';
 import express from 'express';
-import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 import { ZodError } from 'zod';
 import Logger from '../common/logger';
 import { config } from '../server';
 import { IAuthHeaderSchema } from '../validators/auth';
+import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 
 export interface TokenPayload {
     token: string;
@@ -40,7 +40,8 @@ export class JwtError extends Error {
  * @returns The token payload if the token is valid, throws an error if the token is invalid.
  */
 export async function verifyToken(token: string): Promise<TokenData> {
-    return await new Promise((resolve, reject) => jwt.verify(token, config.jwtSecret, {}, (err, payload) => {
+    return await new Promise((resolve, reject) =>
+        jwt.verify(token, config.jwtSecret, {}, (err, payload) => {
             if (err) {
                 if (err.name === 'TokenExpiredError') {
                     return reject(new JwtError('expired', err));
@@ -51,7 +52,8 @@ export async function verifyToken(token: string): Promise<TokenData> {
             // If there was no error, it shouldn't be undefined.
             assert(typeof payload !== 'undefined');
             return resolve(payload.data);
-        }));
+        }),
+    );
 }
 
 /**
