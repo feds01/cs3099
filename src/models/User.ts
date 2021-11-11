@@ -1,5 +1,6 @@
 import { strict } from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
+import { config } from '../server';
 
 export enum IUserRole {
     Default = 'default',
@@ -27,6 +28,7 @@ export interface IUserDocument extends IUser, Document<string> {}
 export interface IUserModel extends Model<IUserDocument> {
     project: (user: IUser, omitId?: boolean) => Partial<IUser>;
     projectAsSg: (user: IUser) => { name: string; email: string };
+    getExternalId: (user: IUser) => string;
 }
 
 const UserSchema = new Schema<IUser, IUserModel, IUser>(
@@ -35,7 +37,7 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
         username: { type: String, required: true, unique: true },
         firstName: { type: String, required: true, minLength: 1 },
         lastName: { type: String, required: true, minLength: 1 },
-        password: { type: String, required: true },
+        password: { type: String, default: '' },
         profilePictureUrl: { type: String },
         about: { type: String },
         status: { type: String },
@@ -70,6 +72,14 @@ UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
         ...(typeof about !== 'undefined' && { about }),
         ...(typeof status !== 'undefined' && { status }),
     };
+};
+
+UserSchema.statics.getExternalId = (user: IUserDocument): string => {
+    if (typeof user.externalId !== 'undefined') {
+        return user.externalId;
+    }
+
+    return `${user.id as string}:${config.teamName}`;
 };
 
 /**

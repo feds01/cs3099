@@ -39,10 +39,18 @@ export default function SingleSignOn(props: Props): ReactElement {
     const location = useLocation<LocationState>();
     let { from } = location.state || { from: { pathname: '/' } };
 
-    const { mutate } = usePostAuthSso();
+    const { mutate, data, isError } = usePostAuthSso();
 
     const [endpoints, setEndpoints] = useState<ContentState<TeamEndpoints, any>>({ state: 'loading' });
     const handleSelect = (url: string) => mutate({params: {  to: url, path: from.pathname }});
+
+    // @@Hack: the server should auto-redirect the user by some means!!!
+    // Re-direct the user to the returned link essentially...
+    useEffect(() => {
+        if (data && !isError) {
+            window.location.href = data.follow;
+        }
+    }, [data]);
 
     useEffect(() => {
         async function onLoad() {

@@ -18,6 +18,7 @@ import type {
   BadRequestResponse,
   UnauthorizedResponse,
   TokenRequest,
+  PostAuthSso200,
   PostAuthSsoParams,
   UserLogin,
   UserRegistration
@@ -96,7 +97,7 @@ export const postAuthSession = (
 export const postAuthSso = (
     params?: PostAuthSsoParams,
  ) => {
-      return customInstance<unknown>(
+      return customInstance<PostAuthSso200>(
       {url: `/auth/sso`, method: 'post',
       data: undefined,
         params,
@@ -106,7 +107,7 @@ export const postAuthSso = (
   
 
 
-    export const usePostAuthSso = <TError = void | BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
+    export const usePostAuthSso = <TError = BadRequestResponse | UnauthorizedResponse | InternalServerErrorResponse,
     
     TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthSso>, TError,{params?: PostAuthSsoParams}, TContext>, }
 ) => {

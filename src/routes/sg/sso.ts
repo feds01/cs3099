@@ -4,17 +4,20 @@ import express from 'express';
 import User from '../../models/User';
 import { config } from '../../server';
 import Logger from '../../common/logger';
+import State from '../../models/State';
 import registerRoute from '../../lib/requests';
 import { IJwtSchema } from '../../validators/auth';
-import { createTokens, JwtError, verifyToken } from '../../lib/auth';
-import State from '../../models/State';
 import { makeRequest } from '../../utils/fetch';
 import { SgUserSchema } from '../../validators/sg';
+import { createTokens, JwtError, verifyToken } from '../../lib/auth';
 import { transformSgUserToInternal } from '../../transformers/sg';
 
 const router = express.Router();
 
-registerRoute(router, '/sso/login', {
+/**
+ *
+ */
+registerRoute(router, '/login', {
     method: 'get',
     params: z.object({}),
     query: z.object({ from: z.string().url(), state: z.string() }),
@@ -27,17 +30,20 @@ registerRoute(router, '/sso/login', {
     },
 });
 
-registerRoute(router, '/sso/callback', {
-    method: 'post',
+/**
+ *
+ */
+registerRoute(router, '/callback', {
+    method: 'get',
     params: z.object({}),
     query: z.object({ from: z.string().url(), state: z.string(), token: z.string() }),
-    body: z.object({}),
     permission: null,
     handler: async (req, res) => {
         const { from, state, token } = req.query;
+        Logger.info(`Processing request from: ${from} with state: ${state}`);
 
         // We need to verify that the state is correct with the transaction table...
-        const stateLink = await State.findOne({ from, state }).exec();
+        const stateLink = await State.findOne({ state }).exec();
 
         if (!stateLink) {
             return res.status(401).json({
@@ -49,12 +55,14 @@ registerRoute(router, '/sso/callback', {
         // We also need to make a verify request to the from service
         const response = await makeRequest(stateLink.from, '/api/sg/sso/verify', SgUserSchema, {
             query: { token },
+            method: 'post',
         });
 
         if (response.status === 'error') {
             return res.status(400).json({
                 status: 'error',
                 message: `request failed due to: ${response.type}`,
+                ...(typeof response.errors !== 'undefined' && { extra: response.errors }),
             });
         }
 
@@ -63,10 +71,10 @@ registerRoute(router, '/sso/callback', {
         // try to find the user
         const externalUser = await User.findOne({
             email: data.email,
-            externalId: `${data.id.id}:${data.id.group}`,
+            externalId: `${data.user_id.id}:${data.user_id.group}`,
         }).exec();
-        const transformedUser = transformSgUserToInternal(data);
 
+        const transformedUser = transformSgUserToInternal(data);
         let id;
 
         if (!externalUser) {
@@ -76,9 +84,16 @@ registerRoute(router, '/sso/callback', {
 
             id = doc.id;
         } else {
-            await User.findByIdAndUpdate(externalUser.id, transformedUser, {}).exec();
+            console.log(transformedUser);
+            await User.findByIdAndUpdate(
+                externalUser.id,
+                { $set: { ...transformedUser } },
+                {},
+            ).exec();
             id = externalUser.id;
         }
+
+        await State.findByIdAndDelete(stateLink.id).exec();
 
         // create the tokens
         const tokens = createTokens({
@@ -93,15 +108,20 @@ registerRoute(router, '/sso/callback', {
             `/auth/session?redirect=${stateLink.path}&${stringifiedTokens}`,
             config.frontendURI,
         );
+        Logger.info(`Sending user back to: ${path.toString()}`);
+
         return res.redirect(path.toString());
     },
 });
 
-registerRoute(router, '/sso/verify', {
+/**
+ *
+ */
+registerRoute(router, '/verify', {
     method: 'post',
     params: z.object({}),
-    query: z.object({ token: IJwtSchema }),
     body: z.object({}),
+    query: z.object({ token: IJwtSchema }),
     permission: null,
     handler: async (req, res) => {
         const { token } = req.query;

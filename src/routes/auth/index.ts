@@ -252,7 +252,11 @@ registerRoute(router, '/sso', {
             `/api/sg/sso/login?state=${stateString}&from=${config.frontendURI}`,
             to,
         );
-        res.redirect(url.toString());
+
+        return res.status(200).json({
+            status: 'ok',
+            follow: url.toString(),
+        });
     },
 });
 
@@ -371,7 +375,7 @@ router.post('/register', async (req, res) => {
                 token,
                 refreshToken,
             });
-        } catch (e) {
+        } catch (e: unknown) {
             Logger.error(e);
 
             return res.status(500).json({

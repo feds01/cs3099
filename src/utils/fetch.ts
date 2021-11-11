@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 import qs from 'query-string';
 import fetch, { FetchError } from 'node-fetch';
 import Logger from '../common/logger';
@@ -8,10 +8,13 @@ const RawResponseSchema = z.union([
     z.object({ status: z.literal('ok') }).passthrough(),
 ]);
 
+type RequestMethod = 'post' | 'get' | 'patch' | 'put' | 'delete';
+
 type ServiceResponse<T> =
     | {
           status: 'error';
           type: 'fetch' | 'service' | 'unknown';
+          errors?: ZodError;
       }
     | {
           status: 'ok';
@@ -22,7 +25,11 @@ export async function makeRequest<I, O>(
     baseUrl: string,
     endpoint: string,
     schema: z.Schema<O, z.ZodTypeDef, I>,
-    additional?: { query?: Record<string, string>; headers?: Record<string, string> },
+    additional?: {
+        query?: Record<string, string>;
+        method?: RequestMethod;
+        headers?: Record<string, string>;
+    },
 ): Promise<ServiceResponse<O>> {
     const url = new URL(endpoint, baseUrl);
 
@@ -37,6 +44,7 @@ export async function makeRequest<I, O>(
     try {
         const rawResponse = await fetch(endpointUri, {
             ...(typeof additional?.headers !== 'undefined' && { headers: additional.headers }),
+            ...(typeof additional?.method !== 'undefined' && { method: additional.method }),
         });
 
         const json: unknown = await rawResponse.json();
@@ -44,7 +52,7 @@ export async function makeRequest<I, O>(
 
         if (!validation.success) {
             Logger.warn('Service replied with an invalid format');
-            return { status: 'error', type: 'service' };
+            return { status: 'error', type: 'service', errors: validation.error };
         }
 
         const response = validation.data;
@@ -66,13 +74,16 @@ export async function makeRequest<I, O>(
             return { status: 'ok', data: bodyValidation.data };
         }
         Logger.warn('Service replied with an invalid format');
-        return { status: 'error', type: 'service' };
+        return { status: 'error', type: 'service', errors: bodyValidation.error };
     } catch (e: unknown) {
         if (e instanceof FetchError) {
-            Logger.warn(`Failed to fetch: ${url.toString()}`);
+            Logger.warn(
+                `Failed to fetch: ${url.toString()}, code: ${e.code ?? 'unknown'}, reason: ${e.message}`,
+            );
             return { status: 'error', type: 'fetch' };
         }
 
+        // Logger.warn(`Service request failed with: ${e}`);
         return { status: 'error', type: 'unknown' };
     }
 }

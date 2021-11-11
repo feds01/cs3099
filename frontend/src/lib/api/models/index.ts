@@ -114,3 +114,5 @@ export * from './postAuthSsoParams';
 export * from './getSgSsoVerifyParams';
 export * from './getSgSsoLoginParams';
 export * from './getSgSsoCallbackParams';
+export * from './postAuthSso200Status';
+export * from './postAuthSso200';

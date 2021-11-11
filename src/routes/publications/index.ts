@@ -5,6 +5,7 @@ import * as zip from '../../lib/zip';
 import * as errors from './../../common/errors';
 import * as userUtils from './../../utils/users';
 import registerRoute from '../../lib/requests';
+import Review from '../../models/Review';
 import User, { IUserRole } from '../../models/User';
 import Publication from '../../models/Publication';
 import { comparePermissions } from '../../lib/permissions';
@@ -13,6 +14,7 @@ import { IPublicationCreationSchema } from '../../validators/publications';
 
 import searchRouter from './search';
 import bookmarkRouter from './bookmarks';
+import { IReviewCreationSchema } from '../../validators/reviews';
 
 const router = express.Router();
 
@@ -20,6 +22,25 @@ const router = express.Router();
 router.use('/', searchRouter);
 router.use('/', bookmarkRouter);
 
+/**
+ *
+ */
+registerRoute(router, '/:username/:name/:revision?/all/', {
+    method: 'get',
+    params: z.object({
+        username: z.string(),
+        name: z.string(),
+        path: z.string().optional(),
+        revision: z.string().optional(),
+    }),
+    query: z.object({ mode: ModeSchema, sortBy: ResourceSortSchema }),
+    permission: IUserRole.Default,
+    handler: async (_req, _res) => {},
+});
+
+/**
+ *
+ */
 registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
     method: 'get',
     params: z.object({
@@ -177,6 +198,9 @@ registerRoute(router, '/', {
     },
 });
 
+/**
+ *
+ */
 registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
@@ -212,6 +236,9 @@ registerRoute(router, '/:username', {
     },
 });
 
+/**
+ *
+ */
 registerRoute(router, '/:username/:name/revisions', {
     method: 'get',
     params: z.object({ username: z.string() }),
@@ -249,6 +276,9 @@ registerRoute(router, '/:username/:name/revisions', {
     },
 });
 
+/**
+ *
+ */
 registerRoute(router, '/:username/:name/:revision?', {
     method: 'get',
     params: z.object({
@@ -319,7 +349,9 @@ registerRoute(router, '/:username/:name/:revision?', {
     },
 });
 
-// endpoint to delete the entire series of publications revisions
+/**
+ * @description endpoint to delete the entire series of publications revisions
+ */
 registerRoute(router, '/:username/:name/all', {
     method: 'delete',
     params: z.object({
@@ -357,6 +389,9 @@ registerRoute(router, '/:username/:name/all', {
     },
 });
 
+/**
+ *
+ */
 registerRoute(router, '/:username/:name/:revision?', {
     method: 'delete',
     params: z.object({
@@ -397,6 +432,83 @@ registerRoute(router, '/:username/:name/:revision?', {
             status: 'error',
             message: errors.NON_EXISTENT_PUBLICATION,
         });
+    },
+});
+
+/**
+ *
+ */
+registerRoute(router, '/:username/:name/:revision?/export', {
+    method: 'post',
+    params: z.object({
+        username: z.string().nonempty(),
+        name: z.string().nonempty(),
+        revision: z.string().optional(),
+    }),
+    body: z.string({}),
+    query: z.object({ mode: ModeSchema }),
+    permission: IUserRole.Default,
+    handler: async (_req, _res) => {},
+});
+
+/**
+ *
+ */
+registerRoute(router, '/:name/:username/:revision?/review', {
+    method: 'post',
+    body: IReviewCreationSchema,
+    query: z.object({ mode: ModeSchema }),
+    params: z.object({
+        username: z.string().nonempty(),
+        name: z.string().nonempty(),
+        revision: z.string().optional(),
+    }),
+    permission: IUserRole.Default,
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        const { name, revision } = req.params;
+
+        // Verify that the publication exists...
+        const publication = await Publication.findOne({
+            owner: user.id,
+            name: name.toLowerCase(),
+            ...(typeof revision !== 'undefined' && { revision }),
+        })
+            .sort({ _id: -1 })
+            .exec();
+
+        // Check that the publication isn't currently in draft mode...
+        if (!publication || publication.draft) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.NON_EXISTENT_PUBLICATION,
+            });
+        }
+
+        // Now attempt to create the new review
+        const newReview = new Review({
+            publication: publication.id,
+            owner: req.requester.id,
+        });
+
+        try {
+            await newReview.save();
+
+            return res.status(200).json({
+                status: 'ok',
+                message: 'Successfully initialised review.',
+                review: Review.project(newReview),
+            });
+        } catch (e: unknown) {
+            Logger.error(e);
+
+            return res.status(500).json({
+                status: 'error',
+                message: errors.INTERNAL_SERVER_ERROR,
+            });
+        }
     },
 });
 

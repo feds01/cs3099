@@ -240,8 +240,24 @@ paths:
                       description: Resource path where to send the user back to.
                       example: /jdoe1/publication
             responses:
-                '304':
+                '200':
                     description: Service redirects the client to the external journal provider login page.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - follow
+                                properties:
+                                    status:
+                                        type: string
+                                        enum: ['ok']
+                                        example: 'ok'
+                                    follow:
+                                        type: string
+                                        example: "http://localhost:8000"
+
                 '400':
                     $ref: '#/components/responses/BadRequest'
                 '401':

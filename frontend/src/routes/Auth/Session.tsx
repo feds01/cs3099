@@ -8,7 +8,7 @@ import { usePostAuthSession } from "../../lib/api/auth/auth";
 interface Props {}
 
 const SessionSchema = z.object({
-    redirect: z.string().url(),
+    redirect: z.string(), // @@Cleanup: validate using regex for resource path?
     token: z.string(),
     refreshToken: z.string()
 })
@@ -26,9 +26,9 @@ export default function Session(props: Props): ReactElement {
         const parsedQuery = qs.parse(location.search.replace(/^\?/, ''));
         const validator = SessionSchema.safeParse(parsedQuery);
 
-        
         // Redirect the user back to login if something wasn't correct with the user session.
         if (!validator.success) {
+            console.log(validator.error);
             history.push({pathname: "/login"})
         } else {
             setRedirect(validator.data.redirect);
