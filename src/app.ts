@@ -15,10 +15,12 @@ import * as SwaggerOptions from '../swagger.json';
 // Routers
 import userRouter from './routes/user';
 import authRouter from './routes/auth';
-import ssoRouter from './routes/auth/sso';
+import sgSsoRouter from './routes/sg/sso';
 import threadsRouter from './routes/threads';
 import reviewsRouter from './routes/reviews';
+import commentRouter from './routes/comments';
 import resourcesRouter from './routes/resources';
+import sgResourcesRouter from './routes/sg/resources';
 import publicationsRouter from './routes/publications';
 import morganMiddleware from './config/morganMiddleware';
 
@@ -41,10 +43,12 @@ const options = {
     apis: [
         './routes/user/index.ts',
         './routes/auth/index.ts',
-        './routes/auth/sso.ts',
+        './routes/sg/sso.ts',
+        './routes/sg/resources.ts',
         './routes/reviews/index.ts',
         './routes/publications/index.ts',
         './routes/threads/index.ts',
+        './routes/comments/index.ts',
     ],
 };
 
@@ -61,13 +65,15 @@ app.get('(\/api)?/version', (_req: express.Request, res: express.Response) => {
 });
 
 // Setup the specific API routes
-app.use('(\/api)?/sg', ssoRouter); // TODO(alex): we'll probably need to setup a proxy so that the SuperGroup can access all endpoints not just login
+app.use('(\/api)?/sg/sso', sgSsoRouter);
+app.use('(\/api)?/sg/resources', sgResourcesRouter);
 app.use('(\/api)?/auth', authRouter);
 app.use('(\/api)?/user', userRouter);
 app.use('(\/api)?/review', reviewsRouter);
 app.use('(\/api)?/resource', resourcesRouter);
 app.use('(\/api)?/publication', publicationsRouter);
-app.use('(\/api)?/thread', threadsRouter)
+app.use('(\/api)?/thread', threadsRouter);
+app.use('(\/api)?/comment', commentRouter)
 
 app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     // This check makes sure this is a JSON parsing issue, but it might be

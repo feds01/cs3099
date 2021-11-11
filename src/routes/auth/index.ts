@@ -375,7 +375,7 @@ router.post('/register', async (req, res) => {
                 token,
                 refreshToken,
             });
-        } catch (e) {
+        } catch (e: unknown) {
             Logger.error(e);
 
             return res.status(500).json({

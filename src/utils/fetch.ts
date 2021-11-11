@@ -78,12 +78,12 @@ export async function makeRequest<I, O>(
     } catch (e: unknown) {
         if (e instanceof FetchError) {
             Logger.warn(
-                `Failed to fetch: ${url.toString()}, code: ${e.code}, reason: ${e.message}`,
+                `Failed to fetch: ${url.toString()}, code: ${e.code ?? 'unknown'}, reason: ${e.message}`,
             );
             return { status: 'error', type: 'fetch' };
         }
 
-        Logger.warn(`Service request failed with: ${e}`);
+        // Logger.warn(`Service request failed with: ${e}`);
         return { status: 'error', type: 'unknown' };
     }
 }

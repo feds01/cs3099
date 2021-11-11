@@ -14,7 +14,10 @@ import { transformSgUserToInternal } from '../../transformers/sg';
 
 const router = express.Router();
 
-registerRoute(router, '/sso/login', {
+/**
+ *
+ */
+registerRoute(router, '/login', {
     method: 'get',
     params: z.object({}),
     query: z.object({ from: z.string().url(), state: z.string() }),
@@ -27,7 +30,10 @@ registerRoute(router, '/sso/login', {
     },
 });
 
-registerRoute(router, '/sso/callback', {
+/**
+ *
+ */
+registerRoute(router, '/callback', {
     method: 'get',
     params: z.object({}),
     query: z.object({ from: z.string().url(), state: z.string(), token: z.string() }),
@@ -79,12 +85,16 @@ registerRoute(router, '/sso/callback', {
             id = doc.id;
         } else {
             console.log(transformedUser);
-            await User.findByIdAndUpdate(externalUser.id, { $set: { ...transformedUser } }, {}).exec();
+            await User.findByIdAndUpdate(
+                externalUser.id,
+                { $set: { ...transformedUser } },
+                {},
+            ).exec();
             id = externalUser.id;
         }
 
         await State.findByIdAndDelete(stateLink.id).exec();
-        
+
         // create the tokens
         const tokens = createTokens({
             id,
@@ -104,7 +114,10 @@ registerRoute(router, '/sso/callback', {
     },
 });
 
-registerRoute(router, '/sso/verify', {
+/**
+ *
+ */
+registerRoute(router, '/verify', {
     method: 'post',
     params: z.object({}),
     body: z.object({}),
