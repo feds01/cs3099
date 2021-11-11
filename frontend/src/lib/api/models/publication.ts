@@ -8,6 +8,7 @@
 import type { User } from './user';
 
 export interface Publication {
+  id: string;
   name: string;
   title: string;
   introduction?: string;
@@ -15,5 +16,8 @@ export interface Publication {
   pinned: boolean;
   draft: boolean;
   owner: User;
+  attachment?: boolean;
   collaborators: string[];
+  createdAt: number;
+  updatedAt: number;
 }

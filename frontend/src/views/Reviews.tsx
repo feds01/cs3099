@@ -2,12 +2,14 @@ import { Box, Grid } from '@mui/material';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import VoidImage from '../static/images/void.svg';
+import ReviewCard from '../components/ReviewCard';
 import { ReactElement, useEffect, useState } from 'react';
 import { ContentState } from '../types/requests';
 import ErrorBanner from '../components/ErrorBanner';
-import { Publication, User } from '../lib/api/models';
 import SkeletonList from '../components/SkeletonList';
-import PublicationCard from '../components/PublicationCard';
+import { useGetUserUsernameReviews } from '../lib/api/users/users';
+import { transformQueryIntoContentState } from '../wrappers/react-query';
+import { ApiErrorResponse, GetUserUsernameReviews200 as ReviewResponse, User } from '../lib/api/models';
 
 interface Props {
     user: User;
@@ -15,25 +17,12 @@ interface Props {
 }
 
 export default function Reviews({ user, withTitle = true }: Props): ReactElement {
-    // const getPublicationQuery = useGetPublicationUsername(user.username);
+    const getReviewsQuery = useGetUserUsernameReviews(user.username);
+    const [reviews, setReviews] = useState<ContentState<ReviewResponse, ApiErrorResponse>>({ state: 'loading' });
 
-    const [reviews, setReviews] = useState<ContentState<Publication[], any>>({ state: 'loading' });
-
-    // useEffect(() => {
-    //     if (getPublicationQuery.data) {
-    //         // Here we essentially have to sort by pinned publications and then add remaining
-    //         // publications that have been added up to the specified limit.
-    //         const data = getPublicationQuery.data.data.sort((a, b) => {
-    //             if (a.pinned && b.pinned) return 0;
-
-    //             return a.pinned > b.pinned ? -1 : 0;
-    //         });
-
-    //         setPublications({ state: 'ok', data: data.slice(0, limit) });
-    //     } else if (getPublicationQuery.isError && getPublicationQuery.error) {
-    //         setPublications({ state: 'error', error: getPublicationQuery.error });
-    //     }
-    // }, [getPublicationQuery.data, getPublicationQuery.isLoading]);
+    useEffect(() => {
+        setReviews(transformQueryIntoContentState(getReviewsQuery))
+    }, [getReviewsQuery.data]);
 
     function renderContent() {
         switch (reviews.state) {
@@ -48,19 +37,13 @@ export default function Reviews({ user, withTitle = true }: Props): ReactElement
             case 'ok':
                 return (
                     <div>
-                        {withTitle && (
-                            <>
-                                <Typography variant="h4">Reviews</Typography>
-                                <Divider />
-                            </>
-                        )}
                         <Box
                             sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
                             }}
                         >
-                            {reviews.data.length === 0 ? (
+                            {reviews.data.reviews.length === 0 ? (
                                 <Box
                                     sx={{
                                         display: 'flex',
@@ -80,10 +63,10 @@ export default function Reviews({ user, withTitle = true }: Props): ReactElement
                                     columns={{ xs: 1, sm: 1, md: 1 }}
                                     sx={{ marginTop: '0.25rem' }}
                                 >
-                                    {reviews.data.map((pub) => {
+                                    {reviews.data.reviews.map((review, index) => {
                                         return (
-                                            <Grid key={pub.name} item xs={2} sm={3} md={3}>
-                                                <PublicationCard key={pub.name} user={user} pub={pub} />
+                                            <Grid key={index} item xs={2} sm={3} md={3}>
+                                                <ReviewCard review={review} />
                                             </Grid>
                                         );
                                     })}

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import * as errors from '../../common/errors';
-import express, { Router } from 'express';
+import express from 'express';
 import Logger from '../../common/logger';
 import { IUserRole } from '../../models/User';
 import * as userUtils from '../../utils/users';
@@ -8,6 +8,7 @@ import Publication from '../../models/Publication';
 import registerRoute from '../../lib/requests';
 import { joinPaths, extractFile } from '../../utils/resources';
 import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
+import path from 'path';
 
 const router = express.Router();
 
@@ -85,7 +86,7 @@ registerRoute(router, '/upload/:username', {
  *
  * @description Endpoint for uploading resources to publications
  */
-registerRoute(router, '/publication/upload/:id', {
+registerRoute(router, '/upload/publication/:id', {
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({ revision: z.string().optional() }),
     body: z.any(),
@@ -105,11 +106,10 @@ registerRoute(router, '/publication/upload/:id', {
         }
 
         // @@Security: Ensure that the actual uploaded file is sane and don't just rely on mimetype.
-
         // Check that the mime-type of the file upload is either a plain text file or an
         // "application/zip" representing an archive. Other mime-types are currently banned
         // and we don't allow binary data uploads (at the moment).
-        if (file.mimetype !== 'application/zip' || !file.mimetype.startsWith('text/')) {
+        if (file.mimetype !== 'application/zip' && !file.mimetype.startsWith('text/')) {
             return res.status(400).json({
                 status: 'error',
                 message: errors.BAD_REQUEST,
@@ -117,7 +117,7 @@ registerRoute(router, '/publication/upload/:id', {
             });
         }
 
-        const publication = await Publication.findOne({ id });
+        const publication = await Publication.findById(id).exec();
 
         if (!publication) {
             return res.status(404).json({
@@ -130,9 +130,9 @@ registerRoute(router, '/publication/upload/:id', {
 
         // now we need to append the revision number if it actually exists...
         if (revision) {
-            uploadPath = joinPaths(uploadPath, revision, 'publication.zip');
+            uploadPath = path.join(uploadPath, revision, 'publication.zip');
         } else {
-            uploadPath = joinPaths(uploadPath, 'publication.zip');
+            uploadPath = path.join(uploadPath, 'publication.zip');
         }
 
         // Move the file into it's appropriate storage location
@@ -146,7 +146,7 @@ registerRoute(router, '/publication/upload/:id', {
                 });
             }
 
-            Logger.info('Successfully saved uploaded file to filesystem');
+            Logger.info(`Successfully saved uploaded file to filesystem at: ${uploadPath}`);
             return res.status(200).json({
                 status: 'ok',
                 message: 'Successfully uploaded file.',
@@ -166,7 +166,7 @@ registerRoute(router, '/publication/upload/:id', {
  * Endpoint for uploading attachements on reviwew commetns, items such as images/files or even
  * videos.
  */
-registerRoute(router, '/review/upload/:id', {
+registerRoute(router, '/upload/review/:id', {
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({}),
     body: z.any(),
@@ -185,4 +185,4 @@ registerRoute(router, '/review/upload/:id', {
     },
 });
 
-export default Router;
+export default router;

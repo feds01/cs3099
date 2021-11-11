@@ -8,11 +8,7 @@ import { ContentState } from '../types/requests';
  *
  * @param query - The Query that is to be transformed into a content state
  */
-export function transformQueryIntoContentState<T, E>(query: UseQueryResult<T, E>): ContentState<T, E | null> {
-    if (query.isLoading) {
-        return { state: 'loading' };
-    }
-
+export function transformQueryIntoContentState<T, E>(query: UseQueryResult<T, E>): ContentState<T, E> {
     if (query.isError) {
         return { state: 'error', error: query.error };
     } else if (query.data && query.status === 'success') {
@@ -22,6 +18,5 @@ export function transformQueryIntoContentState<T, E>(query: UseQueryResult<T, E>
         return { state: 'ok', data: query.data };
     }
 
-    // How?
-    return { state: 'error', error: query.error };
+    return { state: 'loading' };
 }

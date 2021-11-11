@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import DirectoryViewer from '../DirectoryViewer';
 import Container from '@mui/material/Container';
 import { ContentState } from '../../types/requests';
-import { Alert, AlertTitle, Divider } from '@mui/material';
+import { Alert, AlertTitle, Divider, LinearProgress } from '@mui/material';
 import { ResourceResponseResponse } from '../../lib/api/models';
 import { ReactElement, useEffect, useState } from 'react';
 import { constructBasePath, PublicationIndex } from '../../lib/utils/publications';
@@ -19,7 +19,7 @@ interface SourceViewerProps {
 function SourceViewer({ contents, filename, basePath }: SourceViewerProps): ReactElement {
     switch (contents.state) {
         case 'loading': {
-            return <div>Loading</div>;
+            return <LinearProgress/>;
         }
         case 'error': {
             return (
@@ -58,7 +58,6 @@ export default function  PublicationViewSource({ contents, filename, index }: Pr
         setBasePath(constructBasePath(index));
     }, [index]);
 
-    // TODO: add upload button here...
     return (
         <Container>
             <BreadCrumb index={index} basePath={basePath} filename={filename} />

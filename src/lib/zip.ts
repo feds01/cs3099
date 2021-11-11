@@ -57,7 +57,7 @@ function archiveIndexToPath(archive: ArchiveIndex): string {
  *
  * @param archive - The entry describing the archives location in the file system.
  */
-function loadArchive(archive: ArchiveIndex): AdmZip | null {
+export function loadArchive(archive: ArchiveIndex): AdmZip | null {
     try {
         return new AdmZip(archiveIndexToPath(archive));
     } catch (e: unknown) {

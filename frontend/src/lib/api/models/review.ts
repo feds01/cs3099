@@ -13,4 +13,5 @@ export interface Review {
   owner: User;
   createdAt: number;
   updatedAt: number;
+  id: string;
 }

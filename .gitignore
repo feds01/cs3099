@@ -18,3 +18,4 @@ swagger.json
 
 # Server saved files
 resources/
+tmp/

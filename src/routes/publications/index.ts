@@ -341,9 +341,17 @@ registerRoute(router, '/:username/:name/:revision?', {
             }
         }
 
+        // Check if the publication has an uploaded source file...
+        const archiveIndex = {
+            userId: publication.owner._id.toString(),
+            name: publication.name,
+            revision,
+        };
+        const archive = zip.loadArchive(archiveIndex);
+
         return res.status(200).json({
             status: 'ok',
-            publication: await Publication.project(publication),
+            publication: await Publication.project(publication, archive !== null),
         });
     },
 });

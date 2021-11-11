@@ -19,7 +19,7 @@ export interface IPublication {
 export interface IPublicationDocument extends IPublication, Document {}
 
 interface IPublicationModel extends Model<IPublicationDocument> {
-    project: (publication: IPublication) => Promise<Partial<IPublication>>;
+    project: (publication: IPublication, attachment?: boolean) => Promise<Partial<IPublication>>;
     projectWith: (publication: IPublication, user: IUserDocument) => Promise<Partial<IPublication>>;
 }
 
@@ -38,21 +38,31 @@ const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublicati
     { timestamps: true },
 );
 
-PublicationSchema.statics.project = async (publication: IPublicationDocument) => {
+PublicationSchema.statics.project = async (
+    publication: IPublicationDocument,
+    attachment?: boolean,
+) => {
     const { name, title, introduction, draft, owner: ownerId, collaborators } = publication;
 
     // Resolve the owner name...
     const owner = await User.findById(ownerId).exec();
+    assert(owner !== null);
 
     return {
+        id: publication.id as string,
         name,
         title,
         introduction,
-        owner,
+        owner: User.project(owner),
         pinned: publication.pinned,
         draft,
         collaborators, // TODO: project collaborators too...
         createdAt: publication.createdAt.getTime(),
+        updatedAt: publication.updatedAt.getTime(),
+
+        // this is a flag that denotes whether or not we know that this publication has an attached
+        // zip archive on disk.
+        attachment,
     };
 };
 
@@ -65,11 +75,15 @@ PublicationSchema.statics.projectWith = (
     assert(owner.id === ownerId._id.toString(), 'Owner ids mis-match');
 
     return {
+        id: publication.id as string,
         name,
         title,
         introduction,
         owner: User.project(owner),
         draft,
+
+        createdAt: publication.createdAt.getTime(),
+        updatedAt: publication.updatedAt.getTime(),
 
         // TODO: project collaborators too...
         collaborators,
