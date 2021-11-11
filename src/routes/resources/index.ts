@@ -6,7 +6,7 @@ import { IUserRole } from '../../models/User';
 import * as userUtils from '../../utils/users';
 import Publication from '../../models/Publication';
 import registerRoute from '../../lib/requests';
-import { joinPaths, extractFile } from '../../utils/resources';
+import { joinPathsForResource, extractFile } from '../../utils/resources';
 import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
 import path from 'path';
 
@@ -54,7 +54,7 @@ registerRoute(router, '/upload/:username', {
             });
         }
 
-        const uploadPath = joinPaths('avatar', user.username, 'avatar');
+        const uploadPath = joinPathsForResource('avatar', user.username, 'avatar');
 
         // Move the file into it's appropriate storage location
         return file.mv(uploadPath, (err) => {
@@ -126,7 +126,7 @@ registerRoute(router, '/upload/publication/:id', {
             });
         }
 
-        let uploadPath = joinPaths('publications', userId, publication.name);
+        let uploadPath = joinPathsForResource('publications', userId, publication.name);
 
         // now we need to append the revision number if it actually exists...
         if (revision) {

@@ -1,7 +1,11 @@
 import { z, ZodError } from 'zod';
 import qs from 'query-string';
+import FileType from 'file-type/browser';
 import fetch, { FetchError } from 'node-fetch';
+import { promises as fs } from 'fs';
 import Logger from '../common/logger';
+import { joinPathsRaw } from './resources';
+import { config } from '../server';
 
 const RawResponseSchema = z.union([
     z.object({ status: z.literal('error'), message: z.string() }),
@@ -14,13 +18,118 @@ type ServiceResponse<T> =
     | {
           status: 'error';
           type: 'fetch' | 'service' | 'unknown';
-          errors?: ZodError;
+          errors?: ZodError | string;
       }
     | {
           status: 'ok';
           data: T;
       };
 
+function buildUrl(baseUrl: string, endpoint: string, query?: Record<string, string>): string {
+    const url = new URL(endpoint, baseUrl);
+
+    const endpointUri = qs.stringifyUrl({
+        url: url.toString(),
+        ...(typeof query !== 'undefined' && { query }),
+    });
+
+    return endpointUri;
+}
+
+/**
+ * Function to attempt to download an octet stream from a given service.
+ *
+ * @param baseUrl
+ * @param endpoint
+ * @param additional
+ *
+ * @returns the file path to where it was saved.
+ */
+export async function downloadOctetStream(
+    baseUrl: string,
+    endpoint: string,
+    additional?: {
+        query?: Record<string, string>;
+        method?: RequestMethod;
+        headers?: Record<string, string>;
+    },
+): Promise<ServiceResponse<string>> {
+    const url = buildUrl(baseUrl, endpoint, additional?.headers);
+    Logger.info(`Attempting to download stream at: ${url}`);
+
+    try {
+        const rawResponse = await fetch(url, {
+            ...(typeof additional?.headers !== 'undefined' && { headers: additional.headers }),
+            ...(typeof additional?.method !== 'undefined' && { method: additional.method }),
+        });
+
+        // get the blob from the response
+        const blob = await rawResponse.arrayBuffer();
+
+        // determine if this blob is a simple file type or an application/json
+        const meta = await FileType.fromBuffer(blob);
+
+        if (!meta) {
+            return {
+                status: 'error',
+                type: 'service',
+                errors: "Couldn't compute mime-type from data.",
+            };
+        }
+
+        if (meta.mime !== 'application/zip' && !meta.mime.startsWith('text')) {
+            return {
+                status: 'error',
+                type: 'service',
+                errors: new ZodError([
+                    {
+                        code: 'custom',
+                        path: [],
+                        message:
+                            `Expected mime-type to be application/zip or plaintext, but received ${
+                            meta.mime}`,
+                    },
+                ]),
+            };
+        }
+
+        const tmpFilePath = joinPathsRaw(
+            config.tempFolder,
+            `publication-${new Date().getTime()}.zip`,
+        );
+
+        try {
+            Logger.info(`Attempting to save file at: ${tmpFilePath}`);
+
+            // @@Wrapping: We should move this function into it's own wrapper!
+            await fs.appendFile(tmpFilePath, Buffer.from(blob));
+
+            return { status: 'ok', data: tmpFilePath };
+        } catch (e: unknown) {
+            Logger.warn('Failed to save file.');
+            return { status: 'error', type: 'fetch' };
+        }
+    } catch (e: unknown) {
+        if (e instanceof FetchError) {
+            Logger.warn(
+                `Failed to fetch: ${url.toString()}, code: ${e.code ?? 'unknown'}, reason: ${
+                    e.message
+                }`,
+            );
+            return { status: 'error', type: 'fetch' };
+        }
+
+        // Logger.warn(`Service request failed with: ${e}`);
+        return { status: 'error', type: 'unknown' };
+    }
+}
+
+/**
+ *
+ * @param baseUrl
+ * @param endpoint
+ * @param additional
+ */
 export async function makeRequest<I, O>(
     baseUrl: string,
     endpoint: string,
@@ -31,18 +140,11 @@ export async function makeRequest<I, O>(
         headers?: Record<string, string>;
     },
 ): Promise<ServiceResponse<O>> {
-    const url = new URL(endpoint, baseUrl);
-
-    const endpointUri = qs.stringifyUrl({
-        url: url.toString(),
-        ...(typeof additional?.query !== 'undefined' && { query: additional.query }),
-    });
-
-    // TODO: assert here that the baseUrl is a valid supergroup url.
-    Logger.info(`Attempting to request external service at: ${url.toString()}`);
+    const url = buildUrl(baseUrl, endpoint, additional?.headers);
+    Logger.info(`Attempting to request external service at: ${url}`);
 
     try {
-        const rawResponse = await fetch(endpointUri, {
+        const rawResponse = await fetch(url, {
             ...(typeof additional?.headers !== 'undefined' && { headers: additional.headers }),
             ...(typeof additional?.method !== 'undefined' && { method: additional.method }),
         });

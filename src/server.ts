@@ -17,7 +17,7 @@ const rawConfig = {
     jwtSecret: process.env.JWT_SECRET_KEY,
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET_KEY,
     resourcesFolder: process.env.RESOURCES_FOLDER,
-    tempFolder: "./temp",
+    tempFolder: __dirname + "../tmp",
     teamName: 't06',
     port: process.env.PORT,
     frontendURI: process.env.FRONT_END_URI,

@@ -1,5 +1,15 @@
 import { IUserDocument } from '../models/User';
-import { SgUser } from '../validators/sg';
+import { SgUser, SgUserId } from '../validators/sg';
+
+/**
+ * Convert a Supergroup id into a normal string.
+ *
+ * @param external - The external id
+ * @returns The id converted into a normal string.
+ */
+export function convertSgId(external: SgUserId): string {
+    return `${external.id}:${external.group}`;
+}
 
 /**
  * Function to transform a Supergroup User type into an internal user that
@@ -23,6 +33,6 @@ export function transformSgUserToInternal(
         password: '',
         profilePictureUrl,
         email,
-        externalId: `${id.id}:${id.group}`,
+        externalId: convertSgId(id),
     };
 }
