@@ -2,9 +2,8 @@ import Card from '@mui/material/Card';
 import { Review } from '../../lib/api/models';
 
 import { Link } from 'react-router-dom';
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 import { formatDistance } from 'date-fns';
-import { Publication, User } from '../../lib/api/models';
 import { Box, CardContent, Typography } from '@mui/material';
 
 interface Props {

@@ -115,4 +115,12 @@ app.use((err: any, _req: express.Request, res: express.Response, next: express.N
     return;
 });
 
+// catch 404 and forward to error handler
+app.use((_req: express.Request, res: express.Response) => {
+    res.status(404).send({
+        status: "error",
+        message: errors.RESOURCE_NOT_FOUND
+    });
+});
+
 export default app;

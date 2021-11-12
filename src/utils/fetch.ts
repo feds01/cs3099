@@ -85,9 +85,7 @@ export async function downloadOctetStream(
                     {
                         code: 'custom',
                         path: [],
-                        message:
-                            `Expected mime-type to be application/zip or plaintext, but received ${
-                            meta.mime}`,
+                        message: `Expected mime-type to be application/zip or plaintext, but received ${meta.mime}`,
                     },
                 ]),
             };

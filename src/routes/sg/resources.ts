@@ -109,7 +109,21 @@ registerRoute(router, '/export/:id/metadata', {
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({ from: z.string().url(), state: z.string() }),
     permission: null,
-    handler: async (_req, _res) => {},
+    handler: async (req, res) => {
+        const publication = await Publication.findById(req.params.id);
+
+        if (!publication) {
+            return res.status(404).json({
+                status: 'error',
+                error: errors.NON_EXISTENT_PUBLICATION_ID,
+            });
+        }
+
+        return res.status(200).json({
+            publication,
+            reviews: [], // TODO: export publications too
+        });
+    },
 });
 
 /**
@@ -120,7 +134,21 @@ registerRoute(router, '/export/:id', {
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({ from: z.string().url(), state: z.string() }),
     permission: null,
-    handler: async (_req, _res) => {},
+    handler: async (req, res) => {
+        const publication = await Publication.findById(req.params.id);
+
+        if (!publication) {
+            return res.status(404).json({
+                status: 'error',
+                error: errors.NON_EXISTENT_PUBLICATION_ID,
+            });
+        }
+
+        const { owner, name, revision } = publication;
+        const archive = archiveIndexToPath({ userId: owner.toString(), name, revision });
+
+        return res.status(200).sendFile(archive);
+    },
 });
 
 export default router;
