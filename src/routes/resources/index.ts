@@ -6,9 +6,8 @@ import { IUserRole } from '../../models/User';
 import * as userUtils from '../../utils/users';
 import Publication from '../../models/Publication';
 import registerRoute from '../../lib/requests';
-import { joinPathsForResource, extractFile } from '../../utils/resources';
 import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
-import path from 'path';
+import { joinPathsForResource, extractFile, joinPathsRaw } from '../../utils/resources';
 
 const router = express.Router();
 
@@ -109,11 +108,11 @@ registerRoute(router, '/upload/publication/:id', {
         // Check that the mime-type of the file upload is either a plain text file or an
         // "application/zip" representing an archive. Other mime-types are currently banned
         // and we don't allow binary data uploads (at the moment).
-        if (file.mimetype !== 'application/zip' && !file.mimetype.startsWith('text/')) {
+        if (file.mimetype !== 'application/zip') {
             return res.status(400).json({
                 status: 'error',
                 message: errors.BAD_REQUEST,
-                extra: "Invalid file mimetype sent. Publication uploads only accept 'text' or 'application/zip' mimetypes.",
+                extra: "Invalid file mimetype sent. Publication uploads only accepts 'application/zip' mime-type.",
             });
         }
 
@@ -126,13 +125,20 @@ registerRoute(router, '/upload/publication/:id', {
             });
         }
 
-        let uploadPath = joinPathsForResource('publications', userId, publication.name);
+        if (!publication.draft) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Cannot modify publication sources.',
+            });
+        }
+
+        let uploadPath = joinPathsForResource('publication', userId, publication.name);
 
         // now we need to append the revision number if it actually exists...
         if (revision) {
-            uploadPath = path.join(uploadPath, revision, 'publication.zip');
+            uploadPath = joinPathsRaw(uploadPath, revision, 'publication.zip');
         } else {
-            uploadPath = path.join(uploadPath, 'publication.zip');
+            uploadPath = joinPathsRaw(uploadPath, 'publication.zip');
         }
 
         // Move the file into it's appropriate storage location
@@ -145,6 +151,9 @@ registerRoute(router, '/upload/publication/:id', {
                     message: errors.INTERNAL_SERVER_ERROR,
                 });
             }
+
+            // Update the publication to become live instead of draft
+            publication.update({ $set: { draft: false } });
 
             Logger.info(`Successfully saved uploaded file to filesystem at: ${uploadPath}`);
             return res.status(200).json({
