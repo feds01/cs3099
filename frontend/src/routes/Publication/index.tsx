@@ -2,6 +2,7 @@ import { useParams } from 'react-router';
 import PageLayout from '../../components/PageLayout';
 import { ContentState } from '../../types/requests';
 import { ReactElement, useEffect, useState } from 'react';
+import Void from './../../static/images/void.svg';
 
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -21,6 +22,11 @@ import {
     useGetPublicationUsernameNameTreePath as useGetRevisionlessPublicationSource,
 } from '../../lib/api/publications/publications';
 import ErrorBanner from '../../components/ErrorBanner';
+import UserLink from '../../components/UserLink';
+import Typography from '@mui/material/Typography';
+import { formatDistance } from 'date-fns';
+import UploadAttachment from '../../views/UploadAttachment';
+import { useAuth } from '../../hooks/auth';
 
 interface Props {}
 
@@ -32,9 +38,12 @@ interface PublicationParams {
 }
 
 function PublicationView() {
+    const { session } = useAuth();
     const { username, name, revision, path }: PublicationParams = useParams();
 
-    const [publication, setPublication] = useState<ContentState<PublicationResponse, any>>({ state: 'loading' });
+    const [publicationInfo, setPublicationInfo] = useState<ContentState<PublicationResponse, any>>({
+        state: 'loading',
+    });
     const [publicationSource, setPublicationSource] = useState<ContentState<ResourceResponseResponse, any>>({
         state: 'loading',
     });
@@ -45,20 +54,27 @@ function PublicationView() {
     const getPublicationSourceQuery = useGetPublicationSource(username, name, revision || '', path || '');
     const getMainPublicationSourceQuery = useGetRevisionlessPublicationSource(username, name, path || '');
 
+    const refetchSources = () => {
+        if (publicationInfo.state === 'ok') {
+            const { attachment } = publicationInfo.data.publication;
+            if (!attachment) return;
+
+            if (typeof revision !== 'undefined') {
+                getPublicationSourceQuery.refetch();
+            } else {
+                getMainPublicationSourceQuery.refetch();
+            }
+        }
+    }
+
     useEffect(() => {
         getPublicationQuery.refetch();
     }, [username, name, revision]);
 
-    useEffect(() => {
-        if (typeof revision !== 'undefined') {
-            getPublicationSourceQuery.refetch();
-        } else {
-            getMainPublicationSourceQuery.refetch();
-        }
-    }, [username, name, revision, path]);
+    useEffect(() => refetchSources(), [username, publicationInfo.state, name, revision, path]);
 
     useEffect(() => {
-        setPublication(transformQueryIntoContentState(getPublicationQuery));
+        setPublicationInfo(transformQueryIntoContentState(getPublicationQuery));
     }, [getPublicationQuery.data, getPublicationQuery.isLoading]);
 
     useEffect(() => {
@@ -69,7 +85,7 @@ function PublicationView() {
         }
     }, [getPublicationSourceQuery.isLoading, getMainPublicationSourceQuery.isLoading]);
 
-    switch (publication.state) {
+    switch (publicationInfo.state) {
         case 'loading': {
             return (
                 <div>
@@ -80,28 +96,38 @@ function PublicationView() {
             );
         }
         case 'error': {
-            return <ErrorBanner message={publication.error?.message} />;
+            return <ErrorBanner message={publicationInfo.error?.message} />;
         }
         case 'ok': {
+            const { publication } = publicationInfo.data;
             return (
                 <>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <MarkdownRenderer contents={publication.data.publication.title} />
-                        <Chip
-                            sx={{ ml: 1 }}
-                            label={publication.data.publication.revision || 'current'}
-                            variant="outlined"
-                        />
+                    <Box sx={{ mb: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <MarkdownRenderer fontSize={24} contents={publication.title} />
+                            <Chip sx={{ ml: 1 }} label={publication.revision || 'current'} variant="outlined" />
+                        </Box>
+                        <Typography>
+                            by <UserLink username={publication.owner.username} />{' '}
+                            {formatDistance(publication.createdAt, new Date(), { addSuffix: true })}
+                        </Typography>
                     </Box>
-                    {publication.data.publication.introduction && (
-                        <MarkdownRenderer contents={publication.data.publication.introduction} />
-                    )}
+                    {publication.introduction && <MarkdownRenderer contents={publication.introduction} />}
                     <Divider />
-                    <PublicationViewSource
-                        index={{ username, name, revision }}
-                        filename={path || '/'}
-                        contents={publicationSource}
-                    />
+                    {publication.attachment ? (
+                        <PublicationViewSource
+                            index={{ username, name, revision }}
+                            filename={path || '/'}
+                            contents={publicationSource}
+                        />
+                    ) : publication.owner.id === session.id ? (
+                        <UploadAttachment refetchData={refetchSources} publication={publication} />
+                    ) : (
+                        <Box sx={{ m: 2, display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                            <img src={Void} height={128} width={128} alt="void" />
+                            <Typography variant={'body1'}>This publication doesn't have any sources yet.</Typography>
+                        </Box>
+                    )}
                 </>
             );
         }

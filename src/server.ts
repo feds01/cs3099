@@ -9,9 +9,6 @@ import program from './config/commander';
 
 require('dotenv').config(); // Import our environment variables
 
-//initialize a simple http server
-const server = createServer(app);
-
 // Here we create a config object and try to validate it using the config validator...
 const rawConfig = {
     mongoURI: process.env.MONGODB_CONNECTION_URI,
@@ -20,6 +17,7 @@ const rawConfig = {
     jwtSecret: process.env.JWT_SECRET_KEY,
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET_KEY,
     resourcesFolder: process.env.RESOURCES_FOLDER,
+    tempFolder: __dirname + "../tmp",
     teamName: 't06',
     port: process.env.PORT,
     frontendURI: process.env.FRONT_END_URI,
@@ -45,6 +43,9 @@ function validateConfig() {
 }
 
 export const config = validateConfig();
+
+//initialize a simple http server
+const server = createServer(app);
 
 function startServer() {
     server.listen(config.port, () => {

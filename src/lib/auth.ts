@@ -11,10 +11,10 @@
 import assert from 'assert';
 import express from 'express';
 import { ZodError } from 'zod';
+import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 import Logger from '../common/logger';
 import { config } from '../server';
 import { IAuthHeaderSchema } from '../validators/auth';
-import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 
 export interface TokenPayload {
     token: string;

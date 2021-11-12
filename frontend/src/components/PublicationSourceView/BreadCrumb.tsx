@@ -12,9 +12,9 @@ interface Props {
 
 export default function BreadCrumb({ index, basePath, filename }: Props): ReactElement {
     return (
-        <Breadcrumbs aria-label="content breadcrumbs">
+        <Breadcrumbs aria-label="content breadcrumbs" sx={{m: 1}}>
             <Link underline="hover" color="inherit" href={`${basePath}/tree/`}>
-                <Typography color="text.primary" sx={{ fontWeight: 'bold', fontSize: 16 }}>
+                <Typography color="text.primary" sx={{ fontWeight: 'bold', fontSize: 18 }}>
                     {index.name}
                 </Typography>
             </Link>
@@ -25,7 +25,7 @@ export default function BreadCrumb({ index, basePath, filename }: Props): ReactE
                     const subPath = parts.slice(0, index + 1).join('/');
                     return (
                         <Link key={index} underline="hover" color="inherit" href={`${basePath}/tree/${subPath}`}>
-                            <Typography color="text.primary" sx={{ fontSize: 16 }}>
+                            <Typography color="text.primary" sx={{ fontSize: 18 }}>
                                 {component}
                             </Typography>
                         </Link>

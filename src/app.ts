@@ -23,19 +23,26 @@ import resourcesRouter from './routes/resources';
 import sgResourcesRouter from './routes/sg/resources';
 import publicationsRouter from './routes/publications';
 import morganMiddleware from './config/morganMiddleware';
+import path from 'path';
+
 
 // Create the express application
 const app = express();
 
+// File uploads
+app.use(fileUpload({
+    useTempFiles: true,
+    tempFileDir: path.join(__dirname, '..', 'tmp'),
+    createParentPath: true,
+    debug: true,
+}));
+
 // Setup express middleware
-app.use(helmet({}));
+app.use(helmet());
 app.use(cors());
 app.use(morganMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// File uploads
-app.use(fileUpload());
 
 // Add swagger to the Express app
 const options = {

@@ -445,6 +445,9 @@ paths:
                         application/json:
                             schema:
                                 type: object
+                                required:
+                                    - status
+                                    - reviews
                                 properties:
                                     status:
                                         type: string
@@ -2053,6 +2056,7 @@ components:
             properties:
                 file:
                     type: string
+                    format: binary
         UploadResourceResponse:
             type: object
             required:
@@ -2065,14 +2069,19 @@ components:
         Publication:
             type: object
             required:
+                - id
                 - name
                 - title
                 - collaborators
-                - createdAt
                 - owner
                 - draft
+                - createdAt
+                - updatedAt
                 - pinned
             properties:
+                id:
+                    type: string
+                    example: 'ABCDE921312DAB23AE'
                 name:
                     type: string
                     example: 'Iamus'
@@ -2093,11 +2102,20 @@ components:
                     example: true
                 owner:
                     $ref: '#/components/schemas/User'
+                attachment:
+                    type: boolean
+                    example: true
                 collaborators:
                     type: array
                     items:
                         type: string # TODO: maybe resolve collaborators later?
                         example: 'jdoe1'
+                createdAt:
+                    type: number
+                    example: 1636065460
+                updatedAt:
+                    type: number
+                    example: 1636065460
         CreatePublicationRequest:
             type: object
             required:
@@ -2185,6 +2203,7 @@ components:
         Review:
             type: object
             required:
+                - id
                 - owner
                 - publication
                 - createdAt
@@ -2200,6 +2219,9 @@ components:
                 updatedAt:
                     type: number
                     example: 1636065460
+                id:
+                    type: string
+                    example: ABCDE921312DAB23AE
         Comment:
             type: object
             required:

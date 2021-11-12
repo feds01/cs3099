@@ -2,15 +2,27 @@ import remarkGfm from 'remark-gfm';
 import ReactMarkdown from 'react-markdown';
 import React, { ReactElement } from 'react';
 import CodeRenderer from '../CodeRenderer';
+import { Theme } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 
 interface Props {
     contents: string;
+    fontSize?: number;
 }
 
-export default function index({ contents }: Props): ReactElement {
+const useStyles = makeStyles<Theme, Props>(theme => ({
+    wrapper: {
+        fontSize: ({fontSize}) => fontSize ?? 16,
+    }
+}));
+
+export default function MarkdownRenderer(props: Props): ReactElement {
+    const classes = useStyles(props);
+    
     return (
         <ReactMarkdown
             remarkPlugins={[remarkGfm]}
+            className={classes.wrapper}
             components={{
                 code({ node, inline, className, children, ...props }) {
                     const match = /language-(\w+)/.exec(className || '');
@@ -25,7 +37,7 @@ export default function index({ contents }: Props): ReactElement {
                 },
             }}
         >
-            {contents}
+            {props.contents}
         </ReactMarkdown>
     );
 }

@@ -1,6 +1,7 @@
 import path from 'path';
 import express from 'express';
 import { UploadedFile } from 'express-fileupload';
+import { config } from '../server';
 
 /**
  * Function to concatenate paths with the specified project resource folder.
@@ -8,14 +9,18 @@ import { UploadedFile } from 'express-fileupload';
  * @param paths - Paths that should be concatenated with the resource folder.
  * @returns The concatenated path.
  */
-export function joinPaths(...paths: string[]): string {
-    const prefix = process.env.RESOURCES_FOLDER;
+export function joinPathsForResource(...paths: string[]): string {
+    return path.join(config.resourcesFolder, ...paths);
+}
 
-    if (typeof prefix === 'undefined') {
-        throw new Error("Environment variable 'RESOURCE_FOLDER' is undefined.");
-    }
-
-    return path.join(prefix, ...paths);
+/**
+ * Function to join an arbitrary number of paths.
+ *
+ * @param paths
+ * @returns
+ */
+export function joinPathsRaw(...paths: string[]): string {
+    return path.join(...paths);
 }
 
 /**

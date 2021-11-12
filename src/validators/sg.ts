@@ -86,3 +86,11 @@ export const ExportSgReviewSchema = SgReviewSchema.omit({ owner: true }).merge(
 );
 
 export type ExportSgReview = z.infer<typeof ExportSgReviewSchema>;
+
+/**
+ * Schema representing a request from a meta data export.
+ */
+export const SgMetadataSchema = z.object({
+    publication: SgPublicationSchema,
+    reviews: z.array(SgReviewSchema),
+});

@@ -23,3 +23,7 @@ a {
     color: inherit;
     text-decoration: none;
 }
+
+p, h1 {
+    margin: 0;
+}

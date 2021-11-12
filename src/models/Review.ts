@@ -53,6 +53,7 @@ ReviewSchema.statics.project = (review: IReviewDocument) => {
     const { publication, owner, status } = review;
 
     return {
+        id: review.id as string,
         publication,
         owner,
         status,

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import express from 'express';
+import qs from 'query-string';
 import Logger from '../../common/logger';
 import * as zip from '../../lib/zip';
 import * as errors from './../../common/errors';
@@ -15,6 +16,8 @@ import { IPublicationCreationSchema } from '../../validators/publications';
 import searchRouter from './search';
 import bookmarkRouter from './bookmarks';
 import { IReviewCreationSchema } from '../../validators/reviews';
+import { config } from '../../server';
+import { createTokens } from '../../lib/auth';
 
 const router = express.Router();
 
@@ -341,9 +344,17 @@ registerRoute(router, '/:username/:name/:revision?', {
             }
         }
 
+        // Check if the publication has an uploaded source file...
+        const archiveIndex = {
+            userId: publication.owner._id.toString(),
+            name: publication.name,
+            revision,
+        };
+        const archive = zip.loadArchive(archiveIndex);
+
         return res.status(200).json({
             status: 'ok',
-            publication: await Publication.project(publication),
+            publication: await Publication.project(publication, archive !== null),
         });
     },
 });
@@ -437,17 +448,44 @@ registerRoute(router, '/:username/:name/:revision?', {
 /**
  *
  */
-registerRoute(router, '/:username/:name/:revision/export', {
+registerRoute(router, '/:id/export', {
     method: 'post',
     params: z.object({
         username: z.string().nonempty(),
         name: z.string().nonempty(),
         revision: z.string(),
     }),
-    body: z.string({}),
-    query: z.object({ mode: ModeSchema }),
+    body: z.object({}),
+    query: z.object({ mode: ModeSchema, to: z.string().url() }),
     permission: IUserRole.Default,
-    handler: async (_req, _res) => {},
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        // Get the publication
+        const { revision, name } = req.params;
+        const publication = await Publication.findOne({
+            owner: user.id,
+            name: name.toLowerCase(),
+            ...(typeof revision !== 'undefined' && { revision }),
+        })
+            .sort({ _id: -1 })
+            .exec(); // get the most recent document
+
+        if (!publication) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.NON_EXISTENT_PUBLICATION,
+            });
+        }
+
+        // @@ Hack: this should be done by some kind of token service...
+        const { token } = createTokens({ username: user.username, id: user.id, email: user.email });
+
+        const query = qs.stringify({ from: config.frontendURI, token, id: publication.id });
+        const url = new URL(`/api/sg/resource/import?${query}`, req.query.to);
+        return res.redirect(url.toString());
+    },
 });
 
 /**

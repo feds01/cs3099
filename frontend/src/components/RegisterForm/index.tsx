@@ -13,21 +13,14 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { usePostAuthRegister } from '../../lib/api/auth/auth';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
-/**
- * This is the password regex. It specifies that the password must be between the length
- * of 8 to 30 characters, whilst including at least one special character, one uppercase
- * character, and a digit.
- */
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[#$@!%&*?])[A-Za-z\d#$@!%&*?]{8,30}$/;
-
 const RegisterSchema = z
     .object({
         firstName: z.string().nonempty().max(32),
         lastName: z.string().nonempty().max(32),
         email: z.string().email(),
         username: z.string().nonempty().max(50),
-        password: z.string().regex(PASSWORD_REGEX),
-        confirm: z.string().regex(PASSWORD_REGEX),
+        password: z.string().min(1),
+        confirm: z.string().min(1),
     })
     .superRefine((val, ctx) => {
         // TODO: check that the username and email are unique

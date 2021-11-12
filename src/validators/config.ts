@@ -8,6 +8,7 @@ export const ConfigSchema = z.object({
     jwtSecret: z.string(),
     jwtRefreshSecret: z.string(),
     resourcesFolder: z.string().min(1),
+    tempFolder: z.string().min(1),
     frontendURI: z.string().url(),
     port: z.preprocess((val) => parseInt(String(val), 10), z.number().int().nonnegative()),
 });

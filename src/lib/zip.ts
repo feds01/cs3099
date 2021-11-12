@@ -1,6 +1,11 @@
 import { promises as fs } from 'fs';
 import AdmZip, { IZipEntry } from 'adm-zip';
-import { getPathBase, getPathComponents, joinPaths, stripEndingSlash } from '../utils/resources';
+import {
+    getPathBase,
+    getPathComponents,
+    joinPathsForResource,
+    stripEndingSlash,
+} from '../utils/resources';
 
 // Interface representing either a file entry or a directory entry
 interface DirectoryEntry {
@@ -24,7 +29,7 @@ type PublicationPathContent =
 
 // Interface representing the physical location of an archive on the filesystem using
 // the owner's user id, archive name and revision number to locate the physical archive.
-interface ArchiveIndex {
+export interface ArchiveIndex {
     userId: string;
     name: string;
     revision?: string;
@@ -36,10 +41,10 @@ interface ArchiveIndex {
  * @param archive - The entry describing the archives location in the file system.
  * @returns - A path representation of the archive index.
  */
-function archiveIndexToPath(archive: ArchiveIndex): string {
+export function archiveIndexToPath(archive: ArchiveIndex): string {
     // Append the revision path if there is one
     if (typeof archive.revision !== 'undefined') {
-        return joinPaths(
+        return joinPathsForResource(
             'publications',
             archive.userId,
             archive.name,
@@ -49,7 +54,7 @@ function archiveIndexToPath(archive: ArchiveIndex): string {
         );
     }
 
-    return joinPaths('publications', archive.userId, archive.name, 'publication.zip');
+    return joinPathsForResource('publications', archive.userId, archive.name, 'publication.zip');
 }
 
 /**
@@ -57,7 +62,7 @@ function archiveIndexToPath(archive: ArchiveIndex): string {
  *
  * @param archive - The entry describing the archives location in the file system.
  */
-function loadArchive(archive: ArchiveIndex): AdmZip | null {
+export function loadArchive(archive: ArchiveIndex): AdmZip | null {
     try {
         return new AdmZip(archiveIndexToPath(archive));
     } catch (e: unknown) {
