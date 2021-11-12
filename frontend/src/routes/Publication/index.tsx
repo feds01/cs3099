@@ -2,31 +2,25 @@ import { useParams } from 'react-router';
 import PageLayout from '../../components/PageLayout';
 import { ContentState } from '../../types/requests';
 import { ReactElement, useEffect, useState } from 'react';
-import Void from './../../static/images/void.svg';
 
 import Box from '@mui/material/Box';
+import { Tabs } from '@mui/material';
 import Chip from '@mui/material/Chip';
+import { formatDistance } from 'date-fns';
+import Tab from '@mui/material/Tab';
+import { Link } from 'react-router-dom';
 import Divider from '@mui/material/Divider';
+import Skeleton from '@mui/material/Skeleton';
 import Container from '@mui/material/Container';
-import MarkdownRenderer from '../../components/MarkdownRenderer';
-import PublicationViewSource from '../../components/PublicationSourceView';
-import { transformQueryIntoContentState } from '../../wrappers/react-query';
-
-import {
-    GetPublicationUsernameNameRevision200 as PublicationResponse,
-    ResourceResponseResponse,
-} from '../../lib/api/models';
-import {
-    useGetPublicationUsernameNameRevision as useGetPublication,
-    useGetPublicationUsernameNameRevisionTreePath as useGetPublicationSource,
-    useGetPublicationUsernameNameTreePath as useGetRevisionlessPublicationSource,
-} from '../../lib/api/publications/publications';
-import ErrorBanner from '../../components/ErrorBanner';
 import UserLink from '../../components/UserLink';
 import Typography from '@mui/material/Typography';
-import { formatDistance } from 'date-fns';
-import UploadAttachment from '../../views/UploadAttachment';
-import { useAuth } from '../../hooks/auth';
+import ErrorBanner from '../../components/ErrorBanner';
+import SkeletonList from '../../components/SkeletonList';
+import MarkdownRenderer from '../../components/MarkdownRenderer';
+import { transformQueryIntoContentState } from '../../wrappers/react-query';
+
+import { GetPublicationUsernameNameRevision200 as PublicationResponse } from '../../lib/api/models';
+import { useGetPublicationUsernameNameRevision as useGetPublication } from '../../lib/api/publications/publications';
 
 interface Props {}
 
@@ -37,62 +31,49 @@ interface PublicationParams {
     path?: string;
 }
 
+const TabMap = {
+    '/': {
+        label: 'Overview',
+    },
+    '/tree': {
+        label: 'Source',
+    },
+    '/reviews': {
+        label: 'Reviews',
+    },
+    '/settings': {
+        label: 'Settings',
+    },
+};
+
 function PublicationView() {
-    const { session } = useAuth();
-    const { username, name, revision, path }: PublicationParams = useParams();
+    const { username, name, revision }: PublicationParams = useParams();
 
     const [publicationInfo, setPublicationInfo] = useState<ContentState<PublicationResponse, any>>({
-        state: 'loading',
-    });
-    const [publicationSource, setPublicationSource] = useState<ContentState<ResourceResponseResponse, any>>({
         state: 'loading',
     });
 
     // @@Cleanup: We could probably convert the revision into a query parameter instead of a path parameter
     // because the code generation that orval performs is so shit here!
     const getPublicationQuery = useGetPublication(username, name, revision || '');
-    const getPublicationSourceQuery = useGetPublicationSource(username, name, revision || '', path || '');
-    const getMainPublicationSourceQuery = useGetRevisionlessPublicationSource(username, name, path || '');
-
-    const refetchSources = () => {
-        if (publicationInfo.state === 'ok') {
-            const { attachment } = publicationInfo.data.publication;
-            if (!attachment) return;
-
-            if (typeof revision !== 'undefined') {
-                getPublicationSourceQuery.refetch();
-            } else {
-                getMainPublicationSourceQuery.refetch();
-            }
-        }
-    }
 
     useEffect(() => {
         getPublicationQuery.refetch();
     }, [username, name, revision]);
 
-    useEffect(() => refetchSources(), [username, publicationInfo.state, name, revision, path]);
-
     useEffect(() => {
         setPublicationInfo(transformQueryIntoContentState(getPublicationQuery));
     }, [getPublicationQuery.data, getPublicationQuery.isLoading]);
 
-    useEffect(() => {
-        if (typeof revision !== 'undefined') {
-            setPublicationSource(transformQueryIntoContentState(getPublicationSourceQuery));
-        } else {
-            setPublicationSource(transformQueryIntoContentState(getMainPublicationSourceQuery));
-        }
-    }, [getPublicationSourceQuery.isLoading, getMainPublicationSourceQuery.isLoading]);
-
     switch (publicationInfo.state) {
         case 'loading': {
             return (
-                <div>
-                    {username}/{name}/{revision ?? 'current'}
-                    <br />
-                    Access file: {path ?? '/'}
-                </div>
+                <Box sx={{ mb: 1 }}>
+                    <Skeleton variant="text" width={120} height={28} />
+                    <Skeleton variant="text" width={200} />
+                    <Divider />
+                    <SkeletonList rows={4} />
+                </Box>
             );
         }
         case 'error': {
@@ -100,6 +81,9 @@ function PublicationView() {
         }
         case 'ok': {
             const { publication } = publicationInfo.data;
+
+            // TODO: Add a Tabs menu for publication introduction, sources, and (only if owner settings)
+
             return (
                 <>
                     <Box sx={{ mb: 1 }}>
@@ -112,22 +96,13 @@ function PublicationView() {
                             {formatDistance(publication.createdAt, new Date(), { addSuffix: true })}
                         </Typography>
                     </Box>
-                    {publication.introduction && <MarkdownRenderer contents={publication.introduction} />}
-                    <Divider />
-                    {publication.attachment ? (
-                        <PublicationViewSource
-                            index={{ username, name, revision }}
-                            filename={path || '/'}
-                            contents={publicationSource}
-                        />
-                    ) : publication.owner.id === session.id ? (
-                        <UploadAttachment refetchData={refetchSources} publication={publication} />
-                    ) : (
-                        <Box sx={{ m: 2, display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-                            <img src={Void} height={128} width={128} alt="void" />
-                            <Typography variant={'body1'}>This publication doesn't have any sources yet.</Typography>
-                        </Box>
-                    )}
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                        <Tabs value={location.pathname}>
+                            {Object.entries(TabMap).map(([path, props]) => {
+                                return <Tab key={path} component={Link} to={path} value={path} label={props.label} />;
+                            })}
+                        </Tabs>
+                    </Box>
                 </>
             );
         }

@@ -8,7 +8,6 @@
 
 export type GetCommentId200Status = 'ok';
 
-
 export const GetCommentId200Status = {
-  ok: 'ok' as GetCommentId200Status,
+    ok: 'ok' as GetCommentId200Status,
 };

@@ -21,7 +21,7 @@ export default function Reviews({ user, withTitle = true }: Props): ReactElement
     const [reviews, setReviews] = useState<ContentState<ReviewResponse, ApiErrorResponse>>({ state: 'loading' });
 
     useEffect(() => {
-        setReviews(transformQueryIntoContentState(getReviewsQuery))
+        setReviews(transformQueryIntoContentState(getReviewsQuery));
     }, [getReviewsQuery.data]);
 
     function renderContent() {

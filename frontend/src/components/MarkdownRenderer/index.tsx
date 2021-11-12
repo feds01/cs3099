@@ -10,15 +10,15 @@ interface Props {
     fontSize?: number;
 }
 
-const useStyles = makeStyles<Theme, Props>(theme => ({
+const useStyles = makeStyles<Theme, Props>((theme) => ({
     wrapper: {
-        fontSize: ({fontSize}) => fontSize ?? 16,
-    }
+        fontSize: ({ fontSize }) => fontSize ?? 16,
+    },
 }));
 
 export default function MarkdownRenderer(props: Props): ReactElement {
     const classes = useStyles(props);
-    
+
     return (
         <ReactMarkdown
             remarkPlugins={[remarkGfm]}

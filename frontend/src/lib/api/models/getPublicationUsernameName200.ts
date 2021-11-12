@@ -9,6 +9,6 @@ import type { GetPublicationUsernameName200Status } from './getPublicationUserna
 import type { Publication } from './publication';
 
 export type GetPublicationUsernameName200 = {
-  status: GetPublicationUsernameName200Status;
-  publication: Publication;
+    status: GetPublicationUsernameName200Status;
+    publication: Publication;
 };

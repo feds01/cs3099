@@ -12,7 +12,6 @@ import { ReactElement, useEffect, useState } from 'react';
 import { Route, Switch, useLocation, useParams } from 'react-router';
 import { Divider, Skeleton, Tab, Tabs } from '@mui/material';
 
-
 // Views
 import Overview from '../../views/Overview';
 import Activity from '../../views/Activity';

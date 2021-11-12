@@ -8,6 +8,6 @@
 import type { PostUserUsernameFollow200Status } from './postUserUsernameFollow200Status';
 
 export type PostUserUsernameFollow200 = {
-  status: PostUserUsernameFollow200Status;
-  message: string;
+    status: PostUserUsernameFollow200Status;
+    message: string;
 };

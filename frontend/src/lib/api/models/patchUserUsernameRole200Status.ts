@@ -8,7 +8,6 @@
 
 export type PatchUserUsernameRole200Status = 'ok';
 
-
 export const PatchUserUsernameRole200Status = {
-  ok: 'ok' as PatchUserUsernameRole200Status,
+    ok: 'ok' as PatchUserUsernameRole200Status,
 };

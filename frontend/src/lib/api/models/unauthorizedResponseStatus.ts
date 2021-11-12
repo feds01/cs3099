@@ -8,7 +8,6 @@
 
 export type UnauthorizedResponseStatus = 'error';
 
-
 export const UnauthorizedResponseStatus = {
-  error: 'error' as UnauthorizedResponseStatus,
+    error: 'error' as UnauthorizedResponseStatus,
 };

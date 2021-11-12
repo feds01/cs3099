@@ -6,260 +6,255 @@
  * OpenAPI spec version: 1.0.0
  */
 import {
-  useQuery,
-  useMutation,
-  UseQueryOptions,
-  UseMutationOptions,
-  QueryFunction,
-  MutationFunction
-} from 'react-query'
+    useQuery,
+    useMutation,
+    UseQueryOptions,
+    UseMutationOptions,
+    QueryFunction,
+    MutationFunction,
+} from 'react-query';
 import type {
-  PostPublicationUsernameNameReview200,
-  ApiErrorResponse,
-  GetPublicationUsernameNameRevisionReviews200,
-  PostReviewIdComment200,
-  CreateCommentRequestBody,
-  GetReviewId200,
-  NoContentResponse,
-  GetReviewIdComments200
-} from '.././models'
-import { customInstance } from '.././mutator/custom-instance'
+    PostPublicationUsernameNameReview200,
+    ApiErrorResponse,
+    GetPublicationUsernameNameRevisionReviews200,
+    PostReviewIdComment200,
+    CreateCommentRequestBody,
+    GetReviewId200,
+    NoContentResponse,
+    GetReviewIdComments200,
+} from '.././models';
+import { customInstance } from '.././mutator/custom-instance';
 
-type AsyncReturnType<
-T extends (...args: any) => Promise<any>
-> = T extends (...args: any) => Promise<infer R> ? R : any;
-
+type AsyncReturnType<T extends (...args: any) => Promise<any>> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 /**
  * Begin a review process on a publication.
  * @summary Create a review on a publication.
  */
-export const postPublicationUsernameNameReview = (
-    username: string,
-    name: string,
- ) => {
-      return customInstance<PostPublicationUsernameNameReview200>(
-      {url: `/publication/${username}/${name}/review`, method: 'post',
-      data: undefined
-    },
-      );
-    }
-  
+export const postPublicationUsernameNameReview = (username: string, name: string) => {
+    return customInstance<PostPublicationUsernameNameReview200>({
+        url: `/publication/${username}/${name}/review`,
+        method: 'post',
+        data: undefined,
+    });
+};
 
+export const usePostPublicationUsernameNameReview = <TError = ApiErrorResponse, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        AsyncReturnType<typeof postPublicationUsernameNameReview>,
+        TError,
+        { username: string; name: string },
+        TContext
+    >;
+}) => {
+    const { mutation: mutationOptions } = options || {};
 
-    export const usePostPublicationUsernameNameReview = <TError = ApiErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postPublicationUsernameNameReview>, TError,{username: string;name: string}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
+    const mutationFn: MutationFunction<
+        AsyncReturnType<typeof postPublicationUsernameNameReview>,
+        { username: string; name: string }
+    > = (props) => {
+        const { username, name } = props || {};
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postPublicationUsernameNameReview>, {username: string;name: string}> = (props) => {
-          const {username,name} = props || {};
+        return postPublicationUsernameNameReview(username, name);
+    };
 
-          return  postPublicationUsernameNameReview(username,name,)
-        }
-
-      return useMutation<AsyncReturnType<typeof postPublicationUsernameNameReview>, TError, {username: string;name: string}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
+    return useMutation<
+        AsyncReturnType<typeof postPublicationUsernameNameReview>,
+        TError,
+        { username: string; name: string },
+        TContext
+    >(mutationFn, mutationOptions);
+};
+/**
  * Get a paginated list of publication reviews.
  * @summary Get a list of reviews on a publication
  */
-export const getPublicationUsernameNameRevisionReviews = (
+export const getPublicationUsernameNameRevisionReviews = (username: string, name: string, revision: string) => {
+    return customInstance<GetPublicationUsernameNameRevisionReviews200>({
+        url: `/publication/${username}/${name}/${revision}/reviews`,
+        method: 'get',
+    });
+};
+
+export const getGetPublicationUsernameNameRevisionReviewsQueryKey = (
     username: string,
     name: string,
     revision: string,
- ) => {
-      return customInstance<GetPublicationUsernameNameRevisionReviews200>(
-      {url: `/publication/${username}/${name}/${revision}/reviews`, method: 'get'
+) => [`/publication/${username}/${name}/${revision}/reviews`];
+
+export const useGetPublicationUsernameNameRevisionReviews = <
+    TData = AsyncReturnType<typeof getPublicationUsernameNameRevisionReviews>,
+    TError = ApiErrorResponse
+>(
+    username: string,
+    name: string,
+    revision: string,
+    options?: {
+        query?: UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevisionReviews>, TError, TData>;
     },
-      );
-    }
-  
+) => {
+    const { query: queryOptions } = options || {};
 
-export const getGetPublicationUsernameNameRevisionReviewsQueryKey = (username: string,
-    name: string,
-    revision: string,) => [`/publication/${username}/${name}/${revision}/reviews`];
+    const queryKey =
+        queryOptions?.queryKey ?? getGetPublicationUsernameNameRevisionReviewsQueryKey(username, name, revision);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameRevisionReviews>> = () =>
+        getPublicationUsernameNameRevisionReviews(username, name, revision);
 
-    
-export const useGetPublicationUsernameNameRevisionReviews = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevisionReviews>, TError = ApiErrorResponse>(
- username: string,
-    name: string,
-    revision: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevisionReviews>, TError, TData>, }
+    const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameRevisionReviews>, TError, TData>(
+        queryKey,
+        queryFn,
+        { enabled: !!(username && name && revision), ...queryOptions },
+    );
 
-  ) => {
-
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameRevisionReviewsQueryKey(username,name,revision);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameRevisionReviews>> = () => getPublicationUsernameNameRevisionReviews(username,name,revision, );
-
-  const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameRevisionReviews>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name && revision), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
+    return {
+        queryKey,
+        ...query,
+    };
+};
 
 /**
  * Comment on a review, specified by the review id.
  * @summary Add a comment to a review.
  */
-export const postReviewIdComment = (
-    id: string,
-    createCommentRequestBody: CreateCommentRequestBody,
- ) => {
-      return customInstance<PostReviewIdComment200>(
-      {url: `/review/${id}/comment`, method: 'post',
-      data: createCommentRequestBody
-    },
-      );
-    }
-  
+export const postReviewIdComment = (id: string, createCommentRequestBody: CreateCommentRequestBody) => {
+    return customInstance<PostReviewIdComment200>({
+        url: `/review/${id}/comment`,
+        method: 'post',
+        data: createCommentRequestBody,
+    });
+};
 
+export const usePostReviewIdComment = <TError = ApiErrorResponse, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        AsyncReturnType<typeof postReviewIdComment>,
+        TError,
+        { id: string; data: CreateCommentRequestBody },
+        TContext
+    >;
+}) => {
+    const { mutation: mutationOptions } = options || {};
 
-    export const usePostReviewIdComment = <TError = ApiErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postReviewIdComment>, TError,{id: string;data: CreateCommentRequestBody}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
+    const mutationFn: MutationFunction<
+        AsyncReturnType<typeof postReviewIdComment>,
+        { id: string; data: CreateCommentRequestBody }
+    > = (props) => {
+        const { id, data } = props || {};
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postReviewIdComment>, {id: string;data: CreateCommentRequestBody}> = (props) => {
-          const {id,data} = props || {};
+        return postReviewIdComment(id, data);
+    };
 
-          return  postReviewIdComment(id,data,)
-        }
-
-      return useMutation<AsyncReturnType<typeof postReviewIdComment>, TError, {id: string;data: CreateCommentRequestBody}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
+    return useMutation<
+        AsyncReturnType<typeof postReviewIdComment>,
+        TError,
+        { id: string; data: CreateCommentRequestBody },
+        TContext
+    >(mutationFn, mutationOptions);
+};
+/**
  * get review by user id.
  * @summary Get a review.
  */
-export const getReviewId = (
-    id: string,
- ) => {
-      return customInstance<GetReviewId200>(
-      {url: `/review/${id}`, method: 'get'
-    },
-      );
-    }
-  
+export const getReviewId = (id: string) => {
+    return customInstance<GetReviewId200>({ url: `/review/${id}`, method: 'get' });
+};
 
-export const getGetReviewIdQueryKey = (id: string,) => [`/review/${id}`];
+export const getGetReviewIdQueryKey = (id: string) => [`/review/${id}`];
 
-    
 export const useGetReviewId = <TData = AsyncReturnType<typeof getReviewId>, TError = ApiErrorResponse>(
- id: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getReviewId>, TError, TData>, }
+    id: string,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getReviewId>, TError, TData> },
+) => {
+    const { query: queryOptions } = options || {};
 
-  ) => {
+    const queryKey = queryOptions?.queryKey ?? getGetReviewIdQueryKey(id);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getReviewId>> = () => getReviewId(id);
 
-  const {query: queryOptions} = options || {}
+    const query = useQuery<AsyncReturnType<typeof getReviewId>, TError, TData>(queryKey, queryFn, {
+        enabled: !!id,
+        ...queryOptions,
+    });
 
-  const queryKey = queryOptions?.queryKey ?? getGetReviewIdQueryKey(id);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getReviewId>> = () => getReviewId(id, );
-
-  const query = useQuery<AsyncReturnType<typeof getReviewId>, TError, TData>(queryKey, queryFn, {enabled: !!(id), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
+    return {
+        queryKey,
+        ...query,
+    };
+};
 
 /**
  * delete review by user id.
  * @summary Delete a review
  */
-export const deleteReviewId = (
-    id: string,
- ) => {
-      return customInstance<NoContentResponse>(
-      {url: `/review/${id}`, method: 'delete'
-    },
-      );
-    }
-  
+export const deleteReviewId = (id: string) => {
+    return customInstance<NoContentResponse>({ url: `/review/${id}`, method: 'delete' });
+};
 
+export const useDeleteReviewId = <TError = ApiErrorResponse, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<AsyncReturnType<typeof deleteReviewId>, TError, { id: string }, TContext>;
+}) => {
+    const { mutation: mutationOptions } = options || {};
 
-    export const useDeleteReviewId = <TError = ApiErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deleteReviewId>, TError,{id: string}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
+    const mutationFn: MutationFunction<AsyncReturnType<typeof deleteReviewId>, { id: string }> = (props) => {
+        const { id } = props || {};
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof deleteReviewId>, {id: string}> = (props) => {
-          const {id} = props || {};
+        return deleteReviewId(id);
+    };
 
-          return  deleteReviewId(id,)
-        }
-
-      return useMutation<AsyncReturnType<typeof deleteReviewId>, TError, {id: string}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
+    return useMutation<AsyncReturnType<typeof deleteReviewId>, TError, { id: string }, TContext>(
+        mutationFn,
+        mutationOptions,
+    );
+};
+/**
  * get a paginated list of comments on a review.
  * @summary Get comments on a review.
  */
-export const getReviewIdComments = (
-    id: string,
- ) => {
-      return customInstance<GetReviewIdComments200>(
-      {url: `/review/${id}/comments`, method: 'get'
-    },
-      );
-    }
-  
+export const getReviewIdComments = (id: string) => {
+    return customInstance<GetReviewIdComments200>({ url: `/review/${id}/comments`, method: 'get' });
+};
 
-export const getGetReviewIdCommentsQueryKey = (id: string,) => [`/review/${id}/comments`];
+export const getGetReviewIdCommentsQueryKey = (id: string) => [`/review/${id}/comments`];
 
-    
 export const useGetReviewIdComments = <TData = AsyncReturnType<typeof getReviewIdComments>, TError = ApiErrorResponse>(
- id: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getReviewIdComments>, TError, TData>, }
+    id: string,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getReviewIdComments>, TError, TData> },
+) => {
+    const { query: queryOptions } = options || {};
 
-  ) => {
+    const queryKey = queryOptions?.queryKey ?? getGetReviewIdCommentsQueryKey(id);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getReviewIdComments>> = () => getReviewIdComments(id);
 
-  const {query: queryOptions} = options || {}
+    const query = useQuery<AsyncReturnType<typeof getReviewIdComments>, TError, TData>(queryKey, queryFn, {
+        enabled: !!id,
+        ...queryOptions,
+    });
 
-  const queryKey = queryOptions?.queryKey ?? getGetReviewIdCommentsQueryKey(id);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getReviewIdComments>> = () => getReviewIdComments(id, );
-
-  const query = useQuery<AsyncReturnType<typeof getReviewIdComments>, TError, TData>(queryKey, queryFn, {enabled: !!(id), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
+    return {
+        queryKey,
+        ...query,
+    };
+};
 
 /**
  * Publish the drafted review.
  * @summary Finalise a review.
  */
-export const postReviewIdComplete = (
-    id: string,
- ) => {
-      return customInstance<NoContentResponse>(
-      {url: `/review/${id}/complete`, method: 'post',
-      data: undefined
-    },
-      );
-    }
-  
+export const postReviewIdComplete = (id: string) => {
+    return customInstance<NoContentResponse>({ url: `/review/${id}/complete`, method: 'post', data: undefined });
+};
 
+export const usePostReviewIdComplete = <TError = ApiErrorResponse, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<AsyncReturnType<typeof postReviewIdComplete>, TError, { id: string }, TContext>;
+}) => {
+    const { mutation: mutationOptions } = options || {};
 
-    export const usePostReviewIdComplete = <TError = ApiErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postReviewIdComplete>, TError,{id: string}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
+    const mutationFn: MutationFunction<AsyncReturnType<typeof postReviewIdComplete>, { id: string }> = (props) => {
+        const { id } = props || {};
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postReviewIdComplete>, {id: string}> = (props) => {
-          const {id} = props || {};
+        return postReviewIdComplete(id);
+    };
 
-          return  postReviewIdComplete(id,)
-        }
-
-      return useMutation<AsyncReturnType<typeof postReviewIdComplete>, TError, {id: string}, TContext>(mutationFn, mutationOptions)
-    }
-    
+    return useMutation<AsyncReturnType<typeof postReviewIdComplete>, TError, { id: string }, TContext>(
+        mutationFn,
+        mutationOptions,
+    );
+};

@@ -7,11 +7,11 @@
  */
 
 export interface UserPatchRequest {
-  email?: string;
-  firstName?: string;
-  username?: string;
-  lastName?: string;
-  about?: string;
-  status?: string;
-  password?: string;
+    email?: string;
+    firstName?: string;
+    username?: string;
+    lastName?: string;
+    about?: string;
+    status?: string;
+    password?: string;
 }

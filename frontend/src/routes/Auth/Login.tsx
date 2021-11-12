@@ -155,7 +155,7 @@ function Login(props: Props): ReactElement {
                                 variant={'contained'}
                                 color={'secondary'}
                                 sx={{ fontWeight: 'bold' }}
-                                onClick={() => history.push({pathname: "/login/sso", state: { from }})}
+                                onClick={() => history.push({ pathname: '/login/sso', state: { from } })}
                             >
                                 Sign in with a journal
                             </Button>

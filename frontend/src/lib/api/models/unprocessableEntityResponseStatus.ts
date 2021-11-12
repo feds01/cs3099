@@ -8,7 +8,6 @@
 
 export type UnprocessableEntityResponseStatus = 'error';
 
-
 export const UnprocessableEntityResponseStatus = {
-  error: 'error' as UnprocessableEntityResponseStatus,
+    error: 'error' as UnprocessableEntityResponseStatus,
 };

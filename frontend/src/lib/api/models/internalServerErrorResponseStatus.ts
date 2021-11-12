@@ -8,7 +8,6 @@
 
 export type InternalServerErrorResponseStatus = 'error';
 
-
 export const InternalServerErrorResponseStatus = {
-  error: 'error' as InternalServerErrorResponseStatus,
+    error: 'error' as InternalServerErrorResponseStatus,
 };

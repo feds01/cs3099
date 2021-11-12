@@ -18,7 +18,9 @@ export default function DirectoryViewer({ entries, basePath, filename }: Props):
                 <TableHead>
                     <TableRow>
                         <TableCell width={'80%'}>Filename</TableCell>
-                        <TableCell align={"right"} width={'20%'}>Last modified</TableCell>
+                        <TableCell align={'right'} width={'20%'}>
+                            Last modified
+                        </TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -27,13 +29,13 @@ export default function DirectoryViewer({ entries, basePath, filename }: Props):
 
                         return (
                             <TableRow key={fullPath}>
-                                <TableCell sx={{display: 'flex', flexDirection: 'row'}}>
+                                <TableCell sx={{ display: 'flex', flexDirection: 'row' }}>
                                     <Box sx={{ mr: 1 }}>
                                         {entry.type === 'directory' ? <RiFolderFill /> : <SiTypescript />}
                                     </Box>
                                     <Link href={fullPath}>{entry.filename}</Link>
                                 </TableCell>
-                                <TableCell align={"right"} width={'20%'}>
+                                <TableCell align={'right'} width={'20%'}>
                                     {formatDistance(entry.updatedAt, new Date(), { addSuffix: true })}
                                 </TableCell>
                             </TableRow>

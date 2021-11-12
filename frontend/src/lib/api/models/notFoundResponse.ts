@@ -8,6 +8,6 @@
 import type { NotFoundResponseStatus } from './notFoundResponseStatus';
 
 export type NotFoundResponse = {
-  status: NotFoundResponseStatus;
-  message: string;
+    status: NotFoundResponseStatus;
+    message: string;
 };

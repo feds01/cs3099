@@ -19,7 +19,7 @@ interface SourceViewerProps {
 function SourceViewer({ contents, filename, basePath }: SourceViewerProps): ReactElement {
     switch (contents.state) {
         case 'loading': {
-            return <LinearProgress/>;
+            return <LinearProgress />;
         }
         case 'error': {
             return (
@@ -51,7 +51,7 @@ type Props = {
     filename: string;
 };
 
-export default function  PublicationViewSource({ contents, filename, index }: Props): ReactElement {
+export default function PublicationViewSource({ contents, filename, index }: Props): ReactElement {
     const [basePath, setBasePath] = useState<string>(constructBasePath(index));
 
     useEffect(() => {

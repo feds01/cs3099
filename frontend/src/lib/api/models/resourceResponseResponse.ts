@@ -9,6 +9,6 @@ import type { ResourceResponseResponseStatus } from './resourceResponseResponseS
 import type { ResourceResponseResponseData } from './resourceResponseResponseData';
 
 export type ResourceResponseResponse = {
-  status: ResourceResponseResponseStatus;
-  data: ResourceResponseResponseData;
+    status: ResourceResponseResponseStatus;
+    data: ResourceResponseResponseData;
 };

@@ -1,17 +1,17 @@
-import { z } from "zod";
-import qs from "query-string";
-import { useHistory, useLocation } from "react-router-dom";
-import { useDispatchAuth } from "../../hooks/auth";
+import { z } from 'zod';
+import qs from 'query-string';
+import { useHistory, useLocation } from 'react-router-dom';
+import { useDispatchAuth } from '../../hooks/auth';
 import { ReactElement, useEffect, useState } from 'react';
-import { usePostAuthSession } from "../../lib/api/auth/auth";
+import { usePostAuthSession } from '../../lib/api/auth/auth';
 
 interface Props {}
 
 const SessionSchema = z.object({
     redirect: z.string(), // @@Cleanup: validate using regex for resource path?
     token: z.string(),
-    refreshToken: z.string()
-})
+    refreshToken: z.string(),
+});
 
 export default function Session(props: Props): ReactElement {
     const history = useHistory();
@@ -29,24 +29,23 @@ export default function Session(props: Props): ReactElement {
         // Redirect the user back to login if something wasn't correct with the user session.
         if (!validator.success) {
             console.log(validator.error);
-            history.push({pathname: "/login"})
+            history.push({ pathname: '/login' });
         } else {
             setRedirect(validator.data.redirect);
-            sessionQuery.mutate({data: validator.data}); // @@Cleanup: We shouldn't be passing 'redirect' into this type. But because typescript is dumb and doesn't consider this as  problem.
+            sessionQuery.mutate({ data: validator.data }); // @@Cleanup: We shouldn't be passing 'redirect' into this type. But because typescript is dumb and doesn't consider this as  problem.
         }
     }, []);
 
     useEffect(() => {
         if (sessionQuery.data) {
-            const {status, ...data} = sessionQuery.data;
-            const {token, refreshToken} = data;
-            authDispatcher({type: 'login', rememberUser: true, data: {session: data.user, token, refreshToken} });
+            const { status, ...data } = sessionQuery.data;
+            const { token, refreshToken } = data;
+            authDispatcher({ type: 'login', rememberUser: true, data: { session: data.user, token, refreshToken } });
 
             // now we want to re-direct the user back to where they tried to initially go to...
-            history.push({pathname: redirect ?? "/"});
+            history.push({ pathname: redirect ?? '/' });
         }
-    }, [sessionQuery.data])
+    }, [sessionQuery.data]);
 
     return <div>Signing in...</div>;
 }
-

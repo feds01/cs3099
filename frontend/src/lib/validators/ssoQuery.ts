@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const SsoQuerySchema = z.object({
     from: z.string().url(),
@@ -6,5 +6,3 @@ export const SsoQuerySchema = z.object({
 });
 
 export type SsoQuery = z.infer<typeof SsoQuerySchema>;
-
-

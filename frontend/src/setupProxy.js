@@ -7,8 +7,8 @@ module.exports = function (app) {
             target: process.env.REACT_APP_API_URI,
             changeOrigin: true,
             pathRewrite: {
-                '^/api': '/'
-            }
+                '^/api': '/',
+            },
         }),
     );
 };

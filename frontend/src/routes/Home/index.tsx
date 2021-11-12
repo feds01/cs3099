@@ -14,7 +14,7 @@ export default function Home(props: Props): ReactElement {
     return (
         <PageLayout title={'Home'}>
             <Container>
-            <Box sx={{mt: 2}}>
+                <Box sx={{ mt: 2 }}>
                     <Box
                         sx={{
                             display: 'flex',
@@ -38,7 +38,7 @@ export default function Home(props: Props): ReactElement {
                     <Divider />
                     <Publications withTitle={false} user={auth.session} />
                 </Box>
-                <Box sx={{mt: 2}}>
+                <Box sx={{ mt: 2 }}>
                     <Typography variant={'h3'}>Reviews</Typography>
                     <Divider />
                     <Box>

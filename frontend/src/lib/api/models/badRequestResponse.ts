@@ -9,7 +9,7 @@ import type { BadRequestResponseStatus } from './badRequestResponseStatus';
 import type { BadRequestResponseExtra } from './badRequestResponseExtra';
 
 export type BadRequestResponse = {
-  status: BadRequestResponseStatus;
-  message: string;
-  extra?: BadRequestResponseExtra;
+    status: BadRequestResponseStatus;
+    message: string;
+    extra?: BadRequestResponseExtra;
 };

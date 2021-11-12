@@ -23,7 +23,6 @@ interface LocationState {
     from: { pathname: string };
 }
 
-
 type TeamEndpoints = {
     [key: string]: string;
 };
@@ -42,7 +41,7 @@ export default function SingleSignOn(props: Props): ReactElement {
     const { mutate, data, isError } = usePostAuthSso();
 
     const [endpoints, setEndpoints] = useState<ContentState<TeamEndpoints, any>>({ state: 'loading' });
-    const handleSelect = (url: string) => mutate({params: {  to: url, path: from.pathname }});
+    const handleSelect = (url: string) => mutate({ params: { to: url, path: from.pathname } });
 
     // @@Hack: the server should auto-redirect the user by some means!!!
     // Re-direct the user to the returned link essentially...
@@ -76,7 +75,7 @@ export default function SingleSignOn(props: Props): ReactElement {
                     });
 
                     // @@Temporary since we have hard-coded initial team endpoints (for testing).
-                    setEndpoints({ state: 'ok', data: {...dummy, ...teamEndpoints} });
+                    setEndpoints({ state: 'ok', data: { ...dummy, ...teamEndpoints } });
                 })
                 .catch((res: unknown) => {
                     setEndpoints({ state: 'error', error: res });
@@ -110,10 +109,18 @@ export default function SingleSignOn(props: Props): ReactElement {
         }
         case 'ok': {
             return (
-                <Box sx={{ height: '100%', width: '100%', display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+                <Box
+                    sx={{
+                        height: '100%',
+                        width: '100%',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        flexDirection: 'column',
+                    }}
+                >
                     <Container>
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 1 }}>
-                            <img src={LogoImage} width={96} height={96} alt="iamus"/>
+                            <img src={LogoImage} width={96} height={96} alt="iamus" />
                             <Typography variant="h4">Select a journal</Typography>
                             <Typography>Use an external service to log into Iamus</Typography>
                         </Box>

@@ -12,7 +12,7 @@ interface Props {
 
 export default function BreadCrumb({ index, basePath, filename }: Props): ReactElement {
     return (
-        <Breadcrumbs aria-label="content breadcrumbs" sx={{m: 1}}>
+        <Breadcrumbs aria-label="content breadcrumbs" sx={{ m: 1 }}>
             <Link underline="hover" color="inherit" href={`${basePath}/tree/`}>
                 <Typography color="text.primary" sx={{ fontWeight: 'bold', fontSize: 18 }}>
                     {index.name}

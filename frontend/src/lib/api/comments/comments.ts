@@ -6,150 +6,121 @@
  * OpenAPI spec version: 1.0.0
  */
 import {
-  useQuery,
-  useMutation,
-  UseQueryOptions,
-  UseMutationOptions,
-  QueryFunction,
-  MutationFunction
-} from 'react-query'
-import type {
-  GetThreadId200,
-  ApiErrorResponse,
-  NoContentResponse,
-  GetCommentId200
-} from '.././models'
-import { customInstance } from '.././mutator/custom-instance'
+    useQuery,
+    useMutation,
+    UseQueryOptions,
+    UseMutationOptions,
+    QueryFunction,
+    MutationFunction,
+} from 'react-query';
+import type { GetThreadId200, ApiErrorResponse, NoContentResponse, GetCommentId200 } from '.././models';
+import { customInstance } from '.././mutator/custom-instance';
 
-type AsyncReturnType<
-T extends (...args: any) => Promise<any>
-> = T extends (...args: any) => Promise<infer R> ? R : any;
-
+type AsyncReturnType<T extends (...args: any) => Promise<any>> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 /**
  * Get comments for a particular thread.
  */
-export const getThreadId = (
-    id: string,
- ) => {
-      return customInstance<GetThreadId200>(
-      {url: `/thread/${id}`, method: 'get'
-    },
-      );
-    }
-  
+export const getThreadId = (id: string) => {
+    return customInstance<GetThreadId200>({ url: `/thread/${id}`, method: 'get' });
+};
 
-export const getGetThreadIdQueryKey = (id: string,) => [`/thread/${id}`];
+export const getGetThreadIdQueryKey = (id: string) => [`/thread/${id}`];
 
-    
 export const useGetThreadId = <TData = AsyncReturnType<typeof getThreadId>, TError = ApiErrorResponse>(
- id: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getThreadId>, TError, TData>, }
+    id: string,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getThreadId>, TError, TData> },
+) => {
+    const { query: queryOptions } = options || {};
 
-  ) => {
+    const queryKey = queryOptions?.queryKey ?? getGetThreadIdQueryKey(id);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getThreadId>> = () => getThreadId(id);
 
-  const {query: queryOptions} = options || {}
+    const query = useQuery<AsyncReturnType<typeof getThreadId>, TError, TData>(queryKey, queryFn, {
+        enabled: !!id,
+        ...queryOptions,
+    });
 
-  const queryKey = queryOptions?.queryKey ?? getGetThreadIdQueryKey(id);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getThreadId>> = () => getThreadId(id, );
-
-  const query = useQuery<AsyncReturnType<typeof getThreadId>, TError, TData>(queryKey, queryFn, {enabled: !!(id), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
+    return {
+        queryKey,
+        ...query,
+    };
+};
 
 /**
  * Get a paginated list of publication revisions.
  */
-export const deleteThreadId = (
-    id: string,
- ) => {
-      return customInstance<NoContentResponse>(
-      {url: `/thread/${id}`, method: 'delete'
-    },
-      );
-    }
-  
+export const deleteThreadId = (id: string) => {
+    return customInstance<NoContentResponse>({ url: `/thread/${id}`, method: 'delete' });
+};
 
+export const useDeleteThreadId = <TError = ApiErrorResponse, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<AsyncReturnType<typeof deleteThreadId>, TError, { id: string }, TContext>;
+}) => {
+    const { mutation: mutationOptions } = options || {};
 
-    export const useDeleteThreadId = <TError = ApiErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deleteThreadId>, TError,{id: string}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
+    const mutationFn: MutationFunction<AsyncReturnType<typeof deleteThreadId>, { id: string }> = (props) => {
+        const { id } = props || {};
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof deleteThreadId>, {id: string}> = (props) => {
-          const {id} = props || {};
+        return deleteThreadId(id);
+    };
 
-          return  deleteThreadId(id,)
-        }
-
-      return useMutation<AsyncReturnType<typeof deleteThreadId>, TError, {id: string}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
+    return useMutation<AsyncReturnType<typeof deleteThreadId>, TError, { id: string }, TContext>(
+        mutationFn,
+        mutationOptions,
+    );
+};
+/**
  * get comment by user id.
  * @summary Get a comment
  */
-export const getCommentId = (
-    id: string,
- ) => {
-      return customInstance<GetCommentId200>(
-      {url: `/comment/${id}`, method: 'get'
-    },
-      );
-    }
-  
+export const getCommentId = (id: string) => {
+    return customInstance<GetCommentId200>({ url: `/comment/${id}`, method: 'get' });
+};
 
-export const getGetCommentIdQueryKey = (id: string,) => [`/comment/${id}`];
+export const getGetCommentIdQueryKey = (id: string) => [`/comment/${id}`];
 
-    
 export const useGetCommentId = <TData = AsyncReturnType<typeof getCommentId>, TError = ApiErrorResponse>(
- id: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getCommentId>, TError, TData>, }
+    id: string,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getCommentId>, TError, TData> },
+) => {
+    const { query: queryOptions } = options || {};
 
-  ) => {
+    const queryKey = queryOptions?.queryKey ?? getGetCommentIdQueryKey(id);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getCommentId>> = () => getCommentId(id);
 
-  const {query: queryOptions} = options || {}
+    const query = useQuery<AsyncReturnType<typeof getCommentId>, TError, TData>(queryKey, queryFn, {
+        enabled: !!id,
+        ...queryOptions,
+    });
 
-  const queryKey = queryOptions?.queryKey ?? getGetCommentIdQueryKey(id);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getCommentId>> = () => getCommentId(id, );
-
-  const query = useQuery<AsyncReturnType<typeof getCommentId>, TError, TData>(queryKey, queryFn, {enabled: !!(id), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
+    return {
+        queryKey,
+        ...query,
+    };
+};
 
 /**
  * delete comment by user id.
  * @summary Delete a comment
  */
-export const deleteCommentId = (
-    id: string,
- ) => {
-      return customInstance<NoContentResponse>(
-      {url: `/comment/${id}`, method: 'delete'
-    },
-      );
-    }
-  
+export const deleteCommentId = (id: string) => {
+    return customInstance<NoContentResponse>({ url: `/comment/${id}`, method: 'delete' });
+};
 
+export const useDeleteCommentId = <TError = ApiErrorResponse, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<AsyncReturnType<typeof deleteCommentId>, TError, { id: string }, TContext>;
+}) => {
+    const { mutation: mutationOptions } = options || {};
 
-    export const useDeleteCommentId = <TError = ApiErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deleteCommentId>, TError,{id: string}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
+    const mutationFn: MutationFunction<AsyncReturnType<typeof deleteCommentId>, { id: string }> = (props) => {
+        const { id } = props || {};
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof deleteCommentId>, {id: string}> = (props) => {
-          const {id} = props || {};
+        return deleteCommentId(id);
+    };
 
-          return  deleteCommentId(id,)
-        }
-
-      return useMutation<AsyncReturnType<typeof deleteCommentId>, TError, {id: string}, TContext>(mutationFn, mutationOptions)
-    }
-    
+    return useMutation<AsyncReturnType<typeof deleteCommentId>, TError, { id: string }, TContext>(
+        mutationFn,
+        mutationOptions,
+    );
+};

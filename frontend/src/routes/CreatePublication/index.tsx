@@ -8,7 +8,7 @@ import Divider from '@mui/material/Divider';
 export default function CreatePublicationRoute(): ReactElement {
     return (
         <PageLayout>
-            <Container maxWidth={'md'} sx={{mt: 2}}>
+            <Container maxWidth={'md'} sx={{ mt: 2 }}>
                 <Typography variant={'h4'}>Create Publication</Typography>
                 <Typography variant={'caption'}>Upload new publication to Iamus</Typography>
                 <Divider />

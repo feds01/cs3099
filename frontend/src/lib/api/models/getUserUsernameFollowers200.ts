@@ -9,6 +9,6 @@ import type { GetUserUsernameFollowers200Status } from './getUserUsernameFollowe
 import type { FollowerListData } from './followerListData';
 
 export type GetUserUsernameFollowers200 = {
-  status: GetUserUsernameFollowers200Status;
-  data: FollowerListData;
+    status: GetUserUsernameFollowers200Status;
+    data: FollowerListData;
 };

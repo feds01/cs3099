@@ -8,6 +8,6 @@
 import type { Review } from './review';
 
 export type PostPublicationUsernameNameReview200 = {
-  status: boolean;
-  review: Review;
+    status: boolean;
+    review: Review;
 };

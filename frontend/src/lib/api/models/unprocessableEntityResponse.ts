@@ -8,6 +8,6 @@
 import type { UnprocessableEntityResponseStatus } from './unprocessableEntityResponseStatus';
 
 export type UnprocessableEntityResponse = {
-  status: UnprocessableEntityResponseStatus;
-  message: string;
+    status: UnprocessableEntityResponseStatus;
+    message: string;
 };

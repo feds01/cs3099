@@ -8,6 +8,6 @@
 import type { GetUserUsernameRole200Status } from './getUserUsernameRole200Status';
 
 export type GetUserUsernameRole200 = {
-  status: GetUserUsernameRole200Status;
-  role: string;
+    status: GetUserUsernameRole200Status;
+    role: string;
 };

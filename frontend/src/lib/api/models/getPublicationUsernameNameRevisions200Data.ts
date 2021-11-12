@@ -8,5 +8,5 @@
 import type { Publication } from './publication';
 
 export type GetPublicationUsernameNameRevisions200Data = {
-  revisions: Publication[];
+    revisions: Publication[];
 };

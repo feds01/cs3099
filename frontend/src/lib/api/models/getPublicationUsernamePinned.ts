@@ -8,8 +8,7 @@
 
 export type GetPublicationUsernamePinned = 'true' | 'false';
 
-
 export const GetPublicationUsernamePinned = {
-  true: 'true' as GetPublicationUsernamePinned,
-  false: 'false' as GetPublicationUsernamePinned,
+    true: 'true' as GetPublicationUsernamePinned,
+    false: 'false' as GetPublicationUsernamePinned,
 };

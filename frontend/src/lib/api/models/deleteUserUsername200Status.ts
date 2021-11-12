@@ -8,7 +8,6 @@
 
 export type DeleteUserUsername200Status = 'ok';
 
-
 export const DeleteUserUsername200Status = {
-  ok: 'ok' as DeleteUserUsername200Status,
+    ok: 'ok' as DeleteUserUsername200Status,
 };

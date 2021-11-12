@@ -8,11 +8,11 @@
 import type { CommentAnchor } from './commentAnchor';
 
 export interface SgComment {
-  id: number;
-  replying?: number;
-  filename?: string;
-  anchor?: CommentAnchor;
-  contents: string;
-  author: string;
-  postedAt: number;
+    id: number;
+    replying?: number;
+    filename?: string;
+    anchor?: CommentAnchor;
+    contents: string;
+    author: string;
+    postedAt: number;
 }

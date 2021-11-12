@@ -8,7 +8,6 @@
 
 export type UserAuthResponseResponseStatus = 'ok';
 
-
 export const UserAuthResponseResponseStatus = {
-  ok: 'ok' as UserAuthResponseResponseStatus,
+    ok: 'ok' as UserAuthResponseResponseStatus,
 };

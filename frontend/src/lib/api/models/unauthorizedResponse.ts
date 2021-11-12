@@ -8,6 +8,6 @@
 import type { UnauthorizedResponseStatus } from './unauthorizedResponseStatus';
 
 export type UnauthorizedResponse = {
-  status: UnauthorizedResponseStatus;
-  message: string;
+    status: UnauthorizedResponseStatus;
+    message: string;
 };

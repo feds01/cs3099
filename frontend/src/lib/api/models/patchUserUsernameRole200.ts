@@ -8,7 +8,7 @@
 import type { PatchUserUsernameRole200Status } from './patchUserUsernameRole200Status';
 
 export type PatchUserUsernameRole200 = {
-  status: PatchUserUsernameRole200Status;
-  message: string;
-  role: string;
+    status: PatchUserUsernameRole200Status;
+    message: string;
+    role: string;
 };

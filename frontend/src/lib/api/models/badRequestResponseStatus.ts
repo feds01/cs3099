@@ -8,7 +8,6 @@
 
 export type BadRequestResponseStatus = 'error';
 
-
 export const BadRequestResponseStatus = {
-  error: 'error' as BadRequestResponseStatus,
+    error: 'error' as BadRequestResponseStatus,
 };

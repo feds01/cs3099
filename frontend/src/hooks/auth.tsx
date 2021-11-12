@@ -32,7 +32,7 @@ const SessionSchema = z.object({
     status: z.string().optional(),
     about: z.string().optional(),
     profilePictureUrl: z.string().optional(),
-    createdAt: z.number().nonnegative()
+    createdAt: z.number().nonnegative(),
 });
 
 const initialState: AuthState = {

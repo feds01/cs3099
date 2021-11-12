@@ -8,7 +8,6 @@
 
 export type CreatePublicationResponseStatus = 'ok';
 
-
 export const CreatePublicationResponseStatus = {
-  ok: 'ok' as CreatePublicationResponseStatus,
+    ok: 'ok' as CreatePublicationResponseStatus,
 };

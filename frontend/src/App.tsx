@@ -6,7 +6,7 @@ import { QueryCache, QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 
 import { AuthProvider } from './hooks/auth';
-import NotFoundRoute from './routes/NotFound'
+import NotFoundRoute from './routes/NotFound';
 import LoginRoute from './routes/Auth/Login';
 import SessionRoute from './routes/Auth/Session';
 import SingleSignOnRoute from './routes/Auth/SingleSignOn';
@@ -102,7 +102,7 @@ function App(): ReactElement {
                                             {routeConfig.redirects.map((redirect, index) => {
                                                 return <Redirect exact strict {...redirect} key={index} />;
                                             })}
-                                            <AppliedRoute exact path={'*'} component={NotFoundRoute}/>
+                                            <AppliedRoute exact path={'*'} component={NotFoundRoute} />
                                         </Switch>
                                     </Box>
                                 </ErrorContainer>

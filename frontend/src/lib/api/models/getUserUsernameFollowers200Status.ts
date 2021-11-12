@@ -8,7 +8,6 @@
 
 export type GetUserUsernameFollowers200Status = 'ok';
 
-
 export const GetUserUsernameFollowers200Status = {
-  ok: 'ok' as GetUserUsernameFollowers200Status,
+    ok: 'ok' as GetUserUsernameFollowers200Status,
 };

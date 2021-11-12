@@ -8,7 +8,6 @@
 
 export type NotFoundResponseStatus = 'error';
 
-
 export const NotFoundResponseStatus = {
-  error: 'error' as NotFoundResponseStatus,
+    error: 'error' as NotFoundResponseStatus,
 };

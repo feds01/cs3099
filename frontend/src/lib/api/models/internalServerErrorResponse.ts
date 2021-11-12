@@ -8,6 +8,6 @@
 import type { InternalServerErrorResponseStatus } from './internalServerErrorResponseStatus';
 
 export type InternalServerErrorResponse = {
-  status: InternalServerErrorResponseStatus;
-  message: string;
+    status: InternalServerErrorResponseStatus;
+    message: string;
 };

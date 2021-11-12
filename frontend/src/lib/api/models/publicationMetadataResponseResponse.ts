@@ -9,6 +9,6 @@ import type { PublicationMetadataResponseResponseStatus } from './publicationMet
 import type { PublicationMetadataResponseResponseData } from './publicationMetadataResponseResponseData';
 
 export type PublicationMetadataResponseResponse = {
-  status: PublicationMetadataResponseResponseStatus;
-  data: PublicationMetadataResponseResponseData;
+    status: PublicationMetadataResponseResponseStatus;
+    data: PublicationMetadataResponseResponseData;
 };

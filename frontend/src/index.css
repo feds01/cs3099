@@ -24,6 +24,7 @@ a {
     text-decoration: none;
 }
 
-p, h1 {
+p,
+h1 {
     margin: 0;
 }

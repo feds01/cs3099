@@ -7,7 +7,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import { styled, Theme, CSSObject } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import { Button } from '@mui/material';
+import { Button, Link } from '@mui/material';
 
 const drawerWidth = 180;
 
@@ -54,9 +54,9 @@ const SidebarContainer = styled('div', { shouldForwardProp: (prop) => prop !== '
 );
 
 const menuMap = [
-    { title: 'Profile', icon: PersonIcon },
-    { title: 'Publications', icon: FileUploadIcon },
-    { title: 'Reviews', icon: RateReviewIcon },
+    { title: 'Profile', icon: PersonIcon, href: '/' },
+    { title: 'Publications', icon: FileUploadIcon, href: '/' },
+    { title: 'Reviews', icon: RateReviewIcon, href: '/' },
 ];
 
 export default function Sidebar(): ReactElement {
@@ -87,8 +87,10 @@ export default function Sidebar(): ReactElement {
                                     color: 'rgba(0, 0, 0, 0.54)',
                                 }}
                             >
-                                <entry.icon color="inherit" sx={{ marginRight: open ? 1 : 0 }} />
-                                {open && <Box sx={{ fontWeight: 'bold' }}>{entry.title}</Box>}
+                                <Link href={entry.href}>
+                                    <entry.icon color="inherit" sx={{ marginRight: open ? 1 : 0 }} />
+                                    {open && <Box sx={{ fontWeight: 'bold' }}>{entry.title}</Box>}
+                                </Link>
                             </Box>
                         </Button>
                     ))}

@@ -6,192 +6,207 @@
  * OpenAPI spec version: 1.0.0
  */
 import {
-  useQuery,
-  useMutation,
-  UseQueryOptions,
-  UseMutationOptions,
-  QueryFunction,
-  MutationFunction
-} from 'react-query'
+    useQuery,
+    useMutation,
+    UseQueryOptions,
+    UseMutationOptions,
+    QueryFunction,
+    MutationFunction,
+} from 'react-query';
 import type {
-  NoContentResponse,
-  ApiErrorResponse,
-  GetPublicationUsernameNameBookmark200,
-  GetPublicationUsernameNameBookmarkers200,
-  GetPublicationUsernameBookmarks200
-} from '.././models'
-import { customInstance } from '.././mutator/custom-instance'
+    NoContentResponse,
+    ApiErrorResponse,
+    GetPublicationUsernameNameBookmark200,
+    GetPublicationUsernameNameBookmarkers200,
+    GetPublicationUsernameBookmarks200,
+} from '.././models';
+import { customInstance } from '.././mutator/custom-instance';
 
-type AsyncReturnType<
-T extends (...args: any) => Promise<any>
-> = T extends (...args: any) => Promise<infer R> ? R : any;
-
+type AsyncReturnType<T extends (...args: any) => Promise<any>> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 /**
  * @summary Un-bookmark a publication
  */
-export const deletePublicationUsernameNameBookmark = (
-    username: string,
-    name: string,
- ) => {
-      return customInstance<NoContentResponse>(
-      {url: `/publication/${username}/${name}/bookmark`, method: 'delete'
-    },
-      );
-    }
-  
+export const deletePublicationUsernameNameBookmark = (username: string, name: string) => {
+    return customInstance<NoContentResponse>({ url: `/publication/${username}/${name}/bookmark`, method: 'delete' });
+};
 
+export const useDeletePublicationUsernameNameBookmark = <TError = ApiErrorResponse, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        AsyncReturnType<typeof deletePublicationUsernameNameBookmark>,
+        TError,
+        { username: string; name: string },
+        TContext
+    >;
+}) => {
+    const { mutation: mutationOptions } = options || {};
 
-    export const useDeletePublicationUsernameNameBookmark = <TError = ApiErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deletePublicationUsernameNameBookmark>, TError,{username: string;name: string}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
+    const mutationFn: MutationFunction<
+        AsyncReturnType<typeof deletePublicationUsernameNameBookmark>,
+        { username: string; name: string }
+    > = (props) => {
+        const { username, name } = props || {};
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof deletePublicationUsernameNameBookmark>, {username: string;name: string}> = (props) => {
-          const {username,name} = props || {};
+        return deletePublicationUsernameNameBookmark(username, name);
+    };
 
-          return  deletePublicationUsernameNameBookmark(username,name,)
-        }
-
-      return useMutation<AsyncReturnType<typeof deletePublicationUsernameNameBookmark>, TError, {username: string;name: string}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
+    return useMutation<
+        AsyncReturnType<typeof deletePublicationUsernameNameBookmark>,
+        TError,
+        { username: string; name: string },
+        TContext
+    >(mutationFn, mutationOptions);
+};
+/**
  * Get information if the bookmark a publication
  * @summary Check is publication is bookmarked
  */
-export const getPublicationUsernameNameBookmark = (
+export const getPublicationUsernameNameBookmark = (username: string, name: string) => {
+    return customInstance<GetPublicationUsernameNameBookmark200>({
+        url: `/publication/${username}/${name}/bookmark`,
+        method: 'get',
+    });
+};
+
+export const getGetPublicationUsernameNameBookmarkQueryKey = (username: string, name: string) => [
+    `/publication/${username}/${name}/bookmark`,
+];
+
+export const useGetPublicationUsernameNameBookmark = <
+    TData = AsyncReturnType<typeof getPublicationUsernameNameBookmark>,
+    TError = ApiErrorResponse
+>(
     username: string,
     name: string,
- ) => {
-      return customInstance<GetPublicationUsernameNameBookmark200>(
-      {url: `/publication/${username}/${name}/bookmark`, method: 'get'
-    },
-      );
-    }
-  
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameBookmark>, TError, TData> },
+) => {
+    const { query: queryOptions } = options || {};
 
-export const getGetPublicationUsernameNameBookmarkQueryKey = (username: string,
-    name: string,) => [`/publication/${username}/${name}/bookmark`];
+    const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameBookmarkQueryKey(username, name);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameBookmark>> = () =>
+        getPublicationUsernameNameBookmark(username, name);
 
-    
-export const useGetPublicationUsernameNameBookmark = <TData = AsyncReturnType<typeof getPublicationUsernameNameBookmark>, TError = ApiErrorResponse>(
- username: string,
-    name: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameBookmark>, TError, TData>, }
+    const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameBookmark>, TError, TData>(
+        queryKey,
+        queryFn,
+        { enabled: !!(username && name), ...queryOptions },
+    );
 
-  ) => {
-
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameBookmarkQueryKey(username,name);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameBookmark>> = () => getPublicationUsernameNameBookmark(username,name, );
-
-  const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameBookmark>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
+    return {
+        queryKey,
+        ...query,
+    };
+};
 
 /**
  * @summary Bookmark a certain publication
  */
-export const postPublicationUsernameNameBookmark = (
-    username: string,
-    name: string,
- ) => {
-      return customInstance<NoContentResponse>(
-      {url: `/publication/${username}/${name}/bookmark`, method: 'post',
-      data: undefined
-    },
-      );
-    }
-  
+export const postPublicationUsernameNameBookmark = (username: string, name: string) => {
+    return customInstance<NoContentResponse>({
+        url: `/publication/${username}/${name}/bookmark`,
+        method: 'post',
+        data: undefined,
+    });
+};
 
+export const usePostPublicationUsernameNameBookmark = <TError = ApiErrorResponse, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+        AsyncReturnType<typeof postPublicationUsernameNameBookmark>,
+        TError,
+        { username: string; name: string },
+        TContext
+    >;
+}) => {
+    const { mutation: mutationOptions } = options || {};
 
-    export const usePostPublicationUsernameNameBookmark = <TError = ApiErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postPublicationUsernameNameBookmark>, TError,{username: string;name: string}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
+    const mutationFn: MutationFunction<
+        AsyncReturnType<typeof postPublicationUsernameNameBookmark>,
+        { username: string; name: string }
+    > = (props) => {
+        const { username, name } = props || {};
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postPublicationUsernameNameBookmark>, {username: string;name: string}> = (props) => {
-          const {username,name} = props || {};
+        return postPublicationUsernameNameBookmark(username, name);
+    };
 
-          return  postPublicationUsernameNameBookmark(username,name,)
-        }
-
-      return useMutation<AsyncReturnType<typeof postPublicationUsernameNameBookmark>, TError, {username: string;name: string}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
+    return useMutation<
+        AsyncReturnType<typeof postPublicationUsernameNameBookmark>,
+        TError,
+        { username: string; name: string },
+        TContext
+    >(mutationFn, mutationOptions);
+};
+/**
  * @summary Check who has bookmarked the publication
  */
-export const getPublicationUsernameNameBookmarkers = (
+export const getPublicationUsernameNameBookmarkers = (username: string, name: string) => {
+    return customInstance<GetPublicationUsernameNameBookmarkers200>({
+        url: `/publication/${username}/${name}/bookmarkers`,
+        method: 'get',
+    });
+};
+
+export const getGetPublicationUsernameNameBookmarkersQueryKey = (username: string, name: string) => [
+    `/publication/${username}/${name}/bookmarkers`,
+];
+
+export const useGetPublicationUsernameNameBookmarkers = <
+    TData = AsyncReturnType<typeof getPublicationUsernameNameBookmarkers>,
+    TError = ApiErrorResponse
+>(
     username: string,
     name: string,
- ) => {
-      return customInstance<GetPublicationUsernameNameBookmarkers200>(
-      {url: `/publication/${username}/${name}/bookmarkers`, method: 'get'
-    },
-      );
-    }
-  
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameBookmarkers>, TError, TData> },
+) => {
+    const { query: queryOptions } = options || {};
 
-export const getGetPublicationUsernameNameBookmarkersQueryKey = (username: string,
-    name: string,) => [`/publication/${username}/${name}/bookmarkers`];
+    const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameBookmarkersQueryKey(username, name);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameBookmarkers>> = () =>
+        getPublicationUsernameNameBookmarkers(username, name);
 
-    
-export const useGetPublicationUsernameNameBookmarkers = <TData = AsyncReturnType<typeof getPublicationUsernameNameBookmarkers>, TError = ApiErrorResponse>(
- username: string,
-    name: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameBookmarkers>, TError, TData>, }
+    const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameBookmarkers>, TError, TData>(
+        queryKey,
+        queryFn,
+        { enabled: !!(username && name), ...queryOptions },
+    );
 
-  ) => {
-
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameBookmarkersQueryKey(username,name);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameBookmarkers>> = () => getPublicationUsernameNameBookmarkers(username,name, );
-
-  const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameBookmarkers>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
+    return {
+        queryKey,
+        ...query,
+    };
+};
 
 /**
  * @summary Check bookmarked publications by a user.
  */
-export const getPublicationUsernameBookmarks = (
+export const getPublicationUsernameBookmarks = (username: string) => {
+    return customInstance<GetPublicationUsernameBookmarks200>({
+        url: `/publication/${username}/bookmarks`,
+        method: 'get',
+    });
+};
+
+export const getGetPublicationUsernameBookmarksQueryKey = (username: string) => [`/publication/${username}/bookmarks`];
+
+export const useGetPublicationUsernameBookmarks = <
+    TData = AsyncReturnType<typeof getPublicationUsernameBookmarks>,
+    TError = ApiErrorResponse
+>(
     username: string,
- ) => {
-      return customInstance<GetPublicationUsernameBookmarks200>(
-      {url: `/publication/${username}/bookmarks`, method: 'get'
-    },
-      );
-    }
-  
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameBookmarks>, TError, TData> },
+) => {
+    const { query: queryOptions } = options || {};
 
-export const getGetPublicationUsernameBookmarksQueryKey = (username: string,) => [`/publication/${username}/bookmarks`];
+    const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameBookmarksQueryKey(username);
+    const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameBookmarks>> = () =>
+        getPublicationUsernameBookmarks(username);
 
-    
-export const useGetPublicationUsernameBookmarks = <TData = AsyncReturnType<typeof getPublicationUsernameBookmarks>, TError = ApiErrorResponse>(
- username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameBookmarks>, TError, TData>, }
+    const query = useQuery<AsyncReturnType<typeof getPublicationUsernameBookmarks>, TError, TData>(queryKey, queryFn, {
+        enabled: !!username,
+        ...queryOptions,
+    });
 
-  ) => {
-
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameBookmarksQueryKey(username);
-  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameBookmarks>> = () => getPublicationUsernameBookmarks(username, );
-
-  const query = useQuery<AsyncReturnType<typeof getPublicationUsernameBookmarks>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
-
+    return {
+        queryKey,
+        ...query,
+    };
+};

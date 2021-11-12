@@ -8,7 +8,6 @@
 
 export type GetReviewId200Status = 'ok';
 
-
 export const GetReviewId200Status = {
-  ok: 'ok' as GetReviewId200Status,
+    ok: 'ok' as GetReviewId200Status,
 };
