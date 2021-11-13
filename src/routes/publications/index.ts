@@ -18,6 +18,9 @@ import bookmarkRouter from './bookmarks';
 import { IReviewCreationSchema } from '../../validators/reviews';
 import { config } from '../../server';
 import { createTokens } from '../../lib/auth';
+import { deleteResource } from '../../lib/fs';
+import assert from 'assert';
+import { resourceIndexToPath } from '../../lib/zip';
 
 const router = express.Router();
 
@@ -369,33 +372,49 @@ registerRoute(router, '/:username/:name/all', {
         name: z.string().nonempty(),
     }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Default,
+    permission: IUserRole.Administrator,
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
         const requester = req.requester;
-        const { name } = req.params;
+        const { name, username } = req.params;
         const isOwner = user.id === req.requester.id;
 
-        if (isOwner || comparePermissions(requester.role, IUserRole.Moderator)) {
-            const publications = await Publication.deleteMany({
-                owner: user.id,
-                name: name.toLowerCase(),
-            }).exec();
-
-            if (publications.deletedCount > 0) {
-                return res.status(200).json({
-                    status: 'ok',
-                    message: 'Successfully deleted all revision of publications.',
-                });
-            }
+        if (!isOwner && !comparePermissions(requester.role, IUserRole.Administrator)) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.NON_EXISTENT_PUBLICATION,
+            });
         }
 
-        return res.status(404).json({
-            status: 'error',
-            message: errors.NON_EXISTENT_PUBLICATION,
-        });
+        const owner = await User.findOne({ username }).exec();
+        assert(owner !== null);
+
+        await Publication.deleteMany({ owner: owner.id, name: name.toLowerCase() }).exec();
+
+        try {
+            const publicationPath = resourceIndexToPath({
+                type: 'publication',
+                owner: owner.id,
+                name: name,
+            });
+
+            // we need to try to remove the folder that stores the publications...
+            await deleteResource(publicationPath);
+
+            return res.status(200).json({
+                status: 'ok',
+                message: 'Successfully deleted resource.',
+            });
+        } catch (e: unknown) {
+            Logger.error(e);
+
+            return res.status(500).json({
+                status: 'error',
+                message: errors.INTERNAL_SERVER_ERROR,
+            });
+        }
     },
 });
 
@@ -410,38 +429,71 @@ registerRoute(router, '/:username/:name/:revision?', {
         revision: z.string().optional(),
     }),
     query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).default('false') }),
-    permission: IUserRole.Default,
+    permission: IUserRole.Administrator,
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
         const requester = req.requester;
-        const { name, revision } = req.params;
+        const { name, username, revision } = req.params;
+
         const draft = req.query.draft === 'true';
         const isOwner = user.id === req.requester.id;
 
-        if (isOwner || comparePermissions(requester.role, IUserRole.Moderator)) {
-            const publication = await Publication.findOneAndDelete({
-                owner: user.id,
-                name: name.toLowerCase(),
-                draft,
-                ...(typeof revision !== 'undefined' && { revision }),
-            })
-                .sort({ _id: -1 })
-                .exec(); // get the most recent document
-
-            if (publication) {
-                return res.status(200).json({
-                    status: 'ok',
-                    message: 'Successfully deleted publication.',
-                });
-            }
+        if (!isOwner && !comparePermissions(requester.role, IUserRole.Administrator)) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.NON_EXISTENT_PUBLICATION,
+            });
         }
 
-        return res.status(404).json({
-            status: 'error',
-            message: errors.NON_EXISTENT_PUBLICATION,
-        });
+        const owner = await User.findOne({ username }).exec();
+        assert(owner !== null);
+
+        const publication = await Publication.findOneAndDelete({
+            owner: user.id,
+            name: name.toLowerCase(),
+            draft,
+            ...(typeof revision !== 'undefined' && { revision }),
+        })
+            .sort({ _id: -1 })
+            .exec(); // get the most recent document
+
+        if (!publication) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.NON_EXISTENT_PUBLICATION,
+            });
+        }
+
+        try {
+            const publicationPath = resourceIndexToPath({
+                type: 'publication',
+                owner: owner.id.toString(),
+                name,
+                ...(typeof revision !== 'undefined' && { path: [revision, 'publication.zip'] }),
+            });
+
+            // we need to try to remove the folder that stores the publications...
+            await deleteResource(publicationPath);
+
+            return res.status(200).json({
+                status: 'ok',
+                message: 'Successfully deleted resource.',
+            });
+
+            return res.status(200).json({
+                status: 'ok',
+                message: 'Successfully deleted publication.',
+            });
+        } catch (e: unknown) {
+            Logger.error(e);
+
+            return res.status(500).json({
+                status: 'error',
+                message: errors.INTERNAL_SERVER_ERROR,
+            });
+        }
     },
 });
 
