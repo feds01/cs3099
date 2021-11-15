@@ -11,8 +11,6 @@ import { usePostPublication } from '../../lib/api/publications/publications';
 import ErrorBanner from '../ErrorBanner';
 import { useHistory } from 'react-router';
 
-type Props = {};
-
 const CreatePublicationSchema = z.object({
     name: z
         .string()
@@ -26,7 +24,7 @@ const CreatePublicationSchema = z.object({
 
 type CreatePublication = z.infer<typeof CreatePublicationSchema>;
 
-export default function CreatePublicationForm(props: Props): ReactElement {
+export default function CreatePublicationForm(): ReactElement {
     const auth = useAuth();
 
     const history = useHistory();

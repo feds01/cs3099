@@ -4,11 +4,11 @@ import { ContentState } from '../../types/requests';
 import { ReactElement, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
-import { Tabs } from '@mui/material';
+import { Button, Tabs } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import { formatDistance } from 'date-fns';
 import Tab from '@mui/material/Tab';
-import { BrowserRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Divider from '@mui/material/Divider';
 import Skeleton from '@mui/material/Skeleton';
 import Container from '@mui/material/Container';
@@ -26,6 +26,7 @@ import Source from './modules/Source';
 import Settings from './modules/Settings';
 import Reviews from './modules/Reviews';
 import assert from 'assert';
+import { useAuth } from '../../hooks/auth';
 
 interface Props {}
 
@@ -38,13 +39,14 @@ interface PublicationParams {
 
 interface TabMapProps {
     publication: Publication;
+    isOwner: boolean;
     refetchPublication: () => void;
 }
 
-const TabMap = ({ publication, refetchPublication }: TabMapProps) => ({
+const TabMap = ({ publication, refetchPublication, isOwner }: TabMapProps) => ({
     '/': {
         exact: true,
-        strict: true,
+        strict: false,
         label: 'Overview',
         canonical: '',
         component: () => <Overview publication={publication} />,
@@ -63,13 +65,15 @@ const TabMap = ({ publication, refetchPublication }: TabMapProps) => ({
         canonical: 'reviews',
         component: () => <Reviews publication={publication} />,
     },
-    '/settings': {
-        exact: true,
-        strict: true,
-        label: 'Settings',
-        canonical: 'settings',
-        component: () => <Settings publication={publication} />,
-    },
+    ...(isOwner && {
+        '/settings': {
+            exact: true,
+            strict: true,
+            label: 'Settings',
+            canonical: 'settings',
+            component: () => <Settings publication={publication} />,
+        },
+    })
 });
 
 /**
@@ -79,8 +83,9 @@ const TabMap = ({ publication, refetchPublication }: TabMapProps) => ({
  */
 function getCanonicalName(location: string, username: string, name: string): [string, string] {
     // essentially we want to split by the first `/username/name` chunk.
-    const [_, component] = location.split(`/${username}/${name}`);
-    assert(typeof component !== 'undefined');
+    const components = location.split(`/${username}/${name}`);
+    assert(typeof components[1] !== 'undefined');
+    const component = components[1];
 
     // Now check if the current path has a revision, we also have to account
     // that revisions can be defined with the same canonical name as the actual
@@ -111,6 +116,7 @@ function getCanonicalName(location: string, username: string, name: string): [st
 
 function PublicationView() {
     const location = useLocation();
+    const { session } = useAuth();
     const { username, name }: PublicationParams = useParams();
 
     const [canonicalName, setCanonicalName] = useState<[string, string]>(
@@ -121,8 +127,6 @@ function PublicationView() {
         state: 'loading',
     });
 
-    // @@Cleanup: We could probably convert the revision into a query parameter instead of a path parameter
-    // because the code generation that orval performs is so shit here!
     const getPublicationQuery = useGetPublication(username, name, canonicalName[1]);
 
     useEffect(() => {
@@ -157,21 +161,35 @@ function PublicationView() {
             const tabMap = TabMap({
                 publication,
                 refetchPublication: () => getPublicationQuery.refetch(),
+                isOwner: username === session.username,
             });
 
+            // @@Bug: The export button and the title of the publication aren't aligned properly.
             return (
                 <>
                     <Box sx={{ mb: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <MarkdownRenderer fontSize={24} contents={publication.title} />
-                            <Chip sx={{ ml: 1 }} label={publication.revision || 'current'} variant="outlined" />
+                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                                <MarkdownRenderer fontSize={24} contents={publication.title} />
+                            </Box>
+                            <Box>
+                                <Button>Export</Button>
+                            </Box>
                         </Box>
-                        <Typography>
-                            by <UserLink username={publication.owner.username} />{' '}
-                            {formatDistance(publication.createdAt, new Date(), { addSuffix: true })}
-                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                            <Typography>
+                                by <UserLink username={publication.owner.username} />{' '}
+                                {formatDistance(publication.createdAt, new Date(), { addSuffix: true })}
+                            </Typography>
+                            <Chip
+                                size={'small'}
+                                sx={{ ml: 1 }}
+                                label={publication.revision || 'current'}
+                                variant="outlined"
+                            />
+                        </Box>
                     </Box>
-                    <Box sx={{ borderBottom: 1, mb: 1, borderColor: 'divider' }}>
+                    <Box sx={{ borderBottom: 1, mb: 2, borderColor: 'divider' }}>
                         <Tabs value={canonicalName[0]}>
                             {Object.entries(tabMap).map(([path, props]) => {
                                 return (

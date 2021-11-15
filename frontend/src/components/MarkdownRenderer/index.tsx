@@ -12,7 +12,7 @@ interface Props {
 
 const useStyles = makeStyles<Theme, Props>((theme) => ({
     wrapper: {
-        fontSize: ({ fontSize }) => fontSize ?? 16,
+        fontSize: ({ fontSize }) => `${fontSize ?? 16}px !important`,
     },
 }));
 

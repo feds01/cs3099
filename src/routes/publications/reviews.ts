@@ -1,31 +1,33 @@
 import { z } from 'zod';
 import express from 'express';
 import * as errors from '../../common/errors';
-import Publication, { IPublication } from '../../models/Publication';
-import Review, { IReviewStatus } from '../../models/Review';
 import * as userUtils from '../../utils/users';
 import registerRoute from '../../lib/requests';
 import { IUser, IUserRole } from '../../models/User';
 import { ModeSchema } from '../../validators/requests';
+import Review, { IReviewStatus } from '../../models/Review';
+import Publication, { IPublication } from '../../models/Publication';
 
 const router = express.Router();
 
-registerRoute(router, '/:username/:name/reviews', {
+/**
+ *
+ */
+registerRoute(router, '/:username/:name/:revision/reviews', {
     method: 'get',
-    params: z.object({ username: z.string(), name: z.string() }),
+    params: z.object({ username: z.string(), name: z.string(), revision: z.string() }),
     query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
-        const { name } = req.params;
+        const { name, revision } = req.params;
 
-        // TODO: may involve filtering by revision
         const publication = await Publication.findOne({
             owner: user.id,
             name: name,
-            current: true,
+            revision: revision,
         });
 
         if (!publication) {
@@ -51,3 +53,5 @@ registerRoute(router, '/:username/:name/reviews', {
         });
     },
 });
+
+export default router;

@@ -53,8 +53,9 @@ export const routes = {
         title: 'Account',
         component: AccountRoute,
     },
-    '/:username/:name/*': {
+    '/:username/:name': {
         exact: false,
+        strict: false,
         component: PublicationRoute,
     },
 };

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import express from 'express';
+import assert from 'assert';
 import qs from 'query-string';
 import Logger from '../../common/logger';
 import * as zip from '../../lib/zip';
@@ -15,18 +16,19 @@ import { IPublicationCreationSchema } from '../../validators/publications';
 
 import searchRouter from './search';
 import bookmarkRouter from './bookmarks';
-import { IReviewCreationSchema } from '../../validators/reviews';
+import reviewRouter from './reviews';
 import { config } from '../../server';
 import { createTokens } from '../../lib/auth';
 import { deleteResource } from '../../lib/fs';
-import assert from 'assert';
 import { resourceIndexToPath } from '../../lib/zip';
+import { IReviewCreationSchema } from '../../validators/reviews';
 
 const router = express.Router();
 
 // Register the follower & bookmark routes
 router.use('/', searchRouter);
 router.use('/', bookmarkRouter);
+router.use('/', reviewRouter);
 
 /**
  *
@@ -498,7 +500,7 @@ registerRoute(router, '/:username/:name/:revision?', {
 });
 
 /**
- *
+ * Export a publication.
  */
 registerRoute(router, '/:id/export', {
     method: 'post',

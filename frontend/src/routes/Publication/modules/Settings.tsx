@@ -5,6 +5,6 @@ interface Props {
     publication: Publication
 }
 
-export default function Settings({}: Props): ReactElement {
+export default function Settings({publication}: Props): ReactElement {
     return <div>Settings</div>;
 }

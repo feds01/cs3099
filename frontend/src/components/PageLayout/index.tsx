@@ -22,7 +22,7 @@ export default function PageLayout({ children, drawerWidth = 180, title, sidebar
                 height: '100%',
                 maxHeight: '100%',
                 maxWidth: '100%',
-                wordBreak: 'break-all',
+                wordBreak: 'break-word',
             }}
         >
             <Box component="main" sx={{ display: 'flex', flexDirection: 'column', flex: 1, height: 'inherit' }}>

@@ -2,11 +2,10 @@ import BreadCrumb from './BreadCrumb';
 import FileViewer from '../FileViewer';
 import Box from '@mui/material/Box';
 import DirectoryViewer from '../DirectoryViewer';
-import Container from '@mui/material/Container';
 import { ContentState } from '../../types/requests';
-import { Alert, AlertTitle, Divider, LinearProgress } from '@mui/material';
-import { ResourceResponseResponse } from '../../lib/api/models';
 import { ReactElement, useEffect, useState } from 'react';
+import { ResourceResponseResponse } from '../../lib/api/models';
+import { Alert, AlertTitle, Divider, LinearProgress } from '@mui/material';
 import { constructBasePath, PublicationIndex } from '../../lib/utils/publications';
 
 interface SourceViewerProps {
@@ -59,12 +58,12 @@ export default function PublicationViewSource({ contents, filename, index }: Pro
     }, [index]);
 
     return (
-        <Container>
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
             <BreadCrumb index={index} basePath={basePath} filename={filename} />
             <Divider />
             <Box>
                 <SourceViewer index={index} contents={contents} basePath={basePath} filename={filename} />
             </Box>
-        </Container>
+        </Box>
     );
 }

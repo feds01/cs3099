@@ -76,7 +76,7 @@ export default function Sidebar(): ReactElement {
             >
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     {menuMap.map((entry) => (
-                        <Button key={entry.title}>
+                        <Button key={entry.title} variant="text" color="inherit">
                             <Box
                                 sx={{
                                     display: 'flex',

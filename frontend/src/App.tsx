@@ -75,6 +75,11 @@ const theme = createTheme({
             defaultProps: {
                 disableRipple: true,
                 disableElevation: true,
+                variant: "contained",
+                size: "small",
+                sx: {
+                    fontWeight: 'bold'
+                }
             },
         },
     },

@@ -31,9 +31,6 @@ type TeamEndpoints = {
 const teamEndpointSchema = 'https://gbs3.host.cs.st-andrews.ac.uk/cs3099-journals.json';
 const teamName = 't06';
 
-// const dummy = {'dummy': 'https://cs3099user06.host.cs.st-andrews.ac.uk/'};
-const dummy = {};
-
 export default function SingleSignOn(props: Props): ReactElement {
     const location = useLocation<LocationState>();
     let { from } = location.state || { from: { pathname: '/' } };
@@ -43,7 +40,6 @@ export default function SingleSignOn(props: Props): ReactElement {
     const [endpoints, setEndpoints] = useState<ContentState<TeamEndpoints, any>>({ state: 'loading' });
     const handleSelect = (url: string) => mutate({ params: { to: url, path: from.pathname } });
 
-    // @@Hack: the server should auto-redirect the user by some means!!!
     // Re-direct the user to the returned link essentially...
     useEffect(() => {
         if (data && !isError) {
@@ -74,8 +70,7 @@ export default function SingleSignOn(props: Props): ReactElement {
                         teamEndpoints[key] = url.data;
                     });
 
-                    // @@Temporary since we have hard-coded initial team endpoints (for testing).
-                    setEndpoints({ state: 'ok', data: { ...dummy, ...teamEndpoints } });
+                    setEndpoints({ state: 'ok', data: teamEndpoints });
                 })
                 .catch((res: unknown) => {
                     setEndpoints({ state: 'error', error: res });
