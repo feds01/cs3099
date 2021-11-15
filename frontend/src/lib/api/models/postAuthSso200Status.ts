@@ -8,6 +8,7 @@
 
 export type PostAuthSso200Status = 'ok';
 
+
 export const PostAuthSso200Status = {
-    ok: 'ok' as PostAuthSso200Status,
+  ok: 'ok' as PostAuthSso200Status,
 };

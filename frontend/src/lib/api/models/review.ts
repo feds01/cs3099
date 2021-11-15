@@ -9,9 +9,9 @@ import type { Publication } from './publication';
 import type { User } from './user';
 
 export interface Review {
-    publication: Publication;
-    owner: User;
-    createdAt: number;
-    updatedAt: number;
-    id: string;
+  publication: Publication;
+  owner: User;
+  createdAt: number;
+  updatedAt: number;
+  id: string;
 }

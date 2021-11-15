@@ -8,6 +8,7 @@
 
 export type GetPublicationUsernameNameBookmarkers200Status = 'ok';
 
+
 export const GetPublicationUsernameNameBookmarkers200Status = {
-    ok: 'ok' as GetPublicationUsernameNameBookmarkers200Status,
+  ok: 'ok' as GetPublicationUsernameNameBookmarkers200Status,
 };

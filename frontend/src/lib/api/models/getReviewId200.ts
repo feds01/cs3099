@@ -9,6 +9,6 @@ import type { GetReviewId200Status } from './getReviewId200Status';
 import type { Review } from './review';
 
 export type GetReviewId200 = {
-    status: GetReviewId200Status;
-    review?: Review;
+  status: GetReviewId200Status;
+  review?: Review;
 };

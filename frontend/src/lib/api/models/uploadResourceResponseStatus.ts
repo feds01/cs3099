@@ -8,6 +8,7 @@
 
 export type UploadResourceResponseStatus = 'ok';
 
+
 export const UploadResourceResponseStatus = {
-    ok: 'ok' as UploadResourceResponseStatus,
+  ok: 'ok' as UploadResourceResponseStatus,
 };

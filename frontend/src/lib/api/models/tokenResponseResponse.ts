@@ -8,7 +8,7 @@
 import type { TokenResponseResponseStatus } from './tokenResponseResponseStatus';
 
 export type TokenResponseResponse = {
-    status: TokenResponseResponseStatus;
-    token: string;
-    refreshToken: string;
+  status: TokenResponseResponseStatus;
+  token: string;
+  refreshToken: string;
 };

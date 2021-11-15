@@ -8,16 +8,16 @@
 import type { User } from './user';
 
 export interface Publication {
-    id: string;
-    name: string;
-    title: string;
-    introduction?: string;
-    revision?: string;
-    pinned: boolean;
-    draft: boolean;
-    owner: User;
-    attachment?: boolean;
-    collaborators: string[];
-    createdAt: number;
-    updatedAt: number;
+  id: string;
+  name: string;
+  title: string;
+  introduction?: string;
+  revision: string;
+  pinned: boolean;
+  draft: boolean;
+  owner: User;
+  attachment?: boolean;
+  collaborators: string[];
+  createdAt: number;
+  updatedAt: number;
 }

@@ -9,6 +9,6 @@ import type { PatchUserUsername200Status } from './patchUserUsername200Status';
 import type { User } from './user';
 
 export type PatchUserUsername200 = {
-    status: PatchUserUsername200Status;
-    user: User;
+  status: PatchUserUsername200Status;
+  user: User;
 };

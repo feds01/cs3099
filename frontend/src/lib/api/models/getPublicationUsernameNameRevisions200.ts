@@ -8,6 +8,6 @@
 import type { GetPublicationUsernameNameRevisions200Data } from './getPublicationUsernameNameRevisions200Data';
 
 export type GetPublicationUsernameNameRevisions200 = {
-    status: boolean;
-    data: GetPublicationUsernameNameRevisions200Data;
+  status: boolean;
+  data: GetPublicationUsernameNameRevisions200Data;
 };

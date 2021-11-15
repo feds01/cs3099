@@ -60,6 +60,9 @@ PublicationSchema.statics.project = async (
         createdAt: publication.createdAt.getTime(),
         updatedAt: publication.updatedAt.getTime(),
 
+        // add the revision to the structure
+        revision: publication.revision ?? '',
+
         // this is a flag that denotes whether or not we know that this publication has an attached
         // zip archive on disk.
         attachment,
@@ -84,6 +87,9 @@ PublicationSchema.statics.projectWith = (
 
         createdAt: publication.createdAt.getTime(),
         updatedAt: publication.updatedAt.getTime(),
+
+        // add the revision to the structure
+        revision: publication.revision ?? '',
 
         // TODO: project collaborators too...
         collaborators,

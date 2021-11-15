@@ -351,7 +351,7 @@ registerRoute(router, '/:username/:name/:revision?', {
         const archiveIndex = {
             userId: publication.owner._id.toString(),
             name: publication.name,
-            revision,
+            revision: publication.current ? undefined : revision,
         };
         const archive = zip.loadArchive(archiveIndex);
 

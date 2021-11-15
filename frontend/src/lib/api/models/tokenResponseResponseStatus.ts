@@ -8,6 +8,7 @@
 
 export type TokenResponseResponseStatus = 'ok';
 
+
 export const TokenResponseResponseStatus = {
-    ok: 'ok' as TokenResponseResponseStatus,
+  ok: 'ok' as TokenResponseResponseStatus,
 };

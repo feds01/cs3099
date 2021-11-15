@@ -8,6 +8,7 @@
 
 export type PublicationMetadataResponseResponseStatus = 'ok';
 
+
 export const PublicationMetadataResponseResponseStatus = {
-    ok: 'ok' as PublicationMetadataResponseResponseStatus,
+  ok: 'ok' as PublicationMetadataResponseResponseStatus,
 };

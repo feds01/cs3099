@@ -8,6 +8,7 @@
 
 export type ResourceResponseResponseStatus = 'ok';
 
+
 export const ResourceResponseResponseStatus = {
-    ok: 'ok' as ResourceResponseResponseStatus,
+  ok: 'ok' as ResourceResponseResponseStatus,
 };

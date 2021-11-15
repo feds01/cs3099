@@ -8,6 +8,7 @@
 
 export type GetThreadId200Status = 'ok';
 
+
 export const GetThreadId200Status = {
-    ok: 'ok' as GetThreadId200Status,
+  ok: 'ok' as GetThreadId200Status,
 };

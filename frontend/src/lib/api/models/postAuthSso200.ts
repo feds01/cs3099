@@ -8,6 +8,6 @@
 import type { PostAuthSso200Status } from './postAuthSso200Status';
 
 export type PostAuthSso200 = {
-    status: PostAuthSso200Status;
-    follow: string;
+  status: PostAuthSso200Status;
+  follow: string;
 };

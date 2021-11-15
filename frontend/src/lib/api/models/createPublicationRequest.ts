@@ -7,9 +7,9 @@
  */
 
 export interface CreatePublicationRequest {
-    name: string;
-    title: string;
-    introduction?: string;
-    revision?: string;
-    collaborators: string[];
+  name: string;
+  title: string;
+  introduction?: string;
+  revision?: string;
+  collaborators: string[];
 }

@@ -8,6 +8,7 @@
 
 export type PostReviewIdComment200Status = 'ok';
 
+
 export const PostReviewIdComment200Status = {
-    ok: 'ok' as PostReviewIdComment200Status,
+  ok: 'ok' as PostReviewIdComment200Status,
 };

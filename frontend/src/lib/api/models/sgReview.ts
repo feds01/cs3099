@@ -9,7 +9,7 @@ import type { SgUser } from './sgUser';
 import type { SgComment } from './sgComment';
 
 export interface SgReview {
-    owner: SgUser;
-    createdAt: number;
-    comments?: SgComment[];
+  owner: SgUser;
+  createdAt: number;
+  comments?: SgComment[];
 }

@@ -8,6 +8,6 @@
 import type { GetPublicationUsernameNameBookmark200Status } from './getPublicationUsernameNameBookmark200Status';
 
 export type GetPublicationUsernameNameBookmark200 = {
-    status: GetPublicationUsernameNameBookmark200Status;
-    bookmarked: boolean;
+  status: GetPublicationUsernameNameBookmark200Status;
+  bookmarked: boolean;
 };

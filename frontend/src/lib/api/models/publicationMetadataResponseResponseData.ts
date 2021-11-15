@@ -9,6 +9,6 @@ import type { SgPublication } from './sgPublication';
 import type { SgReview } from './sgReview';
 
 export type PublicationMetadataResponseResponseData = {
-    publication: SgPublication;
-    reviews: SgReview[];
+  publication: SgPublication;
+  reviews: SgReview[];
 };

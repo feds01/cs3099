@@ -8,6 +8,7 @@
 
 export type DeletionResponseResponseStatus = 'ok';
 
+
 export const DeletionResponseResponseStatus = {
-    ok: 'ok' as DeletionResponseResponseStatus,
+  ok: 'ok' as DeletionResponseResponseStatus,
 };

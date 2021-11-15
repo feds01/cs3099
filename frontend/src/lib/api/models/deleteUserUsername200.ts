@@ -8,6 +8,6 @@
 import type { DeleteUserUsername200Status } from './deleteUserUsername200Status';
 
 export type DeleteUserUsername200 = {
-    status?: DeleteUserUsername200Status;
-    description?: string;
+  status?: DeleteUserUsername200Status;
+  description?: string;
 };

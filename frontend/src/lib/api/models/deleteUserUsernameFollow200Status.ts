@@ -8,6 +8,7 @@
 
 export type DeleteUserUsernameFollow200Status = 'ok';
 
+
 export const DeleteUserUsernameFollow200Status = {
-    ok: 'ok' as DeleteUserUsernameFollow200Status,
+  ok: 'ok' as DeleteUserUsernameFollow200Status,
 };

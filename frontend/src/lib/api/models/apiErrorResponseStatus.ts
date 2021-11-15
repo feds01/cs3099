@@ -8,6 +8,7 @@
 
 export type ApiErrorResponseStatus = 'error';
 
+
 export const ApiErrorResponseStatus = {
-    error: 'error' as ApiErrorResponseStatus,
+  error: 'error' as ApiErrorResponseStatus,
 };

@@ -7,66 +7,46 @@ import PublicationViewSource from '../../../components/PublicationSourceView';
 import { Publication, ResourceResponseResponse } from '../../../lib/api/models';
 import { transformQueryIntoContentState } from '../../../wrappers/react-query';
 
-import {
-    useGetPublicationUsernameNameRevisionTreePath as useGetPublicationSource,
-    useGetPublicationUsernameNameTreePath as useGetRevisionlessPublicationSource,
-} from '../../../lib/api/publications/publications';
+import { useGetPublicationUsernameNameRevisionTreePath as useGetPublicationSource } from '../../../lib/api/publications/publications';
 import { useAuth } from '../../../hooks/auth';
 import { ContentState } from '../../../types/requests';
 import Void from './../../../static/images/void.svg';
 
 interface Props {
-    username: string;
     publication: Publication;
     refetchPublication: () => void;
 }
 
-interface PublicationParams {
-    username: string;
-    name: string;
-    revision?: string;
-    path?: string;
-}
-
-export default function Source({ username, refetchPublication, publication }: Props): ReactElement {
+export default function Source({ refetchPublication, publication }: Props): ReactElement {
     const { session } = useAuth();
-    const { name, owner } = publication;
-    const { path, revision } = useParams<PublicationParams>();
+    const { name, owner, revision } = publication;
 
     const [publicationSource, setPublicationSource] = useState<ContentState<ResourceResponseResponse, any>>({
         state: 'loading',
     });
 
-    const getPublicationSourceQuery = useGetPublicationSource(username, name, revision || '', path || '');
-    const getMainPublicationSourceQuery = useGetRevisionlessPublicationSource(username, name, path || '');
+    const path = '';
+
+    const getPublicationSourceQuery = useGetPublicationSource(owner.username, name, revision, path);
 
     const refetchSources = () => {
         refetchPublication();
 
         if (!publication.attachment) return;
-
-        if (typeof revision !== 'undefined') {
-            getPublicationSourceQuery.refetch();
-        } else {
-            getMainPublicationSourceQuery.refetch();
-        }
+        getPublicationSourceQuery.refetch();
     };
 
-    useEffect(() => refetchSources(), [username, name, revision, path]);
+    useEffect(() => refetchSources(), [owner.username, name, path]);
 
     useEffect(() => {
-        if (typeof revision !== 'undefined') {
-            setPublicationSource(transformQueryIntoContentState(getPublicationSourceQuery));
-        } else {
-            setPublicationSource(transformQueryIntoContentState(getMainPublicationSourceQuery));
-        }
-    }, [getPublicationSourceQuery.data, getMainPublicationSourceQuery.data]);
+        setPublicationSource(transformQueryIntoContentState(getPublicationSourceQuery));
+    }, [getPublicationSourceQuery.data]);
 
     return (
         <Box>
             {publication.attachment ? (
                 <PublicationViewSource
-                    index={{ username, name, revision }}
+                    index={{ username: owner.username, name, revision }}
                     filename={path || '/'}
                     contents={publicationSource}
                 />

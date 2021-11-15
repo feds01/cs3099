@@ -9,6 +9,6 @@ import type { GetPublicationUsernameBookmarks200Status } from './getPublicationU
 import type { Publication } from './publication';
 
 export type GetPublicationUsernameBookmarks200 = {
-    status: GetPublicationUsernameBookmarks200Status;
-    bookmarked?: Publication[];
+  status: GetPublicationUsernameBookmarks200Status;
+  bookmarked?: Publication[];
 };
