@@ -22,12 +22,22 @@ registerRoute(router, '/:username/reviews', {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
-        const result = await Review.find({ owner: user.id, status: IReviewStatus.Completed })
+        // We don't want to return all of the reviews if it isn't the owner. We
+        // filter out un-completed reviews if the requester isn't the owner, but
+        // we return all reviews if it is the owner.
+        const isOwner = user.username === req.requester.username;
+
+        const result = await Review.find({
+            owner: user.id,
+            ...(!isOwner && { status: IReviewStatus.Completed }),
+        })
             .populate<{ owner: IUser }>('owner')
             .populate<{ publication: IPublication }>('publication')
             .exec();
 
-        const reviews = result.map((link) => Review.project(link as typeof result[number]));
+        const reviews = await Promise.all(
+            result.map(async (link) => await Review.project(link as typeof result[number])),
+        );
 
         return res.status(200).json({
             status: true,

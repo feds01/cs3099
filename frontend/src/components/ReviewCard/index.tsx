@@ -1,30 +1,47 @@
 import Card from '@mui/material/Card';
 import { Review } from '../../lib/api/models';
 
-import { Link } from 'react-router-dom';
+import UserLink from '../UserLink';
 import { ReactElement } from 'react';
 import { formatDistance } from 'date-fns';
-import { Box, CardContent, Typography } from '@mui/material';
+import { useAuth } from '../../hooks/auth';
+import { Box, CardContent, Typography, Chip, Button } from '@mui/material';
 
 interface Props {
     review: Review;
 }
 
-export default function index({ review }: Props): ReactElement {
+export default function ReviewCard({ review }: Props): ReactElement {
+    const { session } = useAuth();
+
+    const isOwner = session.username === review.publication.owner.username;
+    const isComplete = review.status === 'completed';
+
     return (
         <Card>
-            <Link to={`/${review.owner.username}/${review.publication.name}/reviews/${review.id}`}>
-                <CardContent sx={{ p: '0.4rem', backgroundColor: '#f5fafc' }}>
-                    <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                        <Box sx={{ width: '100%', paddingLeft: 0.5 }}>
-                            <Typography>
-                                <Link to={`/profile/${review.owner.username}`}>@{review.owner.username}</Link> reviewed
-                                this submission {formatDistance(review.updatedAt, new Date(), { addSuffix: true })}.
-                            </Typography>
-                        </Box>
+            <CardContent sx={{ p: '0.4rem', backgroundColor: '#f5fafc' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'row' }}>
+                        {!isComplete && (
+                            <Chip
+                                sx={{
+                                    fontWeight: 'bold',
+                                    mr: 1,
+                                }}
+                                label="draft"
+                                color="primary"
+                                size="small"
+                            />
+                        )}
+                        <Typography>
+                            <UserLink username={review.owner.username} />
+                            {isComplete ? ' reviewed this submission ' : ' began reviewing this submission '}
+                            {formatDistance(review.updatedAt, new Date(), { addSuffix: true })}.
+                        </Typography>
                     </Box>
-                </CardContent>
-            </Link>
+                    <Button href={`/review/${review.id}`}>{isComplete ? 'Open' : isOwner ? 'Continue' : 'Open'}</Button>
+                </Box>
+            </CardContent>
         </Card>
     );
 }

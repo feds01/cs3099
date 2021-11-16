@@ -1,6 +1,7 @@
 import { RouteProps } from 'react-router';
 
 import HomeRoute from './../routes/Home';
+import ReviewRoute from './../routes/Review';
 import ProfileRoute from './../routes/Profile';
 import AccountRoute from './../routes/Account';
 import PublicationRoute from '../routes/Publication';
@@ -42,6 +43,12 @@ export const routes = {
         exact: false,
         title: 'Profile',
         component: ProfileRoute,
+    },
+    '/review/:id': {
+        exact: false,
+        strict: false,
+        title: 'Review',
+        component: ReviewRoute,
     },
     '/publication/create': {
         exact: true,

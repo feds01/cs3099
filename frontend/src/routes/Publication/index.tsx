@@ -58,7 +58,7 @@ const TabMap = ({ publication, refetchPublication, isOwner }: TabMapProps) => ({
         canonical: 'tree',
         component: () => <Source refetchPublication={refetchPublication} publication={publication} />,
     },
-    '/reviews/:id?': {
+    '/reviews': {
         exact: false,
         strict: false,
         label: 'Reviews',
@@ -215,7 +215,7 @@ function PublicationView() {
                                         path={`${basename}${path}`}
                                         render={(routeProps) => {
                                             return (
-                                                <Box sx={{ width: '100%', alignSelf: 'stretch' }}>
+                                                <Box sx={{pt: 2, width: '100%', alignSelf: 'stretch' }}>
                                                     {props.component()}
                                                 </Box>
                                             );

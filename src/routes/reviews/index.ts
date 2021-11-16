@@ -174,7 +174,7 @@ registerRoute(router, '/review/:id', {
 
         return res.status(200).json({
             status: 'ok',
-            review: Review.project(review),
+            review: await Review.project(review),
         });
     },
 });

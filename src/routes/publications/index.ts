@@ -7,7 +7,6 @@ import * as zip from '../../lib/zip';
 import * as errors from './../../common/errors';
 import * as userUtils from './../../utils/users';
 import registerRoute from '../../lib/requests';
-import Review from '../../models/Review';
 import User, { IUserRole } from '../../models/User';
 import Publication from '../../models/Publication';
 import { comparePermissions } from '../../lib/permissions';
@@ -21,7 +20,6 @@ import { config } from '../../server';
 import { createTokens } from '../../lib/auth';
 import { deleteResource } from '../../lib/fs';
 import { resourceIndexToPath } from '../../lib/zip';
-import { IReviewCreationSchema } from '../../validators/reviews';
 
 const router = express.Router();
 
@@ -539,67 +537,6 @@ registerRoute(router, '/:id/export', {
         const query = qs.stringify({ from: config.frontendURI, token, id: publication.id });
         const url = new URL(`/api/sg/resource/import?${query}`, req.query.to);
         return res.redirect(url.toString());
-    },
-});
-
-/**
- *
- */
-registerRoute(router, '/:name/:username/:revision/review', {
-    method: 'post',
-    body: IReviewCreationSchema,
-    query: z.object({ mode: ModeSchema }),
-    params: z.object({
-        username: z.string().nonempty(),
-        name: z.string().nonempty(),
-        revision: z.string(),
-    }),
-    permission: IUserRole.Default,
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
-
-        const { name, revision } = req.params;
-
-        // Verify that the publication exists...
-        const publication = await Publication.findOne({
-            owner: user.id,
-            name: name.toLowerCase(),
-            revision,
-        })
-            .sort({ _id: -1 })
-            .exec();
-
-        // Check that the publication isn't currently in draft mode...
-        if (!publication || publication.draft) {
-            return res.status(404).json({
-                status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
-        }
-
-        // Now attempt to create the new review
-        const newReview = new Review({
-            publication: publication.id,
-            owner: req.requester.id,
-        });
-
-        try {
-            await newReview.save();
-
-            return res.status(200).json({
-                status: 'ok',
-                message: 'Successfully initialised review.',
-                review: Review.project(newReview),
-            });
-        } catch (e: unknown) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: errors.INTERNAL_SERVER_ERROR,
-            });
-        }
     },
 });
 

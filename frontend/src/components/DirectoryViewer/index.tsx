@@ -1,31 +1,15 @@
-import {Link} from "react-router-dom";
+import { Link } from 'react-router-dom';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
-import React, { ReactElement } from 'react';
+import FileIcon from '../FileIcon';
+import { ReactElement } from 'react';
 import { formatDistance } from 'date-fns';
-import { RiFolderFill, RiFileFill } from 'react-icons/ri';
-import * as LangIcons from 'react-icons/si';
+import { getExtension } from '../../lib/utils/file';
 import TableContainer from '@mui/material/TableContainer';
-import { DirectoryResponseData } from '../../lib/api/models';
-import { IconType } from "react-icons/lib";
+import { DirectoryResponse } from '../../lib/api/models';
 import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 
-type Props = DirectoryResponseData & { basePath: string; filename: string };
-
-// @@Cleanup: we should find a more dynamic way of doing this...
-const IconMap: {[index: string]: IconType } = {
-    "c": LangIcons.SiC,
-    "hs": LangIcons.SiHaskell,
-    "js": LangIcons.SiJavascript,
-    "java": LangIcons.SiJava,
-    "md": LangIcons.SiMarkdown,
-    "ts": LangIcons.SiTypescript,
-    "py": LangIcons.SiPython,
-    "r": LangIcons.SiR,
-    "rs": LangIcons.SiRust,
-    "v": LangIcons.SiV,
-    "json": LangIcons.SiJson,
-}
+type Props = DirectoryResponse & { basePath: string; filename: string };
 
 // File Icons: https://react-icons.github.io/react-icons/icons?name=si
 export default function DirectoryViewer({ entries, basePath, filename }: Props): ReactElement {
@@ -44,24 +28,15 @@ export default function DirectoryViewer({ entries, basePath, filename }: Props):
                     {entries.map((entry) => {
                         const fullPath = `${basePath}/tree/${filename}/${entry.filename}`.replace(/([^:]\/)\/+/g, '$1');
 
-                        // compute the extension of the filename, if it an extension
-                        const components = entry.filename.split(".");
-                        let Icon: IconType = entry.type === "directory" ? RiFolderFill : RiFileFill;
-
-                        if (entry.type === "file" && components.length > 1) {
-                            const extension = components[components.length - 1];
-                            console.log(extension);
-
-                            if (Object.keys(IconMap).find(t => t === extension)) {
-                                Icon = IconMap[extension] as unknown as IconType;
-                            }
-                        }
-
                         return (
                             <TableRow key={fullPath}>
                                 <TableCell sx={{ display: 'flex', flexDirection: 'row' }}>
                                     <Box sx={{ mr: 1 }}>
-                                        <Icon size={16}/>
+                                        <FileIcon
+                                            type={entry.type}
+                                            open={false}
+                                            extension={getExtension(entry.filename) ?? ''}
+                                        />
                                     </Box>
                                     <Link to={fullPath}>{entry.filename}</Link>
                                 </TableCell>

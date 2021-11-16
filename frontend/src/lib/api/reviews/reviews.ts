@@ -14,7 +14,7 @@ import {
   MutationFunction
 } from 'react-query'
 import type {
-  PostPublicationUsernameNameReview200,
+  PostPublicationUsernameNameRevisionReview200,
   ApiErrorResponse,
   GetPublicationUsernameNameRevisionReviews200,
   PostReviewIdComment200,
@@ -34,12 +34,13 @@ T extends (...args: any) => Promise<any>
  * Begin a review process on a publication.
  * @summary Create a review on a publication.
  */
-export const postPublicationUsernameNameReview = (
+export const postPublicationUsernameNameRevisionReview = (
     username: string,
     name: string,
+    revision: string,
  ) => {
-      return customInstance<PostPublicationUsernameNameReview200>(
-      {url: `/publication/${username}/${name}/review`, method: 'post',
+      return customInstance<PostPublicationUsernameNameRevisionReview200>(
+      {url: `/publication/${username}/${name}/${revision}/review`, method: 'post',
       data: undefined
     },
       );
@@ -47,19 +48,19 @@ export const postPublicationUsernameNameReview = (
   
 
 
-    export const usePostPublicationUsernameNameReview = <TError = ApiErrorResponse,
+    export const usePostPublicationUsernameNameRevisionReview = <TError = ApiErrorResponse,
     
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postPublicationUsernameNameReview>, TError,{username: string;name: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postPublicationUsernameNameRevisionReview>, TError,{username: string;name: string;revision: string}, TContext>, }
 ) => {
       const {mutation: mutationOptions} = options || {}
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postPublicationUsernameNameReview>, {username: string;name: string}> = (props) => {
-          const {username,name} = props || {};
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postPublicationUsernameNameRevisionReview>, {username: string;name: string;revision: string}> = (props) => {
+          const {username,name,revision} = props || {};
 
-          return  postPublicationUsernameNameReview(username,name,)
+          return  postPublicationUsernameNameRevisionReview(username,name,revision,)
         }
 
-      return useMutation<AsyncReturnType<typeof postPublicationUsernameNameReview>, TError, {username: string;name: string}, TContext>(mutationFn, mutationOptions)
+      return useMutation<AsyncReturnType<typeof postPublicationUsernameNameRevisionReview>, TError, {username: string;name: string;revision: string}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * Get a paginated list of publication reviews.

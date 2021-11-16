@@ -8,5 +8,13 @@ interface Props {
 }
 
 export default function Overview({ publication }: Props): ReactElement {
-    return <Box>{publication.introduction && <MarkdownRenderer contents={publication.introduction} />}</Box>;
+    return (
+        <Box>
+            {publication.introduction ? (
+                <MarkdownRenderer contents={publication.introduction} />
+            ) : (
+                "Owner hasn't posted a introduction."
+            )}
+        </Box>
+    );
 }

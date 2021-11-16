@@ -6,8 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type InternalServerErrorResponseStatus = 'error';
+export type ReviewStatus = 'started' | 'completed';
 
-export const InternalServerErrorResponseStatus = {
-    error: 'error' as InternalServerErrorResponseStatus,
+
+export const ReviewStatus = {
+  started: 'started' as ReviewStatus,
+  completed: 'completed' as ReviewStatus,
 };

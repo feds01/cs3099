@@ -6,8 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type UnauthorizedResponseStatus = 'error';
+export type DirectoryResponseEntriesItemType = 'file' | 'directory';
 
-export const UnauthorizedResponseStatus = {
-    error: 'error' as UnauthorizedResponseStatus,
+
+export const DirectoryResponseEntriesItemType = {
+  file: 'file' as DirectoryResponseEntriesItemType,
+  directory: 'directory' as DirectoryResponseEntriesItemType,
 };
