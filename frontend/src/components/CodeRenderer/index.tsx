@@ -18,6 +18,8 @@ import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-v';
 import 'prismjs/components/prism-json';
+import CommentButton from '../CommentButton';
+import { Review } from '../../lib/api/models';
 
 type PrismLib = typeof PrismRR & typeof Prism;
 
@@ -26,6 +28,7 @@ interface Props {
     filename: string;
     language?: string;
     titleBar?: boolean;
+    review?: Review;
 }
 
 export const Wrapper = styled('div')`
@@ -61,13 +64,25 @@ export const LineContent = styled('span')`
     display: table-cell;
 `;
 
-export default function CodeRenderer({ contents, titleBar = false, filename, language }: Props): ReactElement {
-    const extension = coerceExtensionToLanguage(getExtension(filename) ?? "");
+export default function CodeRenderer({ contents, titleBar = false, filename, review, language }: Props): ReactElement {
+    const extension = coerceExtensionToLanguage(getExtension(filename) ?? '');
 
     return (
         <Box sx={{ p: 2 }}>
             {titleBar && (
-                <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', pl: 1, pr: 1 }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        border: 1,
+                        borderColor: 'divider',
+                        justifyContent: 'space-between',
+                        pt: 2,
+                        pb: 2,
+                        pl: 1,
+                        pr: 1,
+                    }}
+                >
                     <Typography sx={{ fontWeight: 'bold' }}>{filename}</Typography>
                 </Box>
             )}
@@ -79,16 +94,29 @@ export default function CodeRenderer({ contents, titleBar = false, filename, lan
             >
                 {({ className, style, tokens, getLineProps, getTokenProps }) => (
                     <Pre className={className} style={style}>
-                        {tokens.map((line, i) => (
-                            <Line key={i} {...getLineProps({ line, key: i })}>
-                                <LineNo>{i + 1}</LineNo>
-                                <LineContent>
-                                    {line.map((token, key) => (
-                                        <span key={key} {...getTokenProps({ token, key })} />
-                                    ))}
-                                </LineContent>
-                            </Line>
-                        ))}
+                        {tokens.map((line, i) =>
+                            typeof review !== 'undefined' ? (
+                                <CommentButton key={i} review={review} location={i} filename={filename}>
+                                    <Line {...getLineProps({ line, key: i })}>
+                                        <LineNo>{i + 1}</LineNo>
+                                        <LineContent>
+                                            {line.map((token, key) => (
+                                                <span key={key} {...getTokenProps({ token, key })} />
+                                            ))}
+                                        </LineContent>
+                                    </Line>
+                                </CommentButton>
+                            ) : (
+                                <Line {...getLineProps({ line, key: i })}>
+                                    <LineNo>{i + 1}</LineNo>
+                                    <LineContent>
+                                        {line.map((token, key) => (
+                                            <span key={key} {...getTokenProps({ token, key })} />
+                                        ))}
+                                    </LineContent>
+                                </Line>
+                            ),
+                        )}
                     </Pre>
                 )}
             </Highlight>

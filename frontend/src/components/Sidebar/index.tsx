@@ -45,6 +45,8 @@ const SidebarContainer = styled('div', { shouldForwardProp: (prop) => prop !== '
         background: '#fff',
         height: '100%',
         whiteSpace: 'nowrap',
+        borderRight: 1,
+        borderColor: 'divider',
         boxSizing: 'border-box',
         ...(open && {
             ...openedMixin(theme, drawerWidth),
@@ -67,13 +69,12 @@ export default function Sidebar(): ReactElement {
 
     // @@Bug: The sidebar isn't opening properly.
     return (
-        <SidebarContainer open={open} sx={{display: 'flex'}}>
+        <SidebarContainer open={open}>
             <Box
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     position: 'fixed',
-                    backgroundColor: '#f0f0f0',
                     justifyContent: 'space-between',
                     flex: 1,
                     height: '100%'
@@ -82,6 +83,7 @@ export default function Sidebar(): ReactElement {
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     {menuMap.map((entry) => (
                         <Box
+                            key={entry.title}
                             sx={{
                                 display: 'flex',
                                 flexDirection: 'row',

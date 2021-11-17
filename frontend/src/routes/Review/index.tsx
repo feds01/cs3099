@@ -36,9 +36,7 @@ export default function Review(): ReactElement {
                 return <ErrorBanner message={review.error.message} />;
             }
             case 'ok':
-                const { publication, owner } = review.data.review;
-
-                return <ReviewEditor publication={publication} owner={owner} />;
+                return <ReviewEditor review={review.data.review} />;
         }
     };
 

@@ -1,35 +1,30 @@
 import TreeView from '../TreeView';
 import Box from '@mui/material/Box';
 import ErrorBanner from '../ErrorBanner';
+import CodeRenderer from '../CodeRenderer';
 import { ContentState } from '../../types/requests';
 import LinearProgress from '@mui/material/LinearProgress';
 import { ReactElement, useEffect, useState } from 'react';
 import { transformQueryIntoContentState } from '../../wrappers/react-query';
 import { useGetPublicationUsernameNameRevisionAll } from '../../lib/api/publications/publications';
-import {
-    ApiErrorResponse,
-    FileResponse,
-    GetPublicationUsernameNameRevisionAll200,
-    Publication,
-    User,
-} from '../../lib/api/models';
-import CodeRenderer from '../CodeRenderer';
+import { ApiErrorResponse, FileResponse, GetPublicationUsernameNameRevisionAll200, Review } from '../../lib/api/models';
 
 interface ReviewEditorProps {
-    publication: Publication;
-    owner: User;
+    review: Review;
 }
 
 interface CodeSourceListProps {
     entries: FileResponse[];
+    review: Review;
 }
 
-function CodeSourceList({ entries }: CodeSourceListProps) {
+function CodeSourceList({ entries, review }: CodeSourceListProps) {
     return (
         <>
             {entries.map((entry) => {
                 return (
                     <CodeRenderer
+                        review={review}
                         key={entry.filename}
                         titleBar
                         filename={entry.filename}
@@ -41,7 +36,9 @@ function CodeSourceList({ entries }: CodeSourceListProps) {
     );
 }
 
-export default function ReviewEditor({ publication, owner }: ReviewEditorProps): ReactElement {
+export default function ReviewEditor({ review }: ReviewEditorProps): ReactElement {
+    const { publication, owner } = review;
+
     const fileQuery = useGetPublicationUsernameNameRevisionAll(
         publication.owner.username,
         publication.name,
@@ -90,6 +87,7 @@ export default function ReviewEditor({ publication, owner }: ReviewEditorProps):
                             height: '100%',
                             width: '30%',
                             maxWidth: 300,
+                            position: 'relative',
                             borderRight: 1,
                             borderColor: 'divider',
                             overflowY: 'scroll',
@@ -104,9 +102,10 @@ export default function ReviewEditor({ publication, owner }: ReviewEditorProps):
                             height: '100%',
                             flex: 1,
                             overflowY: 'scroll',
+                            zIndex: 1000,
                         }}
                     >
-                        <CodeSourceList entries={entries} />
+                        <CodeSourceList entries={entries} review={review} />
                     </Box>
                 </Box>
             );
