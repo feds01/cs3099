@@ -6,6 +6,7 @@ import { ReactElement } from 'react';
 import { formatDistance } from 'date-fns';
 import { useAuth } from '../../hooks/auth';
 import { Box, CardContent, Typography, Chip, Button } from '@mui/material';
+import PublicationLink from '../PublicationLink';
 
 interface Props {
     review: Review;
@@ -14,6 +15,8 @@ interface Props {
 export default function ReviewCard({ review }: Props): ReactElement {
     const { session } = useAuth();
 
+    const { name, revision } = review.publication;
+    const { username } = review.publication.owner;
     const isOwner = session.username === review.publication.owner.username;
     const isComplete = review.status === 'completed';
 
@@ -35,7 +38,17 @@ export default function ReviewCard({ review }: Props): ReactElement {
                         )}
                         <Typography>
                             <UserLink username={review.owner.username} />
-                            {isComplete ? ' reviewed this submission ' : ' began reviewing this submission '}
+                            {isComplete ? (
+                                <>
+                                    reviewed <PublicationLink username={username} name={name} revision={revision} />{' '}
+                                    publication {' '}
+                                </>
+                            ) : (
+                                <>
+                                    began reviewing{' '}
+                                    <PublicationLink username={username} name={name} revision={revision} /> publication {' '}
+                                </>
+                            )}
                             {formatDistance(review.updatedAt, new Date(), { addSuffix: true })}.
                         </Typography>
                     </Box>

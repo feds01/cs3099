@@ -5,7 +5,9 @@ import ReviewRoute from './../routes/Review';
 import ProfileRoute from './../routes/Profile';
 import AccountRoute from './../routes/Account';
 import PublicationRoute from '../routes/Publication';
-import CreatePublicationRoute from '../routes/CreatePublication';
+import SearchReviewRoute from '../routes/Review/Search';
+import SearchPublicationRoute from '../routes/Publication/Search';
+import CreatePublicationRoute from '../routes/Publication/Create';
 
 type Extends<T, U extends T> = U;
 
@@ -44,6 +46,11 @@ export const routes = {
         title: 'Profile',
         component: ProfileRoute,
     },
+    '/review/search': {
+        exact: true,
+        title: 'Search reviews',
+        component: SearchReviewRoute,
+    },
     '/review/:id': {
         exact: false,
         strict: false,
@@ -54,6 +61,11 @@ export const routes = {
         exact: true,
         title: 'Create publication',
         component: CreatePublicationRoute,
+    },
+    '/publication/search': {
+        exact: true,
+        title: 'Search publications',
+        component: SearchPublicationRoute,
     },
     '/account': {
         exact: true,

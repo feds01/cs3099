@@ -71,11 +71,12 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
         case 'ok':
             const profileData = content.data;
             return (
-                <>
+                <Box sx={{pt: 2, width: '100%'}}>
                     <Box
                         sx={{
                             position: 'absolute',
                             zIndex: 1000,
+                            pt: 2,
                             justifyContent: 'flex-end',
                             alignItems: 'flex-end',
                             display: 'flex',
@@ -126,7 +127,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                             </Typography>
                         </Box>
                     </UserAvatar>
-                </>
+                </Box>
             );
     }
 }

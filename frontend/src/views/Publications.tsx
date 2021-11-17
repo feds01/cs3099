@@ -59,7 +59,7 @@ export default function Publications({ user, limit, withTitle = true }: Props): 
                                         flexDirection: 'column',
                                         alignItems: 'center',
                                         width: '100%',
-                                        mt: 2,
+                                        pt: 2,
                                     }}
                                 >
                                     <img src={VoidImage} height={96} width={96} alt={'nothing'} />

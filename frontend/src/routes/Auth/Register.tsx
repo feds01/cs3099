@@ -1,18 +1,17 @@
-import React from 'react';
+import { ReactElement } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-
 import { User } from '../../lib/api/models';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import AuthCover from './../../static/images/login.svg';
-import RegisterForm from '../../components/RegisterForm';
+import RegisterForm from '../../components/RegisterAccountForm';
 import { useDispatchAuth } from '../../hooks/auth';
 
 interface LocationState {
     from: { pathname: string };
 }
 
-export default function Register() {
+export default function Register(): ReactElement {
     const authDispatcher = useDispatchAuth();
 
     // extract the 'from' part of the redirect if it's present. We use this path
@@ -66,7 +65,10 @@ export default function Register() {
                 </Typography>
                 <RegisterForm onSuccess={handleSuccess} />
                 <Typography variant="body1">
-                    Already have an account yet? <Link to="/login">Log in</Link>
+                    Already have an account yet?{' '}
+                    <Link style={{ color: 'blue' }} to={{ pathname: '/login', state: { from } }}>
+                        Log in
+                    </Link>
                 </Typography>
             </Box>
         </Box>
