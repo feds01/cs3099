@@ -1029,7 +1029,7 @@ paths:
                     $ref: '#/components/responses/ResourceResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
-    /publication/{username}/{name}/{revision}/all/:
+    /publication/{username}/{name}/{revision}/all:
         get:
             summary: Get a paginated list of sources for a publication
             tags:
@@ -1064,13 +1064,13 @@ paths:
                                 type: object
                                 required:
                                     - status
-                                    - files
+                                    - entries
                                 properties:
                                     status:
                                         type: string
                                         example: 'ok'
                                         enum: ['ok']
-                                    files:
+                                    entries:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/FileResponse'
@@ -1621,6 +1621,7 @@ paths:
                                 type: object
                                 required:
                                     - status
+                                    - review
                                 properties:
                                     status:
                                         type: string
@@ -2165,6 +2166,7 @@ components:
                 - type
                 - updatedAt
                 - contents
+                - filename
             properties:
                 type:
                     type: string

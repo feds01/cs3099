@@ -30,6 +30,7 @@ export default function CreatePublicationForm(): ReactElement {
     const history = useHistory();
     const { control, handleSubmit } = useForm<CreatePublication>({
         resolver: zodResolver(CreatePublicationSchema),
+        reValidateMode: "onBlur",
         defaultValues: {
             collaborators: [],
         },

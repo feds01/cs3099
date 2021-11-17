@@ -68,6 +68,7 @@ export default function Sidebar(): ReactElement {
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
+                    position: "fixed",
                     backgroundColor: '#f0f0f0',
                     justifyContent: 'space-between',
                     flex: 1,

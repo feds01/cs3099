@@ -46,7 +46,7 @@ PublicationSchema.statics.project = async (
 
     // Resolve the owner name...
     const owner = await User.findById(ownerId).exec();
-    assert(owner !== null);
+    assert(owner !== null, 'Owner ID is null');
 
     return {
         id: publication.id as string,

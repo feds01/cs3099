@@ -38,9 +38,64 @@ registerRoute(router, '/:username/:name/:revision/all/', {
         name: z.string(),
         revision: z.string(),
     }),
-    query: z.object({ mode: ModeSchema, sortBy: ResourceSortSchema }),
+    query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
-    handler: async (_req, _res) => {},
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        const { name, revision } = req.params;
+
+        const publication = await Publication.findOne({
+            owner: user.id,
+            name,
+            revision,
+        })
+            .sort({ _id: -1 })
+            .exec();
+
+        if (!publication) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.RESOURCE_NOT_FOUND,
+            });
+        }
+
+        let archiveIndex = {
+            userId: user.id!,
+            name,
+            ...(!publication.current && { revision }),
+        };
+
+        const archive = zip.loadArchive(archiveIndex);
+
+        // @@Cleanup: we might have to return an error here if we can't find the archive, then
+        //            it must of been deleted off the disk... which means we might have to invalidate
+        //            the current revision?
+        if (!archive) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.RESOURCE_NOT_FOUND,
+            });
+        }
+
+        return res.status(200).json({
+            status: 'ok',
+            entries: archive
+                .getEntries()
+                .filter((entry) => !entry.isDirectory)
+                .map((entry) => {
+                    const contents = entry.getData();
+
+                    return {
+                        type: 'file',
+                        updatedAt: entry.header.time.getTime(),
+                        contents: contents.toString(),
+                        filename: entry.entryName,
+                    };
+                }),
+        });
+    },
 });
 
 /**

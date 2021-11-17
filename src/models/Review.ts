@@ -1,7 +1,7 @@
-import User, { IUser } from './User';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 import { ExportSgReview } from '../validators/sg';
 import Publication, { IPublication } from './Publication';
-import mongoose, { Document, Model, Schema } from 'mongoose';
+import User, { IUser } from './User';
 
 export enum IReviewStatus {
     Completed = 'completed',
@@ -17,7 +17,7 @@ export interface IReview {
 }
 
 type PopulatedReview = (IReview & {
-    _id: any;
+    _id: string;
 }) & {
     owner: IUser;
 } & {
@@ -56,7 +56,7 @@ ReviewSchema.statics.project = async (review: PopulatedReview) => {
     const { publication, owner, status } = review;
 
     return {
-        id: review._id.toString(),
+        id: review._id,
         publication: await Publication.project(publication),
         owner: User.project(owner),
         status,

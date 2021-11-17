@@ -11,7 +11,7 @@ interface Props<T> {
 
 export default function ControlledAutocomplete<T>({ name, control, textFieldProps }: Props<T>): ReactElement {
     const {
-        field: { ref, ...inputProps },
+        field: { ref, onChange, ...inputProps },
         fieldState: { error },
     } = useController({
         name,
@@ -24,6 +24,7 @@ export default function ControlledAutocomplete<T>({ name, control, textFieldProp
             multiple
             options={[]} // @@TODO: convert this to a user search input
             freeSolo
+            onChange={(e, data) => onChange(data)}
             renderInput={(params) => (
                 <TextField
                     {...params}

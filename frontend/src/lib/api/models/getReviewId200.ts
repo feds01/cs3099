@@ -10,5 +10,5 @@ import type { Review } from './review';
 
 export type GetReviewId200 = {
   status: GetReviewId200Status;
-  review?: Review;
+  review: Review;
 };

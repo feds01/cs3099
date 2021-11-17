@@ -95,18 +95,31 @@ registerRoute(router, '/:username/:name/:revision/review', {
         }
 
         // Now attempt to create the new review
-        const newReview = new Review({
+        const docParams = {
             publication: publication.id,
             owner: req.requester.id,
-        });
+        };
+
+        const doc = await Review.findOne(docParams)
+            .populate<{ publication: IPublication }[]>('publication')
+            .populate<{ owner: IUser }[]>('owner')
+            .exec();
+
+        if (doc) {
+            return res.status(200).json({
+                status: 'ok',
+                message: 'Successfully initialised review.',
+                review: await Review.project(doc),
+            });
+        }
 
         try {
-            await newReview.save();
+            const newDoc = await new Review(docParams).save();
 
             return res.status(200).json({
                 status: 'ok',
                 message: 'Successfully initialised review.',
-                review: await Review.project(newReview),
+                review: await Review.project(newDoc),
             });
         } catch (e: unknown) {
             Logger.error(e);

@@ -16,7 +16,7 @@ const router = express.Router();
 /**
  *
  */
-registerRoute(router, '/review/:id/comment', {
+registerRoute(router, '/:id/comment', {
     method: 'put',
     body: ICommentCreationSchema,
     query: z.object({}),
@@ -121,7 +121,7 @@ registerRoute(router, '/review/:id/comment', {
 /**
  *
  */
-registerRoute(router, '/review/:id/complete', {
+registerRoute(router, '/:id/complete', {
     method: 'post',
     body: z.object({}),
     query: z.object({}),
@@ -153,7 +153,7 @@ registerRoute(router, '/review/:id/complete', {
 /**
  *
  */
-registerRoute(router, '/review/:id', {
+registerRoute(router, '/:id', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
@@ -162,10 +162,16 @@ registerRoute(router, '/review/:id', {
         const { id } = req.params;
         const { id: ownerId } = req.requester;
 
-        const review = await Review.findById(id).exec();
+        const review = await Review.findById(id)
+            .populate<{ publication: IPublication }[]>('publication')
+            .populate<{ owner: IUser & { _id: any } }[]>('owner')
+            .exec();
 
         // verify that the review exists and the owner is trying to publish it...
-        if (!review || review.owner.toString() !== ownerId) {
+        if (
+            !review ||
+            (review.owner as unknown as IUser & { _id: any })._id.toString() !== ownerId
+        ) {
             return res.status(404).json({
                 status: 'error',
                 message: error.NON_EXISTENT_REVIEW,
@@ -182,7 +188,7 @@ registerRoute(router, '/review/:id', {
 /**
  *
  */
-registerRoute(router, '/review/:id', {
+registerRoute(router, '/:id', {
     method: 'delete',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),

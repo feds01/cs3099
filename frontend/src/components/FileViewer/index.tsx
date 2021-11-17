@@ -1,5 +1,5 @@
-import React, { ReactElement } from 'react';
 import CodeRenderer from '../CodeRenderer';
+import React, { ReactElement } from 'react';
 
 type Comment = {
     content: string;
@@ -19,7 +19,7 @@ interface Props {
 export default function FileViewer({ contents, updatedAt, comments = [], filename }: Props): ReactElement {
     return (
         <div>
-            <CodeRenderer contents={contents} language={'ts'} showLineNumbers />
+            <CodeRenderer contents={contents} filename={filename} />
         </div>
     );
 }

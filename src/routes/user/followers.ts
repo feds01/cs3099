@@ -92,6 +92,9 @@ registerRoute(router, '/:username/follow', {
     },
 });
 
+/**
+ *
+ */
 registerRoute(router, '/:username/follow', {
     method: 'delete',
     params: z.object({ username: z.string() }),
@@ -133,6 +136,9 @@ registerRoute(router, '/:username/follow', {
     },
 });
 
+/**
+ *
+ */
 registerRoute(router, '/:username/follow', {
     method: 'get',
     params: z.object({ username: z.string() }),
@@ -176,6 +182,9 @@ registerRoute(router, '/:username/follow', {
     },
 });
 
+/**
+ *
+ */
 registerRoute(router, '/:username/followers', {
     method: 'get',
     params: z.object({ username: z.string() }),
@@ -205,6 +214,9 @@ registerRoute(router, '/:username/followers', {
     },
 });
 
+/**
+ *
+ */
 registerRoute(router, '/:username/following', {
     method: 'get',
     params: z.object({ username: z.string() }),

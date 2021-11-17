@@ -1,9 +1,13 @@
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import React, { ReactElement, useEffect } from 'react';
 import { useParams } from 'react-router';
 import PageLayout from '../../components/PageLayout';
-import TreeView from '../../components/TreeView';
+import ErrorBanner from '../../components/ErrorBanner';
+import { ContentState } from '../../types/requests';
+import ReviewEditor from '../../components/ReviewEditor';
+import { ReactElement, useEffect, useState } from 'react';
+import LinearProgress from '@mui/material/LinearProgress';
+import { useGetReviewId } from '../../lib/api/reviews/reviews';
+import { transformQueryIntoContentState } from '../../wrappers/react-query';
+import { ApiErrorResponse, GetReviewId200 as GetReviewResponse } from '../../lib/api/models';
 
 interface ReviewParams {
     id: string;
@@ -12,34 +16,36 @@ interface ReviewParams {
 export default function Review(): ReactElement {
     const params = useParams<ReviewParams>();
 
+    const getReview = useGetReviewId(params.id);
+    const [review, setReview] = useState<ContentState<GetReviewResponse, ApiErrorResponse>>({ state: 'loading' });
+
     useEffect(() => {
-        console.log(params.id);
+        getReview.refetch();
     }, [params.id]);
 
-    // TODO: Have a tree view for the sources on the left
-    // TODO: view the sources on the right
+    useEffect(() => {
+        setReview(transformQueryIntoContentState(getReview));
+    }, [getReview.data, getReview.isLoading]);
+
+    const renderContent = () => {
+        switch (review.state) {
+            case 'loading': {
+                return <LinearProgress />;
+            }
+            case 'error': {
+                return <ErrorBanner message={review.error.message} />;
+            }
+            case 'ok':
+                const { publication, owner } = review.data.review;
+
+                return <ReviewEditor publication={publication} owner={owner} />;
+        }
+    };
+
     // TODO: jump around sources
     // TODO: display comments
     // TODO: reply to comments
     // TODO: add comments (on file, on lines, general comment)
     // TODO: edit comment
-    return (
-        <PageLayout title="Review">
-            <Container
-                sx={{ display: 'flex', p: 1, minWidth: 800, flexDirection: 'row', height: '100%', width: '100%' }}
-            >
-                <Box
-                    sx={{ display: 'flex', flexDirection: 'column', height: '100%', width: '30%', overflowY: 'scroll' }}
-                >
-                   <TreeView paths={[]}/>
-                </Box>
-                <Box
-                    sx={{ display: 'flex', flexDirection: 'column', height: '100%', width: '70%', overflowY: 'scroll' }}
-                >
-                    files
-                    <div>Review: {params.id}</div>
-                </Box>
-            </Container>
-        </PageLayout>
-    );
+    return <PageLayout title="Review">{renderContent()}</PageLayout>;
 }

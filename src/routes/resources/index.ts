@@ -142,7 +142,7 @@ registerRoute(router, '/upload/publication/:id', {
         }
 
         // Move the file into it's appropriate storage location
-        return file.mv(uploadPath, (err) => {
+        return file.mv(uploadPath, async (err) => {
             if (err) {
                 Logger.error(err);
 
@@ -153,7 +153,7 @@ registerRoute(router, '/upload/publication/:id', {
             }
 
             // Update the publication to become live instead of draft
-            publication.update({ $set: { draft: false } });
+            await publication.update({ $set: { draft: false } }).exec();
 
             Logger.info(`Successfully saved uploaded file to filesystem at: ${uploadPath}`);
             return res.status(200).json({
