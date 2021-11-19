@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { usePatchUserUsername } from '../../lib/api/users/users';
 import { User } from '../../lib/api/models';
+import { useNotificationDispatch } from '../../hooks/notification';
 
 const AccountUpdateSchema = z.object({
     firstName: z.string().max(32).optional(),
@@ -21,9 +22,8 @@ const AccountUpdateSchema = z.object({
 
 type AccountUpdate = z.infer<typeof AccountUpdateSchema>;
 
-// TODO: better UI feedback, we can use notifications to denote whether the request to update
-//       succeeded or failed via snackbar notifications that appear for a bit on the screen and disappear.
 function AccountUpdateForm({ session }: { session: User }) {
+    const notificationDispatcher = useNotificationDispatch();
     const authDispatcher = useDispatchAuth();
     const {
         control,
@@ -43,12 +43,17 @@ function AccountUpdateForm({ session }: { session: User }) {
         await mutateAsync({ username: session.username, data });
 
     useEffect(() => {
-        // Check here if an error occurred, otherwise call the onSuccess function...
         if (isError) {
-            // TODO: transform the errors into appropriate values
-            console.log(error);
+            notificationDispatcher({
+                type: 'add',
+                item: { severity: 'error', message: "Couldn't update profile" },
+            });
         } else if (!isLoading && response) {
             authDispatcher({ type: 'data', data: response.user });
+            notificationDispatcher({
+                type: 'add',
+                item: { severity: 'success', message: 'Updated profile' },
+            });
         }
     }, [isLoading, isError]);
 
@@ -233,7 +238,7 @@ function AccountUpdateForm({ session }: { session: User }) {
                         <Button sx={{ marginRight: 1 }} type="submit" variant="contained">
                             Update profile
                         </Button>
-                        <Button variant="outlined" onClick={() => reset(session)}>
+                        <Button variant="outlined" href="/">
                             Cancel
                         </Button>
                     </Box>
