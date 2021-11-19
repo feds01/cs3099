@@ -15,6 +15,8 @@ import AppliedRoute from './components/AppliedRoute';
 import RegisterRoute from './routes/Auth/Register';
 import PrivateRoute from './components/PrivateRoute';
 import ErrorContainer from './components/ErrorContainer';
+import { NotificationProvider } from './hooks/notification';
+import NotificationDisplay from './components/Notification';
 
 // API querying client.
 const queryCache = new QueryCache();
@@ -75,11 +77,11 @@ const theme = createTheme({
             defaultProps: {
                 disableRipple: true,
                 disableElevation: true,
-                variant: "contained",
-                size: "small",
+                variant: 'contained',
+                size: 'small',
                 sx: {
-                    fontWeight: 'bold'
-                }
+                    fontWeight: 'bold',
+                },
             },
         },
     },
@@ -90,30 +92,34 @@ function App(): ReactElement {
         <AuthProvider>
             <QueryClientProvider client={queryClient}>
                 <ThemeProvider theme={theme}>
-                    <Router>
-                        <Switch>
-                            <AppliedRoute exact path={'/login'} component={LoginRoute} />
-                            <AppliedRoute exact path={'/register'} component={RegisterRoute} />
-                            <AppliedRoute exact path={'/login/sso'} component={SingleSignOnRoute} />
-                            <AppliedRoute exact path={'/auth/session'} component={SessionRoute} />
-                            <Route>
-                                <ErrorContainer>
-                                    <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
-                                        <CssBaseline />
-                                        <Switch>
-                                            {Object.entries(routeConfig.routes).map(([path, config]) => {
-                                                return <PrivateRoute key={path} path={path} {...config} />;
-                                            })}
-                                            {routeConfig.redirects.map((redirect, index) => {
-                                                return <Redirect exact strict {...redirect} key={index} />;
-                                            })}
-                                            <AppliedRoute exact path={'*'} component={NotFoundRoute} />
-                                        </Switch>
-                                    </Box>
-                                </ErrorContainer>
-                            </Route>
-                        </Switch>
-                    </Router>
+                    <NotificationProvider>
+                        <NotificationDisplay>
+                            <Router>
+                                <Switch>
+                                    <AppliedRoute exact path={'/login'} component={LoginRoute} />
+                                    <AppliedRoute exact path={'/register'} component={RegisterRoute} />
+                                    <AppliedRoute exact path={'/login/sso'} component={SingleSignOnRoute} />
+                                    <AppliedRoute exact path={'/auth/session'} component={SessionRoute} />
+                                    <Route>
+                                        <ErrorContainer>
+                                            <Box sx={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
+                                                <CssBaseline />
+                                                <Switch>
+                                                    {Object.entries(routeConfig.routes).map(([path, config]) => {
+                                                        return <PrivateRoute key={path} path={path} {...config} />;
+                                                    })}
+                                                    {routeConfig.redirects.map((redirect, index) => {
+                                                        return <Redirect exact strict {...redirect} key={index} />;
+                                                    })}
+                                                    <AppliedRoute exact path={'*'} component={NotFoundRoute} />
+                                                </Switch>
+                                            </Box>
+                                        </ErrorContainer>
+                                    </Route>
+                                </Switch>
+                            </Router>
+                        </NotificationDisplay>
+                    </NotificationProvider>
                 </ThemeProvider>
             </QueryClientProvider>
         </AuthProvider>

@@ -3,7 +3,7 @@ import express from 'express';
 import * as error from '../../common/errors';
 import registerRoute from '../../lib/requests';
 import Comment from '../../models/Comment';
-import { IUserRole } from '../../models/User';
+import { IUserDocument, IUserRole } from '../../models/User';
 import { ObjectIdSchema } from '../../validators/requests';
 
 const router = express.Router();
@@ -19,7 +19,9 @@ registerRoute(router, '/comment/:id', {
     handler: async (req, res) => {
         const { id } = req.params;
 
-        const comment = await Comment.findById(id).exec();
+        const comment = await Comment.findById(id)
+            .populate<{ owner: IUserDocument }[]>('owner')
+            .exec();
 
         if (!comment) {
             return res.status(404).json({

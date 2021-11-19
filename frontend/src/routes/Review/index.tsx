@@ -36,14 +36,11 @@ export default function Review(): ReactElement {
                 return <ErrorBanner message={review.error.message} />;
             }
             case 'ok':
-                return <ReviewEditor review={review.data.review} />;
+                return <ReviewEditor review={review.data.review} refetchReview={() => getReview.refetch()} />;
         }
     };
 
     // TODO: jump around sources
-    // TODO: display comments
     // TODO: reply to comments
-    // TODO: add comments (on file, on lines, general comment)
-    // TODO: edit comment
     return <PageLayout title="Review">{renderContent()}</PageLayout>;
 }

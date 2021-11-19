@@ -11,5 +11,5 @@ import type { SgComment } from './sgComment';
 export interface SgReview {
   owner: SgUser;
   createdAt: number;
-  comments?: SgComment[];
+  comments: SgComment[];
 }

@@ -1479,6 +1479,9 @@ paths:
                         application/json:
                             schema:
                                 type: object
+                                required:
+                                    - status
+                                    - comments
                                 properties:
                                     status:
                                         type: string
@@ -1510,7 +1513,7 @@ paths:
                 default:
                     $ref: '#/components/responses/ApiError'
     /review/{id}/comment:
-        post:
+        put:
             summary: Add a comment to a review.
             description: Comment on a review, specified by the review id.
             tags:
@@ -1535,6 +1538,7 @@ paths:
                                 type: object
                                 required:
                                     - status
+                                    - comment
                                 properties:
                                     status:
                                         type: string
@@ -1674,6 +1678,7 @@ paths:
                                 type: object
                                 required:
                                     - status
+                                    - comments
                                 properties:
                                     status:
                                         type: string
@@ -1682,7 +1687,7 @@ paths:
                                     comments:
                                         type: array
                                         items:
-                                            $ref: '#/components/schemas/Review'
+                                            $ref: '#/components/schemas/Comment'
                 default:
                     $ref: '#/components/responses/ApiError'
     /review/{id}/complete:
@@ -1725,7 +1730,7 @@ components:
                             replying:
                                 type: string
                                 example: 'Doe'
-                            content:
+                            contents:
                                 type: string
                                 example: "I'm a comment"
                             filename:
@@ -2244,7 +2249,8 @@ components:
                 - contents
                 - thread
                 - author
-                - postedAt
+                - createdAt
+                - updatedAt
             properties:
                 filename:
                     type: string
@@ -2259,7 +2265,10 @@ components:
                     example: 0
                 author:
                     $ref: '#/components/schemas/User'
-                postedAt:
+                createdAt:
+                    type: number
+                    example: 1636065460
+                updatedAt:
                     type: number
                     example: 1636065460
         CommentAnchor:
@@ -2309,7 +2318,7 @@ components:
             type: object
             required:
                 - owner
-                - threads
+                - comments
                 - createdAt
             properties:
                 owner:

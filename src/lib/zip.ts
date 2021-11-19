@@ -97,6 +97,15 @@ export function loadArchive(archive: ArchiveIndex): AdmZip | null {
 }
 
 /**
+ *
+ * @param archive
+ * @param filePath
+ */
+export function countLines(contents: String) {
+    return contents.split(/\r\n|\r|\n/).length;
+}
+
+/**
  * Function to create an archive from
  */
 export async function createArchive(archive: ArchiveIndex, filePath: string) {

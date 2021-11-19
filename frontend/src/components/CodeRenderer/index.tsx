@@ -1,9 +1,10 @@
 import Prism from 'prismjs';
 import Box from '@mui/material/Box/Box';
-import { ReactElement } from 'react';
+import sortedIndexBy from 'lodash/sortedIndexBy';
 import { styled, Typography } from '@mui/material';
-import { coerceExtensionToLanguage, getExtension } from '../../lib/utils/file';
 import theme from 'prism-react-renderer/themes/github';
+import { ReactElement, useEffect, useState } from 'react';
+import { coerceExtensionToLanguage, getExtension } from '../../lib/utils/file';
 import Highlight, { Language, Prism as PrismRR } from 'prism-react-renderer';
 
 // We have to essentially pre-load all of the languages
@@ -19,7 +20,8 @@ import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-v';
 import 'prismjs/components/prism-json';
 import CommentButton from '../CommentButton';
-import { Review } from '../../lib/api/models';
+import { Review, Comment } from '../../lib/api/models';
+import CommentCard from '../CommentCard';
 
 type PrismLib = typeof PrismRR & typeof Prism;
 
@@ -29,6 +31,7 @@ interface Props {
     language?: string;
     titleBar?: boolean;
     review?: Review;
+    comments?: Comment[];
 }
 
 export const Wrapper = styled('div')`
@@ -64,8 +67,44 @@ export const LineContent = styled('span')`
     display: table-cell;
 `;
 
-export default function CodeRenderer({ contents, titleBar = false, filename, review, language }: Props): ReactElement {
+export default function CodeRenderer({
+    contents,
+    titleBar = false,
+    filename,
+    review,
+    comments,
+    language,
+}: Props): ReactElement {
     const extension = coerceExtensionToLanguage(getExtension(filename) ?? '');
+
+    const [commentMap, setCommentMap] = useState<Map<number, Comment[]>>(new Map([]));
+
+    // Let's compute where the comments are to be placed once once we get them
+    useEffect(() => {
+        if (typeof comments !== 'undefined') {
+            const newMap = new Map<number, Comment[]>();
+
+            // TODO: support general file comments too...
+            // TODO: support anchors...
+            comments.forEach((comment) => {
+                if (typeof comment.anchor === 'undefined') return;
+
+                const start = comment.anchor.start;
+
+                if (newMap.has(start)) {
+                    let originalArr = newMap.get(start)!;
+                    let insertionIndex = sortedIndexBy(originalArr, comment, (c) => c.updatedAt);
+
+                    // Safety: We mutate the original array so it should still live in the map.
+                    originalArr.splice(insertionIndex, 0, comment);
+                } else {
+                    newMap.set(comment.anchor.start, [comment]);
+                }
+            });
+
+            setCommentMap(newMap);
+        }
+    }, [comments]);
 
     return (
         <Box sx={{ p: 2 }}>
@@ -105,6 +144,13 @@ export default function CodeRenderer({ contents, titleBar = false, filename, rev
                                             ))}
                                         </LineContent>
                                     </Line>
+                                    {commentMap.get(i + 1)?.map((comment, index) => {
+                                        return (
+                                            <Box key={index} sx={{ pt: 1, pb: 1 }}>
+                                                <CommentCard comment={comment} />
+                                            </Box>
+                                        );
+                                    })}
                                 </CommentButton>
                             ) : (
                                 <Line {...getLineProps({ line, key: i })}>

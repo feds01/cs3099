@@ -108,3 +108,5 @@ export * from './postReviewIdComment200Status';
 export * from './getPublicationUsernameNameBookmarkers200';
 export * from './getReviewIdComments200';
 export * from './getReviewIdComments200Status';
+export * from './putReviewIdComment200Status';
+export * from './putReviewIdComment200';

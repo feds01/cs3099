@@ -10,5 +10,5 @@ import type { Comment } from './comment';
 
 export type PostReviewIdComment200 = {
   status: PostReviewIdComment200Status;
-  comment?: Comment;
+  comment: Comment;
 };

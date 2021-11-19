@@ -57,7 +57,9 @@ registerRoute(router, '/:username/comments', {
         if (!user) return;
 
         // TODO: Filter comments on incomplete review
-        const result = await Comment.find({ owner: user.id });
+        const result = await Comment.find({ owner: user.id })
+            .populate<{ owner: IUser }[]>('owner')
+            .exec();
 
         const comments = result.map((link) => Comment.project(link as typeof result[number]));
 

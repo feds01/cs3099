@@ -17,7 +17,7 @@ import type {
   PostPublicationUsernameNameRevisionReview200,
   ApiErrorResponse,
   GetPublicationUsernameNameRevisionReviews200,
-  PostReviewIdComment200,
+  PutReviewIdComment200,
   CreateCommentRequestBody,
   GetReviewId200,
   NoContentResponse,
@@ -107,12 +107,12 @@ export const useGetPublicationUsernameNameRevisionReviews = <TData = AsyncReturn
  * Comment on a review, specified by the review id.
  * @summary Add a comment to a review.
  */
-export const postReviewIdComment = (
+export const putReviewIdComment = (
     id: string,
     createCommentRequestBody: CreateCommentRequestBody,
  ) => {
-      return customInstance<PostReviewIdComment200>(
-      {url: `/review/${id}/comment`, method: 'post',
+      return customInstance<PutReviewIdComment200>(
+      {url: `/review/${id}/comment`, method: 'put',
       data: createCommentRequestBody
     },
       );
@@ -120,19 +120,19 @@ export const postReviewIdComment = (
   
 
 
-    export const usePostReviewIdComment = <TError = ApiErrorResponse,
+    export const usePutReviewIdComment = <TError = ApiErrorResponse,
     
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postReviewIdComment>, TError,{id: string;data: CreateCommentRequestBody}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof putReviewIdComment>, TError,{id: string;data: CreateCommentRequestBody}, TContext>, }
 ) => {
       const {mutation: mutationOptions} = options || {}
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postReviewIdComment>, {id: string;data: CreateCommentRequestBody}> = (props) => {
+      const mutationFn: MutationFunction<AsyncReturnType<typeof putReviewIdComment>, {id: string;data: CreateCommentRequestBody}> = (props) => {
           const {id,data} = props || {};
 
-          return  postReviewIdComment(id,data,)
+          return  putReviewIdComment(id,data,)
         }
 
-      return useMutation<AsyncReturnType<typeof postReviewIdComment>, TError, {id: string;data: CreateCommentRequestBody}, TContext>(mutationFn, mutationOptions)
+      return useMutation<AsyncReturnType<typeof putReviewIdComment>, TError, {id: string;data: CreateCommentRequestBody}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * get review by user id.

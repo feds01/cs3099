@@ -9,6 +9,6 @@ import type { GetThreadId200Status } from './getThreadId200Status';
 import type { Comment } from './comment';
 
 export type GetThreadId200 = {
-  status?: GetThreadId200Status;
-  comments?: Comment[];
+  status: GetThreadId200Status;
+  comments: Comment[];
 };
