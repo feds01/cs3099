@@ -81,8 +81,8 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
         publication.revision,
     );
 
-    const commentQuery = useGetReviewIdComments(review.id);
-    const completeQuery = usePostReviewIdComplete();
+    const getCommentsQuery = useGetReviewIdComments(review.id);
+    const completeReviewQuery = usePostReviewIdComplete();
 
     const [resourceResponse, setResourceResponse] = useState<
         ContentState<GetPublicationUsernameNameRevisionAll200, ApiErrorResponse>
@@ -98,7 +98,7 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
 
     useEffect(() => {
         fileQuery.refetch();
-        commentQuery.refetch();
+        getCommentsQuery.refetch();
     }, [publication.id, owner.id]);
 
     useEffect(() => {
@@ -106,32 +106,32 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
     }, [fileQuery.data, fileQuery.isLoading]);
 
     useEffect(() => {
-        setCommentResourceResponse(transformQueryIntoContentState(commentQuery));
-    }, [commentQuery.data, commentQuery.isLoading]);
+        setCommentResourceResponse(transformQueryIntoContentState(getCommentsQuery));
+    }, [getCommentsQuery.data, getCommentsQuery.isLoading]);
 
     useEffect(() => {
-        if (!completeQuery.isLoading && completeQuery.data) {
+        if (!completeReviewQuery.isLoading && completeReviewQuery.data) {
             notificationDispatcher({
                 type: 'add',
                 item: { severity: 'success', message: 'Successfully posted review' },
             });
             refetchReview();
-        } else if (completeQuery.isError && completeQuery.error) {
+        } else if (completeReviewQuery.isError && completeReviewQuery.error) {
             notificationDispatcher({
                 type: 'add',
                 item: { severity: 'error', message: 'Failed to complete review' },
             });
         }
-    }, [completeQuery.isLoading, completeQuery.data]);
+    }, [completeReviewQuery.isLoading, completeReviewQuery.data]);
 
     // For now we only want to refetch the comment as they're the only thing that can change.
     const refetchData = () => {
-        commentQuery.refetch();
+        getCommentsQuery.refetch();
     };
 
     // Function to finalise the review...
     const onComplete = () => {
-        completeQuery.mutateAsync({ id: review.id });
+        completeReviewQuery.mutateAsync({ id: review.id });
     };
 
     // @@Hack: This is a very hacky way of displaying the state for both queries, we should fix this!
@@ -179,7 +179,7 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                                 overflowY: 'scroll',
                             }}
                         >
-                            <TreeView paths={entries.map((entry) => entry.filename)} />
+                            <TreeView comments={comments} paths={entries.map((entry) => entry.filename)} />
                         </Box>
                         <Box
                             sx={{
@@ -209,8 +209,8 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                                         <Button variant="outlined" sx={{ mr: 1 }} href={'/'}>
                                             Cancel
                                         </Button>
-                                        <Button disabled={completeQuery.isLoading} onClick={onComplete}>
-                                            {!completeQuery.isLoading ? (
+                                        <Button disabled={completeReviewQuery.isLoading} onClick={onComplete}>
+                                            {!completeReviewQuery.isLoading ? (
                                                 'Submit'
                                             ) : (
                                                 <CircularProgress variant="determinate" color="inherit" size={14} />

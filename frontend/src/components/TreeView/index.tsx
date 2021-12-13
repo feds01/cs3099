@@ -3,15 +3,18 @@ import Collapse from '@mui/material/Collapse';
 import { alpha, styled } from '@mui/material/styles';
 import { useSpring, animated } from 'react-spring';
 import { TransitionProps } from '@mui/material/transitions';
+import { BiMessageAltAdd } from 'react-icons/bi';
 import { ReactElement, useState, useEffect } from 'react';
 import TreeItem, { TreeItemProps, treeItemClasses } from '@mui/lab/TreeItem';
 import { RiFolderOpenFill, RiFolderFill, RiFileFill } from 'react-icons/ri';
 import { getExtension, IconMap } from '../../lib/utils/file';
+import { Comment } from '../../lib/api/models';
+import Box from '@mui/material/Box';
 
 type FileEntry = { type: 'file'; name: string; id: string };
 type DirEntry = { type: 'directory'; name: string; entries: (FileEntry | DirEntry)[]; id: string };
 
-const rootEntry: DirEntry = { type: 'directory', name: '', entries: [], id: "" };
+const rootEntry: DirEntry = { type: 'directory', name: '', entries: [], id: '' };
 
 /**
  *
@@ -47,14 +50,13 @@ function insertEntry(tree: DirEntry, components: string[], base: string) {
  * @returns
  */
 function convertIntoTree(data: string[]): DirEntry {
-    const rootEntry: DirEntry = { type: 'directory', name: '', entries: [], id: "" };
+    const rootEntry: DirEntry = { type: 'directory', name: '', entries: [], id: '' };
 
     data.forEach((entry) => {
         const components = entry.split('/').filter((x) => x !== '');
 
-
         if (components.length === 0) return;
-        insertEntry(rootEntry, components, "");
+        insertEntry(rootEntry, components, '');
     });
 
     return rootEntry;
@@ -64,16 +66,17 @@ function findDirectories(tree: DirEntry): string[] {
     let paths: string[] = [];
 
     tree.entries.forEach((entry) => {
-        if (entry.type === "directory") {
+        if (entry.type === 'directory') {
             paths = [...paths, entry.id, ...findDirectories(entry)];
         }
-    })
+    });
 
     return paths;
 }
 
 interface Props {
     paths: string[];
+    comments: Comment[];
 }
 
 function TransitionComponent(props: TransitionProps) {
@@ -112,40 +115,82 @@ const StyledTreeItem = styled((props: TreeItemProps) => (
 
 interface NodeProps {
     item: FileEntry | DirEntry;
+    commentMap: Map<string, number>;
     toggleExpanded: (nodeId: string) => void;
 }
 
-function Node({ item, toggleExpanded }: NodeProps): ReactElement {
+function Node({ item, toggleExpanded, commentMap }: NodeProps): ReactElement {
     const id = item.id.toString();
 
     if (item.type === 'directory') {
         return (
             <StyledTreeItem nodeId={id} label={item.name} onClick={() => toggleExpanded(id)}>
                 {item.entries.map((entry) => {
-                    return <Node key={entry.id} toggleExpanded={toggleExpanded} item={entry} />;
+                    return <Node key={entry.id} commentMap={commentMap} toggleExpanded={toggleExpanded} item={entry} />;
                 })}
             </StyledTreeItem>
         );
     }
 
+    // check how many comments this file has
+    const commentCount = commentMap.get(item.id);
+
     // Use the icon service to attempt to get an icon...
     const extension = getExtension(item.name);
     const Icon = extension !== null && extension in IconMap ? IconMap[extension] : undefined;
 
-    return <StyledTreeItem {...(typeof Icon !== 'undefined' && { icon: <Icon /> })} nodeId={id} label={item.name} />;
+    return (
+        <StyledTreeItem
+            {...(typeof Icon !== 'undefined' && { icon: <Icon /> })}
+            nodeId={id}
+            label={
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                    }}
+                >
+                    {item.name}
+                    {typeof commentCount !== 'undefined' && (
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {commentCount} <BiMessageAltAdd />
+                        </Box>
+                    )}
+                </Box>
+            }
+        />
+    );
 }
 
-export default function CustomizedTreeView({ paths }: Props): ReactElement {
+export default function CustomizedTreeView({ paths, comments }: Props): ReactElement {
     const [entries, setEntries] = useState<DirEntry>(rootEntry);
+    const [commentMap, setCommentMap] = useState<Map<string, number>>(new Map());
     const [expanded, setExpanded] = useState<string[]>([]);
 
     const toggleExpanded = (id: string) => {
-        if (expanded.find(nodeId => nodeId === id)) {
-            setExpanded(expanded.filter(nodeId => nodeId !== id))
+        if (expanded.find((nodeId) => nodeId === id)) {
+            setExpanded(expanded.filter((nodeId) => nodeId !== id));
         } else {
-            setExpanded([...expanded, id])
+            setExpanded([...expanded, id]);
         }
-    }
+    };
+
+    // Update the comment map when any new comments are added to the review
+    useEffect(() => {
+        let newCommentMap = new Map();
+
+        for (const comment of comments) {
+            const filename = '/' + comment.filename;
+
+            if (newCommentMap.has(filename)) {
+                newCommentMap.set(filename, newCommentMap.get(filename) + 1);
+            } else {
+                newCommentMap.set(filename, 1);
+            }
+        }
+
+        setCommentMap(newCommentMap);
+    }, [comments]);
 
     useEffect(() => {
         const newEntries = convertIntoTree(paths);
@@ -159,11 +204,12 @@ export default function CustomizedTreeView({ paths }: Props): ReactElement {
             expanded={expanded}
             defaultCollapseIcon={<RiFolderOpenFill />}
             defaultExpandIcon={<RiFolderFill />}
+            disableSelection
             defaultEndIcon={<RiFileFill />}
             sx={{ height: 264, flexGrow: 1, maxWidth: 400, overflowY: 'auto' }}
         >
             {entries.entries.map((item) => {
-                return <Node key={item.name} toggleExpanded={toggleExpanded} item={item} />;
+                return <Node key={item.name} commentMap={commentMap} toggleExpanded={toggleExpanded} item={item} />;
             })}
         </TreeView>
     );
