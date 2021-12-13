@@ -1,8 +1,13 @@
+import React from "react";
 import Prism from 'prismjs';
 import Box from '@mui/material/Box/Box';
+import CommentCard from '../CommentCard';
+import CommentButton from '../CommentButton';
 import sortedIndexBy from 'lodash/sortedIndexBy';
-import { styled, Typography } from '@mui/material';
+import { Review, Comment } from '../../lib/api/models';
+import { IconButton, styled, Typography } from '@mui/material';
 import theme from 'prism-react-renderer/themes/github';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { ReactElement, useEffect, useState } from 'react';
 import { coerceExtensionToLanguage, getExtension } from '../../lib/utils/file';
 import Highlight, { Language, Prism as PrismRR } from 'prism-react-renderer';
@@ -19,9 +24,6 @@ import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-v';
 import 'prismjs/components/prism-json';
-import CommentButton from '../CommentButton';
-import { Review, Comment } from '../../lib/api/models';
-import CommentCard from '../CommentCard';
 
 type PrismLib = typeof PrismRR & typeof Prism;
 
@@ -123,6 +125,9 @@ export default function CodeRenderer({
                     }}
                 >
                     <Typography sx={{ fontWeight: 'bold' }}>{filename}</Typography>
+                    <IconButton aria-label="settings">
+                        <MoreVertIcon />
+                    </IconButton>
                 </Box>
             )}
             <Highlight
@@ -135,15 +140,17 @@ export default function CodeRenderer({
                     <Pre className={className} style={style}>
                         {tokens.map((line, i) =>
                             typeof review !== 'undefined' ? (
-                                <CommentButton key={i} review={review} location={i} filename={filename}>
-                                    <Line {...getLineProps({ line, key: i })}>
-                                        <LineNo>{i + 1}</LineNo>
-                                        <LineContent>
-                                            {line.map((token, key) => (
-                                                <span key={key} {...getTokenProps({ token, key })} />
-                                            ))}
-                                        </LineContent>
-                                    </Line>
+                                <React.Fragment key={i}>
+                                    <CommentButton review={review} location={i} filename={filename}>
+                                        <Line {...getLineProps({ line, key: i })}>
+                                            <LineNo>{i + 1}</LineNo>
+                                            <LineContent>
+                                                {line.map((token, key) => (
+                                                    <span key={key} {...getTokenProps({ token, key })} />
+                                                ))}
+                                            </LineContent>
+                                        </Line>
+                                    </CommentButton>
                                     {commentMap.get(i + 1)?.map((comment, index) => {
                                         return (
                                             <Box key={index} sx={{ pt: 1, pb: 1 }}>
@@ -151,7 +158,7 @@ export default function CodeRenderer({
                                             </Box>
                                         );
                                     })}
-                                </CommentButton>
+                                </React.Fragment>
                             ) : (
                                 <Line {...getLineProps({ line, key: i })}>
                                     <LineNo>{i + 1}</LineNo>

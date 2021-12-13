@@ -23,7 +23,7 @@ export default function CommentCard({ comment }: Props): ReactElement {
                 }
                 subheader={
                     <Typography variant={'body2'}>
-                        <UserLink username={comment.author.username} /> on{' '}
+                        <UserLink username={comment.author.username} />{' '}
                         {formatDistance(comment.updatedAt, new Date(), { addSuffix: true })}
                     </Typography>
                 }

@@ -28,7 +28,6 @@ function AccountUpdateForm({ session }: { session: User }) {
     const {
         control,
         handleSubmit,
-        reset,
         formState: { errors },
     } = useForm<AccountUpdate>({
         resolver: zodResolver(AccountUpdateSchema),

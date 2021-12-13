@@ -98,7 +98,7 @@ registerRoute(router, '/:username/:name/:revision/review', {
         const docParams = {
             publication: publication.id,
             owner: req.requester.id,
-            status: IReviewStatus.Started, 
+            status: IReviewStatus.Started,
         };
 
         const doc = await Review.findOne(docParams)
@@ -109,7 +109,7 @@ registerRoute(router, '/:username/:name/:revision/review', {
         // If the user tries to creat ea new review whilst another pending review exists, that review
         // is returned instead of making a new review...
         if (doc) {
-            Logger.info("Using pre-created review for user instead of creating a new one...")
+            Logger.info('Using pre-created review for user instead of creating a new one...');
             return res.status(200).json({
                 status: 'ok',
                 message: 'Successfully initialised review.',
