@@ -98,6 +98,7 @@ registerRoute(router, '/:username/:name/:revision/review', {
         const docParams = {
             publication: publication.id,
             owner: req.requester.id,
+            status: IReviewStatus.Started, 
         };
 
         const doc = await Review.findOne(docParams)
@@ -105,7 +106,10 @@ registerRoute(router, '/:username/:name/:revision/review', {
             .populate<{ owner: IUser }[]>('owner')
             .exec();
 
+        // If the user tries to creat ea new review whilst another pending review exists, that review
+        // is returned instead of making a new review...
         if (doc) {
+            Logger.info("Using pre-created review for user instead of creating a new one...")
             return res.status(200).json({
                 status: 'ok',
                 message: 'Successfully initialised review.',
@@ -116,10 +120,16 @@ registerRoute(router, '/:username/:name/:revision/review', {
         try {
             const newDoc = await new Review(docParams).save();
 
+            // populate the fields in the new document so that it can be projected...
+            const projected = await Review.findById(newDoc._id)
+                .populate<{ publication: IPublication }[]>('publication')
+                .populate<{ owner: IUser }[]>('owner')
+                .exec();
+
             return res.status(200).json({
                 status: 'ok',
                 message: 'Successfully initialised review.',
-                review: await Review.project(newDoc),
+                review: await Review.project(projected),
             });
         } catch (e: unknown) {
             Logger.error(e);

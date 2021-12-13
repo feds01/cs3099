@@ -77,4 +77,5 @@ ReviewSchema.statics.projectAsSg = async (review: PopulatedReview): Promise<Expo
     comments: [], // TODO: Comments
     createdAt: review.createdAt.getTime(),
 });
+
 export default mongoose.model<IReview, IReviewModel>('review', ReviewSchema);
