@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import { ReactElement } from 'react';
 import Typography from '@mui/material/Typography';
-import VoidImage from "../../static/images/void.svg";
+import VoidImage from '../../static/images/void.svg';
 
 export default function NotFound(): ReactElement {
     return (
@@ -19,7 +19,7 @@ export default function NotFound(): ReactElement {
                 <Typography variant={'h3'}>404: Not Found</Typography>
                 <Typography variant={'body1'}>Return to the homepage or contact us.</Typography>
             </Box>
-            <img src={VoidImage} width={128} height={128} alt='void' />
+            <img src={VoidImage} width={128} height={128} alt="void" />
         </Box>
     );
 }

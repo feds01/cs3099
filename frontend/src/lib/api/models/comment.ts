@@ -14,5 +14,6 @@ export interface Comment {
   contents: string;
   thread: number;
   author: User;
-  postedAt: number;
+  createdAt: number;
+  updatedAt: number;
 }

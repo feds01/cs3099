@@ -10,7 +10,7 @@ import { convertSgId } from '../../transformers/sg';
 import { SgMetadataSchema } from '../../validators/sg';
 import { ObjectIdSchema } from '../../validators/requests';
 import { downloadOctetStream, makeRequest } from '../../utils/fetch';
-import { moveFile } from '../../lib/fs';
+import { moveResource } from '../../lib/fs';
 
 const router = express.Router();
 
@@ -84,7 +84,7 @@ registerRoute(router, '/import', {
                 name: doc.name,
             });
 
-            await moveFile(publication.data, finalPath);
+            await moveResource(publication.data, finalPath);
 
             return res.status(200).json({
                 status: 'ok',

@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import express from 'express';
+import assert from 'assert';
 import qs from 'query-string';
 import Logger from '../../common/logger';
 import * as zip from '../../lib/zip';
 import * as errors from './../../common/errors';
 import * as userUtils from './../../utils/users';
 import registerRoute from '../../lib/requests';
-import Review from '../../models/Review';
 import User, { IUserRole } from '../../models/User';
 import Publication from '../../models/Publication';
 import { comparePermissions } from '../../lib/permissions';
@@ -15,15 +15,18 @@ import { IPublicationCreationSchema } from '../../validators/publications';
 
 import searchRouter from './search';
 import bookmarkRouter from './bookmarks';
-import { IReviewCreationSchema } from '../../validators/reviews';
+import reviewRouter from './reviews';
 import { config } from '../../server';
 import { createTokens } from '../../lib/auth';
+import { deleteResource } from '../../lib/fs';
+import { resourceIndexToPath } from '../../lib/zip';
 
 const router = express.Router();
 
 // Register the follower & bookmark routes
 router.use('/', searchRouter);
 router.use('/', bookmarkRouter);
+router.use('/', reviewRouter);
 
 /**
  *
@@ -35,9 +38,64 @@ registerRoute(router, '/:username/:name/:revision/all/', {
         name: z.string(),
         revision: z.string(),
     }),
-    query: z.object({ mode: ModeSchema, sortBy: ResourceSortSchema }),
+    query: z.object({ mode: ModeSchema }),
     permission: IUserRole.Default,
-    handler: async (_req, _res) => {},
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        const { name, revision } = req.params;
+
+        const publication = await Publication.findOne({
+            owner: user.id,
+            name,
+            revision,
+        })
+            .sort({ _id: -1 })
+            .exec();
+
+        if (!publication) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.RESOURCE_NOT_FOUND,
+            });
+        }
+
+        let archiveIndex = {
+            userId: user.id!,
+            name,
+            ...(!publication.current && { revision }),
+        };
+
+        const archive = zip.loadArchive(archiveIndex);
+
+        // @@Cleanup: we might have to return an error here if we can't find the archive, then
+        //            it must of been deleted off the disk... which means we might have to invalidate
+        //            the current revision?
+        if (!archive) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.RESOURCE_NOT_FOUND,
+            });
+        }
+
+        return res.status(200).json({
+            status: 'ok',
+            entries: archive
+                .getEntries()
+                .filter((entry) => !entry.isDirectory)
+                .map((entry) => {
+                    const contents = entry.getData();
+
+                    return {
+                        type: 'file',
+                        updatedAt: entry.header.time.getTime(),
+                        contents: contents.toString(),
+                        filename: entry.entryName,
+                    };
+                }),
+        });
+    },
 });
 
 /**
@@ -348,7 +406,7 @@ registerRoute(router, '/:username/:name/:revision?', {
         const archiveIndex = {
             userId: publication.owner._id.toString(),
             name: publication.name,
-            revision,
+            revision: publication.current ? undefined : revision,
         };
         const archive = zip.loadArchive(archiveIndex);
 
@@ -369,33 +427,49 @@ registerRoute(router, '/:username/:name/all', {
         name: z.string().nonempty(),
     }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Default,
+    permission: IUserRole.Administrator,
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
         const requester = req.requester;
-        const { name } = req.params;
+        const { name, username } = req.params;
         const isOwner = user.id === req.requester.id;
 
-        if (isOwner || comparePermissions(requester.role, IUserRole.Moderator)) {
-            const publications = await Publication.deleteMany({
-                owner: user.id,
-                name: name.toLowerCase(),
-            }).exec();
-
-            if (publications.deletedCount > 0) {
-                return res.status(200).json({
-                    status: 'ok',
-                    message: 'Successfully deleted all revision of publications.',
-                });
-            }
+        if (!isOwner && !comparePermissions(requester.role, IUserRole.Administrator)) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.NON_EXISTENT_PUBLICATION,
+            });
         }
 
-        return res.status(404).json({
-            status: 'error',
-            message: errors.NON_EXISTENT_PUBLICATION,
-        });
+        const owner = await User.findOne({ username }).exec();
+        assert(owner !== null);
+
+        await Publication.deleteMany({ owner: owner.id, name: name.toLowerCase() }).exec();
+
+        try {
+            const publicationPath = resourceIndexToPath({
+                type: 'publication',
+                owner: owner.id,
+                name: name,
+            });
+
+            // we need to try to remove the folder that stores the publications...
+            await deleteResource(publicationPath);
+
+            return res.status(200).json({
+                status: 'ok',
+                message: 'Successfully deleted resource.',
+            });
+        } catch (e: unknown) {
+            Logger.error(e);
+
+            return res.status(500).json({
+                status: 'error',
+                message: errors.INTERNAL_SERVER_ERROR,
+            });
+        }
     },
 });
 
@@ -410,43 +484,76 @@ registerRoute(router, '/:username/:name/:revision?', {
         revision: z.string().optional(),
     }),
     query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).default('false') }),
-    permission: IUserRole.Default,
+    permission: IUserRole.Administrator,
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
         const requester = req.requester;
-        const { name, revision } = req.params;
+        const { name, username, revision } = req.params;
+
         const draft = req.query.draft === 'true';
         const isOwner = user.id === req.requester.id;
 
-        if (isOwner || comparePermissions(requester.role, IUserRole.Moderator)) {
-            const publication = await Publication.findOneAndDelete({
-                owner: user.id,
-                name: name.toLowerCase(),
-                draft,
-                ...(typeof revision !== 'undefined' && { revision }),
-            })
-                .sort({ _id: -1 })
-                .exec(); // get the most recent document
-
-            if (publication) {
-                return res.status(200).json({
-                    status: 'ok',
-                    message: 'Successfully deleted publication.',
-                });
-            }
+        if (!isOwner && !comparePermissions(requester.role, IUserRole.Administrator)) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.NON_EXISTENT_PUBLICATION,
+            });
         }
 
-        return res.status(404).json({
-            status: 'error',
-            message: errors.NON_EXISTENT_PUBLICATION,
-        });
+        const owner = await User.findOne({ username }).exec();
+        assert(owner !== null);
+
+        const publication = await Publication.findOneAndDelete({
+            owner: user.id,
+            name: name.toLowerCase(),
+            draft,
+            ...(typeof revision !== 'undefined' && { revision }),
+        })
+            .sort({ _id: -1 })
+            .exec(); // get the most recent document
+
+        if (!publication) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.NON_EXISTENT_PUBLICATION,
+            });
+        }
+
+        try {
+            const publicationPath = resourceIndexToPath({
+                type: 'publication',
+                owner: owner.id.toString(),
+                name,
+                ...(typeof revision !== 'undefined' && { path: [revision, 'publication.zip'] }),
+            });
+
+            // we need to try to remove the folder that stores the publications...
+            await deleteResource(publicationPath);
+
+            return res.status(200).json({
+                status: 'ok',
+                message: 'Successfully deleted resource.',
+            });
+
+            return res.status(200).json({
+                status: 'ok',
+                message: 'Successfully deleted publication.',
+            });
+        } catch (e: unknown) {
+            Logger.error(e);
+
+            return res.status(500).json({
+                status: 'error',
+                message: errors.INTERNAL_SERVER_ERROR,
+            });
+        }
     },
 });
 
 /**
- *
+ * Export a publication.
  */
 registerRoute(router, '/:id/export', {
     method: 'post',
@@ -485,67 +592,6 @@ registerRoute(router, '/:id/export', {
         const query = qs.stringify({ from: config.frontendURI, token, id: publication.id });
         const url = new URL(`/api/sg/resource/import?${query}`, req.query.to);
         return res.redirect(url.toString());
-    },
-});
-
-/**
- *
- */
-registerRoute(router, '/:name/:username/:revision/review', {
-    method: 'post',
-    body: IReviewCreationSchema,
-    query: z.object({ mode: ModeSchema }),
-    params: z.object({
-        username: z.string().nonempty(),
-        name: z.string().nonempty(),
-        revision: z.string(),
-    }),
-    permission: IUserRole.Default,
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
-
-        const { name, revision } = req.params;
-
-        // Verify that the publication exists...
-        const publication = await Publication.findOne({
-            owner: user.id,
-            name: name.toLowerCase(),
-            revision,
-        })
-            .sort({ _id: -1 })
-            .exec();
-
-        // Check that the publication isn't currently in draft mode...
-        if (!publication || publication.draft) {
-            return res.status(404).json({
-                status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
-        }
-
-        // Now attempt to create the new review
-        const newReview = new Review({
-            publication: publication.id,
-            owner: req.requester.id,
-        });
-
-        try {
-            await newReview.save();
-
-            return res.status(200).json({
-                status: 'ok',
-                message: 'Successfully initialised review.',
-                review: Review.project(newReview),
-            });
-        } catch (e: unknown) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: errors.INTERNAL_SERVER_ERROR,
-            });
-        }
     },
 });
 

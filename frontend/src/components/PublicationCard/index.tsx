@@ -20,10 +20,7 @@ export default function PublicationCard({ pub, user }: Props): ReactElement {
                                 {pub.draft && (
                                     <Chip
                                         sx={{
-                                            fontVariant: 'small-caps',
-                                            height: '1rem',
                                             fontWeight: 'bold',
-                                            marginRight: '0.3rem',
                                         }}
                                         label="draft"
                                         color="primary"

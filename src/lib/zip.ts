@@ -4,6 +4,7 @@ import {
     getPathBase,
     getPathComponents,
     joinPathsForResource,
+    joinPathsRaw,
     stripEndingSlash,
 } from '../utils/resources';
 
@@ -35,6 +36,14 @@ export interface ArchiveIndex {
     revision?: string;
 }
 
+// Type representing any resource that can be stored on disk
+export interface ResourceIndex {
+    type: 'avatar' | 'attachment' | 'publication';
+    owner: string;
+    name: string;
+    path?: string[];
+}
+
 /**
  * Function to convert an ArchiveIndex into a filesystem path.
  *
@@ -45,7 +54,7 @@ export function archiveIndexToPath(archive: ArchiveIndex): string {
     // Append the revision path if there is one
     if (typeof archive.revision !== 'undefined') {
         return joinPathsForResource(
-            'publications',
+            'publication',
             archive.userId,
             archive.name,
             'revisions',
@@ -54,7 +63,24 @@ export function archiveIndexToPath(archive: ArchiveIndex): string {
         );
     }
 
-    return joinPathsForResource('publications', archive.userId, archive.name, 'publication.zip');
+    return joinPathsForResource('publication', archive.userId, archive.name, 'publication.zip');
+}
+
+/**
+ * Function to convert a ResourceIndex into a filesystem path.
+ *
+ * @param resource - The entry describing the resource in the filesystem.
+ *
+ * @returns - A path representation of the resource index.
+ */
+export function resourceIndexToPath(resource: ResourceIndex): string {
+    const base = joinPathsForResource(resource.type, resource.owner, resource.name);
+
+    if (typeof resource.path !== 'undefined') {
+        return joinPathsRaw(base, joinPathsRaw(...resource.path));
+    }
+
+    return base;
 }
 
 /**
@@ -68,6 +94,15 @@ export function loadArchive(archive: ArchiveIndex): AdmZip | null {
     } catch (e: unknown) {
         return null;
     }
+}
+
+/**
+ *
+ * @param archive
+ * @param filePath
+ */
+export function countLines(contents: String) {
+    return contents.split(/\r\n|\r|\n/).length;
 }
 
 /**

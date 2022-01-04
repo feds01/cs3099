@@ -55,12 +55,12 @@ const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
  * @param comment The comment Document that is to be projected.
  * @returns A partial comment object with selected fields that are to be projected.
  */
-CommentSchema.statics.project = (comment: ICommentDocument) => {
+CommentSchema.statics.project = (comment: PopulatedComment) => {
     const { publication, owner, contents, filename, thread, replying, anchor, review } = comment;
 
     return {
         publication,
-        owner,
+        author: User.project(owner), // @@Cleanup: change this to being owner??
         contents,
         ...(typeof filename !== 'undefined' && { filename }),
         ...(typeof thread !== 'undefined' && { thread }),

@@ -12,7 +12,7 @@ export interface Publication {
   name: string;
   title: string;
   introduction?: string;
-  revision?: string;
+  revision: string;
   pinned: boolean;
   draft: boolean;
   owner: User;

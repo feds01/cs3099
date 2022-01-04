@@ -1,10 +1,9 @@
-import React, { ReactElement, useEffect } from 'react';
 import { z } from 'zod';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import TextField from '@mui/material/TextField';
+import React, { ReactElement, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
@@ -12,8 +11,11 @@ import { User } from '../../lib/api/models';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import PasswordField from '../PasswordField';
 import { usePostAuthLogin } from '../../lib/api/auth/auth';
+import ControlledTextField from '../ControlledTextField';
+import ControlledPasswordField from '../ControlledPasswordField';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 
 const LoginSchema = z.object({
     username: z.string(),
@@ -28,12 +30,7 @@ interface Props {
 }
 
 export default function LoginForm({ onSuccess }: Props): ReactElement {
-    const {
-        control,
-        handleSubmit,
-        formState: { errors },
-        getValues,
-    } = useForm<ILoginForm>({
+    const { control, handleSubmit, getValues } = useForm<ILoginForm>({
         resolver: zodResolver(LoginSchema),
         defaultValues: {
             rememberLogin: true,
@@ -63,51 +60,20 @@ export default function LoginForm({ onSuccess }: Props): ReactElement {
                     paddingBottom: 2,
                 }}
             >
-                <Controller
-                    name="username"
-                    control={control}
-                    defaultValue=""
-                    render={({ field }) => (
-                        <TextField
-                            {...field}
-                            {...(errors.username && {
-                                error: true,
-                                helperText: errors.username.message,
-                            })}
-                            label="Email/Username"
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            sx={{
-                                marginTop: 2,
-                                marginBottom: 2,
-                            }}
-                        />
-                    )}
-                />
-                <Controller
-                    name="password"
-                    control={control}
-                    defaultValue=""
-                    render={({ field }) => (
-                        <PasswordField
-                            {...field}
-                            {...(errors.password && {
-                                error: true,
-                                helperText: errors.password.message,
-                            })}
-                            sx={{
-                                marginTop: 2,
-                                marginBottom: 2,
-                            }}
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                            fullWidth
-                            label="Password"
-                        />
-                    )}
-                />
+                <Grid container spacing={1}>
+                    <Grid item xs={12}>
+                        <Typography variant={'body2'} sx={{ fontWeight: 'bold' }}>
+                            Username
+                        </Typography>
+                        <ControlledTextField name="username" control={control} />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Typography variant={'body2'} sx={{ fontWeight: 'bold' }}>
+                            Password
+                        </Typography>
+                        <ControlledPasswordField name="password" control={control} />
+                    </Grid>
+                </Grid>
                 <Box
                     sx={{
                         display: 'flex',
@@ -150,7 +116,7 @@ export default function LoginForm({ onSuccess }: Props): ReactElement {
             {isError && (
                 <Alert severity="error">
                     <AlertTitle>Error</AlertTitle>
-                    <strong>{error!.message || 'Something went wrong'}</strong>
+                    <strong>{error?.message || 'Something went wrong'}</strong>
                 </Alert>
             )}
         </form>

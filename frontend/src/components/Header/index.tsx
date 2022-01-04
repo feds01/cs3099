@@ -26,7 +26,7 @@ export default function Header({ title }: Props): ReactElement {
     return (
         <AppBar
             sx={{
-                position: 'relative',
+                position: 'fixed',
                 backgroundColor: '#f0f0f0',
                 boxShadow: '0 1px 0 0 #dbdbdb',
             }}

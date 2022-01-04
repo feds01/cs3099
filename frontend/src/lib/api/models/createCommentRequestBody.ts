@@ -9,7 +9,7 @@ import type { CommentAnchor } from './commentAnchor';
 
 export type CreateCommentRequestBody = {
   replying?: string;
-  content?: string;
+  contents: string;
   filename?: string;
   anchor?: CommentAnchor;
 };

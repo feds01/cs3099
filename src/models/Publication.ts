@@ -46,7 +46,7 @@ PublicationSchema.statics.project = async (
 
     // Resolve the owner name...
     const owner = await User.findById(ownerId).exec();
-    assert(owner !== null);
+    assert(owner !== null, 'Owner ID is null');
 
     return {
         id: publication.id as string,
@@ -59,6 +59,9 @@ PublicationSchema.statics.project = async (
         collaborators, // TODO: project collaborators too...
         createdAt: publication.createdAt.getTime(),
         updatedAt: publication.updatedAt.getTime(),
+
+        // add the revision to the structure
+        revision: publication.revision ?? '',
 
         // this is a flag that denotes whether or not we know that this publication has an attached
         // zip archive on disk.
@@ -84,6 +87,9 @@ PublicationSchema.statics.projectWith = (
 
         createdAt: publication.createdAt.getTime(),
         updatedAt: publication.updatedAt.getTime(),
+
+        // add the revision to the structure
+        revision: publication.revision ?? '',
 
         // TODO: project collaborators too...
         collaborators,

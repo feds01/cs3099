@@ -7,6 +7,9 @@ import registerRoute from '../../lib/requests';
 
 const router = express.Router({ mergeParams: true });
 
+/**
+ *
+ */
 registerRoute(router, '/search', {
     method: 'get',
     params: z.object({}),

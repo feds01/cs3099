@@ -84,7 +84,6 @@ registerRoute(router, '/callback', {
 
             id = doc.id;
         } else {
-            console.log(transformedUser);
             await User.findByIdAndUpdate(
                 externalUser.id,
                 { $set: { ...transformedUser } },

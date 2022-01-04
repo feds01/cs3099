@@ -1,6 +1,7 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
-import User, { IUser } from './User';
 import { ExportSgReview } from '../validators/sg';
+import Publication, { IPublication } from './Publication';
+import User, { IUser } from './User';
 
 export enum IReviewStatus {
     Completed = 'completed',
@@ -16,9 +17,11 @@ export interface IReview {
 }
 
 type PopulatedReview = (IReview & {
-    _id: any;
+    _id: string;
 }) & {
     owner: IUser;
+} & {
+    publication: IPublication;
 };
 
 interface IReviewDocument extends IReview, Document {}
@@ -49,13 +52,13 @@ const ReviewSchema = new Schema<IReview, IReviewModel, IReview>(
  * @param review The comment Document that is to be projected.
  * @returns A partial comment object with selected fields that are to be projected.
  */
-ReviewSchema.statics.project = (review: IReviewDocument) => {
+ReviewSchema.statics.project = async (review: PopulatedReview) => {
     const { publication, owner, status } = review;
 
     return {
-        id: review.id as string,
-        publication,
-        owner,
+        id: review._id,
+        publication: await Publication.project(publication),
+        owner: User.project(owner),
         status,
         createdAt: review.createdAt.getTime(),
         updatedAt: review.updatedAt.getTime(),
@@ -74,4 +77,5 @@ ReviewSchema.statics.projectAsSg = async (review: PopulatedReview): Promise<Expo
     comments: [], // TODO: Comments
     createdAt: review.createdAt.getTime(),
 });
+
 export default mongoose.model<IReview, IReviewModel>('review', ReviewSchema);

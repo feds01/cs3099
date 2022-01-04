@@ -10,5 +10,5 @@ import type { FileResponse } from './fileResponse';
 
 export type GetPublicationUsernameNameRevisionAll200 = {
   status: GetPublicationUsernameNameRevisionAll200Status;
-  files: FileResponse[];
+  entries: FileResponse[];
 };

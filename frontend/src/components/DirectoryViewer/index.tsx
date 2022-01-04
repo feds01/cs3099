@@ -1,14 +1,15 @@
-import { Box, Link, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import { Link } from 'react-router-dom';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
-import TableContainer from '@mui/material/TableContainer';
-import React, { ReactElement } from 'react';
+import FileIcon from '../FileIcon';
+import { ReactElement } from 'react';
 import { formatDistance } from 'date-fns';
-import { RiFolderFill } from 'react-icons/ri';
-import { SiTypescript } from 'react-icons/si';
-import { DirectoryResponseData } from '../../lib/api/models';
+import { getExtension } from '../../lib/utils/file';
+import TableContainer from '@mui/material/TableContainer';
+import { DirectoryResponse } from '../../lib/api/models';
+import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 
-type Props = DirectoryResponseData & { basePath: string; filename: string };
+type Props = DirectoryResponse & { basePath: string; filename: string };
 
 // File Icons: https://react-icons.github.io/react-icons/icons?name=si
 export default function DirectoryViewer({ entries, basePath, filename }: Props): ReactElement {
@@ -18,7 +19,9 @@ export default function DirectoryViewer({ entries, basePath, filename }: Props):
                 <TableHead>
                     <TableRow>
                         <TableCell width={'80%'}>Filename</TableCell>
-                        <TableCell align={"right"} width={'20%'}>Last modified</TableCell>
+                        <TableCell align={'right'} width={'20%'}>
+                            Last modified
+                        </TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -27,13 +30,17 @@ export default function DirectoryViewer({ entries, basePath, filename }: Props):
 
                         return (
                             <TableRow key={fullPath}>
-                                <TableCell sx={{display: 'flex', flexDirection: 'row'}}>
+                                <TableCell sx={{ display: 'flex', flexDirection: 'row' }}>
                                     <Box sx={{ mr: 1 }}>
-                                        {entry.type === 'directory' ? <RiFolderFill /> : <SiTypescript />}
+                                        <FileIcon
+                                            type={entry.type}
+                                            open={false}
+                                            extension={getExtension(entry.filename) ?? ''}
+                                        />
                                     </Box>
-                                    <Link href={fullPath}>{entry.filename}</Link>
+                                    <Link to={fullPath}>{entry.filename}</Link>
                                 </TableCell>
-                                <TableCell align={"right"} width={'20%'}>
+                                <TableCell align={'right'} width={'20%'}>
                                     {formatDistance(entry.updatedAt, new Date(), { addSuffix: true })}
                                 </TableCell>
                             </TableRow>

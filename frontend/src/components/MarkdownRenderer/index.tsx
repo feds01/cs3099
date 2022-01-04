@@ -10,15 +10,16 @@ interface Props {
     fontSize?: number;
 }
 
-const useStyles = makeStyles<Theme, Props>(theme => ({
+const useStyles = makeStyles<Theme, Props>((theme) => ({
     wrapper: {
-        fontSize: ({fontSize}) => fontSize ?? 16,
-    }
+        fontSize: ({ fontSize }) => fontSize ? `${fontSize}px !important` : "inherit",
+        listStylePosition: "inside"
+    },
 }));
 
 export default function MarkdownRenderer(props: Props): ReactElement {
     const classes = useStyles(props);
-    
+
     return (
         <ReactMarkdown
             remarkPlugins={[remarkGfm]}
@@ -28,7 +29,7 @@ export default function MarkdownRenderer(props: Props): ReactElement {
                     const match = /language-(\w+)/.exec(className || '');
 
                     return !inline && match ? (
-                        <CodeRenderer contents={String(children).replace(/\n$/, '')} language={match[1]} />
+                        <CodeRenderer contents={String(children).replace(/\n$/, '')} filename={''} language={match[1]} />
                     ) : (
                         <code className={className} {...props}>
                             {children}

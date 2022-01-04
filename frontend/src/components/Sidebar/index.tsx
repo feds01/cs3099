@@ -1,13 +1,15 @@
 import { ReactElement, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Box from '@mui/material/Box';
+import { Button, Tooltip } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
-import PersonIcon from '@mui/icons-material/Person';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
-import RateReviewIcon from '@mui/icons-material/RateReview';
 import { styled, Theme, CSSObject } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import { Button } from '@mui/material';
+
+import { TiHome } from 'react-icons/ti';
+import { ImProfile } from 'react-icons/im';
+import { RiSearchLine, RiContactsBookUploadLine } from 'react-icons/ri';
 
 const drawerWidth = 180;
 
@@ -43,6 +45,8 @@ const SidebarContainer = styled('div', { shouldForwardProp: (prop) => prop !== '
         background: '#fff',
         height: '100%',
         whiteSpace: 'nowrap',
+        borderRight: 1,
+        borderColor: 'divider',
         boxSizing: 'border-box',
         ...(open && {
             ...openedMixin(theme, drawerWidth),
@@ -54,43 +58,57 @@ const SidebarContainer = styled('div', { shouldForwardProp: (prop) => prop !== '
 );
 
 const menuMap = [
-    { title: 'Profile', icon: PersonIcon },
-    { title: 'Publications', icon: FileUploadIcon },
-    { title: 'Reviews', icon: RateReviewIcon },
+    { title: 'Home', icon: TiHome, href: '/' },
+    { title: 'Create publication', icon: RiContactsBookUploadLine, href: '/publication/create' },
+    { title: 'Search publications', icon: ImProfile, href: '/publication/search' },
+    { title: 'Search reviews', icon: RiSearchLine, href: '/review/search' },
 ];
 
 export default function Sidebar(): ReactElement {
     const [open, setOpen] = useState<boolean>(false);
 
+    // @@Bug: The sidebar isn't opening properly.
     return (
         <SidebarContainer open={open}>
             <Box
                 sx={{
                     display: 'flex',
                     flexDirection: 'column',
-                    backgroundColor: '#f0f0f0',
+                    position: 'fixed',
                     justifyContent: 'space-between',
                     flex: 1,
-                    height: '100%',
+                    height: '100%'
                 }}
             >
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     {menuMap.map((entry) => (
-                        <Button key={entry.title}>
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    justifyContent: 'left',
-                                    flex: 1,
-                                    color: 'rgba(0, 0, 0, 0.54)',
-                                }}
+                        <Box
+                            key={entry.title}
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: open ? 'left' : 'center',
+                                pt: 1,
+                                pb: 1,
+                                flex: 1,
+                            }}
+                        >
+                            <Tooltip
+                                title={entry.title}
+                                placement={'right-end'}
+                                disableHoverListener={open}
+                                disableTouchListener={open}
+                                arrow
                             >
-                                <entry.icon color="inherit" sx={{ marginRight: open ? 1 : 0 }} />
-                                {open && <Box sx={{ fontWeight: 'bold' }}>{entry.title}</Box>}
-                            </Box>
-                        </Button>
+                                <Link to={entry.href}>
+                                    <entry.icon color="inherit" size={18} style={{ marginRight: open ? 1 : 0 }} />
+                                    {open && (
+                                        <Box sx={{ fontWeight: 'bold', background: 'inherit' }}>{entry.title}</Box>
+                                    )}
+                                </Link>
+                            </Tooltip>
+                        </Box>
                     ))}
                 </Box>
                 {open ? (

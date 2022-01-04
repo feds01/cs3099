@@ -12,13 +12,13 @@ import { ReactElement, useEffect, useState } from 'react';
 import { Route, Switch, useLocation, useParams } from 'react-router';
 import { Divider, Skeleton, Tab, Tabs } from '@mui/material';
 
-
 // Views
 import Overview from '../../views/Overview';
 import Activity from '../../views/Activity';
 import Follows from '../../views/Follows';
 import Reviews from '../../views/Reviews';
 import Publications from '../../views/Publications';
+import { format } from 'date-fns';
 
 interface Props {}
 
@@ -51,15 +51,6 @@ const TabMap = (user: User) => {
     };
 };
 
-function formatDate(date: number): string {
-    const myDate = new Date(date);
-    const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][
-        myDate.getMonth()
-    ];
-
-    return myDate.getDate() + ' ' + month + ' ' + myDate.getFullYear();
-}
-
 interface IProfileLayout {
     content: ContentState<ProfileData, any>;
 }
@@ -80,11 +71,12 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
         case 'ok':
             const profileData = content.data;
             return (
-                <>
+                <Box sx={{pt: 2, width: '100%'}}>
                     <Box
                         sx={{
                             position: 'absolute',
                             zIndex: 1000,
+                            pt: 2,
                             justifyContent: 'flex-end',
                             alignItems: 'flex-end',
                             display: 'flex',
@@ -112,7 +104,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                         >
                             <Typography>@{profileData.user.username}</Typography>
                             <Divider orientation="vertical" sx={{ margin: '0 4px' }} />
-                            <Typography>Member since {formatDate(profileData.user.createdAt)}</Typography>
+                            <Typography>Member since {format(profileData.user.createdAt, "dd MMM yyyy")}</Typography>
                         </Box>
                         <Box
                             sx={{
@@ -135,7 +127,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                             </Typography>
                         </Box>
                     </UserAvatar>
-                </>
+                </Box>
             );
     }
 }

@@ -12,12 +12,11 @@ import { useGetPublicationUsername } from '../lib/api/publications/publications'
 
 interface Props {
     user: User;
-    mode?: 'pinned' | 'all';
     limit?: number;
     withTitle?: boolean;
 }
 
-export default function Publications({ user, limit, withTitle = true, mode = 'all' }: Props): ReactElement {
+export default function Publications({ user, limit, withTitle = true }: Props): ReactElement {
     const getPublicationQuery = useGetPublicationUsername(user.username);
 
     const [publications, setPublications] = useState<ContentState<Publication[], any>>({ state: 'loading' });
@@ -60,7 +59,7 @@ export default function Publications({ user, limit, withTitle = true, mode = 'al
                                         flexDirection: 'column',
                                         alignItems: 'center',
                                         width: '100%',
-                                        mt: 2,
+                                        pt: 2,
                                     }}
                                 >
                                     <img src={VoidImage} height={96} width={96} alt={'nothing'} />

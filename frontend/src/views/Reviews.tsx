@@ -21,7 +21,7 @@ export default function Reviews({ user, withTitle = true }: Props): ReactElement
     const [reviews, setReviews] = useState<ContentState<ReviewResponse, ApiErrorResponse>>({ state: 'loading' });
 
     useEffect(() => {
-        setReviews(transformQueryIntoContentState(getReviewsQuery))
+        setReviews(transformQueryIntoContentState(getReviewsQuery));
     }, [getReviewsQuery.data]);
 
     function renderContent() {
@@ -50,7 +50,7 @@ export default function Reviews({ user, withTitle = true }: Props): ReactElement
                                         flexDirection: 'column',
                                         alignItems: 'center',
                                         width: '100%',
-                                        mt: 2,
+                                        pt: 2,
                                     }}
                                 >
                                     <img src={VoidImage} height={96} width={96} alt={'nothing'} />

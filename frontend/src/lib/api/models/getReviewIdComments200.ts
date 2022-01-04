@@ -6,9 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { GetReviewIdComments200Status } from './getReviewIdComments200Status';
-import type { Review } from './review';
+import type { Comment } from './comment';
 
 export type GetReviewIdComments200 = {
   status: GetReviewIdComments200Status;
-  comments?: Review[];
+  comments: Comment[];
 };
