@@ -17,7 +17,9 @@ import type {
   GetThreadId200,
   ApiErrorResponse,
   NoContentResponse,
-  GetCommentId200
+  GetCommentId200,
+  PatchCommentId200,
+  PatchComment
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
 
@@ -124,6 +126,37 @@ export const useGetCommentId = <TData = AsyncReturnType<typeof getCommentId>, TE
 }
 
 /**
+ * update the contents of a comment by id.
+ * @summary Update a comment
+ */
+export const patchCommentId = (
+    id: string,
+    patchComment: PatchComment,
+ ) => {
+      return customInstance<PatchCommentId200>(
+      {url: `/comment/${id}`, method: 'patch',
+      data: patchComment
+    },
+      );
+    }
+  
+
+
+    export const usePatchCommentId = <TError = ApiErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof patchCommentId>, TError,{id: string;data: PatchComment}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof patchCommentId>, {id: string;data: PatchComment}> = (props) => {
+          const {id,data} = props || {};
+
+          return  patchCommentId(id,data,)
+        }
+
+      return useMutation<AsyncReturnType<typeof patchCommentId>, TError, {id: string;data: PatchComment}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
  * delete comment by user id.
  * @summary Delete a comment
  */

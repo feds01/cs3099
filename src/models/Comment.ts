@@ -14,6 +14,7 @@ export interface IComment {
     };
     replying?: mongoose.ObjectId;
     thread?: mongoose.ObjectId;
+    edited: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -24,7 +25,7 @@ type PopulatedComment = (IComment & {
     owner: IUser;
 };
 
-interface ICommentDocument extends IComment, Document {}
+interface ICommentDocument extends IComment, Document { }
 
 interface ICommentModel extends Model<ICommentDocument> {
     project: (user: IComment) => Partial<IComment>;
@@ -38,6 +39,7 @@ const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
         contents: { type: String, required: true },
         thread: { type: mongoose.Schema.Types.ObjectId, required: false },
         replying: { type: mongoose.Schema.Types.ObjectId, ref: 'comment', required: false },
+        edited: { type: Boolean, default: false },
         anchor: {
             start: { type: Number },
             end: { type: Number },
@@ -56,7 +58,7 @@ const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
  * @returns A partial comment object with selected fields that are to be projected.
  */
 CommentSchema.statics.project = (comment: PopulatedComment) => {
-    const { publication, owner, contents, filename, thread, replying, anchor, review } = comment;
+    const { publication, owner, contents, filename, edited, thread, replying, anchor, review } = comment;
 
     return {
         publication,
@@ -65,6 +67,7 @@ CommentSchema.statics.project = (comment: PopulatedComment) => {
         ...(typeof filename !== 'undefined' && { filename }),
         ...(typeof thread !== 'undefined' && { thread }),
         ...(typeof replying !== 'undefined' && { replying }),
+        edited,
         anchor,
         review,
         createdAt: comment.createdAt.getTime(),
