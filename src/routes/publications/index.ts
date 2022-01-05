@@ -536,11 +536,6 @@ registerRoute(router, '/:username/:name/:revision?', {
                 status: 'ok',
                 message: 'Successfully deleted resource.',
             });
-
-            return res.status(200).json({
-                status: 'ok',
-                message: 'Successfully deleted publication.',
-            });
         } catch (e: unknown) {
             Logger.error(e);
 
