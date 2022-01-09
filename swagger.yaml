@@ -1582,6 +1582,45 @@ paths:
                                         $ref: '#/components/schemas/Comment'
                 default:
                     $ref: '#/components/responses/ApiError'
+        patch:
+            summary: Update a comment
+            description: update the contents of a comment by id.
+            tags:
+                - comments
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: comment id.
+            requestBody:
+                required: true
+                description: Provide the new contents of the comment as a string.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PatchComment'
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                properties:
+                                    status:
+                                        type: string
+                                        example: 'ok'
+                                        enum: ['ok']
+                                    comment:
+                                        $ref: '#/components/schemas/Comment'
+                default:
+                    $ref: '#/components/responses/ApiError'
         delete:
             summary: Delete a comment
             description: delete comment by user id.
@@ -2215,6 +2254,14 @@ components:
                             updatedAt:
                                 type: number
                                 example: 1283723481237
+        PatchComment:
+            type: object
+            required:
+                - contents
+            properties:
+                contents:
+                    type: string
+                    example: 'This is a comment'
         Review:
             type: object
             required:

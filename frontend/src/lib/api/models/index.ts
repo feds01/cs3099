@@ -110,3 +110,6 @@ export * from './getReviewIdComments200';
 export * from './getReviewIdComments200Status';
 export * from './putReviewIdComment200Status';
 export * from './putReviewIdComment200';
+export * from './patchComment';
+export * from './patchCommentId200';
+export * from './patchCommentId200Status';
