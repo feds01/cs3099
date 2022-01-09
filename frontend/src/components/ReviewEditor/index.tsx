@@ -53,13 +53,14 @@ function CodeSourceList({ entries, review }: CodeSourceListProps) {
 
     return (
         <>
-            {entries.map((entry) => {
+            {entries.map((entry, index) => {
                 const fileComments = fileCommentMap.get(entry.filename);
 
                 return (
                     <CodeRenderer
                         review={review}
                         key={entry.filename}
+                        id={`file-${index}`}
                         titleBar
                         filename={entry.filename}
                         contents={entry.contents}
