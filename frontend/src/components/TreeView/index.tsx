@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import TreeView from '@mui/lab/TreeView';
 import Collapse from '@mui/material/Collapse';
 import { alpha, styled } from '@mui/material/styles';
@@ -7,9 +8,9 @@ import { BiMessageAltAdd } from 'react-icons/bi';
 import { ReactElement, useState, useEffect } from 'react';
 import TreeItem, { TreeItemProps, treeItemClasses } from '@mui/lab/TreeItem';
 import { RiFolderOpenFill, RiFolderFill, RiFileFill } from 'react-icons/ri';
-import { getExtension, IconMap } from '../../lib/utils/file';
+
 import { Comment } from '../../lib/api/models';
-import Box from '@mui/material/Box';
+import { getExtension, IconMap } from '../../lib/utils/file';
 
 type FileEntry = { type: 'file'; name: string; id: string };
 type DirEntry = { type: 'directory'; name: string; entries: (FileEntry | DirEntry)[]; id: string };
@@ -204,7 +205,13 @@ export default function CustomizedTreeView({ paths, comments }: Props): ReactEle
             expanded={expanded}
             defaultCollapseIcon={<RiFolderOpenFill />}
             defaultExpandIcon={<RiFolderFill />}
-            disableSelection
+            onNodeSelect={(_: React.SyntheticEvent, id: string) => {
+                let index = paths.indexOf(id.substring(1, id.length));
+
+                if (index !== -1) {
+                    document.getElementById(`file-${index}`)?.scrollIntoView();
+                }
+            }}
             defaultEndIcon={<RiFileFill />}
             sx={{ height: 264, flexGrow: 1, maxWidth: 400, overflowY: 'auto' }}
         >
