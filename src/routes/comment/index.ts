@@ -16,7 +16,7 @@ registerRoute(router, '/:id', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'comment', level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
 
@@ -67,7 +67,7 @@ registerRoute(router, '/:id', {
     query: z.object({}),
     body: z.object({ contents: z.string().min(1) }),
     params: z.object({ id: ObjectIdSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'comment', level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { contents } = req.body;
@@ -108,7 +108,7 @@ registerRoute(router, '/:id', {
     method: 'delete',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: IUserRole.Moderator,
+    permission: { kind: 'comment', level: IUserRole.Administrator },
     handler: async (req, res) => {
         const { id } = req.params;
 
