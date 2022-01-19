@@ -18,7 +18,7 @@ import authRouter from './routes/auth';
 import sgSsoRouter from './routes/sg/sso';
 import threadsRouter from './routes/threads';
 import reviewsRouter from './routes/reviews';
-import commentRouter from './routes/comments';
+import commentRouter from './routes/comment';
 import resourcesRouter from './routes/resources';
 import sgResourcesRouter from './routes/sg/resources';
 import publicationsRouter from './routes/publications';
@@ -54,7 +54,7 @@ const options = {
         './routes/reviews/index.ts',
         './routes/publications/index.ts',
         './routes/threads/index.ts',
-        './routes/comments/index.ts',
+        './routes/comment/index.ts',
     ],
 };
 
@@ -79,7 +79,7 @@ app.use('(\/api)?/review', reviewsRouter);
 app.use('(\/api)?/resource', resourcesRouter);
 app.use('(\/api)?/publication', publicationsRouter);
 app.use('(\/api)?/thread', threadsRouter);
-app.use('(\/api)?/comment', commentRouter)
+app.use('(\/api)?/comment', commentRouter);
 
 app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     // This check makes sure this is a JSON parsing issue, but it might be

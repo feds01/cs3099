@@ -7,11 +7,47 @@ import { ReactElement, useEffect, useState } from 'react';
 import { usePutReviewIdComment } from '../../lib/api/reviews/reviews';
 import { useNotificationDispatch } from '../../hooks/notification';
 import CircularProgress from '@mui/material/CircularProgress';
+import { usePatchCommentId } from '../../lib/api/comments/comments';
 
-interface Props {
+/**
+ * Prop types for the comment editor.
+ */
+interface CommentEditorProps {
+    /**
+     * Whether or not the comment editor is creating a new comment or modifying an old
+     * entry.
+     */
+    isModifying: boolean;
+    /**
+     * The filename the comment is attached to.
+     *
+     * @@Future: change this is a optional field as general comments are a thing.
+     */
     filename: string;
+    /**
+     * The location of the comment in the file.
+     *
+     * @@Future: this value should depend on whether a filename is provided or not.
+     */
     location: number;
+    /**
+     * The ID of the review that is attached to the comment.
+     */
     reviewId: string;
+
+    /**
+     * If the comment is being edited, then the comment id needs to be provided.
+     */
+    commentId?: string;
+
+    /**
+     * Optional initial content state of the comment editor
+     */
+    contents?: string;
+
+    /**
+     * Function that is fired when the comment is closed
+     */
     onClose: () => void;
 }
 
@@ -19,37 +55,63 @@ interface Props {
 // TODO: we can also use the suggestion for usernames.
 
 // https://codesandbox.io/s/react-mde-latest-forked-f9ti5?file=/src/index.js
-export default function CommentEditor({ reviewId, filename, onClose, location }: Props): ReactElement {
+export default function CommentEditor({
+    isModifying = false,
+    contents = '',
+    reviewId,
+    commentId,
+    filename,
+    onClose,
+    location,
+}: CommentEditorProps): ReactElement {
     const { refetch } = useReviewDispatch();
     const notificationDispatcher = useNotificationDispatch();
 
-    const [value, setValue] = useState<string>('');
+    const [value, setValue] = useState<string>(contents);
     const [selectedTab, setSelectedTab] = useState<'write' | 'preview'>('write');
 
-    const { isLoading, data, error, isError, mutateAsync } = usePutReviewIdComment();
+    const postComment = usePutReviewIdComment();
+    const updateComment = usePatchCommentId();
 
     useEffect(() => {
-        if (!isLoading && data) {
+        if ((!postComment.isLoading && postComment.data) || (!updateComment.isLoading && updateComment.data)) {
             refetch();
 
-            notificationDispatcher({
-                type: 'add',
-                item: { severity: 'success', message: 'Successfully posted comment' },
-            });
+            if (isModifying) {
+                notificationDispatcher({
+                    type: 'add',
+                    item: { severity: 'success', message: 'Successfully updated comment.' },
+                });
+            } else {
+                notificationDispatcher({
+                    type: 'add',
+                    item: { severity: 'success', message: 'Successfully posted comment' },
+                });
+            }
             onClose();
-        } else if (isError && error) {
+        } else if ((postComment.isError && postComment.error) || (updateComment.isError && updateComment.error)) {
             notificationDispatcher({
                 type: 'add',
                 item: { severity: 'error', message: 'Failed to post comment' },
             });
         }
-    }, [data, isLoading]);
+    }, [postComment.data, postComment.isLoading, updateComment.data, updateComment.isLoading]);
 
-    const onSubmit = async () =>
-        await mutateAsync({
-            id: reviewId,
-            data: { filename, anchor: { start: location + 1, end: location + 2 }, contents: value },
-        });
+    const onSubmit = async () => {
+        if (isModifying && commentId) {
+            return await updateComment.mutateAsync({
+                id: commentId,
+                data: { contents: value },
+            });
+        } else {
+            return await postComment.mutateAsync({
+                id: reviewId,
+                data: { filename, anchor: { start: location + 1, end: location + 2 }, contents: value },
+            });
+        }
+    };
+
+    const isLoading = postComment.isLoading || updateComment.isLoading;
 
     return (
         <Box>
