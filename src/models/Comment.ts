@@ -20,7 +20,7 @@ export interface IComment {
 }
 
 type PopulatedComment = (IComment & {
-    _id: any;
+    _id: string;
 }) & {
     owner: IUser;
 };
@@ -58,9 +58,11 @@ const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
  * @returns A partial comment object with selected fields that are to be projected.
  */
 CommentSchema.statics.project = (comment: PopulatedComment) => {
-    const { publication, owner, contents, filename, edited, thread, replying, anchor, review } = comment;
+    const { publication, owner, contents, filename, edited, thread, replying, anchor, review } =
+        comment;
 
     return {
+        id: comment._id,
         publication,
         author: User.project(owner), // @@Cleanup: change this to being owner??
         contents,

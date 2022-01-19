@@ -9,6 +9,8 @@ import type { CommentAnchor } from './commentAnchor';
 import type { User } from './user';
 
 export interface Comment {
+  id: string;
+  edited: boolean;
   filename: string;
   anchor?: CommentAnchor;
   contents: string;

@@ -12,7 +12,7 @@ const router = express.Router();
 /**
  *
  */
-registerRoute(router, '/comment/:id', {
+registerRoute(router, '/:id', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
@@ -55,14 +55,14 @@ registerRoute(router, '/comment/:id', {
  * }
  *
  * @description Method to patch the contents of a comment. Once a comment is updated once, the
- * "edited" flag is set to true on the comment so that the UI can reflect that that the comment 
+ * "edited" flag is set to true on the comment so that the UI can reflect that that the comment
  * has been modified from it's original state.
  *
  * @error {UNAUTHORIZED} if the user doesn't have permissions to edit the comment.
  *
  * @return sends the newly patched comment back
  */
-registerRoute(router, '/comment/:id', {
+registerRoute(router, '/:id', {
     method: 'patch',
     query: z.object({}),
     body: z.object({ contents: z.string().min(1) }),
@@ -84,7 +84,14 @@ registerRoute(router, '/comment/:id', {
         }
 
         // Patch the comment here and set the state of the comment as 'edited'
-        const updatedComment = await Comment.findOneAndUpdate({ id: comment.id }, { $set: { contents, edited: true } }, { new: true }).exec();
+        const updatedComment = await Comment.findOneAndUpdate(
+            { id: comment.id },
+            { $set: { contents, edited: true } },
+            { new: true },
+        )
+            .populate<{ owner: IUserDocument }[]>('owner')
+            .exec();
+
         assert(updatedComment !== null);
 
         return res.status(200).json({
@@ -94,11 +101,10 @@ registerRoute(router, '/comment/:id', {
     },
 });
 
-
 /**
  *
  */
-registerRoute(router, '/comment/:id', {
+registerRoute(router, '/:id', {
     method: 'delete',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),

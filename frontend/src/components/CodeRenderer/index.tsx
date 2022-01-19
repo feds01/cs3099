@@ -164,7 +164,7 @@ export default function CodeRenderer({
                                     {commentMap.get(i + 1)?.map((comment, index) => {
                                         return (
                                             <Box key={index} sx={{ pt: 1, pb: 1 }}>
-                                                <CommentCard comment={comment} />
+                                                <CommentCard review={review} comment={comment} />
                                             </Box>
                                         );
                                     })}
