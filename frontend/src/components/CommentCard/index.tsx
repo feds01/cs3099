@@ -1,5 +1,5 @@
 import { formatDistance } from 'date-fns';
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement, useEffect, useState } from 'react';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Card, CardContent, Typography, CardHeader, IconButton, Menu, MenuItem, Divider, Box } from '@mui/material';
 
@@ -8,6 +8,9 @@ import UserAvatar from '../UserAvatar';
 import CommentEditor from '../CommentEditor';
 import MarkdownRenderer from '../MarkdownRenderer';
 import { Comment, Review } from '../../lib/api/models';
+import { useDeleteCommentId } from '../../lib/api/comments/comments';
+import { useNotificationDispatch } from '../../hooks/notification';
+import { useReviewDispatch } from '../../hooks/review';
 
 interface CommentCardProps {
     comment: Comment;
@@ -15,11 +18,33 @@ interface CommentCardProps {
 }
 
 export default function CommentCard({ comment, review }: CommentCardProps): ReactElement {
-    const [editingComment, setEditingComment] = useState<boolean>(false);
+    const { refetch } = useReviewDispatch();
+    const notificationDispatcher = useNotificationDispatch();
 
     // Comment card editing menu
+    const [editingComment, setEditingComment] = useState<boolean>(false);
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const isOpen = Boolean(anchorEl);
+
+    // Comment card deleting functionality
+    const deleteComment = useDeleteCommentId();
+
+    useEffect(() => {
+        if (!deleteComment.isLoading && deleteComment.data) {
+            notificationDispatcher({
+                type: 'add',
+                item: { severity: 'success', message: 'Successfully deleted comment.' },
+            });
+
+            // Send a refetch signal to the review editor as we need to show that the comment is deleted. 
+            refetch();
+        } else if (deleteComment.isError && deleteComment.error) {
+            notificationDispatcher({
+                type: 'add',
+                item: { severity: 'error', message: "Couldn't delete comment." },
+            });
+        }
+    }, [deleteComment.isLoading, deleteComment.data]);
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -35,6 +60,7 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
     };
 
     const handleDeleteComment = () => {
+        deleteComment.mutateAsync({id: comment.id});
         handleClose();
     };
 
@@ -95,11 +121,15 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                 open={isOpen}
                 onClose={handleClose}
             >
-                <MenuItem disabled={editingComment} onClick={handleEditComment} disableRipple>
+                <MenuItem
+                    disabled={editingComment || deleteComment.isLoading}
+                    onClick={handleEditComment}
+                    disableRipple
+                >
                     Edit comment
                 </MenuItem>
                 <Divider />
-                <MenuItem onClick={handleDeleteComment} disableRipple>
+                <MenuItem disabled={deleteComment.isLoading} onClick={handleDeleteComment} disableRipple>
                     <Typography sx={{ fontWeight: 'bold', color: (t) => t.palette.error.main }}>
                         Delete comment
                     </Typography>

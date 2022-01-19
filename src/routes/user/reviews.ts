@@ -17,7 +17,7 @@ registerRoute(router, '/:username/reviews', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'review', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -51,7 +51,7 @@ registerRoute(router, '/:username/comments', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'comment', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;

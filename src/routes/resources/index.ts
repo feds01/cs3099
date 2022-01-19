@@ -26,7 +26,7 @@ registerRoute(router, '/upload/:username', {
     query: z.object({ mode: ModeSchema }),
     body: z.any(),
     method: 'post',
-    permission: IUserRole.Default,
+    permission: { kind: 'resource', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -90,7 +90,7 @@ registerRoute(router, '/upload/publication/:id', {
     query: z.object({ revision: z.string().optional() }),
     body: z.any(),
     method: 'post',
-    permission: IUserRole.Default,
+    permission: { kind: 'resource', level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { revision } = req.query;
@@ -180,7 +180,7 @@ registerRoute(router, '/upload/review/:id', {
     query: z.object({}),
     body: z.any(),
     method: 'post',
-    permission: IUserRole.Default,
+    permission: { kind: 'resource', level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { id: userId } = req.requester;

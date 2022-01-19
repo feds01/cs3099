@@ -15,7 +15,7 @@ registerRoute(router, '/:id', {
     method: 'get',
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({}),
-    permission: IUserRole.Default,
+    permission: { kind: 'comment', level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const comments = Comment.find({ thread: new Schema.Types.ObjectId(id) });
@@ -40,7 +40,7 @@ registerRoute(router, '/:id', {
     method: 'delete',
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({}),
-    permission: IUserRole.Moderator,
+    permission: { kind: 'comment', level: IUserRole.Moderator },
     handler: async (req, res) => {
         const { id } = req.params;
 

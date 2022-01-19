@@ -1,4 +1,21 @@
+import Logger from '../common/logger';
+import Comment from '../models/Comment';
+import Publication from '../models/Publication';
 import User, { IUserDocument, IUserRole } from '../models/User';
+
+export type PermissionKind =
+    | 'comment'
+    | 'user'
+    | 'resource'
+    | 'publication'
+    | 'review'
+    | 'bookmark'
+    | 'follower';
+
+export interface Permission {
+    kind: PermissionKind;
+    level: IUserRole;
+}
 
 type ResolvedPermission =
     | {
@@ -15,7 +32,7 @@ type ResolvedPermission =
  * @param permission - The permission variant enum
  * @returns Role represented as an integer.
  */
-export function permissionToInt(permission: IUserRole) {
+export function userRoleToInt(permission: IUserRole) {
     switch (permission) {
         case IUserRole.Moderator:
             return 1;
@@ -33,9 +50,9 @@ export function permissionToInt(permission: IUserRole) {
  * @param right - Right hand-side permission.
  * @returns If the left hand-side permission is greater or equal to right hand-side.
  */
-export function comparePermissions(left: IUserRole, right: IUserRole): boolean {
-    const leftPermission = permissionToInt(left);
-    const rightPermission = permissionToInt(right);
+export function compareUserRoles(left: IUserRole, right: IUserRole): boolean {
+    const leftPermission = userRoleToInt(left);
+    const rightPermission = userRoleToInt(right);
 
     return leftPermission >= rightPermission;
 }
@@ -48,8 +65,9 @@ export function comparePermissions(left: IUserRole, right: IUserRole): boolean {
  * @returns If the user permissions are sufficient, and the user object if they are sufficient.
  */
 export async function ensureValidPermissions(
-    permission: IUserRole | null,
+    permission: Permission | null,
     id: string,
+    externalId?: string,
 ): Promise<ResolvedPermission> {
     if (permission === null) return { valid: false };
 
@@ -58,11 +76,61 @@ export async function ensureValidPermissions(
 
     if (!user) return { valid: false };
 
-    const requiredPermission = permissionToInt(permission);
-    const acquiredPermission = permissionToInt(user.role);
+    const requiredPermission = userRoleToInt(permission.level);
+    const acquiredPermission = userRoleToInt(user.role);
 
     if (acquiredPermission >= requiredPermission) {
         return { valid: true, user };
     }
-    return { valid: false };
+
+    // We can't actually perform a specific subsystem check if no external id is provided
+    if (typeof externalId === 'undefined') {
+        Logger.warn('Attempted to verify permissions via sub-system without externalId');
+        return { valid: false };
+    }
+
+    // Ok here, we need to actually perform some more advanced checks based on the type of permission that is requested
+    switch (permission.kind) {
+        case 'comment': {
+            const comment = await Comment.findOne({ id: externalId }).exec();
+
+            if (!comment || comment.owner.toString() !== user.id) {
+                return { valid: false };
+            }
+
+            return { valid: true, user };
+        }
+        case 'user': {
+            // TODO: Add permission sub-system for user
+            return { valid: false };
+        }
+        case 'resource': {
+            // TODO: Add permission sub-system for resource
+            return { valid: false };
+        }
+        case 'publication': {
+            const publication = await Publication.findOne({ id: externalId }).exec();
+
+            if (!publication || publication.owner.toString() !== user.id) {
+                return { valid: false };
+            }
+
+            return { valid: true, user };
+        }
+        case 'review': {
+            // TODO: Add permission sub-system for review
+            return { valid: false };
+        }
+        case 'bookmark': {
+            // TODO: Add permission sub-system for bookmark
+            return { valid: false };
+        }
+        case 'follower': {
+            // TODO: Add permission sub-system for follower
+            return { valid: false };
+        }
+        default: {
+            return { valid: false };
+        }
+    }
 }

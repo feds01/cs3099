@@ -9,7 +9,7 @@ import * as userUtils from './../../utils/users';
 import registerRoute from '../../lib/requests';
 import User, { IUserRole } from '../../models/User';
 import Publication from '../../models/Publication';
-import { comparePermissions } from '../../lib/permissions';
+import { compareUserRoles } from '../../lib/permissions';
 import { ModeSchema, ResourceSortSchema } from '../../validators/requests';
 import { IPublicationCreationSchema } from '../../validators/publications';
 
@@ -39,7 +39,7 @@ registerRoute(router, '/:username/:name/:revision/all/', {
         revision: z.string(),
     }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'publication', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -110,7 +110,7 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
         revision: z.string().optional(),
     }),
     query: z.object({ mode: ModeSchema, sortBy: ResourceSortSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'publication', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -197,7 +197,7 @@ registerRoute(router, '/', {
     params: z.object({}),
     body: IPublicationCreationSchema,
     query: z.object({}),
-    permission: IUserRole.Default,
+    permission: { kind: 'publication', level: IUserRole.Default },
     handler: async (req, res) => {
         const { name, collaborators, revision } = req.body;
         const { id: owner } = req.requester;
@@ -265,7 +265,7 @@ registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema, pinned: z.enum(['true', 'false']).optional() }),
-    permission: IUserRole.Default,
+    permission: { kind: 'publication', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -303,7 +303,7 @@ registerRoute(router, '/:username/:name/revisions', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema, pinned: z.enum(['true', 'false']).optional() }), // @@TODO: use a boolean schema here
-    permission: IUserRole.Default,
+    permission: { kind: 'publication', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -347,7 +347,7 @@ registerRoute(router, '/:username/:name/:revision?', {
         revision: z.string().optional(),
     }),
     query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).optional() }),
-    permission: IUserRole.Default,
+    permission: { kind: 'publication', level: IUserRole.Default }, // @@Cleanup: needs to be moderator?
     handler: async (req, res) => {
         const requester = req.requester;
         const user = await userUtils.transformUsernameIntoId(req, res);
@@ -384,7 +384,7 @@ registerRoute(router, '/:username/:name/:revision?', {
         if (
             publication.draft &&
             !isOwner &&
-            !comparePermissions(requester.role, IUserRole.Moderator)
+            !compareUserRoles(requester.role, IUserRole.Moderator)
         ) {
             return res.status(404).json({
                 status: 'error',
@@ -427,21 +427,12 @@ registerRoute(router, '/:username/:name/all', {
         name: z.string().nonempty(),
     }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Administrator,
+    permission: { kind: 'publication', level: IUserRole.Administrator },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
-        const requester = req.requester;
         const { name, username } = req.params;
-        const isOwner = user.id === req.requester.id;
-
-        if (!isOwner && !comparePermissions(requester.role, IUserRole.Administrator)) {
-            return res.status(404).json({
-                status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
-        }
 
         const owner = await User.findOne({ username }).exec();
         assert(owner !== null);
@@ -484,24 +475,14 @@ registerRoute(router, '/:username/:name/:revision?', {
         revision: z.string().optional(),
     }),
     query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).default('false') }),
-    permission: IUserRole.Administrator,
+    permission: { kind: 'publication', level: IUserRole.Administrator },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
-        const requester = req.requester;
         const { name, username, revision } = req.params;
 
         const draft = req.query.draft === 'true';
-        const isOwner = user.id === req.requester.id;
-
-        if (!isOwner && !comparePermissions(requester.role, IUserRole.Administrator)) {
-            return res.status(404).json({
-                status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
-        }
-
         const owner = await User.findOne({ username }).exec();
         assert(owner !== null);
 
@@ -559,7 +540,7 @@ registerRoute(router, '/:id/export', {
     }),
     body: z.object({}),
     query: z.object({ mode: ModeSchema, to: z.string().url() }),
-    permission: IUserRole.Default,
+    permission: { kind: 'publication', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
