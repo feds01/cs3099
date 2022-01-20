@@ -14,7 +14,7 @@ registerRoute(router, '/search', {
     method: 'get',
     params: z.object({}),
     query: SearchQuerySchema,
-    permission: IUserRole.Default,
+    permission: { kind: 'publication', level: IUserRole.Default },
     handler: async (_req, res) => {
         // TODO: Implement search endpoint
         return res.status(503).json({

@@ -48,7 +48,7 @@ registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'user', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -102,7 +102,7 @@ registerRoute(router, '/:username', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     body: IUserPatchRequestSchema,
-    permission: IUserRole.Default,
+    permission: { kind: 'user', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -168,7 +168,7 @@ registerRoute(router, '/:username', {
     method: 'delete',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'user', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -213,7 +213,7 @@ registerRoute(router, '/:username/role', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Administrator,
+    permission: { kind: 'user', level: IUserRole.Administrator },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -256,7 +256,7 @@ registerRoute(router, '/:username/role', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     body: IUserRoleRequestSchema,
-    permission: IUserRole.Administrator,
+    permission: { kind: 'user', level: IUserRole.Administrator },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;

@@ -2292,6 +2292,8 @@ components:
         Comment:
             type: object
             required:
+                - id
+                - edited
                 - filename
                 - contents
                 - thread
@@ -2299,6 +2301,12 @@ components:
                 - createdAt
                 - updatedAt
             properties:
+                id:
+                    type: string
+                    example: "id"
+                edited:
+                    type: boolean
+                    example: false
                 filename:
                     type: string
                     example: 'src/server.ts'

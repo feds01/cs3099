@@ -37,7 +37,7 @@ registerRoute(router, '/:username/:name/bookmark', {
     }),
     body: z.object({}),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'bookmark', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -110,7 +110,7 @@ registerRoute(router, '/:username/:name/bookmark', {
         name: z.string().nonempty(),
     }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'bookmark', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -118,7 +118,7 @@ registerRoute(router, '/:username/:name/bookmark', {
         const { username, name } = req.params;
 
         // check if the publication exists, if not then exit early.
-        const publication = await Publication.findOne({ username, name }).exec();
+        const publication = await Bookmark.findOne({ username, name }).exec();
 
         if (!publication) {
             return res.status(404).json({
@@ -161,7 +161,7 @@ registerRoute(router, '/:username/:name/bookmark', {
         name: z.string().nonempty(),
     }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'bookmark', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -214,7 +214,7 @@ registerRoute(router, '/:username/:name/bookmarkers', {
         name: z.string().nonempty(),
     }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'bookmark', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -261,7 +261,7 @@ registerRoute(router, '/:username/bookmarks', {
     method: 'get',
     params: z.object({ username: z.string().nonempty() }),
     query: z.object({ mode: ModeSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'bookmark', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;

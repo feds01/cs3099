@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import Prism from 'prismjs';
 import Box from '@mui/material/Box/Box';
 import CommentCard from '../CommentCard';
@@ -30,6 +30,7 @@ type PrismLib = typeof PrismRR & typeof Prism;
 interface Props {
     contents: string;
     filename: string;
+    id?: string;
     language?: string;
     titleBar?: boolean;
     review?: Review;
@@ -73,6 +74,7 @@ export default function CodeRenderer({
     contents,
     titleBar = false,
     filename,
+    id,
     review,
     comments,
     language,
@@ -124,7 +126,15 @@ export default function CodeRenderer({
                         pr: 1,
                     }}
                 >
-                    <Typography sx={{ fontWeight: 'bold' }}>{filename}</Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
+                        <Typography
+                            {...(typeof id !== 'undefined' && { id })}
+                            sx={{ fontWeight: 'bold' }}
+                            variant={'body1'}
+                        >
+                            {filename}
+                        </Typography>
+                    </Box>
                     <IconButton aria-label="settings">
                         <MoreVertIcon />
                     </IconButton>
@@ -154,7 +164,7 @@ export default function CodeRenderer({
                                     {commentMap.get(i + 1)?.map((comment, index) => {
                                         return (
                                             <Box key={index} sx={{ pt: 1, pb: 1 }}>
-                                                <CommentCard comment={comment} />
+                                                <CommentCard review={review} comment={comment} />
                                             </Box>
                                         );
                                     })}

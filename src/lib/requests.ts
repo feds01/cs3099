@@ -2,8 +2,8 @@ import { z } from 'zod';
 import express from 'express';
 import * as errors from '../common/errors';
 import { getTokensFromHeader } from './auth';
-import { IUserDocument, IUserRole } from '../models/User';
-import { ensureValidPermissions } from './permissions';
+import { IUserDocument } from '../models/User';
+import { ensureValidPermissions, Permission } from './permissions';
 
 type RequestMethodWithBody = 'post' | 'put' | 'patch';
 type RequestMethodWithoutBody = 'delete' | 'get';
@@ -22,10 +22,10 @@ type RegisterRoute<
     Query,
     Method extends RequestMethod,
     Body,
-    Permission extends IUserRole | null,
+    RoutePermission extends Permission | null,
 > = {
     method: Method;
-    permission: Permission;
+    permission: RoutePermission;
     sgMode?: boolean;
     params: z.Schema<Params>;
     query: z.Schema<Query>;
@@ -33,7 +33,7 @@ type RegisterRoute<
         req: Request<
             Params,
             Query,
-            Permission extends null ? null : IUserDocument,
+            RoutePermission extends null ? null : IUserDocument,
             Method extends RequestMethodWithBody ? Body : null
         >,
         res: express.Response,
@@ -45,11 +45,11 @@ export default function registerRoute<
     Query,
     Method extends RequestMethod,
     Body,
-    Permission extends IUserRole | null,
+    RoutePermission extends Permission | null,
 >(
     router: express.Router,
     path: string,
-    registrar: RegisterRoute<Params, Query, Method, Body, Permission>,
+    registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission>,
 ) {
     const wrappedHandler = async (req: express.Request, res: express.Response) => {
         const params = await registrar.params.safeParseAsync(req.params);
@@ -94,9 +94,28 @@ export default function registerRoute<
                 });
             }
 
+            let externalId;
+            // @@Hack: so we assume that any requests that need a permission check via a sub-system pass their
+            //         DocumentId parameter via the path parameters instead of any other way, therefore after verifying
+            //         that the parameter ZodSchema has an id and it is an `ObjectId`, we can get this and use it as
+            //         an external id, thus making a permission check with the id...
+            //
+            //         Personally, I think this is very hacky and could be better handled by a more robust permission
+            //         system that can be generated based on the path of the endpoint using some generator function and
+            //         then checked that way rather than relying on specific endpoint formats.
+            const { hasOwnProperty } = Object.prototype;
+            if (typeof params.data === 'object' && hasOwnProperty.call(params.data, 'id')) {
+                // @ts-ignore @@CLEANUP @@CLEANUP @@CLEANUP
+                externalId = params.data.id as string;
+            }
+
             // Validate the permissions, but skip it if there are no specified permissions for the
             // current request.
-            permissions = await ensureValidPermissions(registrar.permission, token.data.id);
+            permissions = await ensureValidPermissions(
+                registrar.permission,
+                token.data.id,
+                externalId,
+            );
 
             if (!permissions.valid) {
                 return res.status(401).json({
@@ -153,7 +172,7 @@ export default function registerRoute<
                 Query,
                 RequestMethodWithBody,
                 Body,
-                IUserRole
+                Permission
             >;
 
             return await r.handler(
@@ -181,7 +200,7 @@ export default function registerRoute<
             Query,
             RequestMethodWithoutBody,
             Body,
-            IUserRole
+            Permission
         >;
         return await registrarWithBody.handler(
             { ...basicRequest, requester: permissions.user, body: null },

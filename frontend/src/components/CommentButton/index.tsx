@@ -37,6 +37,7 @@ export default function CommentButton({ location, filename, review, children }: 
             {children}
             {showEditor && (
                 <CommentEditor
+                    isModifying={false}
                     filename={filename}
                     location={location}
                     reviewId={review.id}

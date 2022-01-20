@@ -22,7 +22,7 @@ registerRoute(router, '/:id/comment', {
     body: ICommentCreationSchema,
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'review', level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { id: owner } = req.requester;
@@ -168,7 +168,7 @@ registerRoute(router, '/:id/comments', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'review', level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { id: owner } = req.requester;
@@ -221,7 +221,7 @@ registerRoute(router, '/:id/complete', {
     body: z.object({}),
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'review', level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { id: ownerId } = req.requester;
@@ -252,7 +252,7 @@ registerRoute(router, '/:id', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: IUserRole.Default,
+    permission: { kind: 'review', level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { id: ownerId } = req.requester;
@@ -287,7 +287,7 @@ registerRoute(router, '/:id', {
     method: 'delete',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: IUserRole.Administrator,
+    permission: { kind: 'review', level: IUserRole.Administrator },
     handler: async (req, res) => {
         const { id } = req.params;
 
