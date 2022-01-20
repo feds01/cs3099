@@ -27,9 +27,8 @@ interface CommentEditorProps {
     /**
      * The location of the comment in the file.
      *
-     * @@Future: this value should depend on whether a filename is provided or not.
      */
-    location: number;
+    location?: number;
     /**
      * The ID of the review that is attached to the comment.
      */
@@ -72,6 +71,7 @@ export default function CommentEditor({
 
     const postComment = usePutReviewIdComment();
     const updateComment = usePatchCommentId();
+    
 
     useEffect(() => {
         if ((!postComment.isLoading && postComment.data) || (!updateComment.isLoading && updateComment.data)) {
@@ -106,7 +106,11 @@ export default function CommentEditor({
         } else {
             return await postComment.mutateAsync({
                 id: reviewId,
-                data: { filename, anchor: { start: location + 1, end: location + 2 }, contents: value },
+                data: {
+                    filename,
+                    ...(typeof location !== 'undefined' && { anchor: { start: location + 1, end: location + 2 } }),
+                    contents: value,
+                },
             });
         }
     };

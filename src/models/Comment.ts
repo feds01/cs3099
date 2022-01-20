@@ -25,7 +25,7 @@ type PopulatedComment = (IComment & {
     owner: IUser;
 };
 
-interface ICommentDocument extends IComment, Document { }
+interface ICommentDocument extends IComment, Document {}
 
 interface ICommentModel extends Model<ICommentDocument> {
     project: (user: IComment) => Partial<IComment>;
@@ -69,8 +69,8 @@ CommentSchema.statics.project = (comment: PopulatedComment) => {
         ...(typeof filename !== 'undefined' && { filename }),
         ...(typeof thread !== 'undefined' && { thread }),
         ...(typeof replying !== 'undefined' && { replying }),
+        ...(typeof anchor !== 'undefined' && typeof anchor.start !== 'undefined' && { anchor }),
         edited,
-        anchor,
         review,
         createdAt: comment.createdAt.getTime(),
         updatedAt: comment.updatedAt.getTime(),

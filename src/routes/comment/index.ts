@@ -5,7 +5,6 @@ import registerRoute from '../../lib/requests';
 import Comment from '../../models/Comment';
 import { IUserDocument, IUserRole } from '../../models/User';
 import { ObjectIdSchema } from '../../validators/requests';
-import assert from 'assert';
 
 const router = express.Router();
 
@@ -72,27 +71,21 @@ registerRoute(router, '/:id', {
         const { id } = req.params;
         const { contents } = req.body;
 
-        const comment = await Comment.findById(id)
-            .populate<{ owner: IUserDocument }[]>('owner')
-            .exec();
-
-        if (!comment) {
-            return res.status(404).json({
-                status: 'error',
-                message: error.NON_EXISTENT_COMMENT,
-            });
-        }
-
         // Patch the comment here and set the state of the comment as 'edited'
-        const updatedComment = await Comment.findOneAndUpdate(
-            { id: comment.id },
-            { $set: { contents, edited: true } },
+        const updatedComment = await Comment.findByIdAndUpdate(
+            id,
+            { contents, edited: true },
             { new: true },
         )
             .populate<{ owner: IUserDocument }[]>('owner')
             .exec();
 
-        assert(updatedComment !== null);
+        if (!updatedComment) {
+            return res.status(404).json({
+                status: 'error',
+                message: error.NON_EXISTENT_COMMENT,
+            });
+        }
 
         return res.status(200).json({
             status: true,

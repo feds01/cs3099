@@ -5,7 +5,7 @@ import CommentCard from '../CommentCard';
 import CommentButton from '../CommentButton';
 import sortedIndexBy from 'lodash/sortedIndexBy';
 import { Review, Comment } from '../../lib/api/models';
-import { IconButton, styled, Typography } from '@mui/material';
+import { IconButton, Menu, MenuItem, styled, Typography } from '@mui/material';
 import theme from 'prism-react-renderer/themes/github';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { ReactElement, useEffect, useState } from 'react';
@@ -24,6 +24,7 @@ import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-v';
 import 'prismjs/components/prism-json';
+import CommentEditor from '../CommentEditor';
 
 type PrismLib = typeof PrismRR & typeof Prism;
 
@@ -81,37 +82,65 @@ export default function CodeRenderer({
 }: Props): ReactElement {
     const extension = coerceExtensionToLanguage(getExtension(filename) ?? '');
 
+    const [editingComment, setEditingComment] = useState<boolean>(false);
+    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const isOpen = Boolean(anchorEl);
+
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleEditComment = () => {
+        setEditingComment(true);
+        handleClose();
+
+        /// We need to scroll to the end of the file so the user can start editing the file
+        /// comment...
+        document.getElementById(`file-${filename}-container`)?.scrollIntoView({
+            inline: "end"
+        })
+    };
+
     const [commentMap, setCommentMap] = useState<Map<number, Comment[]>>(new Map([]));
+    const [fileComments, setFileComments] = useState<Comment[]>();
 
     // Let's compute where the comments are to be placed once once we get them
     useEffect(() => {
         if (typeof comments !== 'undefined') {
             const newMap = new Map<number, Comment[]>();
+            const collectedFileComments: Comment[] = [];
 
-            // TODO: support general file comments too...
             // TODO: support anchors...
             comments.forEach((comment) => {
-                if (typeof comment.anchor === 'undefined') return;
-
-                const start = comment.anchor.start;
-
-                if (newMap.has(start)) {
-                    let originalArr = newMap.get(start)!;
-                    let insertionIndex = sortedIndexBy(originalArr, comment, (c) => c.updatedAt);
-
-                    // Safety: We mutate the original array so it should still live in the map.
-                    originalArr.splice(insertionIndex, 0, comment);
+                // Essentially, if no anchor is present on the comment, we put it on the file comments
+                if (typeof comment.anchor === 'undefined') {
+                    collectedFileComments.push(comment);
                 } else {
-                    newMap.set(comment.anchor.start, [comment]);
+                    const start = comment.anchor.start;
+
+                    if (newMap.has(start)) {
+                        let originalArr = newMap.get(start)!;
+                        let insertionIndex = sortedIndexBy(originalArr, comment, (c) => c.updatedAt);
+
+                        // Safety: We mutate the original array so it should still live in the map.
+                        originalArr.splice(insertionIndex, 0, comment);
+                    } else {
+                        newMap.set(comment.anchor.start, [comment]);
+                    }
                 }
             });
 
             setCommentMap(newMap);
+            setFileComments(collectedFileComments);
         }
     }, [comments]);
 
     return (
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2 }} id={`file-${filename}-container`}>
             {titleBar && (
                 <Box
                     sx={{
@@ -135,7 +164,7 @@ export default function CodeRenderer({
                             {filename}
                         </Typography>
                     </Box>
-                    <IconButton aria-label="settings">
+                    <IconButton aria-label="file-settings" onClick={handleClick} aria-expanded={isOpen ? 'true' : undefined}>
                         <MoreVertIcon />
                     </IconButton>
                 </Box>
@@ -161,9 +190,9 @@ export default function CodeRenderer({
                                             </LineContent>
                                         </Line>
                                     </CommentButton>
-                                    {commentMap.get(i + 1)?.map((comment, index) => {
+                                    {commentMap.get(i + 1)?.map((comment) => {
                                         return (
-                                            <Box key={index} sx={{ pt: 1, pb: 1 }}>
+                                            <Box key={comment.contents} sx={{ pt: 1, pb: 1 }}>
                                                 <CommentCard review={review} comment={comment} />
                                             </Box>
                                         );
@@ -183,6 +212,40 @@ export default function CodeRenderer({
                     </Pre>
                 )}
             </Highlight>
+            {
+                typeof review !== 'undefined' && fileComments?.map((comment) => {
+                    return (
+                        <Box key={comment.contents} sx={{ pt: 1, pb: 1 }}>
+                            <CommentCard review={review} comment={comment} />
+                        </Box>
+                    );
+                })
+            }
+              {typeof review !== 'undefined' && editingComment && (
+                <CommentEditor
+                    isModifying={false}
+                    filename={filename}
+                    reviewId={review.id}
+                    onClose={() => setEditingComment(false)}
+                />
+            )}
+             <Menu
+                id="comment-settings"
+                MenuListProps={{
+                    'aria-labelledby': 'long-button',
+                }}
+                anchorEl={anchorEl}
+                open={isOpen}
+                onClose={handleClose}
+            >
+                <MenuItem
+                    disabled={editingComment}
+                    onClick={handleEditComment}
+                    disableRipple
+                >
+                    Add comment
+                </MenuItem>
+            </Menu>
         </Box>
     );
 }
