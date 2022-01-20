@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { User } from '../lib/api/models';
-import React, { Dispatch, FC, useContext, useReducer } from 'react';
+import { usePostAuthSession } from '../lib/api/auth/auth';
+import React, { Dispatch, FC, useContext, useEffect, useReducer } from 'react';
 
 export type AuthStateAction =
     | { type: 'login'; rememberUser: boolean; data: { session: User; token: string; refreshToken: string } }
     | { type: 'data'; data: User }
-    | { type: 'logout' }
-    | { type: 'refresh' };
+    | { type: 'logout' };
 
 export type AuthState = {
     session: User | null;
@@ -74,9 +74,6 @@ export function authReducer(state: AuthState, action: AuthStateAction): AuthStat
             sessionStorage.clear();
 
             return { session: null, token: null, refreshToken: null, isLoggedIn: false };
-        case 'refresh':
-            // TODO: make a call to the token refresh endpoint
-            return state;
     }
 }
 
@@ -86,8 +83,6 @@ const initAuth = (state: AuthState): AuthState => {
 
     if (token && refreshToken) {
         state.token = token;
-
-        // TODO: verify token endpoint
         state.isLoggedIn = true;
 
         try {
@@ -110,6 +105,30 @@ const initAuth = (state: AuthState): AuthState => {
 
 export const AuthProvider: FC = ({ children }) => {
     const [state, dispatch] = useReducer(authReducer, initialState, initAuth);
+    const sessionQuery = usePostAuthSession();
+
+    useEffect(() => {
+        // Attempt to refresh tokens if there are tokens...
+        if (state.isLoggedIn && state.refreshToken && state.token) {
+            sessionQuery.mutate({
+                data: {
+                    token: state.token,
+                    refreshToken: state.refreshToken,
+                },
+            });
+        }
+    }, []);
+
+    useEffect(() => {
+        if (sessionQuery.data) {
+            const { status, ...data } = sessionQuery.data;
+            const { token, refreshToken } = data;
+            dispatch({ type: 'login', rememberUser: true, data: { session: data.user, token, refreshToken } });
+        } else if (sessionQuery.error) {
+            // Hmm, couldn't refresh the tokens for whatever reason, so logout...
+            dispatch({ type: 'logout' });
+        }
+    }, [sessionQuery.data]);
 
     return <AuthContext.Provider value={{ state, dispatch }}>{children}</AuthContext.Provider>;
 };

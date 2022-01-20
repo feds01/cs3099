@@ -89,8 +89,8 @@ const theme = createTheme({
 
 function App(): ReactElement {
     return (
-        <AuthProvider>
-            <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>
                 <ThemeProvider theme={theme}>
                     <NotificationProvider>
                         <NotificationDisplay>
@@ -121,8 +121,8 @@ function App(): ReactElement {
                         </NotificationDisplay>
                     </NotificationProvider>
                 </ThemeProvider>
-            </QueryClientProvider>
-        </AuthProvider>
+            </AuthProvider>
+        </QueryClientProvider>
     );
 }
 
