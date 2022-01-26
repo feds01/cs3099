@@ -5,7 +5,6 @@ import { useDispatchAuth } from '../../hooks/auth';
 import { ReactElement, useEffect, useState } from 'react';
 import { usePostAuthSession } from '../../lib/api/auth/auth';
 
-interface Props {}
 
 const SessionSchema = z.object({
     redirect: z.string(), // @@Cleanup: validate using regex for resource path?
@@ -13,7 +12,7 @@ const SessionSchema = z.object({
     refreshToken: z.string(),
 });
 
-export default function Session(props: Props): ReactElement {
+export default function Session(): ReactElement {
     const history = useHistory();
     const location = useLocation();
     const sessionQuery = usePostAuthSession();
