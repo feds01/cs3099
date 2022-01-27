@@ -1,9 +1,11 @@
 import TreeView from '../TreeView';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import ErrorBanner from '../ErrorBanner';
 import CodeRenderer from '../CodeRenderer';
 import { ContentState } from '../../types/requests';
 import LinearProgress from '@mui/material/LinearProgress';
+import CircularProgress from '@mui/material/CircularProgress';
 import { ReactElement, useEffect, useState } from 'react';
 import { transformQueryIntoContentState } from '../../wrappers/react-query';
 import { useGetPublicationUsernameNameRevisionAll } from '../../lib/api/publications/publications';
@@ -15,11 +17,9 @@ import {
     Review,
     Comment,
 } from '../../lib/api/models';
+import { useNotificationDispatch } from '../../hooks/notification';
 import { ReviewProvider, useReviewState } from '../../hooks/review';
 import { useGetReviewIdComments, usePostReviewIdComplete } from '../../lib/api/reviews/reviews';
-import CircularProgress from '@mui/material/CircularProgress';
-import Button from '@mui/material/Button';
-import { useNotificationDispatch } from '../../hooks/notification';
 
 interface ReviewEditorProps {
     review: Review;
@@ -52,7 +52,7 @@ function CodeSourceList({ entries, review }: CodeSourceListProps) {
     }, [comments]);
 
     return (
-        <>
+        <Box sx={{pb: 4}}>
             {entries.map((entry, index) => {
                 const fileComments = fileCommentMap.get(entry.filename);
 
@@ -68,7 +68,7 @@ function CodeSourceList({ entries, review }: CodeSourceListProps) {
                     />
                 );
             })}
-        </>
+        </Box>
     );
 }
 

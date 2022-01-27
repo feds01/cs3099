@@ -69,7 +69,7 @@ export default function Source({ refetchPublication, publication }: Props): Reac
                     publication={publication}
                 />
             ) : (
-                <Box sx={{ m: 2, display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                <Box sx={{ p: 2, display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
                     <img src={Void} height={128} width={128} alt="void" />
                     <Typography variant={'body1'}>This publication doesn't have any sources yet.</Typography>
                 </Box>

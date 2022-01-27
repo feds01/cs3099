@@ -4,13 +4,14 @@ import Box from '@mui/material/Box/Box';
 import CommentCard from '../CommentCard';
 import CommentButton from '../CommentButton';
 import sortedIndexBy from 'lodash/sortedIndexBy';
+import CommentEditor from '../CommentEditor';
 import { Review, Comment } from '../../lib/api/models';
-import { IconButton, Menu, MenuItem, styled, Typography } from '@mui/material';
 import theme from 'prism-react-renderer/themes/github';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { ReactElement, useEffect, useState } from 'react';
 import { coerceExtensionToLanguage, getExtension } from '../../lib/utils/file';
 import Highlight, { Language, Prism as PrismRR } from 'prism-react-renderer';
+import { BoxProps, Button, IconButton, Menu, MenuItem, Skeleton, styled, Typography } from '@mui/material';
 
 // We have to essentially pre-load all of the languages
 import 'prismjs/components/prism-typescript';
@@ -24,19 +25,16 @@ import 'prismjs/components/prism-python';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-v';
 import 'prismjs/components/prism-json';
-import CommentEditor from '../CommentEditor';
+
+// This is used to represent the default maximum size of source files that are
+// rendered without the user explicitly asking them to be rendered.
+const DEFAULT_SOURCE_FILE_LIMIT = 500;
+
+function shouldRenderByDefault(contents: string): boolean {
+    return contents.split(/\r\n|\r|\n/).length < DEFAULT_SOURCE_FILE_LIMIT;
+}
 
 type PrismLib = typeof PrismRR & typeof Prism;
-
-interface Props {
-    contents: string;
-    filename: string;
-    id?: string;
-    language?: string;
-    titleBar?: boolean;
-    review?: Review;
-    comments?: Comment[];
-}
 
 export const Wrapper = styled('div')`
     font-family: sans-serif;
@@ -71,6 +69,44 @@ export const LineContent = styled('span')`
     display: table-cell;
 `;
 
+
+/**
+ * This is a component used to display a file that won't be automatically loaded due to it's large size.
+ * 
+ * @param props - Any props that are passed to the Box component that surrounds the inner body.
+ */
+const FileSkeleton = (props: BoxProps) => {
+    return (
+        <Box {...props}>
+            <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'nowrap' }}>
+                <Skeleton animation={false} width={80} sx={{ mr: 1 }}>
+                    <Typography>.</Typography>
+                </Skeleton>
+                <Skeleton animation={false} width={97}>
+                    <Typography>.</Typography>
+                </Skeleton>
+            </Box>
+            <Skeleton animation={false} width={140}>
+                <Typography>.</Typography>
+            </Skeleton>
+            <Skeleton animation={false} width={97}>
+                <Typography>.</Typography>
+            </Skeleton>
+        </Box>
+    );
+};
+
+interface CodeRendererProps {
+    contents: string;
+    filename: string;
+    id?: string;
+    language?: string;
+    titleBar?: boolean;
+    review?: Review;
+    comments?: Comment[];
+    forceRender?: boolean;
+}
+
 export default function CodeRenderer({
     contents,
     titleBar = false,
@@ -79,9 +115,11 @@ export default function CodeRenderer({
     review,
     comments,
     language,
-}: Props): ReactElement {
+    forceRender = false,
+}: CodeRendererProps): ReactElement {
     const extension = coerceExtensionToLanguage(getExtension(filename) ?? '');
 
+    const [renderSources, setRenderSources] = useState<boolean>(forceRender || shouldRenderByDefault(contents));
     const [editingComment, setEditingComment] = useState<boolean>(false);
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const isOpen = Boolean(anchorEl);
@@ -101,8 +139,8 @@ export default function CodeRenderer({
         /// We need to scroll to the end of the file so the user can start editing the file
         /// comment...
         document.getElementById(`file-${filename}-container`)?.scrollIntoView({
-            inline: "end"
-        })
+            inline: 'end',
+        });
     };
 
     const [commentMap, setCommentMap] = useState<Map<number, Comment[]>>(new Map([]));
@@ -110,7 +148,7 @@ export default function CodeRenderer({
 
     // Let's compute where the comments are to be placed once once we get them
     useEffect(() => {
-        if (typeof comments !== 'undefined') {
+        if (renderSources && typeof comments !== 'undefined') {
             const newMap = new Map<number, Comment[]>();
             const collectedFileComments: Comment[] = [];
 
@@ -137,7 +175,7 @@ export default function CodeRenderer({
             setCommentMap(newMap);
             setFileComments(collectedFileComments);
         }
-    }, [comments]);
+    }, [comments, renderSources]);
 
     return (
         <Box sx={{ p: 2 }} id={`file-${filename}-container`}>
@@ -164,23 +202,48 @@ export default function CodeRenderer({
                             {filename}
                         </Typography>
                     </Box>
-                    <IconButton aria-label="file-settings" onClick={handleClick} aria-expanded={isOpen ? 'true' : undefined}>
+                    <IconButton
+                        aria-label="file-settings"
+                        disabled={!renderSources}
+                        onClick={handleClick}
+                        aria-expanded={isOpen ? 'true' : undefined}
+                    >
                         <MoreVertIcon />
                     </IconButton>
                 </Box>
             )}
-            <Highlight
-                Prism={Prism as PrismLib}
-                theme={theme}
-                code={contents}
-                language={extension as unknown as Language} // @@Hack: this fucking library defined their own lang types..
-            >
-                {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                    <Pre className={className} style={style}>
-                        {tokens.map((line, i) =>
-                            typeof review !== 'undefined' ? (
-                                <React.Fragment key={i}>
-                                    <CommentButton review={review} location={i} filename={filename}>
+            <Box sx={{ border: '1px solid', borderTop: titleBar ? 0 : 1, borderColor: (t) => t.palette.divider }}>
+                {renderSources ? (
+                    <Highlight
+                        Prism={Prism as PrismLib}
+                        theme={theme}
+                        code={contents}
+                        language={extension as unknown as Language} // @@Hack: this fucking library defined their own lang types..
+                    >
+                        {({ className, style, tokens, getLineProps, getTokenProps }) => (
+                            <Pre className={className} style={style}>
+                                {tokens.map((line, i) =>
+                                    typeof review !== 'undefined' ? (
+                                        <React.Fragment key={i}>
+                                            <CommentButton review={review} location={i} filename={filename}>
+                                                <Line {...getLineProps({ line, key: i })}>
+                                                    <LineNo>{i + 1}</LineNo>
+                                                    <LineContent>
+                                                        {line.map((token, key) => (
+                                                            <span key={key} {...getTokenProps({ token, key })} />
+                                                        ))}
+                                                    </LineContent>
+                                                </Line>
+                                            </CommentButton>
+                                            {commentMap.get(i + 1)?.map((comment) => {
+                                                return (
+                                                    <Box key={comment.contents} sx={{ pt: 1, pb: 1 }}>
+                                                        <CommentCard review={review} comment={comment} />
+                                                    </Box>
+                                                );
+                                            })}
+                                        </React.Fragment>
+                                    ) : (
                                         <Line {...getLineProps({ line, key: i })}>
                                             <LineNo>{i + 1}</LineNo>
                                             <LineContent>
@@ -189,39 +252,48 @@ export default function CodeRenderer({
                                                 ))}
                                             </LineContent>
                                         </Line>
-                                    </CommentButton>
-                                    {commentMap.get(i + 1)?.map((comment) => {
-                                        return (
-                                            <Box key={comment.contents} sx={{ pt: 1, pb: 1 }}>
-                                                <CommentCard review={review} comment={comment} />
-                                            </Box>
-                                        );
-                                    })}
-                                </React.Fragment>
-                            ) : (
-                                <Line {...getLineProps({ line, key: i })}>
-                                    <LineNo>{i + 1}</LineNo>
-                                    <LineContent>
-                                        {line.map((token, key) => (
-                                            <span key={key} {...getTokenProps({ token, key })} />
-                                        ))}
-                                    </LineContent>
-                                </Line>
-                            ),
+                                    ),
+                                )}
+                            </Pre>
                         )}
-                    </Pre>
+                    </Highlight>
+                ) : (
+                    <>
+                        <FileSkeleton sx={{ position: 'absolute', p: 1, zIndex: 10, width: '100%' }} />
+                        <Box
+                            sx={{
+                                p: 2,
+                                zIndex: 20,
+                                display: 'flex',
+                                alignItems: 'center',
+                                flexDirection: 'column',
+                            }}
+                        >
+                            <Button
+                                variant="contained"
+                                sx={{ fontWeight: 'bold', zIndex: 10 }}
+                                size={'small'}
+                                color="primary"
+                                onClick={() => {
+                                    setRenderSources(true);
+                                }}
+                            >
+                                Load file
+                            </Button>
+                            <Typography variant={'body1'}>Large files aren't rendered by default</Typography>
+                        </Box>
+                    </>
                 )}
-            </Highlight>
-            {
-                typeof review !== 'undefined' && fileComments?.map((comment) => {
+            </Box>
+            {typeof review !== 'undefined' &&
+                fileComments?.map((comment) => {
                     return (
                         <Box key={comment.contents} sx={{ pt: 1, pb: 1 }}>
                             <CommentCard review={review} comment={comment} />
                         </Box>
                     );
-                })
-            }
-              {typeof review !== 'undefined' && editingComment && (
+                })}
+            {typeof review !== 'undefined' && editingComment && (
                 <CommentEditor
                     isModifying={false}
                     filename={filename}
@@ -229,7 +301,7 @@ export default function CodeRenderer({
                     onClose={() => setEditingComment(false)}
                 />
             )}
-             <Menu
+            <Menu
                 id="comment-settings"
                 MenuListProps={{
                     'aria-labelledby': 'long-button',
@@ -238,11 +310,7 @@ export default function CodeRenderer({
                 open={isOpen}
                 onClose={handleClose}
             >
-                <MenuItem
-                    disabled={editingComment}
-                    onClick={handleEditComment}
-                    disableRipple
-                >
+                <MenuItem disabled={editingComment} onClick={handleEditComment} disableRipple>
                     Add comment
                 </MenuItem>
             </Menu>

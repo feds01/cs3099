@@ -9,17 +9,17 @@ type Comment = {
     };
 };
 
-interface Props {
+interface FileViewerProps {
     filename: string;
     updatedAt: number;
     contents: string;
     comments: Comment[];
 }
 
-export default function FileViewer({ contents, updatedAt, comments = [], filename }: Props): ReactElement {
+export default function FileViewer({ contents, filename }: FileViewerProps): ReactElement {
     return (
         <div>
-            <CodeRenderer contents={contents} filename={filename} />
+            <CodeRenderer contents={contents} filename={filename} forceRender />
         </div>
     );
 }
