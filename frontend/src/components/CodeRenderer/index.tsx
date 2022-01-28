@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Prism from 'prismjs';
 import Box from '@mui/material/Box/Box';
 import CommentCard from '../CommentCard';
@@ -69,10 +69,9 @@ export const LineContent = styled('span')`
     display: table-cell;
 `;
 
-
 /**
  * This is a component used to display a file that won't be automatically loaded due to it's large size.
- * 
+ *
  * @param props - Any props that are passed to the Box component that surrounds the inner body.
  */
 const FileSkeleton = (props: BoxProps) => {
@@ -132,15 +131,21 @@ export default function CodeRenderer({
         setAnchorEl(null);
     };
 
+    const editCommentRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (editingComment) {
+            /// We need to scroll to the end of the file so the user can start editing the file
+            /// comment...
+            editCommentRef.current?.scrollIntoView({
+                block: 'end',
+            });
+        }
+    }, [editingComment]);
+
     const handleEditComment = () => {
         setEditingComment(true);
         handleClose();
-
-        /// We need to scroll to the end of the file so the user can start editing the file
-        /// comment...
-        document.getElementById(`file-${filename}-container`)?.scrollIntoView({
-            inline: 'end',
-        });
     };
 
     const [commentMap, setCommentMap] = useState<Map<number, Comment[]>>(new Map([]));
@@ -178,7 +183,7 @@ export default function CodeRenderer({
     }, [comments, renderSources]);
 
     return (
-        <Box sx={{ p: 2 }} id={`file-${filename}-container`}>
+        <Box sx={{ p: 2 }}>
             {titleBar && (
                 <Box
                     sx={{
@@ -259,7 +264,7 @@ export default function CodeRenderer({
                     </Highlight>
                 ) : (
                     <>
-                        <FileSkeleton sx={{ position: 'absolute', p: 1, zIndex: 10, width: '100%' }} />
+                        <FileSkeleton sx={{ p: 1, zIndex: 10, width: '100%' }} />
                         <Box
                             sx={{
                                 p: 2,
@@ -271,7 +276,7 @@ export default function CodeRenderer({
                         >
                             <Button
                                 variant="contained"
-                                sx={{ fontWeight: 'bold', zIndex: 10 }}
+                                sx={{ fontWeight: 'bold' }}
                                 size={'small'}
                                 color="primary"
                                 onClick={() => {
@@ -294,12 +299,14 @@ export default function CodeRenderer({
                     );
                 })}
             {typeof review !== 'undefined' && editingComment && (
-                <CommentEditor
-                    isModifying={false}
-                    filename={filename}
-                    reviewId={review.id}
-                    onClose={() => setEditingComment(false)}
-                />
+                <div ref={editCommentRef}>
+                    <CommentEditor
+                        isModifying={false}
+                        filename={filename}
+                        reviewId={review.id}
+                        onClose={() => setEditingComment(false)}
+                    />
+                </div>
             )}
             <Menu
                 id="comment-settings"
