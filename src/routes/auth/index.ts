@@ -166,36 +166,60 @@ registerRoute(router, '/session', {
     handler: async (req, res) => {
         const { token, refreshToken } = req.body;
 
+        async function attemptToRefreshTokens(token: string) {
+            try {
+                const { id } = await verifyToken(token);
+                const refreshedTokensOrError = refreshTokens(token);
+
+                // find the user with this token information
+                const user = await User.findById(id);
+
+                if (!user) {
+                    return res.status(400).json({
+                        status: 'error',
+                        message: 'Invalid JWT',
+                    });
+                }
+
+                // Check if refreshing the tokens failed so that we can return it earlier
+                if (typeof refreshedTokensOrError === 'string') {
+                    return res.status(400).json({
+                        status: 'error',
+                        message: refreshTokens,
+                    });
+                }
+
+                return res.status(200).json({
+                    status: 'ok',
+                    user: User.project(user),
+                    ...refreshedTokensOrError,
+                });
+            } catch (e: unknown) {
+                if (e instanceof JwtError) {
+                    return res.status(400).json({
+                        status: 'error',
+                        message: e.type,
+                    });
+                }
+
+                return res.status(500).json({
+                    status: 'error',
+                    message: error.INTERNAL_SERVER_ERROR,
+                });
+            }
+        }
+
         // attempt to refresh the tokens and create a user state from it.
         try {
-            const verifiedToken = await verifyToken(token);
+            await verifyToken(token);
 
-            // find the user with this token information
-            const user = await User.findById(verifiedToken.id);
-
-            if (!user) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: 'Invalid JWT',
-                });
-            }
-
-            const refreshedTokens = refreshTokens(refreshToken);
-
-            if (typeof refreshedTokens === 'string') {
-                return res.status(400).json({
-                    status: 'error',
-                    message: refreshTokens,
-                });
-            }
-
-            return res.status(200).json({
-                status: 'ok',
-                user: User.project(user),
-                ...refreshedTokens,
-            });
+            return attemptToRefreshTokens(refreshToken);
         } catch (e: unknown) {
             if (e instanceof JwtError) {
+                if (e.type === 'expired') {
+                    return attemptToRefreshTokens(refreshToken);
+                }
+
                 return res.status(400).json({
                     status: 'error',
                     message: e.type,

@@ -52,7 +52,7 @@ function CodeSourceList({ entries, review }: CodeSourceListProps) {
     }, [comments]);
 
     return (
-        <Box sx={{pb: 4}}>
+        <Box sx={{ pb: 4 }}>
             {entries.map((entry, index) => {
                 const fileComments = fileCommentMap.get(entry.filename);
 
@@ -159,6 +159,8 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                         sx={{
                             display: 'flex',
                             position: 'absolute',
+                            overflowX: 'hidden',
+                            overflowY: 'hidden',
                             p: 1,
                             flex: 1,
                             minWidth: 800,
@@ -189,39 +191,41 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                                 height: '100%',
                                 flex: 1,
                                 overflowY: 'scroll',
-                                zIndex: 1000,
+                                zIndex: 80,
+                                pb: 4,
                             }}
                         >
                             <CodeSourceList entries={entries} review={review} />
-                            {review.status === 'started' && (
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        position: 'fixed',
-                                        borderTop: 1,
-                                        borderLeft: 1,
-                                        borderColor: 'divider',
-                                        background: '#fff',
-                                        bottom: 0,
-                                        width: '100%',
-                                    }}
-                                >
-                                    <Box sx={{ p: 2 }}>
-                                        <Button variant="outlined" sx={{ mr: 1 }} href={'/'}>
-                                            Cancel
-                                        </Button>
-                                        <Button disabled={completeReviewQuery.isLoading} onClick={onComplete}>
-                                            {!completeReviewQuery.isLoading ? (
-                                                'Submit'
-                                            ) : (
-                                                <CircularProgress variant="determinate" color="inherit" size={14} />
-                                            )}
-                                        </Button>
-                                    </Box>
-                                </Box>
-                            )}
                         </Box>
                     </Box>
+                    {review.status === 'started' && (
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                position: 'fixed',
+                                width: '100%',
+                                borderTop: 1,
+                                borderLeft: 1,
+                                borderColor: 'divider',
+                                background: '#fff',
+                                bottom: 0,
+                                zIndex: 100,
+                            }}
+                        >
+                            <Box sx={{ p: 2 }}>
+                                <Button variant="outlined" sx={{ mr: 1 }} href={'/'}>
+                                    Cancel
+                                </Button>
+                                <Button disabled={completeReviewQuery.isLoading} onClick={onComplete}>
+                                    {!completeReviewQuery.isLoading ? (
+                                        'Submit'
+                                    ) : (
+                                        <CircularProgress variant="determinate" color="inherit" size={14} />
+                                    )}
+                                </Button>
+                            </Box>
+                        </Box>
+                    )}
                 </ReviewProvider>
             );
         }

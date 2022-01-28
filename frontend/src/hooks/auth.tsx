@@ -83,6 +83,7 @@ const initAuth = (state: AuthState): AuthState => {
 
     if (token && refreshToken) {
         state.token = token;
+        state.refreshToken = refreshToken;
         state.isLoggedIn = true;
 
         try {
@@ -116,6 +117,8 @@ export const AuthProvider: FC = ({ children }) => {
                     refreshToken: state.refreshToken,
                 },
             });
+        } else {
+            dispatch({ type: 'logout' });
         }
     }, []);
 
@@ -128,7 +131,7 @@ export const AuthProvider: FC = ({ children }) => {
             // Hmm, couldn't refresh the tokens for whatever reason, so logout...
             dispatch({ type: 'logout' });
         }
-    }, [sessionQuery.data]);
+    }, [sessionQuery.data, sessionQuery.error]);
 
     return <AuthContext.Provider value={{ state, dispatch }}>{children}</AuthContext.Provider>;
 };
