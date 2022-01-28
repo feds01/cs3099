@@ -1,8 +1,8 @@
 import TreeView from '../TreeView';
+import FileViewer from '../FileViewer';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ErrorBanner from '../ErrorBanner';
-import CodeRenderer from '../CodeRenderer';
 import { ContentState } from '../../types/requests';
 import LinearProgress from '@mui/material/LinearProgress';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -57,11 +57,10 @@ function CodeSourceList({ entries, review }: CodeSourceListProps) {
                 const fileComments = fileCommentMap.get(entry.filename);
 
                 return (
-                    <CodeRenderer
+                    <FileViewer
                         review={review}
                         key={entry.filename}
                         id={`file-${index}`}
-                        titleBar
                         filename={entry.filename}
                         contents={entry.contents}
                         comments={fileComments}
