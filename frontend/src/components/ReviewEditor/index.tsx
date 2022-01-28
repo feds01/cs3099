@@ -160,7 +160,6 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                             position: 'absolute',
                             overflowX: 'hidden',
                             overflowY: 'hidden',
-                            p: 1,
                             flex: 1,
                             minWidth: 800,
                             flexDirection: 'row',
@@ -178,6 +177,7 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                                 position: 'relative',
                                 borderRight: 1,
                                 borderColor: 'divider',
+                                mr: 1,
                                 overflowY: 'scroll',
                             }}
                         >

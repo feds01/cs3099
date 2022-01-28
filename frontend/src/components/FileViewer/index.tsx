@@ -4,9 +4,16 @@ import CommentCard from '../CommentCard';
 import sortedIndexBy from 'lodash/sortedIndexBy';
 import CommentEditor from '../CommentEditor';
 import { Review, Comment } from '../../lib/api/models';
+import Typography from '@mui/material/Typography';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import React, { useState, useEffect, useRef } from 'react';
-import { BoxProps, Button, IconButton, Menu, MenuItem, Skeleton, Typography } from '@mui/material';
+import { AccordionActions, BoxProps, Button, IconButton, Menu, MenuItem, Skeleton } from '@mui/material';
+
+import { styled } from '@mui/material/styles';
+import MuiAccordionDetails from '@mui/material/AccordionDetails';
+import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
+import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
+import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
 
 // This is used to represent the default maximum size of source files that are
 // rendered without the user explicitly asking them to be rendered.
@@ -42,6 +49,36 @@ const FileSkeleton = (props: BoxProps) => {
     );
 };
 
+const Accordion = styled((props: AccordionProps) => <MuiAccordion disableGutters elevation={0} square {...props} />)(
+    ({ theme }) => ({
+        border: `1px solid ${theme.palette.divider}`,
+        '&:not(:last-child)': {
+            borderBottom: 0,
+        },
+        '&:before': {
+            display: 'none',
+        },
+    }),
+);
+
+const AccordionSummary = styled((props: AccordionSummaryProps) => (
+    <MuiAccordionSummary expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />} {...props} />
+))(({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
+    flexDirection: 'row-reverse',
+    '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
+        transform: 'rotate(90deg)',
+    },
+    '& .MuiAccordionSummary-content': {
+        marginLeft: theme.spacing(1),
+    },
+}));
+
+const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
+    padding: theme.spacing(2),
+    borderTop: '1px solid rgba(0, 0, 0, .125)',
+}));
+
 type FileViewerProps = {
     contents: string;
     filename: string;
@@ -52,6 +89,7 @@ type FileViewerProps = {
 };
 
 export default function FileViewer({ contents, filename, id, review, comments, language }: FileViewerProps) {
+    const [expanded, setExpanded] = useState<boolean>(true);
     const [renderSources, setRenderSources] = useState<boolean>(shouldRenderByDefault(contents));
 
     const [editingComment, setEditingComment] = useState<boolean>(false);
@@ -118,30 +156,13 @@ export default function FileViewer({ contents, filename, id, review, comments, l
     }, [comments, renderSources]);
 
     return (
-        <Box sx={{ p: 2 }}>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    border: 1,
-                    borderColor: 'divider',
-                    justifyContent: 'space-between',
-                    pt: 2,
-                    pb: 2,
-                    pl: 1,
-                    pr: 1,
-                }}
-            >
-                <Box sx={{ display: 'flex', justifyContent: 'center', flexDirection: 'column' }}>
-                    <Typography
-                        {...(typeof id !== 'undefined' && { id })}
-                        sx={{ fontWeight: 'bold' }}
-                        variant={'body1'}
-                    >
-                        {filename}
-                    </Typography>
-                </Box>
-                <IconButton
+        <>
+            <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
+                {/* <AccordionActions> */}
+                <AccordionSummary aria-controls="panel1d-content" id="panel1d-header">
+                    <Typography {...(typeof id !== 'undefined' && { id })}>{filename}</Typography>
+                </AccordionSummary>
+                {/* <IconButton
                     aria-label="file-settings"
                     disabled={!renderSources}
                     onClick={handleClick}
@@ -149,38 +170,52 @@ export default function FileViewer({ contents, filename, id, review, comments, l
                 >
                     <MoreVertIcon />
                 </IconButton>
-            </Box>
-            <Box sx={{ border: '1px solid', borderTop: 0, borderColor: (t) => t.palette.divider }}>
-                {renderSources ? (
-                    <CodeRenderer contents={contents} filename={filename} commentMap={commentMap} review={review} />
-                ) : (
-                    <>
-                        <FileSkeleton sx={{ p: 1, zIndex: 10, width: '100%' }} />
-                        <Box
-                            sx={{
-                                p: 2,
-                                zIndex: 20,
-                                display: 'flex',
-                                alignItems: 'center',
-                                flexDirection: 'column',
-                            }}
-                        >
-                            <Button
-                                variant="contained"
-                                sx={{ fontWeight: 'bold' }}
-                                size={'small'}
-                                color="primary"
-                                onClick={() => {
-                                    setRenderSources(true);
+            </AccordionActions> */}
+                <AccordionDetails>
+                    {renderSources ? (
+                        <CodeRenderer contents={contents} filename={filename} commentMap={commentMap} review={review} />
+                    ) : (
+                        <>
+                            <FileSkeleton sx={{ p: 1, zIndex: 10, width: '100%' }} />
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    zIndex: 20,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    flexDirection: 'column',
                                 }}
                             >
-                                Load file
-                            </Button>
-                            <Typography variant={'body1'}>Large files aren't rendered by default</Typography>
-                        </Box>
-                    </>
-                )}
-            </Box>
+                                <Button
+                                    variant="contained"
+                                    sx={{ fontWeight: 'bold' }}
+                                    size={'small'}
+                                    color="primary"
+                                    onClick={() => {
+                                        setRenderSources(true);
+                                    }}
+                                >
+                                    Load file
+                                </Button>
+                                <Typography variant={'body1'}>Large files aren't rendered by default</Typography>
+                            </Box>
+                        </>
+                    )}
+                </AccordionDetails>
+                <Menu
+                    id="comment-settings"
+                    MenuListProps={{
+                        'aria-labelledby': 'long-button',
+                    }}
+                    anchorEl={anchorEl}
+                    open={isOpen}
+                    onClose={handleClose}
+                >
+                    <MenuItem disabled={editingComment} onClick={handleEditComment} disableRipple>
+                        Add comment
+                    </MenuItem>
+                </Menu>
+            </Accordion>
             {typeof review !== 'undefined' &&
                 fileComments?.map((comment) => {
                     return (
@@ -199,19 +234,6 @@ export default function FileViewer({ contents, filename, id, review, comments, l
                     />
                 </div>
             )}
-            <Menu
-                id="comment-settings"
-                MenuListProps={{
-                    'aria-labelledby': 'long-button',
-                }}
-                anchorEl={anchorEl}
-                open={isOpen}
-                onClose={handleClose}
-            >
-                <MenuItem disabled={editingComment} onClick={handleEditComment} disableRipple>
-                    Add comment
-                </MenuItem>
-            </Menu>
-        </Box>
+        </>
     );
 }
