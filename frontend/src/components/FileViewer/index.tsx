@@ -7,7 +7,7 @@ import { Review, Comment } from '../../lib/api/models';
 import Typography from '@mui/material/Typography';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import React, { useState, useEffect, useRef } from 'react';
-import { AccordionActions, BoxProps, Button, IconButton, Menu, MenuItem, Skeleton } from '@mui/material';
+import { BoxProps, Button, IconButton, Menu, MenuItem, Skeleton } from '@mui/material';
 
 import { styled } from '@mui/material/styles';
 import MuiAccordionDetails from '@mui/material/AccordionDetails';
@@ -64,7 +64,7 @@ const Accordion = styled((props: AccordionProps) => <MuiAccordion disableGutters
 const AccordionSummary = styled((props: AccordionSummaryProps) => (
     <MuiAccordionSummary expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />} {...props} />
 ))(({ theme }) => ({
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
+    // backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
     flexDirection: 'row-reverse',
     '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
         transform: 'rotate(90deg)',
@@ -97,6 +97,7 @@ export default function FileViewer({ contents, filename, id, review, comments, l
     const isOpen = Boolean(anchorEl);
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+        event.stopPropagation();
         setAnchorEl(event.currentTarget);
     };
 
@@ -156,21 +157,29 @@ export default function FileViewer({ contents, filename, id, review, comments, l
     }, [comments, renderSources]);
 
     return (
-        <>
+        <Box sx={{pb: 0.5, pt: 0.5}}>
             <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
-                {/* <AccordionActions> */}
-                <AccordionSummary aria-controls="panel1d-content" id="panel1d-header">
-                    <Typography {...(typeof id !== 'undefined' && { id })}>{filename}</Typography>
+                <AccordionSummary>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            width: '100%',
+                            justifyContent: 'space-between'
+                        }}
+                    >
+                        <Typography {...(typeof id !== 'undefined' && { id })}>{filename}</Typography>
+                        <IconButton
+                            aria-label="file-settings"
+                            disabled={!renderSources}
+                            onClick={handleClick}
+                            aria-expanded={isOpen ? 'true' : undefined}
+                        >
+                            <MoreVertIcon />
+                        </IconButton>
+                    </Box>
                 </AccordionSummary>
-                {/* <IconButton
-                    aria-label="file-settings"
-                    disabled={!renderSources}
-                    onClick={handleClick}
-                    aria-expanded={isOpen ? 'true' : undefined}
-                >
-                    <MoreVertIcon />
-                </IconButton>
-            </AccordionActions> */}
                 <AccordionDetails>
                     {renderSources ? (
                         <CodeRenderer contents={contents} filename={filename} commentMap={commentMap} review={review} />
@@ -234,6 +243,6 @@ export default function FileViewer({ contents, filename, id, review, comments, l
                     />
                 </div>
             )}
-        </>
+        </Box>
     );
 }

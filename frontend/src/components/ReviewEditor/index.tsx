@@ -20,6 +20,11 @@ import {
 import { useNotificationDispatch } from '../../hooks/notification';
 import { ReviewProvider, useReviewState } from '../../hooks/review';
 import { useGetReviewIdComments, usePostReviewIdComplete } from '../../lib/api/reviews/reviews';
+import Popover from '@mui/material/Popover';
+import CommentEditor from '../CommentEditor';
+import Typography from '@mui/material/Typography';
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import CommentCard from '../CommentCard';
 
 interface ReviewEditorProps {
     review: Review;
@@ -34,12 +39,17 @@ interface CodeSourceListProps {
 function CodeSourceList({ entries, review }: CodeSourceListProps) {
     // we can get the comments from the current state
     const { comments } = useReviewState();
+    const [generalComments, setGeneralComments] = useState<Comment[]>([]);
     const [fileCommentMap, setFileCommentMap] = useState<Map<string, Comment[]>>(new Map());
 
     useEffect(() => {
         const newMap = new Map<string, Comment[]>();
+        const newGeneralComments: Comment[] = [];
+
         comments.forEach((comment) => {
-            if (newMap.has(comment.filename)) {
+            if (typeof comment.filename === 'undefined') {
+                newGeneralComments.push(comment);
+            } else if (newMap.has(comment.filename)) {
                 const originalArr = newMap.get(comment.filename)!;
 
                 newMap.set(comment.filename, [...originalArr, comment]);
@@ -49,6 +59,7 @@ function CodeSourceList({ entries, review }: CodeSourceListProps) {
         });
 
         setFileCommentMap(newMap);
+        setGeneralComments(newGeneralComments);
     }, [comments]);
 
     return (
@@ -67,6 +78,15 @@ function CodeSourceList({ entries, review }: CodeSourceListProps) {
                     />
                 );
             })}
+            <Box sx={{ pt: 2 }}>
+                {generalComments.map((comment) => {
+                    return (
+                        <Box key={comment.contents} sx={{ pt: 1, pb: 1 }}>
+                            <CommentCard review={review} comment={comment} />
+                        </Box>
+                    );
+                })}
+            </Box>
         </Box>
     );
 }
@@ -129,9 +149,12 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
         getCommentsQuery.refetch();
     };
 
-    // Function to finalise the review...
-    const onComplete = () => {
-        completeReviewQuery.mutateAsync({ id: review.id });
+    // For the submit popover so a reviewer can leave a general comment on a review...
+    const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+    const open = Boolean(anchorEl);
+
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorEl(event.currentTarget);
     };
 
     // @@Hack: This is a very hacky way of displaying the state for both queries, we should fix this!
@@ -179,6 +202,7 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                                 borderColor: 'divider',
                                 mr: 1,
                                 overflowY: 'scroll',
+                                overflowX: 'scroll',
                             }}
                         >
                             <TreeView comments={comments} paths={entries.map((entry) => entry.filename)} />
@@ -202,20 +226,23 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                             sx={{
                                 display: 'flex',
                                 position: 'fixed',
-                                width: '100%',
-                                borderTop: 1,
-                                borderLeft: 1,
+                                flexDirection: 'row',
+                                border: 1,
                                 borderColor: 'divider',
+                                justifyContent: 'space-between',
                                 background: '#fff',
+                                width: 'calc(100% - 41px)', // @@Hack: we assume that the side bar size is always constant
                                 bottom: 0,
                                 zIndex: 100,
                             }}
                         >
+                            <div></div>
                             <Box sx={{ p: 2 }}>
-                                <Button variant="outlined" sx={{ mr: 1 }} href={'/'}>
-                                    Cancel
-                                </Button>
-                                <Button disabled={completeReviewQuery.isLoading} onClick={onComplete}>
+                                <Button
+                                    disabled={completeReviewQuery.isLoading}
+                                    onClick={handleClick}
+                                    endIcon={<ArrowDropUpIcon />}
+                                >
                                     {!completeReviewQuery.isLoading ? (
                                         'Submit'
                                     ) : (
@@ -225,6 +252,34 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                             </Box>
                         </Box>
                     )}
+                    <Popover
+                        open={open}
+                        anchorEl={anchorEl}
+                        onClose={() => setAnchorEl(null)}
+                        anchorOrigin={{
+                            vertical: 'top',
+                            horizontal: 'right',
+                        }}
+                        transformOrigin={{
+                            vertical: 'bottom',
+                            horizontal: 'right',
+                        }}
+                    >
+                        <Box sx={{ p: 2 }}>
+                            <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
+                                Finish your review
+                            </Typography>
+                            <Typography variant={'body2'} sx={{ pb: 1 }}>
+                                You can leave a general comment on the review
+                            </Typography>
+                            <CommentEditor
+                                isModifying={false}
+                                reviewId={review.id}
+                                onClose={() => setAnchorEl(null)}
+                                onSubmit={() => completeReviewQuery.mutateAsync({ id: review.id })}
+                            />
+                        </Box>
+                    </Popover>
                 </ReviewProvider>
             );
         }

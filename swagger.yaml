@@ -2294,7 +2294,6 @@ components:
             required:
                 - id
                 - edited
-                - filename
                 - contents
                 - thread
                 - author

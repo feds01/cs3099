@@ -20,10 +20,8 @@ interface CommentEditorProps {
     isModifying: boolean;
     /**
      * The filename the comment is attached to.
-     *
-     * @@Future: change this is a optional field as general comments are a thing.
      */
-    filename: string;
+    filename?: string;
     /**
      * The location of the comment in the file.
      *
@@ -48,6 +46,12 @@ interface CommentEditorProps {
      * Function that is fired when the comment is closed
      */
     onClose: () => void;
+
+    /**
+     * Function that is called when a comment is submitted and a request has been made on
+     * the backend to add it.
+     */
+    onSubmit?: () => void;
 }
 
 // TODO: in the future, add support for images
@@ -61,6 +65,7 @@ export default function CommentEditor({
     commentId,
     filename,
     onClose,
+    onSubmit,
     location,
 }: CommentEditorProps): ReactElement {
     const { refetch } = useReviewDispatch();
@@ -71,7 +76,6 @@ export default function CommentEditor({
 
     const postComment = usePutReviewIdComment();
     const updateComment = usePatchCommentId();
-    
 
     useEffect(() => {
         if ((!postComment.isLoading && postComment.data) || (!updateComment.isLoading && updateComment.data)) {
@@ -88,6 +92,12 @@ export default function CommentEditor({
                     item: { severity: 'success', message: 'Successfully posted comment' },
                 });
             }
+
+            // Fire the on submit if it is provided
+            if (typeof onSubmit === 'function') {
+                onSubmit();
+            }
+
             onClose();
         } else if ((postComment.isError && postComment.error) || (updateComment.isError && updateComment.error)) {
             notificationDispatcher({
@@ -97,7 +107,7 @@ export default function CommentEditor({
         }
     }, [postComment.data, postComment.isLoading, updateComment.data, updateComment.isLoading]);
 
-    const onSubmit = async () => {
+    const onSubmitComment = async () => {
         if (isModifying && commentId) {
             return await updateComment.mutateAsync({
                 id: commentId,
@@ -135,7 +145,7 @@ export default function CommentEditor({
                 <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>
                     Cancel
                 </Button>
-                <Button disabled={isLoading} onClick={onSubmit}>
+                <Button disabled={isLoading} onClick={onSubmitComment}>
                     {!isLoading ? 'Submit' : <CircularProgress variant="determinate" color="inherit" size={14} />}
                 </Button>
             </Box>
