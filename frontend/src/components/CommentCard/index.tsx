@@ -91,7 +91,7 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                     </Typography>
                 }
                 action={
-                    <IconButton aria-label="settings" onClick={handleClick} aria-expanded={isOpen ? 'true' : undefined}>
+                    <IconButton aria-label="comment-settings" onClick={handleClick} aria-expanded={isOpen ? 'true' : undefined}>
                         <MoreVertIcon />
                     </IconButton>
                 }
