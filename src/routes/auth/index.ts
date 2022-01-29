@@ -168,7 +168,7 @@ registerRoute(router, '/session', {
 
         async function attemptToRefreshTokens(token: string) {
             try {
-                const { id } = await verifyToken(token);
+                const { id } = await verifyToken(token, config.jwtRefreshSecret);
                 const refreshedTokensOrError = refreshTokens(token);
 
                 // find the user with this token information
@@ -211,7 +211,7 @@ registerRoute(router, '/session', {
 
         // attempt to refresh the tokens and create a user state from it.
         try {
-            await verifyToken(token);
+            await verifyToken(token, config.jwtSecret);
 
             return attemptToRefreshTokens(refreshToken);
         } catch (e: unknown) {
