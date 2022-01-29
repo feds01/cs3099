@@ -126,7 +126,7 @@ registerRoute(router, '/verify', {
         const { token } = req.query;
 
         try {
-            const verifiedToken = await verifyToken(token);
+            const verifiedToken = await verifyToken(token, config.jwtSecret);
 
             // now look up the user that's specified in the token.
             const user = await User.findById(verifiedToken.id).exec();

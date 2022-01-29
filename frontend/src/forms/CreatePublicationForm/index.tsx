@@ -1,36 +1,31 @@
-import { z } from 'zod';
-import { ReactElement, useEffect } from 'react';
+import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import LoadingButton from '@mui/lab/LoadingButton';
+
+import { useHistory } from 'react-router';
 import { useAuth } from '../../hooks/auth';
+import { ReactElement, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { Box, Button, CircularProgress, Typography } from '@mui/material';
-import ControlledTextField from '../ControlledTextField';
-import ControlledAutocomplete from '../ControlledAutocomplete';
+import ErrorBanner from '../../components/ErrorBanner';
+import ControlledTextField from '../../components/ControlledTextField';
+import ControlledAutocomplete from '../../components/ControlledAutocomplete';
 import { usePostPublication } from '../../lib/api/publications/publications';
-import ErrorBanner from '../ErrorBanner';
-import { useHistory } from 'react-router';
-
-const CreatePublicationSchema = z.object({
-    name: z
-        .string()
-        .min(1)
-        .regex(/^[a-zA-Z0-9_-]*$/, { message: 'Name must be URL safe.' }),
-    title: z.string().min(1).max(200),
-    introduction: z.string().optional(),
-    revision: z.string().optional(),
-    collaborators: z.array(z.string()),
-});
-
-type CreatePublication = z.infer<typeof CreatePublicationSchema>;
+import { CreatePublication, CreatePublicationSchema } from '../../validators/publication';
 
 export default function CreatePublicationForm(): ReactElement {
     const auth = useAuth();
 
     const history = useHistory();
-    const { control, handleSubmit } = useForm<CreatePublication>({
+    const {
+        control,
+        handleSubmit,
+        formState: { isSubmitting },
+    } = useForm<CreatePublication>({
         resolver: zodResolver(CreatePublicationSchema),
-        reValidateMode: "onBlur",
+        reValidateMode: 'onBlur',
         defaultValues: {
             collaborators: [],
         },
@@ -94,13 +89,14 @@ export default function CreatePublicationForm(): ReactElement {
                 </Grid>
                 <Grid item xs={12}>
                     <Box>
-                        <Button disabled={isLoading} sx={{ mt: 1, mr: 1 }} variant="contained" type={'submit'}>
-                            {isLoading ? (
-                                <CircularProgress variant="determinate" color="inherit" size={14} />
-                            ) : (
-                                'Create'
-                            )}
-                        </Button>
+                        <LoadingButton
+                            loading={isLoading || isSubmitting}
+                            sx={{ mt: 1, mr: 1 }}
+                            variant="contained"
+                            type={'submit'}
+                        >
+                            Create
+                        </LoadingButton>
                         <Button disabled={isLoading} sx={{ mt: 1 }} variant="outlined" type={'submit'}>
                             Cancel
                         </Button>

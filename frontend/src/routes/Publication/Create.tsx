@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import PageLayout from '../../components/PageLayout';
-import CreatePublicationForm from '../../components/CreatePublicationForm';
+import CreatePublicationForm from '../../forms/CreatePublicationForm';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';

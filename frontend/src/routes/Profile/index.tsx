@@ -59,7 +59,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
     switch (content.state) {
         case 'loading':
             return (
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', pt: 2, flexDirection: 'column', alignItems: 'center' }}>
                     <Skeleton variant="circular" width={80} height={80} />
                     <Skeleton variant="text" width={120} height={28} />
                     <Skeleton variant="text" width={200} />
@@ -71,7 +71,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
         case 'ok':
             const profileData = content.data;
             return (
-                <Box sx={{pt: 2, width: '100%'}}>
+                <Box sx={{ pt: 2, width: '100%' }}>
                     <Box
                         sx={{
                             position: 'absolute',
@@ -104,7 +104,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                         >
                             <Typography>@{profileData.user.username}</Typography>
                             <Divider orientation="vertical" sx={{ margin: '0 4px' }} />
-                            <Typography>Member since {format(profileData.user.createdAt, "dd MMM yyyy")}</Typography>
+                            <Typography>Member since {format(profileData.user.createdAt, 'dd MMM yyyy')}</Typography>
                         </Box>
                         <Box
                             sx={{
@@ -192,11 +192,9 @@ export default function Profile(props: Props): ReactElement {
                                         key={path}
                                         path={path}
                                         render={(routeProps) => (
-                                            <>
-                                                <Box sx={{ width: '100%', alignSelf: 'stretch' }}>
-                                                    {props.component(profileData.data.user)}
-                                                </Box>
-                                            </>
+                                            <Box sx={{ width: '100%', alignSelf: 'stretch' }}>
+                                                {props.component(profileData.data.user)}
+                                            </Box>
                                         )}
                                     />
                                 );
