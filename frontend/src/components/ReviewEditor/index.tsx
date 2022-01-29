@@ -1,94 +1,28 @@
 import TreeView from '../TreeView';
-import FileViewer from '../FileViewer';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import ErrorBanner from '../ErrorBanner';
+import LoadingButton from '@mui/lab/LoadingButton';
+import { ReviewProvider } from '../../hooks/review';
 import { ContentState } from '../../types/requests';
-import LinearProgress from '@mui/material/LinearProgress';
-import CircularProgress from '@mui/material/CircularProgress';
 import { ReactElement, useEffect, useState } from 'react';
+import LinearProgress from '@mui/material/LinearProgress';
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import { useNotificationDispatch } from '../../hooks/notification';
 import { transformQueryIntoContentState } from '../../wrappers/react-query';
+import { useGetReviewIdComments, usePostReviewIdComplete } from '../../lib/api/reviews/reviews';
 import { useGetPublicationUsernameNameRevisionAll } from '../../lib/api/publications/publications';
 import {
     ApiErrorResponse,
-    FileResponse,
     GetPublicationUsernameNameRevisionAll200,
     GetReviewIdComments200,
     Review,
-    Comment,
 } from '../../lib/api/models';
-import { useNotificationDispatch } from '../../hooks/notification';
-import { ReviewProvider, useReviewState } from '../../hooks/review';
-import { useGetReviewIdComments, usePostReviewIdComplete } from '../../lib/api/reviews/reviews';
-import Popover from '@mui/material/Popover';
-import CommentEditor from '../CommentEditor';
-import Typography from '@mui/material/Typography';
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
-import CommentCard from '../CommentCard';
+import SourceList from './SourceList';
+import SubmissionPopOver from './SubmissionPopOver';
 
 interface ReviewEditorProps {
     review: Review;
     refetchReview: () => void;
-}
-
-interface CodeSourceListProps {
-    entries: FileResponse[];
-    review: Review;
-}
-
-function CodeSourceList({ entries, review }: CodeSourceListProps) {
-    // we can get the comments from the current state
-    const { comments } = useReviewState();
-    const [generalComments, setGeneralComments] = useState<Comment[]>([]);
-    const [fileCommentMap, setFileCommentMap] = useState<Map<string, Comment[]>>(new Map());
-
-    useEffect(() => {
-        const newMap = new Map<string, Comment[]>();
-        const newGeneralComments: Comment[] = [];
-
-        comments.forEach((comment) => {
-            if (typeof comment.filename === 'undefined') {
-                newGeneralComments.push(comment);
-            } else if (newMap.has(comment.filename)) {
-                const originalArr = newMap.get(comment.filename)!;
-
-                newMap.set(comment.filename, [...originalArr, comment]);
-            } else {
-                newMap.set(comment.filename, [comment]);
-            }
-        });
-
-        setFileCommentMap(newMap);
-        setGeneralComments(newGeneralComments);
-    }, [comments]);
-
-    return (
-        <Box sx={{ pb: 4 }}>
-            {entries.map((entry, index) => {
-                const fileComments = fileCommentMap.get(entry.filename);
-
-                return (
-                    <FileViewer
-                        review={review}
-                        key={entry.filename}
-                        id={`file-${index}`}
-                        filename={entry.filename}
-                        contents={entry.contents}
-                        comments={fileComments}
-                    />
-                );
-            })}
-            <Box sx={{ pt: 2 }}>
-                {generalComments.map((comment) => {
-                    return (
-                        <Box key={comment.contents} sx={{ pt: 1, pb: 1 }}>
-                            <CommentCard review={review} comment={comment} />
-                        </Box>
-                    );
-                })}
-            </Box>
-        </Box>
-    );
 }
 
 export default function ReviewEditor({ review, refetchReview }: ReviewEditorProps): ReactElement {
@@ -200,7 +134,6 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                                 position: 'relative',
                                 borderRight: 1,
                                 borderColor: 'divider',
-                                mr: 1,
                                 overflowY: 'scroll',
                                 overflowX: 'scroll',
                             }}
@@ -215,10 +148,12 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                                 flex: 1,
                                 overflowY: 'scroll',
                                 zIndex: 80,
+                                mr: 1,
+                                ml: 1,
                                 pb: 4,
                             }}
                         >
-                            <CodeSourceList entries={entries} review={review} />
+                            <SourceList entries={entries} review={review} />
                         </Box>
                     </Box>
                     {review.status === 'started' && (
@@ -238,48 +173,27 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                         >
                             <div></div>
                             <Box sx={{ p: 2 }}>
-                                <Button
-                                    disabled={completeReviewQuery.isLoading}
+                                <LoadingButton
+                                    variant="contained"
+                                    loading={completeReviewQuery.isLoading}
                                     onClick={handleClick}
                                     endIcon={<ArrowDropUpIcon />}
                                 >
-                                    {!completeReviewQuery.isLoading ? (
-                                        'Submit'
-                                    ) : (
-                                        <CircularProgress variant="determinate" color="inherit" size={14} />
-                                    )}
-                                </Button>
+                                    Finish review
+                                </LoadingButton>
                             </Box>
                         </Box>
                     )}
-                    <Popover
+                    <SubmissionPopOver
                         open={open}
+                        review={review}
                         anchorEl={anchorEl}
                         onClose={() => setAnchorEl(null)}
-                        anchorOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right',
+                        onSubmission={() => {
+                            setAnchorEl(null);
+                            completeReviewQuery.mutateAsync({ id: review.id });
                         }}
-                        transformOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'right',
-                        }}
-                    >
-                        <Box sx={{ p: 2 }}>
-                            <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                                Finish your review
-                            </Typography>
-                            <Typography variant={'body2'} sx={{ pb: 1 }}>
-                                You can leave a general comment on the review
-                            </Typography>
-                            <CommentEditor
-                                isModifying={false}
-                                reviewId={review.id}
-                                onClose={() => setAnchorEl(null)}
-                                onSubmit={() => completeReviewQuery.mutateAsync({ id: review.id })}
-                            />
-                        </Box>
-                    </Popover>
+                    />
                 </ReviewProvider>
             );
         }

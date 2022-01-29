@@ -157,7 +157,7 @@ export default function FileViewer({ contents, filename, id, review, comments, l
     }, [comments, renderSources]);
 
     return (
-        <Box sx={{pb: 0.5, pt: 0.5}}>
+        <>
             <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
                 <AccordionSummary>
                     <Box
@@ -243,6 +243,6 @@ export default function FileViewer({ contents, filename, id, review, comments, l
                     />
                 </div>
             )}
-        </Box>
+        </>
     );
 }

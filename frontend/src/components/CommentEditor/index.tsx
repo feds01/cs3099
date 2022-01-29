@@ -1,12 +1,11 @@
-import ReactMde from 'react-mde';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import MarkdownRenderer from '../MarkdownRenderer';
+import LoadingButton from '@mui/lab/LoadingButton';
+import CommentField from '../CommentField';
 import { useReviewDispatch } from '../../hooks/review';
 import { ReactElement, useEffect, useState } from 'react';
 import { usePutReviewIdComment } from '../../lib/api/reviews/reviews';
 import { useNotificationDispatch } from '../../hooks/notification';
-import CircularProgress from '@mui/material/CircularProgress';
 import { usePatchCommentId } from '../../lib/api/comments/comments';
 
 /**
@@ -46,16 +45,7 @@ interface CommentEditorProps {
      * Function that is fired when the comment is closed
      */
     onClose: () => void;
-
-    /**
-     * Function that is called when a comment is submitted and a request has been made on
-     * the backend to add it.
-     */
-    onSubmit?: () => void;
 }
-
-// TODO: in the future, add support for images
-// TODO: we can also use the suggestion for usernames.
 
 // https://codesandbox.io/s/react-mde-latest-forked-f9ti5?file=/src/index.js
 export default function CommentEditor({
@@ -65,14 +55,12 @@ export default function CommentEditor({
     commentId,
     filename,
     onClose,
-    onSubmit,
     location,
 }: CommentEditorProps): ReactElement {
     const { refetch } = useReviewDispatch();
     const notificationDispatcher = useNotificationDispatch();
 
     const [value, setValue] = useState<string>(contents);
-    const [selectedTab, setSelectedTab] = useState<'write' | 'preview'>('write');
 
     const postComment = usePutReviewIdComment();
     const updateComment = usePatchCommentId();
@@ -91,11 +79,6 @@ export default function CommentEditor({
                     type: 'add',
                     item: { severity: 'success', message: 'Successfully posted comment' },
                 });
-            }
-
-            // Fire the on submit if it is provided
-            if (typeof onSubmit === 'function') {
-                onSubmit();
             }
 
             onClose();
@@ -129,25 +112,17 @@ export default function CommentEditor({
 
     return (
         <Box>
-            <ReactMde
-                value={value}
+            <CommentField
+                contents={contents}
                 onChange={setValue}
-                selectedTab={selectedTab}
-                onTabChange={setSelectedTab}
-                generateMarkdownPreview={(markdown) => Promise.resolve(<MarkdownRenderer contents={markdown} />)}
-                childProps={{
-                    writeButton: {
-                        tabIndex: -1,
-                    },
-                }}
             />
             <Box sx={{ pt: 1, pb: 1 }}>
                 <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>
                     Cancel
                 </Button>
-                <Button disabled={isLoading} onClick={onSubmitComment}>
-                    {!isLoading ? 'Submit' : <CircularProgress variant="determinate" color="inherit" size={14} />}
-                </Button>
+                <LoadingButton loading={isLoading} onClick={onSubmitComment}>
+                    Submit
+                </LoadingButton>
             </Box>
         </Box>
     );

@@ -35,6 +35,11 @@ export const customInstance = <T>(config: AxiosRequestConfig): Promise<T> => {
     const promise = AXIOS_INSTANCE({ ...config, cancelToken: source.token }).then(({ data }) => {
         return data;
     }).catch((err) => {
+        // If there is no response from the server... default to the basic behaviour of axios
+        if (err.response === null || typeof err.response === "undefined") {
+            throw err;
+        }
+
         // In the case where the status is actually 'ok', we shouldn't throw the 
         // response and it should be an ok...
         if (err.response.data.status === "ok") {
