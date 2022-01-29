@@ -258,8 +258,8 @@ registerRoute(router, '/:id', {
         const { id: ownerId } = req.requester;
 
         const review = await Review.findById(id)
-            .populate<{ publication: IPublication }[]>('publication')
-            .populate<{ owner: IUser & { _id: any } }[]>('owner')
+            .populate<{ publication: IPublication }>('publication')
+            .populate<{ owner: IUser & { _id: any } }>('owner')
             .exec();
 
         // verify that the review exists and the owner is trying to publish it...

@@ -50,7 +50,7 @@ export async function verifyToken(token: string, secret: string): Promise<TokenD
             }
 
             // If there was no error, it shouldn't be undefined.
-            assert(typeof payload !== 'undefined');
+            assert(typeof payload !== 'undefined' && typeof payload !== 'string');
             return resolve(payload.data);
         }),
     );
