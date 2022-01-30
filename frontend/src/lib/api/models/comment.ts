@@ -14,7 +14,8 @@ export interface Comment {
   filename?: string;
   anchor?: CommentAnchor;
   contents: string;
-  thread: number;
+  thread: string;
+  replying?: string;
   author: User;
   createdAt: number;
   updatedAt: number;

@@ -8,68 +8,62 @@ import { usePutReviewIdComment } from '../../lib/api/reviews/reviews';
 import { useNotificationDispatch } from '../../hooks/notification';
 import { usePatchCommentId } from '../../lib/api/comments/comments';
 
-/**
- * Prop types for the comment editor.
- */
-interface CommentEditorProps {
-    /**
-     * Whether or not the comment editor is creating a new comment or modifying an old
-     * entry.
-     */
-    isModifying: boolean;
-    /**
-     * The filename the comment is attached to.
-     */
-    filename?: string;
-    /**
-     * The location of the comment in the file.
-     *
-     */
-    location?: number;
-    /**
-     * The ID of the review that is attached to the comment.
-     */
+type CommentEditorProps = {
     reviewId: string;
-
-    /**
-     * If the comment is being edited, then the comment id needs to be provided.
-     */
-    commentId?: string;
-
-    /**
-     * Optional initial content state of the comment editor
-     */
-    contents?: string;
-
-    /**
-     * Function that is fired when the comment is closed
-     */
+    location?: number;
+    filename?: string;
     onClose: () => void;
-}
+    contents?: string;
+} & (CommentReply | CommentModify | CommentPost);
+
+type CommentReply = {
+    type: 'reply';
+    commentId: string;
+};
+
+type CommentModify = {
+    type: 'modify';
+    commentId: string;
+};
+
+type CommentPost = {
+    type: 'post';
+    commentId?: undefined;
+};
+
+type CommentQueryType = 'modify' | 'post' | 'reply';
+
+const getCommentQuery = (queryType: CommentQueryType) => {
+    switch (queryType) {
+        case 'modify':
+            return usePatchCommentId;
+        case 'reply':
+        case 'post':
+            return usePutReviewIdComment;
+    }
+};
 
 // https://codesandbox.io/s/react-mde-latest-forked-f9ti5?file=/src/index.js
 export default function CommentEditor({
-    isModifying = false,
     contents = '',
     reviewId,
-    commentId,
     filename,
     onClose,
     location,
+    ...rest
 }: CommentEditorProps): ReactElement {
     const { refetch } = useReviewDispatch();
     const notificationDispatcher = useNotificationDispatch();
 
     const [value, setValue] = useState<string>(contents);
 
-    const postComment = usePutReviewIdComment();
-    const updateComment = usePatchCommentId();
+    const commentQuery = getCommentQuery(rest.type)();
 
     useEffect(() => {
-        if ((!postComment.isLoading && postComment.data) || (!updateComment.isLoading && updateComment.data)) {
+        if (!commentQuery.isLoading && commentQuery.data) {
             refetch();
 
-            if (isModifying) {
+            if (rest.type === 'modify') {
                 notificationDispatcher({
                     type: 'add',
                     item: { severity: 'success', message: 'Successfully updated comment.' },
@@ -82,45 +76,34 @@ export default function CommentEditor({
             }
 
             onClose();
-        } else if ((postComment.isError && postComment.error) || (updateComment.isError && updateComment.error)) {
+        } else if (commentQuery.isError && commentQuery.error) {
             notificationDispatcher({
                 type: 'add',
                 item: { severity: 'error', message: 'Failed to post comment' },
             });
         }
-    }, [postComment.data, postComment.isLoading, updateComment.data, updateComment.isLoading]);
+    }, [commentQuery.data, commentQuery.isLoading]);
 
     const onSubmitComment = async () => {
-        if (isModifying && commentId) {
-            return await updateComment.mutateAsync({
-                id: commentId,
-                data: { contents: value },
-            });
-        } else {
-            return await postComment.mutateAsync({
-                id: reviewId,
-                data: {
-                    filename,
-                    ...(typeof location !== 'undefined' && { anchor: { start: location + 1, end: location + 2 } }),
-                    contents: value,
-                },
-            });
-        }
+        return await commentQuery.mutateAsync({
+            id: rest.type !== 'modify' ? reviewId : rest.commentId,
+            data: {
+                filename,
+                contents: value,
+                ...(rest.type === 'reply' && { replying: rest.commentId }),
+                ...(typeof location !== 'undefined' && { anchor: { start: location + 1, end: location + 2 } }),
+            },
+        });
     };
-
-    const isLoading = postComment.isLoading || updateComment.isLoading;
 
     return (
         <Box>
-            <CommentField
-                contents={contents}
-                onChange={setValue}
-            />
-            <Box sx={{ pt: 1, pb: 1 }}>
+            <CommentField contents={contents} onChange={setValue} />
+            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', pt: 1, pb: 1 }}>
                 <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>
                     Cancel
                 </Button>
-                <LoadingButton loading={isLoading} onClick={onSubmitComment}>
+                <LoadingButton variant="contained" loading={commentQuery.isLoading} onClick={onSubmitComment}>
                     Submit
                 </LoadingButton>
             </Box>

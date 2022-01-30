@@ -28,6 +28,9 @@ export default function CommentField({ onChange, contents = '' }: CommentFieldPr
                 writeButton: {
                     tabIndex: -1,
                 },
+                textArea: {
+                    placeholder: "Leave a comment"
+                }
             }}
         />
     );

@@ -1,16 +1,26 @@
 import { formatDistance } from 'date-fns';
 import React, { ReactElement, useEffect, useState } from 'react';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import Menu from '@mui/material/Menu';
+import Divider from '@mui/material/Divider';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
+import CardHeader from '@mui/material/CardHeader';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import CardContent from '@mui/material/CardContent';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Card, CardContent, Typography, CardHeader, IconButton, Menu, MenuItem, Divider, Box } from '@mui/material';
 
 import UserLink from '../UserLink';
 import UserAvatar from '../UserAvatar';
+import { useAuth } from '../../hooks/auth';
 import CommentEditor from '../CommentEditor';
 import MarkdownRenderer from '../MarkdownRenderer';
-import { Comment, Review } from '../../lib/api/models';
-import { useDeleteCommentId } from '../../lib/api/comments/comments';
-import { useNotificationDispatch } from '../../hooks/notification';
 import { useReviewDispatch } from '../../hooks/review';
+import { Comment, Review } from '../../lib/api/models';
+import { useNotificationDispatch } from '../../hooks/notification';
+import { useDeleteCommentId } from '../../lib/api/comments/comments';
 
 interface CommentCardProps {
     comment: Comment;
@@ -18,13 +28,16 @@ interface CommentCardProps {
 }
 
 export default function CommentCard({ comment, review }: CommentCardProps): ReactElement {
+    const { session } = useAuth();
     const { refetch } = useReviewDispatch();
     const notificationDispatcher = useNotificationDispatch();
 
     // Comment card editing menu
     const [editingComment, setEditingComment] = useState<boolean>(false);
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    const isOpen = Boolean(anchorEl);
+
+    // Comment reply mechanism
+    const [replyingToComment, setReplyingToComment] = useState<boolean>(false);
 
     // Comment card deleting functionality
     const deleteComment = useDeleteCommentId();
@@ -36,7 +49,7 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                 item: { severity: 'success', message: 'Successfully deleted comment.' },
             });
 
-            // Send a refetch signal to the review editor as we need to show that the comment is deleted. 
+            // Send a refetch signal to the review editor as we need to show that the comment is deleted.
             refetch();
         } else if (deleteComment.isError && deleteComment.error) {
             notificationDispatcher({
@@ -50,20 +63,6 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
         setAnchorEl(event.currentTarget);
     };
 
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    const handleEditComment = () => {
-        setEditingComment(true);
-        handleClose();
-    };
-
-    const handleDeleteComment = () => {
-        deleteComment.mutateAsync({id: comment.id});
-        handleClose();
-    };
-
     return (
         <Card variant={'outlined'} sx={{ width: '100%', p: 1 }}>
             <CardHeader
@@ -75,10 +74,14 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                         </Typography>
                         {comment.edited && (
                             <>
-                                <span style={{
-                                    display: "inline-block",
-                                    padding: "2px 4px",
-                                }}>&bull;</span>
+                                <span
+                                    style={{
+                                        display: 'inline-block',
+                                        padding: '2px 4px',
+                                    }}
+                                >
+                                    &bull;
+                                </span>
                                 <Typography variant={'body1'}>edited</Typography>
                             </>
                         )}
@@ -91,7 +94,11 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                     </Typography>
                 }
                 action={
-                    <IconButton aria-label="comment-settings" onClick={handleClick} aria-expanded={isOpen ? 'true' : undefined}>
+                    <IconButton
+                        aria-label="comment-settings"
+                        onClick={handleClick}
+                        aria-expanded={anchorEl ? 'true' : undefined}
+                    >
                         <MoreVertIcon />
                     </IconButton>
                 }
@@ -99,7 +106,7 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
             <CardContent sx={{ display: 'flex', flexDirection: 'column' }}>
                 {editingComment ? (
                     <CommentEditor
-                        isModifying
+                        type={'modify'}
                         filename={comment.filename}
                         contents={comment.contents}
                         // TODO: Support comment anchors!
@@ -118,23 +125,61 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                     'aria-labelledby': 'long-button',
                 }}
                 anchorEl={anchorEl}
-                open={isOpen}
-                onClose={handleClose}
+                open={Boolean(anchorEl)}
+                onClose={() => setAnchorEl(null)}
             >
                 <MenuItem
                     disabled={editingComment || deleteComment.isLoading}
-                    onClick={handleEditComment}
+                    onClick={() => {
+                        setEditingComment(true);
+                        setAnchorEl(null);
+                    }}
                     disableRipple
                 >
                     Edit comment
                 </MenuItem>
                 <Divider />
-                <MenuItem disabled={deleteComment.isLoading} onClick={handleDeleteComment} disableRipple>
+                <MenuItem
+                    disabled={deleteComment.isLoading}
+                    onClick={() => {
+                        deleteComment.mutateAsync({ id: comment.id });
+                        setAnchorEl(null);
+                    }}
+                    disableRipple
+                >
                     <Typography sx={{ fontWeight: 'bold', color: (t) => t.palette.error.main }}>
                         Delete comment
                     </Typography>
                 </MenuItem>
             </Menu>
+            {replyingToComment ? (
+                <CommentEditor
+                    type={'reply'}
+                    reviewId={review.id}
+                    commentId={comment.id}
+                    onClose={() => setReplyingToComment(false)}
+                />
+            ) : (
+                <Box
+                    sx={{
+                        pt: 1,
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        flex: 1,
+                    }}
+                >
+                    <UserAvatar {...session} />
+                    <TextField
+                        sx={{ ml: 0.5 }}
+                        variant="outlined"
+                        fullWidth
+                        size="small"
+                        placeholder="Reply..."
+                        onClick={() => setReplyingToComment(true)}
+                    />
+                </Box>
+            )}
         </Card>
     );
 }
