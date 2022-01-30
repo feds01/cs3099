@@ -236,7 +236,7 @@ registerRoute(router, '/:username/:name/bookmarkers', {
             .limit(50);
 
         // Project all the users into actual data...
-        const bookmarks = result.map((link) => User.project((link as typeof result[number]).user));
+        const bookmarks = result.map((link) => User.project(link.user as unknown as IUser));
 
         return res.status(200).json({
             status: 'ok',
@@ -276,9 +276,7 @@ registerRoute(router, '/:username/bookmarks', {
         const bookmarked = await Promise.all(
             result.map(
                 async (bookmark) =>
-                    await Publication.project(
-                        bookmark.publication as typeof result[number]['publication'],
-                    ),
+                    await Publication.project(bookmark.publication as unknown as IPublication),
             ),
         );
 

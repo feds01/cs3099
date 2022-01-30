@@ -1,75 +1,28 @@
 import TreeView from '../TreeView';
 import Box from '@mui/material/Box';
 import ErrorBanner from '../ErrorBanner';
-import CodeRenderer from '../CodeRenderer';
+import LoadingButton from '@mui/lab/LoadingButton';
+import { ReviewProvider } from '../../hooks/review';
 import { ContentState } from '../../types/requests';
-import LinearProgress from '@mui/material/LinearProgress';
 import { ReactElement, useEffect, useState } from 'react';
+import LinearProgress from '@mui/material/LinearProgress';
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import { useNotificationDispatch } from '../../hooks/notification';
 import { transformQueryIntoContentState } from '../../wrappers/react-query';
+import { useGetReviewIdComments, usePostReviewIdComplete } from '../../lib/api/reviews/reviews';
 import { useGetPublicationUsernameNameRevisionAll } from '../../lib/api/publications/publications';
 import {
     ApiErrorResponse,
-    FileResponse,
     GetPublicationUsernameNameRevisionAll200,
     GetReviewIdComments200,
     Review,
-    Comment,
 } from '../../lib/api/models';
-import { ReviewProvider, useReviewState } from '../../hooks/review';
-import { useGetReviewIdComments, usePostReviewIdComplete } from '../../lib/api/reviews/reviews';
-import CircularProgress from '@mui/material/CircularProgress';
-import Button from '@mui/material/Button';
-import { useNotificationDispatch } from '../../hooks/notification';
+import SourceList from './SourceList';
+import SubmissionPopOver from './SubmissionPopOver';
 
 interface ReviewEditorProps {
     review: Review;
     refetchReview: () => void;
-}
-
-interface CodeSourceListProps {
-    entries: FileResponse[];
-    review: Review;
-}
-
-function CodeSourceList({ entries, review }: CodeSourceListProps) {
-    // we can get the comments from the current state
-    const { comments } = useReviewState();
-    const [fileCommentMap, setFileCommentMap] = useState<Map<string, Comment[]>>(new Map());
-
-    useEffect(() => {
-        const newMap = new Map<string, Comment[]>();
-        comments.forEach((comment) => {
-            if (newMap.has(comment.filename)) {
-                const originalArr = newMap.get(comment.filename)!;
-
-                newMap.set(comment.filename, [...originalArr, comment]);
-            } else {
-                newMap.set(comment.filename, [comment]);
-            }
-        });
-
-        setFileCommentMap(newMap);
-    }, [comments]);
-
-    return (
-        <>
-            {entries.map((entry, index) => {
-                const fileComments = fileCommentMap.get(entry.filename);
-
-                return (
-                    <CodeRenderer
-                        review={review}
-                        key={entry.filename}
-                        id={`file-${index}`}
-                        titleBar
-                        filename={entry.filename}
-                        contents={entry.contents}
-                        comments={fileComments}
-                    />
-                );
-            })}
-        </>
-    );
 }
 
 export default function ReviewEditor({ review, refetchReview }: ReviewEditorProps): ReactElement {
@@ -130,9 +83,12 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
         getCommentsQuery.refetch();
     };
 
-    // Function to finalise the review...
-    const onComplete = () => {
-        completeReviewQuery.mutateAsync({ id: review.id });
+    // For the submit popover so a reviewer can leave a general comment on a review...
+    const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+    const open = Boolean(anchorEl);
+
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorEl(event.currentTarget);
     };
 
     // @@Hack: This is a very hacky way of displaying the state for both queries, we should fix this!
@@ -159,7 +115,8 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                         sx={{
                             display: 'flex',
                             position: 'absolute',
-                            p: 1,
+                            overflowX: 'hidden',
+                            overflowY: 'hidden',
                             flex: 1,
                             minWidth: 800,
                             flexDirection: 'row',
@@ -178,6 +135,7 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                                 borderRight: 1,
                                 borderColor: 'divider',
                                 overflowY: 'scroll',
+                                overflowX: 'scroll',
                             }}
                         >
                             <TreeView comments={comments} paths={entries.map((entry) => entry.filename)} />
@@ -189,39 +147,53 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                                 height: '100%',
                                 flex: 1,
                                 overflowY: 'scroll',
-                                zIndex: 1000,
+                                zIndex: 80,
+                                mr: 1,
+                                ml: 1,
+                                pb: 4,
                             }}
                         >
-                            <CodeSourceList entries={entries} review={review} />
-                            {review.status === 'started' && (
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        position: 'fixed',
-                                        borderTop: 1,
-                                        borderLeft: 1,
-                                        borderColor: 'divider',
-                                        background: '#fff',
-                                        bottom: 0,
-                                        width: '100%',
-                                    }}
-                                >
-                                    <Box sx={{ p: 2 }}>
-                                        <Button variant="outlined" sx={{ mr: 1 }} href={'/'}>
-                                            Cancel
-                                        </Button>
-                                        <Button disabled={completeReviewQuery.isLoading} onClick={onComplete}>
-                                            {!completeReviewQuery.isLoading ? (
-                                                'Submit'
-                                            ) : (
-                                                <CircularProgress variant="determinate" color="inherit" size={14} />
-                                            )}
-                                        </Button>
-                                    </Box>
-                                </Box>
-                            )}
+                            <SourceList entries={entries} review={review} />
                         </Box>
                     </Box>
+                    {review.status === 'started' && (
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                position: 'fixed',
+                                flexDirection: 'row',
+                                border: 1,
+                                borderColor: 'divider',
+                                justifyContent: 'space-between',
+                                background: '#fff',
+                                width: 'calc(100% - 41px)', // @@Hack: we assume that the side bar size is always constant
+                                bottom: 0,
+                                zIndex: 100,
+                            }}
+                        >
+                            <div></div>
+                            <Box sx={{ p: 2 }}>
+                                <LoadingButton
+                                    variant="contained"
+                                    loading={completeReviewQuery.isLoading}
+                                    onClick={handleClick}
+                                    endIcon={<ArrowDropUpIcon />}
+                                >
+                                    Finish review
+                                </LoadingButton>
+                            </Box>
+                        </Box>
+                    )}
+                    <SubmissionPopOver
+                        open={open}
+                        review={review}
+                        anchorEl={anchorEl}
+                        onClose={() => setAnchorEl(null)}
+                        onSubmission={() => {
+                            setAnchorEl(null);
+                            completeReviewQuery.mutateAsync({ id: review.id });
+                        }}
+                    />
                 </ReviewProvider>
             );
         }

@@ -201,9 +201,7 @@ registerRoute(router, '/:username/followers', {
             .populate<{ follower: IUser }[]>('follower')
             .limit(50);
 
-        const followers = result.map((link) =>
-            User.project((link as typeof result[number]).follower),
-        );
+        const followers = result.map((link) => User.project(link.follower as unknown as IUser));
 
         return res.status(200).json({
             status: 'ok',
@@ -234,9 +232,9 @@ registerRoute(router, '/:username/following', {
             .limit(50)
             .exec();
 
-        const followers = result.map((link) =>
-            User.project((link as typeof result[number]).following),
-        );
+        const followers = result.map((link) => {
+            return User.project(link.following as unknown as IUser);
+        });
 
         return res.status(200).json({
             status: 'ok',

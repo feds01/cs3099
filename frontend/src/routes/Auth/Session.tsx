@@ -27,7 +27,6 @@ export default function Session(): ReactElement {
 
         // Redirect the user back to login if something wasn't correct with the user session.
         if (!validator.success) {
-            console.log(validator.error);
             history.push({ pathname: '/login' });
         } else {
             setRedirect(validator.data.redirect);

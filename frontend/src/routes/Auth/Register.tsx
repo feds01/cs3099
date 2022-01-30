@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import { User } from '../../lib/api/models';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import AuthCover from './../../static/images/login.svg';
-import RegisterForm from '../../components/RegisterAccountForm';
+import RegisterForm from '../../forms/RegisterAccountForm';
 import { useDispatchAuth } from '../../hooks/auth';
 
 interface LocationState {

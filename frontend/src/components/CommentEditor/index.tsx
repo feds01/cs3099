@@ -1,12 +1,11 @@
-import ReactMde from 'react-mde';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import MarkdownRenderer from '../MarkdownRenderer';
+import LoadingButton from '@mui/lab/LoadingButton';
+import CommentField from '../CommentField';
 import { useReviewDispatch } from '../../hooks/review';
 import { ReactElement, useEffect, useState } from 'react';
 import { usePutReviewIdComment } from '../../lib/api/reviews/reviews';
 import { useNotificationDispatch } from '../../hooks/notification';
-import CircularProgress from '@mui/material/CircularProgress';
 import { usePatchCommentId } from '../../lib/api/comments/comments';
 
 /**
@@ -20,10 +19,8 @@ interface CommentEditorProps {
     isModifying: boolean;
     /**
      * The filename the comment is attached to.
-     *
-     * @@Future: change this is a optional field as general comments are a thing.
      */
-    filename: string;
+    filename?: string;
     /**
      * The location of the comment in the file.
      *
@@ -50,9 +47,6 @@ interface CommentEditorProps {
     onClose: () => void;
 }
 
-// TODO: in the future, add support for images
-// TODO: we can also use the suggestion for usernames.
-
 // https://codesandbox.io/s/react-mde-latest-forked-f9ti5?file=/src/index.js
 export default function CommentEditor({
     isModifying = false,
@@ -67,11 +61,9 @@ export default function CommentEditor({
     const notificationDispatcher = useNotificationDispatch();
 
     const [value, setValue] = useState<string>(contents);
-    const [selectedTab, setSelectedTab] = useState<'write' | 'preview'>('write');
 
     const postComment = usePutReviewIdComment();
     const updateComment = usePatchCommentId();
-    
 
     useEffect(() => {
         if ((!postComment.isLoading && postComment.data) || (!updateComment.isLoading && updateComment.data)) {
@@ -88,6 +80,7 @@ export default function CommentEditor({
                     item: { severity: 'success', message: 'Successfully posted comment' },
                 });
             }
+
             onClose();
         } else if ((postComment.isError && postComment.error) || (updateComment.isError && updateComment.error)) {
             notificationDispatcher({
@@ -97,7 +90,7 @@ export default function CommentEditor({
         }
     }, [postComment.data, postComment.isLoading, updateComment.data, updateComment.isLoading]);
 
-    const onSubmit = async () => {
+    const onSubmitComment = async () => {
         if (isModifying && commentId) {
             return await updateComment.mutateAsync({
                 id: commentId,
@@ -119,25 +112,17 @@ export default function CommentEditor({
 
     return (
         <Box>
-            <ReactMde
-                value={value}
+            <CommentField
+                contents={contents}
                 onChange={setValue}
-                selectedTab={selectedTab}
-                onTabChange={setSelectedTab}
-                generateMarkdownPreview={(markdown) => Promise.resolve(<MarkdownRenderer contents={markdown} />)}
-                childProps={{
-                    writeButton: {
-                        tabIndex: -1,
-                    },
-                }}
             />
             <Box sx={{ pt: 1, pb: 1 }}>
                 <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>
                     Cancel
                 </Button>
-                <Button disabled={isLoading} onClick={onSubmit}>
-                    {!isLoading ? 'Submit' : <CircularProgress variant="determinate" color="inherit" size={14} />}
-                </Button>
+                <LoadingButton loading={isLoading} onClick={onSubmitComment}>
+                    Submit
+                </LoadingButton>
             </Box>
         </Box>
     );

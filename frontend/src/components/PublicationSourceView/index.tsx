@@ -1,5 +1,4 @@
 import BreadCrumb from './BreadCrumb';
-import FileViewer from '../FileViewer';
 import Box from '@mui/material/Box';
 import ErrorBanner from '../ErrorBanner';
 import DirectoryViewer from '../DirectoryViewer';
@@ -8,6 +7,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import { Divider, LinearProgress } from '@mui/material';
 import { ApiErrorResponse, ResourceResponseResponse } from '../../lib/api/models';
 import { constructBasePath, PublicationIndex } from '../../lib/utils/publications';
+import CodeRenderer from '../CodeRenderer';
 
 interface SourceViewerProps {
     filename: string;
@@ -29,7 +29,7 @@ function SourceViewer({ contents, filename, basePath }: SourceViewerProps): Reac
 
             if (data.type === 'file') {
                 return (
-                    <FileViewer contents={data.contents} filename={filename} comments={[]} updatedAt={data.updatedAt} />
+                    <CodeRenderer contents={data.contents} filename={filename} />
                 );
             } else {
                 return (

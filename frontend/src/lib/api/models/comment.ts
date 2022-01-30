@@ -11,7 +11,7 @@ import type { User } from './user';
 export interface Comment {
   id: string;
   edited: boolean;
-  filename: string;
+  filename?: string;
   anchor?: CommentAnchor;
   contents: string;
   thread: number;

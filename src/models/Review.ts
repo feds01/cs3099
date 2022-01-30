@@ -27,7 +27,7 @@ type PopulatedReview = (IReview & {
 interface IReviewDocument extends IReview, Document {}
 
 interface IReviewModel extends Model<IReviewDocument> {
-    project: (review: IReview) => Partial<IReview>;
+    project: (review: IReview) => Promise<Partial<IReview>>;
     projectAsSg: (review: PopulatedReview) => Promise<ExportSgReview>;
 }
 

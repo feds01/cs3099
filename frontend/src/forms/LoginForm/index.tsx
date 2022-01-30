@@ -1,45 +1,43 @@
-import { z } from 'zod';
 import { Link } from 'react-router-dom';
+import { ReactElement, useEffect } from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Alert from '@mui/material/Alert';
 import Checkbox from '@mui/material/Checkbox';
-import React, { ReactElement, useEffect } from 'react';
+import Typography from '@mui/material/Typography';
+import AlertTitle from '@mui/material/AlertTitle';
+import LoadingButton from '@mui/lab/LoadingButton';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+
 import { User } from '../../lib/api/models';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
 import { usePostAuthLogin } from '../../lib/api/auth/auth';
-import ControlledTextField from '../ControlledTextField';
-import ControlledPasswordField from '../ControlledPasswordField';
-import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
+import { ILoginForm, LoginSchema } from '../../validators/login';
+import ControlledTextField from '../../components/ControlledTextField';
+import ControlledPasswordField from '../../components/ControlledPasswordField';
 
-const LoginSchema = z.object({
-    username: z.string(),
-    password: z.string().nonempty(),
-    rememberLogin: z.boolean(),
-});
-
-type ILoginForm = z.infer<typeof LoginSchema>;
-
-interface Props {
+interface LoginFormProps {
     onSuccess: (session: User, token: string, refreshToken: string, rememberUser: boolean) => void;
 }
 
-export default function LoginForm({ onSuccess }: Props): ReactElement {
-    const { control, handleSubmit, getValues } = useForm<ILoginForm>({
+export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
+    const {
+        control,
+        handleSubmit,
+        getValues,
+        formState: { isSubmitting },
+    } = useForm<ILoginForm>({
         resolver: zodResolver(LoginSchema),
         defaultValues: {
+            username: '',
+            password: '',
             rememberLogin: true,
         },
     });
 
     const { isLoading, isError, data: response, error, mutateAsync } = usePostAuthLogin();
 
-    // TODO: try and do this in onSubmit instead of using an effect.
     useEffect(() => {
         if (!isLoading && typeof response !== 'undefined') {
             const rememberLogin = getValues('rememberLogin');
@@ -102,21 +100,21 @@ export default function LoginForm({ onSuccess }: Props): ReactElement {
                     />
                     <Link to="/auth/forgot-password">Forgot Password?</Link>
                 </Box>
-                <Button
+                <LoadingButton
                     type={'submit'}
                     sx={{ fontWeight: 'bold' }}
-                    disabled={isLoading}
                     variant="contained"
                     color="primary"
                     fullWidth
+                    loading={isLoading || isSubmitting}
                 >
-                    {!isLoading ? 'Sign in' : <CircularProgress variant="determinate" color="inherit" size={14} />}
-                </Button>
+                    Sign In
+                </LoadingButton>
             </Box>
             {isError && (
                 <Alert severity="error">
                     <AlertTitle>Error</AlertTitle>
-                    <strong>{error?.message || 'Something went wrong'}</strong>
+                    <strong>{error?.extra || error?.message || 'Something went wrong'}</strong>
                 </Alert>
             )}
         </form>

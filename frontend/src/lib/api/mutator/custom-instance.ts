@@ -31,8 +31,26 @@ AXIOS_INSTANCE.interceptors.response.use((response) => {
 });
 
 export const customInstance = <T>(config: AxiosRequestConfig): Promise<T> => {
-    const source = Axios.CancelToken.source();
-    const promise = AXIOS_INSTANCE({ ...config, cancelToken: source.token }).then(({ data }) => data) as Promise<T>;
+    const source = Axios.CancelToken.source();    
+    const promise = AXIOS_INSTANCE({ ...config, cancelToken: source.token }).then(({ data }) => {
+        return data;
+    }).catch((err) => {
+        // If there is no response from the server... default to the basic behaviour of axios
+        if (err.response === null || typeof err.response === "undefined") {
+            throw err;
+        }
+
+        // In the case where the status is actually 'ok', we shouldn't throw the 
+        // response and it should be an ok...
+        if (err.response.data.status === "ok") {
+            return err.response.data;
+        }
+
+        // @@Hack: If the response from a request isn't thrown, it won't propagate
+        //         and it will just give the default axios error instead of the API
+        //         response.
+        throw err.response.data;
+    }) as Promise<T>;
 
     (promise as { cancel?: unknown } & Promise<T>).cancel = () => {
         source.cancel('Query was cancelled by React Query');

@@ -9,6 +9,7 @@ import { ModeSchema } from '../../validators/requests';
 import Review, { IReviewStatus } from '../../models/Review';
 import Publication, { IPublication } from '../../models/Publication';
 import { IReviewCreationSchema } from '../../validators/reviews';
+import assert from 'assert';
 
 const router = express.Router();
 
@@ -102,8 +103,8 @@ registerRoute(router, '/:username/:name/:revision/review', {
         };
 
         const doc = await Review.findOne(docParams)
-            .populate<{ publication: IPublication }[]>('publication')
-            .populate<{ owner: IUser }[]>('owner')
+            .populate<{ publication: IPublication }>('publication')
+            .populate<{ owner: IUser }>('owner')
             .exec();
 
         // If the user tries to creat ea new review whilst another pending review exists, that review
@@ -120,11 +121,15 @@ registerRoute(router, '/:username/:name/:revision/review', {
         try {
             const newDoc = await new Review(docParams).save();
 
+            // @@HACK: We should be able to modify the returned doc and project it.
             // populate the fields in the new document so that it can be projected...
             const projected = await Review.findById(newDoc._id)
-                .populate<{ publication: IPublication }[]>('publication')
-                .populate<{ owner: IUser }[]>('owner')
+                .populate<{ publication: IPublication }>('publication')
+                .populate<{ owner: IUser }>('owner')
                 .exec();
+
+            // @@Cleanup!
+            assert(projected);
 
             return res.status(200).json({
                 status: 'ok',

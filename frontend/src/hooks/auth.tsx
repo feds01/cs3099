@@ -1,7 +1,7 @@
-import { z } from 'zod';
 import { User } from '../lib/api/models';
 import { usePostAuthSession } from '../lib/api/auth/auth';
 import React, { Dispatch, FC, useContext, useEffect, useReducer } from 'react';
+import { SessionSchema } from '../validators/session';
 
 export type AuthStateAction =
     | { type: 'login'; rememberUser: boolean; data: { session: User; token: string; refreshToken: string } }
@@ -21,19 +21,6 @@ export type VerifiedAuthState = {
     refreshToken: string | null;
     isLoggedIn: true;
 };
-
-// Use a schema for validating the session schema.
-const SessionSchema = z.object({
-    id: z.string(),
-    email: z.string(),
-    username: z.string(),
-    firstName: z.string(),
-    lastName: z.string(),
-    status: z.string().optional(),
-    about: z.string().optional(),
-    profilePictureUrl: z.string().optional(),
-    createdAt: z.number().nonnegative(),
-});
 
 const initialState: AuthState = {
     session: null,
@@ -83,6 +70,7 @@ const initAuth = (state: AuthState): AuthState => {
 
     if (token && refreshToken) {
         state.token = token;
+        state.refreshToken = refreshToken;
         state.isLoggedIn = true;
 
         try {
@@ -97,6 +85,7 @@ const initAuth = (state: AuthState): AuthState => {
             }
         } catch (e) {
             console.log('Session in localStorage was invalid');
+            state.isLoggedIn = false;
         }
     }
 
@@ -116,6 +105,8 @@ export const AuthProvider: FC = ({ children }) => {
                     refreshToken: state.refreshToken,
                 },
             });
+        } else {
+            dispatch({ type: 'logout' });
         }
     }, []);
 
@@ -128,7 +119,7 @@ export const AuthProvider: FC = ({ children }) => {
             // Hmm, couldn't refresh the tokens for whatever reason, so logout...
             dispatch({ type: 'logout' });
         }
-    }, [sessionQuery.data]);
+    }, [sessionQuery.data, sessionQuery.error]);
 
     return <AuthContext.Provider value={{ state, dispatch }}>{children}</AuthContext.Provider>;
 };

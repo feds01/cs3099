@@ -1,8 +1,8 @@
+import { ReactElement } from 'react';
 import remarkGfm from 'remark-gfm';
-import ReactMarkdown from 'react-markdown';
-import React, { ReactElement } from 'react';
-import CodeRenderer from '../CodeRenderer';
 import { Theme } from '@mui/material';
+import ReactMarkdown from 'react-markdown';
+import CodeRenderer from '../CodeRenderer';
 import makeStyles from '@mui/styles/makeStyles';
 
 interface Props {
