@@ -2,6 +2,7 @@ import { z } from 'zod';
 import express from 'express';
 import User from '../../models/User';
 import Logger from '../../common/logger';
+import { moveResource } from '../../lib/fs';
 import * as errors from '../../common/errors';
 import registerRoute from '../../lib/requests';
 import { archiveIndexToPath } from '../../lib/zip';
@@ -10,7 +11,6 @@ import { convertSgId } from '../../transformers/sg';
 import { SgMetadataSchema } from '../../validators/sg';
 import { ObjectIdSchema } from '../../validators/requests';
 import { downloadOctetStream, makeRequest } from '../../utils/fetch';
-import { moveResource } from '../../lib/fs';
 
 const router = express.Router();
 
