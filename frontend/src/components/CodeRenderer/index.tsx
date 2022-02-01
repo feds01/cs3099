@@ -2,10 +2,11 @@ import React, { ReactElement } from 'react';
 import Prism from 'prismjs';
 import Box from '@mui/material/Box/Box';
 import { styled } from '@mui/material';
-import CommentCard from '../CommentCard';
 import CommentButton from '../CommentButton';
-import { Review, Comment } from '../../lib/api/models';
+import { Review } from '../../lib/api/models';
 import theme from 'prism-react-renderer/themes/github';
+import { CommentThread } from '../../lib/utils/comment';
+import CommentThreadRenderer from '../CommentThreadRenderer';
 import { coerceExtensionToLanguage, getExtension } from '../../lib/utils/file';
 import Highlight, { Language, Prism as PrismRR } from 'prism-react-renderer';
 
@@ -62,7 +63,7 @@ interface CodeRendererProps {
     filename: string;
     language?: string;
     review?: Review;
-    commentMap?: Map<number, Comment[]>;
+    commentMap?: Map<number, CommentThread[]>;
 }
 
 export default function CodeRenderer({
@@ -96,10 +97,10 @@ export default function CodeRenderer({
                                         </LineContent>
                                     </Line>
                                 </CommentButton>
-                                {commentMap?.get(i + 1)?.map((comment) => {
+                                {commentMap?.get(i + 1)?.map((thread) => {
                                     return (
-                                        <Box key={comment.contents} sx={{ pt: 1, pb: 1 }}>
-                                            <CommentCard review={review} comment={comment} />
+                                        <Box key={thread.id} sx={{ pt: 1, pb: 1 }}>
+                                            <CommentThreadRenderer review={review} thread={thread} />
                                         </Box>
                                     );
                                 })}

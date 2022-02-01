@@ -79,6 +79,7 @@ registerRoute(router, '/:id/comment', {
             }
 
             thread = new mongoose.Types.ObjectId(replyingComment.thread.toString());
+            console.log(thread);
         }
 
         // If either the filename or the anchor is present on the comment, we need
@@ -200,7 +201,7 @@ registerRoute(router, '/:id/comments', {
             });
         }
 
-        // Find all the comments on the current review.,,
+        // Find all the comments on the current review...
         const result = await Comment.find({ review: review.id })
             .populate<{ owner: IUser }[]>('owner')
             .exec();

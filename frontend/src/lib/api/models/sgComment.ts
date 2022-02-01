@@ -14,5 +14,6 @@ export interface SgComment {
   anchor?: CommentAnchor;
   contents: string;
   author: string;
+  thread: number;
   postedAt: number;
 }

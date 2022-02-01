@@ -1,15 +1,15 @@
 import Box from '@mui/material/Box/Box';
 import CodeRenderer from '../CodeRenderer';
-import CommentCard from '../CommentCard';
-import sortedIndexBy from 'lodash/sortedIndexBy';
 import CommentEditor from '../CommentEditor';
-import { Review, Comment } from '../../lib/api/models';
+import { Review } from '../../lib/api/models';
 import Typography from '@mui/material/Typography';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import React, { useState, useEffect, useRef } from 'react';
+import CommentThreadRenderer from '../CommentThreadRenderer';
 import { BoxProps, Button, IconButton, Menu, MenuItem, Skeleton } from '@mui/material';
 
 import { styled } from '@mui/material/styles';
+import { CommentThread } from '../../lib/utils/comment';
 import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
 import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
@@ -85,10 +85,10 @@ type FileViewerProps = {
     id?: string;
     language?: string;
     review: Review;
-    comments?: Comment[];
+    threads?: CommentThread[];
 };
 
-export default function FileViewer({ contents, filename, id, review, comments, language }: FileViewerProps) {
+export default function FileViewer({ contents, filename, id, review, threads, language }: FileViewerProps) {
     const [expanded, setExpanded] = useState<boolean>(true);
     const [renderSources, setRenderSources] = useState<boolean>(shouldRenderByDefault(contents));
 
@@ -105,8 +105,8 @@ export default function FileViewer({ contents, filename, id, review, comments, l
         setAnchorEl(null);
     };
 
-    const [commentMap, setCommentMap] = useState<Map<number, Comment[]>>(new Map([]));
-    const [fileComments, setFileComments] = useState<Comment[]>();
+    const [commentMap, setCommentMap] = useState<Map<number, CommentThread[]>>(new Map([]));
+    const [fileComments, setFileComments] = useState<CommentThread[]>();
 
     const editCommentRef = useRef<HTMLDivElement>(null);
 
@@ -127,26 +127,26 @@ export default function FileViewer({ contents, filename, id, review, comments, l
 
     // Let's compute where the comments are to be placed once once we get them
     useEffect(() => {
-        if (renderSources && typeof comments !== 'undefined') {
-            const newMap = new Map<number, Comment[]>();
-            const collectedFileComments: Comment[] = [];
+        if (renderSources && typeof threads !== 'undefined') {
+            const newMap = new Map<number, CommentThread[]>();
+            const collectedFileComments: CommentThread[] = [];
 
             // TODO: support anchors...
-            comments.forEach((comment) => {
+            threads.forEach((thread) => {
                 // Essentially, if no anchor is present on the comment, we put it on the file comments
-                if (typeof comment.anchor === 'undefined') {
-                    collectedFileComments.push(comment);
+                if (typeof thread.anchor === 'undefined') {
+                    collectedFileComments.push(thread);
                 } else {
-                    const start = comment.anchor.start;
+                    const start = thread.anchor.start;
 
                     if (newMap.has(start)) {
                         let originalArr = newMap.get(start)!;
-                        let insertionIndex = sortedIndexBy(originalArr, comment, (c) => c.updatedAt);
-
+                        // let insertionIndex = sortedIndexBy(originalArr, thread, (c) => c.updatedAt);
                         // Safety: We mutate the original array so it should still live in the map.
-                        originalArr.splice(insertionIndex, 0, comment);
+                        // originalArr.splice(insertionIndex, 0, thread);
+                        originalArr.push(thread);
                     } else {
-                        newMap.set(comment.anchor.start, [comment]);
+                        newMap.set(thread.anchor.start, [thread]);
                     }
                 }
             });
@@ -154,7 +154,7 @@ export default function FileViewer({ contents, filename, id, review, comments, l
             setCommentMap(newMap);
             setFileComments(collectedFileComments);
         }
-    }, [comments, renderSources]);
+    }, [threads, renderSources]);
 
     return (
         <>
@@ -226,17 +226,17 @@ export default function FileViewer({ contents, filename, id, review, comments, l
                 </Menu>
             </Accordion>
             {typeof review !== 'undefined' &&
-                fileComments?.map((comment) => {
+                fileComments?.map((thread) => {
                     return (
-                        <Box key={comment.contents} sx={{ pt: 1, pb: 1 }}>
-                            <CommentCard review={review} comment={comment} />
+                        <Box key={thread.id} sx={{ pt: 1, pb: 1 }}>
+                            <CommentThreadRenderer review={review} thread={thread} />
                         </Box>
                     );
                 })}
             {typeof review !== 'undefined' && editingComment && (
                 <div ref={editCommentRef}>
                     <CommentEditor
-                        isModifying={false}
+                        type="post"
                         filename={filename}
                         reviewId={review.id}
                         onClose={() => setEditingComment(false)}

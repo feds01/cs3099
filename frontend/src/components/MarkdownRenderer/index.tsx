@@ -5,19 +5,19 @@ import ReactMarkdown from 'react-markdown';
 import CodeRenderer from '../CodeRenderer';
 import makeStyles from '@mui/styles/makeStyles';
 
-interface Props {
+interface MarkdownRendererProps {
     contents: string;
     fontSize?: number;
 }
 
-const useStyles = makeStyles<Theme, Props>((theme) => ({
+const useStyles = makeStyles<Theme, MarkdownRendererProps>((theme) => ({
     wrapper: {
         fontSize: ({ fontSize }) => fontSize ? `${fontSize}px !important` : "inherit",
         listStylePosition: "inside"
     },
 }));
 
-export default function MarkdownRenderer(props: Props): ReactElement {
+export default function MarkdownRenderer(props: MarkdownRendererProps): ReactElement {
     const classes = useStyles(props);
 
     return (

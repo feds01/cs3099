@@ -2315,8 +2315,11 @@ components:
                     type: string
                     example: 'This is a comment'
                 thread:
-                    type: number
-                    example: 0
+                    type: string
+                    example: ABCDE921312DAB23AE
+                replying:
+                    type: string
+                    example: ABCDE921312DAB23AE
                 author:
                     $ref: '#/components/schemas/User'
                 createdAt:
@@ -2410,6 +2413,9 @@ components:
                 author:
                     type: string
                     example: 'ABCDE921312DAB23AE:t06'
+                thread:
+                    type: number
+                    example: 0
                 postedAt:
                     type: number
                     example: 1636065460
