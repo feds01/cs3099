@@ -20,7 +20,7 @@ registerRoute(router, '/:id', {
         const { id } = req.params;
 
         const comment = await Comment.findById(id)
-            .populate<{ owner: IUserDocument }[]>('owner')
+            .populate<{ owner: IUserDocument }>('owner')
             .exec();
 
         if (!comment) {
@@ -42,7 +42,7 @@ registerRoute(router, '/:id', {
  * @method PATCH
  * @url /api/comment/:id
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/comment/89183192381293
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/comment/89183192381293
  *
  * >>> response:
  * {
@@ -77,7 +77,7 @@ registerRoute(router, '/:id', {
             { contents, edited: true },
             { new: true },
         )
-            .populate<{ owner: IUserDocument }[]>('owner')
+            .populate<{ owner: IUserDocument }>('owner')
             .exec();
 
         if (!updatedComment) {

@@ -15,7 +15,7 @@ const router = express.Router({ mergeParams: true });
  * @method POST
  * @url api/user/<id>/follow
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/user/616f115feb325663f8bce3a4/follow
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/616f115feb325663f8bce3a4/follow
  * >>> body: {}
  *
  * @description This route is used to follow a user. The router accepts a token

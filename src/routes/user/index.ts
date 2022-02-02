@@ -24,7 +24,7 @@ router.use('/', reviewRouter);
  * @method GET
  * @url /api/user
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/user
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user
  *
  * >>> response:
  * {
@@ -74,7 +74,7 @@ registerRoute(router, '/:username', {
  * @method PATCH
  * @url /api/user
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/user
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user
  * >>> body:
  * {
  *  "name": "william"
@@ -155,7 +155,7 @@ registerRoute(router, '/:username', {
  * @method DELETE
  * @url /api/user
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/user
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user
  *
  * @description This route is used to delete  a user account, the route
  * will accept a token in the header of the request to authenticate the request.
@@ -197,7 +197,7 @@ registerRoute(router, '/:username', {
  * @method GET
  * @url /api/user/<id>/role
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/user/<616f115feb505663f8bce3e2>/role
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/<616f115feb505663f8bce3e2>/role
  * >>> response: {
  *  "status": "true",
  *  "role": "default" // TO CHECK
@@ -230,7 +230,7 @@ registerRoute(router, '/:username/role', {
  * @method PATCH
  * @url /api/user/<id>/role
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/user/<616f115feb505663f8bce3e2>/role
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/<616f115feb505663f8bce3e2>/role
  * >>> body:
  * {
  *  "role": "moderator"

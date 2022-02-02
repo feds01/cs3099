@@ -1,22 +1,39 @@
 import { z } from 'zod';
 import express from 'express';
-import User from '../../models/User';
-import Logger from '../../common/logger';
+import User, { IUser } from '../../models/User';
+import Review, { IReviewStatus } from '../../models/Review';
+import Publication, { IPublication } from '../../models/Publication';
+
 import { moveResource } from '../../lib/fs';
-import * as errors from '../../common/errors';
 import registerRoute from '../../lib/requests';
 import { archiveIndexToPath } from '../../lib/zip';
-import Publication from '../../models/Publication';
+import { downloadOctetStream, makeRequest } from '../../utils/fetch';
+
+import Logger from '../../common/logger';
+import * as errors from '../../common/errors';
 import { convertSgId } from '../../transformers/sg';
+
 import { SgMetadataSchema } from '../../validators/sg';
 import { ObjectIdSchema } from '../../validators/requests';
-import { downloadOctetStream, makeRequest } from '../../utils/fetch';
 
 const router = express.Router();
 
 /**
+ * @version v1.0.0
+ * @method POST
+ * @url /api/sg/resources/import
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/sg/resources/import
  *
- */
+ *
+ * @description This route is used to handle an import procedure from external services
+ * sending over their information about a publication and the publication itself. It
+ * will make two requests which download the archive of the application itself and then
+ * the other request downloads all the metadata about the publication including any left
+ * reviews or comments on the publication.
+ *
+ * @see https://app.swaggerhub.com/apis/feds01/supergroup-c_api/1.0.0#/resources/post_api_sg_resources_import
+ * */
 registerRoute(router, '/import', {
     method: 'post',
     params: z.object({}),
@@ -86,6 +103,8 @@ registerRoute(router, '/import', {
 
             await moveResource(publication.data, finalPath);
 
+            //@@TODO: We have to deal with reviews here...
+
             return res.status(200).json({
                 status: 'ok',
                 message: 'Successfully imported publication',
@@ -102,33 +121,75 @@ registerRoute(router, '/import', {
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/sg/resources/export/:id/metadata
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/sg/resources/export/61f9c5a7f90225c567f389fc/metadata
  *
- */
+ *
+ * @description This endpoint is used to collect all the possible metadata surrounding a publication.
+ * The endpoint will find the publication in question and project it into a 'SuperGroup' variant which
+ * has some fields omitted/transformed. Additionally, it will select all reviews on the publication
+ * that have been marked as 'Completed' and project the review with all the comments.
+ *
+ * @see https://app.swaggerhub.com/apis/feds01/supergroup-c_api/1.0.0#/resources/get_api_sg_resources_export__id__metadata
+ * */
 registerRoute(router, '/export/:id/metadata', {
     method: 'get',
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({ from: z.string().url(), state: z.string() }),
     permission: null,
     handler: async (req, res) => {
-        const publication = await Publication.findById(req.params.id);
+        const publication = await Publication.findById(req.params.id).exec();
 
-        if (!publication) {
+        if (!publication || publication.draft) {
             return res.status(404).json({
                 status: 'error',
                 error: errors.NON_EXISTENT_PUBLICATION_ID,
             });
         }
 
+        const projectedPublication = await Publication.projectAsSg(publication);
+
+        // Okay, let's find all the reviews that are related to the current revision
+        // of the publication, for now we don't consider revisions of a publication
+        // a concept at all because external groups don't know about our revision system.
+        const reviews = await Review.find({
+            publication: publication.id,
+            status: IReviewStatus.Completed,
+        })
+            .populate<{ publication: IPublication }>('publication')
+            .populate<{ owner: IUser }>('owner')
+            .exec();
+
+        const projectedReviews = await Promise.all(
+            reviews.map(async (review) => {
+                return await Review.projectAsSg(review);
+            }),
+        );
+
         return res.status(200).json({
-            publication,
-            reviews: [], // TODO: export publications too
+            publication: projectedPublication,
+            reviews: projectedReviews,
         });
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/sg/resources/export/:id
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/sg/resources/export/61f9c5a7f90225c567f389fc
  *
- */
+ *
+ * @description This endpoint is used to download the archive of the most current version of the
+ * publication. The archive is sent as an octet stream that can be saved by the service on
+ * the other side of the transaction.
+ *
+ * @see https://app.swaggerhub.com/apis/feds01/supergroup-c_api/1.0.0#/resources/get_api_sg_resources_export__id_
+ * */
 registerRoute(router, '/export/:id', {
     method: 'get',
     params: z.object({ id: ObjectIdSchema }),

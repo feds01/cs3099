@@ -1,7 +1,8 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
+import Comment from './Comment';
+import User, { IUser } from './User';
 import { ExportSgReview } from '../validators/sg';
 import Publication, { IPublication } from './Publication';
-import User, { IUser } from './User';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export enum IReviewStatus {
     Completed = 'completed',
@@ -72,10 +73,38 @@ ReviewSchema.statics.project = async (review: PopulatedReview) => {
  * @param user The user Document that is to be projected.
  * @returns A partial user object with selected fields that are to be projected.
  */
-ReviewSchema.statics.projectAsSg = async (review: PopulatedReview): Promise<ExportSgReview> => ({
-    owner: User.getExternalId(review.owner),
-    comments: [], // TODO: Comments
-    createdAt: review.createdAt.getTime(),
-});
+ReviewSchema.statics.projectAsSg = async (review: PopulatedReview): Promise<ExportSgReview> => {
+    // This map represents all the comments seen in the current transformation, it uses a
+    // mapping of string (ObjectId in this case) to number in order to convert it to a
+    // standardised format so that other supergroups can transform the comments in whatever
+    // way that they wish.
+    const commentMap: Map<string, number> = new Map();
+
+    const comments = await Comment.find({ review: review._id })
+        .populate<{ owner: IUser }>('owner')
+        .exec();
+
+    // firstly we want to populate the comment map...
+    comments.forEach((comment, index) => {
+        commentMap.set(comment._id.toString(), index);
+    });
+
+    const projectedComments = comments.map((comment) => {
+        const id = commentMap.get(comment._id.toString())!;
+        let replying;
+
+        if (typeof comment.replying !== 'undefined') {
+            replying = commentMap.get(comment.replying.toString());
+        }
+
+        return Comment.projectAsSg(id, comment, replying);
+    });
+
+    return {
+        owner: User.getExternalId(review.owner),
+        comments: projectedComments,
+        createdAt: review.createdAt.getTime(),
+    };
+};
 
 export default mongoose.model<IReview, IReviewModel>('review', ReviewSchema);

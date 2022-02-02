@@ -1,6 +1,7 @@
 import assert from 'assert';
-import mongoose, { Document, Model, Schema } from 'mongoose';
 import User, { IUserDocument } from './User';
+import mongoose, { Document, Model, Schema } from 'mongoose';
+import { ExportSgPublication } from '../validators/sg';
 
 export interface IPublication {
     revision?: string;
@@ -21,6 +22,7 @@ export interface IPublicationDocument extends IPublication, Document {}
 interface IPublicationModel extends Model<IPublicationDocument> {
     project: (publication: IPublication, attachment?: boolean) => Promise<Partial<IPublication>>;
     projectWith: (publication: IPublication, user: IUserDocument) => Promise<Partial<IPublication>>;
+    projectAsSg: (publication: IPublicationDocument) => Promise<ExportSgPublication>;
 }
 
 const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublication>(
@@ -93,6 +95,37 @@ PublicationSchema.statics.projectWith = (
 
         // TODO: project collaborators too...
         collaborators,
+    };
+};
+
+PublicationSchema.statics.projectAsSg = async (
+    publication: IPublicationDocument,
+): Promise<ExportSgPublication> => {
+    const { name, title, introduction, revision, collaborators } = publication;
+
+    // Get the owner and verify that it cannot be null.
+    const owner = await User.findById(publication.owner).exec();
+    assert(owner !== null);
+
+    const ownerId = User.getExternalId(owner);
+
+    // Project all collaborators into the appropriate id format
+    const collaboratorIds = await Promise.all(
+        collaborators.map(async (id) => {
+            const collaborator = await User.findById(id).exec();
+            assert(collaborator !== null);
+
+            return User.getExternalId(collaborator);
+        }),
+    );
+
+    return {
+        name,
+        title,
+        owner: ownerId,
+        introduction: introduction || '',
+        revision,
+        collaborators: collaboratorIds,
     };
 };
 
