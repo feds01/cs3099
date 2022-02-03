@@ -21,7 +21,7 @@ export function convertSgId(external: SgUserId): string {
 export function transformSgUserToInternal(
     user: SgUser,
 ): Partial<IUserDocument> & { username: string; email: string } {
-    const { name, email, user_id: id, profilePictureUrl } = user;
+    const { name, email, id, profilePictureUrl } = user;
 
     const firstName = name.substr(0, name.indexOf(' '));
     const lastName = name.substr(name.indexOf(' ') + 1);

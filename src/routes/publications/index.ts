@@ -14,7 +14,6 @@ import { ModeSchema, ResourceSortSchema } from '../../validators/requests';
 import { IPublicationCreationSchema } from '../../validators/publications';
 
 import searchRouter from './search';
-import bookmarkRouter from './bookmarks';
 import reviewRouter from './reviews';
 import { config } from '../../server';
 import { createTokens } from '../../lib/auth';
@@ -22,10 +21,7 @@ import { deleteResource } from '../../lib/fs';
 import { resourceIndexToPath } from '../../lib/zip';
 
 const router = express.Router();
-
-// Register the follower & bookmark routes
 router.use('/', searchRouter);
-router.use('/', bookmarkRouter);
 router.use('/', reviewRouter);
 
 /**
