@@ -11,7 +11,10 @@ import User, { IUserRole } from '../../models/User';
 import Publication from '../../models/Publication';
 import { compareUserRoles } from '../../lib/permissions';
 import { ModeSchema, ResourceSortSchema } from '../../validators/requests';
-import { IPublicationCreationSchema } from '../../validators/publications';
+import {
+    IPublicationCreationSchema,
+    IPublicationPatchRequestSchema,
+} from '../../validators/publications';
 
 import searchRouter from './search';
 import reviewRouter from './reviews';
@@ -345,7 +348,6 @@ registerRoute(router, '/:username/:name/:revision?', {
     query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).optional() }),
     permission: { kind: 'publication', level: IUserRole.Default }, // @@Cleanup: needs to be moderator?
     handler: async (req, res) => {
-        const requester = req.requester;
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
@@ -380,7 +382,7 @@ registerRoute(router, '/:username/:name/:revision?', {
         if (
             publication.draft &&
             !isOwner &&
-            !compareUserRoles(requester.role, IUserRole.Moderator)
+            !compareUserRoles(req.requester.role, IUserRole.Moderator)
         ) {
             return res.status(404).json({
                 status: 'error',
@@ -525,7 +527,67 @@ registerRoute(router, '/:username/:name/:revision?', {
 });
 
 /**
- * Export a publication.
+ * @version v1.0.0
+ * @method PATCH
+ * @url /api/publication/:id
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/507f1f77bcf86cd799439011
+ *
+ * @description This endpoint is used to patch a publication with the new details about the publication.
+ *
+ */
+registerRoute(router, '/:username/:name', {
+    method: 'patch',
+    params: z.object({
+        username: z.string().nonempty(),
+        name: z.string().nonempty(),
+    }),
+    query: z.object({ mode: ModeSchema }),
+    body: IPublicationPatchRequestSchema,
+    permission: { kind: 'publication', level: IUserRole.Administrator },
+    handler: async (req, res) => {
+        const user = await userUtils.transformUsernameIntoId(req, res);
+        if (!user) return;
+
+        const update = { $set: { ...req.body } };
+        const queryOptions = { new: true }; // new as in return the updated document
+
+        // So take the fields that are to be updated into the set request, it's okay to this because
+        // we validated the request previously and we should be able to add all of the fields into the
+        // database. If the user tries to update the username or an email that's already in use, mongo
+        // will return an error because these fields have to be unique.
+        let newPublication = await Publication.findByIdAndUpdate(
+            user.id,
+            update,
+            queryOptions,
+        ).exec();
+
+        // If we couldn't find the user.
+        if (!newPublication) {
+            return res.status(404).json({
+                status: 'error',
+                message: errors.NON_EXISTENT_PUBLICATION,
+            });
+        }
+
+        return res.status(200).json({
+            status: 'ok',
+            message: 'Successfully updated user details.',
+            user: await Publication.project(newPublication, false),
+        });
+    },
+});
+
+/**
+ * @version v1.0.0
+ * @method POST
+ * @url /api/publication/:id/export
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/507f1f77bcf86cd799439011/export
+ *
+ * @description This endpoint is used to initiate the exporting process for a publication. The endpoint
+ * takes to required parameters which specify to where the publication should be exported and
+ * if the export should also export reviews with the publication.
  */
 registerRoute(router, '/:id/export', {
     method: 'post',
@@ -535,7 +597,7 @@ registerRoute(router, '/:id/export', {
         revision: z.string(),
     }),
     body: z.object({}),
-    query: z.object({ mode: ModeSchema, to: z.string().url() }),
+    query: z.object({ mode: ModeSchema, to: z.string().url(), exportReviews: z.boolean() }),
     permission: { kind: 'publication', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);

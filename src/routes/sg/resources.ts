@@ -49,14 +49,14 @@ registerRoute(router, '/import', {
         // Here we essentially need to make a request to the publication zip file and
         // the metadata endpoint
         const publication = await downloadOctetStream(from, `/api/sg/export/publication/${id}`, {
-            headers,
+            headers: {...headers, 'Content-Type': 'application/zip'},
         });
 
         if (publication.status === 'error') {
             return res.status(400).json({
                 status: 'error',
                 message: `request failed due to: ${publication.type}`,
-                ...(typeof publication.errors !== 'undefined' && { extra: publication.errors }),
+                error: publication.errors || {},
             });
         }
 
@@ -69,10 +69,12 @@ registerRoute(router, '/import', {
         );
 
         if (metadata.status === 'error') {
+            Logger.warn("Service replied with error status when downloading metadata.")
+            Logger.warn(JSON.stringify(metadata));
             return res.status(400).json({
                 status: 'error',
-                message: `request failed due to: ${metadata}`,
-                ...(typeof metadata.errors !== 'undefined' && { extra: metadata.errors }),
+                message: `request failed due to: ${metadata.type}`,
+                error: metadata.errors || {},
             });
         }
 
@@ -80,17 +82,18 @@ registerRoute(router, '/import', {
         // owner which is a global id exists in our external id. If it does, then we can just
         // use that owner as the owner of the publication we're about to create. Otherwise, we
         // will have to make the user in addition to making the publication.
-        const externalId = convertSgId(metadata.data.publication.owner);
+        const externalId = convertSgId(metadata.data.data.publication.owner);
         const user = await User.findOne({ externalId }).exec();
 
         if (!user) {
+            Logger.warn("Couldn't save the publication due to it being in an orphaned state.")
             return res.status(400).json({
                 status: 'error',
                 message: "Attempt to import publication onto user that doesn't exist.",
             });
         }
 
-        const doc = new Publication({ ...metadata.data.publication, owner: user.id });
+        const doc = new Publication({ ...metadata.data.data.publication, owner: user.id });
 
         try {
             await doc.save();
