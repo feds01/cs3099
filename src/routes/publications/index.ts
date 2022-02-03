@@ -180,7 +180,7 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
  * @method POST
  * @url /api/publications/
  * @example
- * https://af268.cs.st-andrews.ac.uk/publication/
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/publication/
  * >>> body:
  * {
  *   "revision": "v1",

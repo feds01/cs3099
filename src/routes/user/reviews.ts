@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import express from 'express';
-import Comment from '../../models/Comment';
 import * as userUtils from '../../utils/users';
 import registerRoute from '../../lib/requests';
 import { IUser, IUserRole } from '../../models/User';
@@ -42,30 +41,6 @@ registerRoute(router, '/:username/reviews', {
         return res.status(200).json({
             status: true,
             reviews,
-        });
-    },
-});
-
-// TODO: Swagger docs for this endpoint, or is it even needed?
-registerRoute(router, '/:username/comments', {
-    method: 'get',
-    params: z.object({ username: z.string() }),
-    query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'comment', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
-
-        // TODO: Filter comments on incomplete review
-        const result = await Comment.find({ owner: user.id })
-            .populate<{ owner: IUser }[]>('owner')
-            .exec();
-
-        const comments = result.map((link) => Comment.project(link as typeof result[number]));
-
-        return res.status(200).json({
-            status: true,
-            comments,
         });
     },
 });

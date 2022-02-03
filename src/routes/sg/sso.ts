@@ -69,34 +69,35 @@ registerRoute(router, '/callback', {
         const { data } = response;
 
         // try to find the user
+        const { id, group } = data.id;
         const externalUser = await User.findOne({
             email: data.email,
-            externalId: `${data.user_id.id}:${data.user_id.group}`,
+            externalId: `${id}:${group}`,
         }).exec();
 
         const transformedUser = transformSgUserToInternal(data);
-        let id;
+        let userId;
 
         if (!externalUser) {
             // we need to create the new user...
             const doc = new User(transformedUser);
             await doc.save();
 
-            id = doc.id;
+            userId = doc.id;
         } else {
             await User.findByIdAndUpdate(
                 externalUser.id,
                 { $set: { ...transformedUser } },
                 {},
             ).exec();
-            id = externalUser.id;
+            userId = externalUser.id;
         }
 
         await State.findByIdAndDelete(stateLink.id).exec();
 
         // create the tokens
         const tokens = createTokens({
-            id,
+            id: userId,
             email: transformedUser.email,
             username: transformedUser.username,
         });
@@ -139,7 +140,7 @@ registerRoute(router, '/verify', {
             }
             return res.status(200).json({
                 status: 'ok',
-                user_id: `${user.id}:${config.teamName}`,
+                id: `${user.id}:${config.teamName}`,
                 ...User.projectAsSg(user),
             });
         } catch (e: unknown) {

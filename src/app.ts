@@ -19,6 +19,7 @@ import sgSsoRouter from './routes/sg/sso';
 import threadsRouter from './routes/threads';
 import reviewsRouter from './routes/reviews';
 import commentRouter from './routes/comment';
+import sgUsersRouter from './routes/sg/users';
 import resourcesRouter from './routes/resources';
 import sgResourcesRouter from './routes/sg/resources';
 import publicationsRouter from './routes/publications';
@@ -51,6 +52,7 @@ const options = {
         './routes/auth/index.ts',
         './routes/sg/sso.ts',
         './routes/sg/resources.ts',
+        './routes/sg/users.ts',
         './routes/reviews/index.ts',
         './routes/publications/index.ts',
         './routes/threads/index.ts',
@@ -73,6 +75,7 @@ app.get('(\/api)?/version', (_req: express.Request, res: express.Response) => {
 // Setup the specific API routes
 app.use('(\/api)?/sg/sso', sgSsoRouter);
 app.use('(\/api)?/sg/resources', sgResourcesRouter);
+app.use('(\/api)?/sg/users', sgUsersRouter);
 app.use('(\/api)?/auth', authRouter);
 app.use('(\/api)?/user', userRouter);
 app.use('(\/api)?/review', reviewsRouter);

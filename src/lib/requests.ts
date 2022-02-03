@@ -18,6 +18,7 @@ interface Request<Params, Query, Requester, Body> {
 }
 
 type RegisterRoute<
+    P,
     Params,
     Query,
     Method extends RequestMethod,
@@ -27,7 +28,7 @@ type RegisterRoute<
     method: Method;
     permission: RoutePermission;
     sgMode?: boolean;
-    params: z.Schema<Params>;
+    params: z.Schema<Params, z.ZodTypeDef, P>;
     query: z.Schema<Query>;
     handler: (
         req: Request<
@@ -41,6 +42,7 @@ type RegisterRoute<
 } & (Method extends RequestMethodWithBody ? { body: z.Schema<Body> } : {});
 
 export default function registerRoute<
+    P,
     Params,
     Query,
     Method extends RequestMethod,
@@ -49,10 +51,12 @@ export default function registerRoute<
 >(
     router: express.Router,
     path: string,
-    registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission>,
+    registrar: RegisterRoute<P, Params, Query, Method, Body, RoutePermission>,
 ) {
     const wrappedHandler = async (req: express.Request, res: express.Response) => {
         const params = await registrar.params.safeParseAsync(req.params);
+        type InputParams = typeof registrar.params._type;
+
         const query = await registrar.query.safeParseAsync(req.query);
 
         // If the parameter parsing wasn't successful, fail here
@@ -133,6 +137,7 @@ export default function registerRoute<
 
         if ('body' in registrar) {
             const registrarWithBody = registrar as RegisterRoute<
+                P,
                 Params,
                 Query,
                 RequestMethodWithBody,
@@ -156,6 +161,7 @@ export default function registerRoute<
 
             if (typeof permissions === 'undefined') {
                 const r = registrar as RegisterRoute<
+                    InputParams,
                     Params,
                     Query,
                     RequestMethodWithBody,
@@ -168,6 +174,7 @@ export default function registerRoute<
             // We only have to do this because typescript isn't smart enough to coerce types yet
             // in the way we want to.
             const r = registrar as RegisterRoute<
+                P,
                 Params,
                 Query,
                 RequestMethodWithBody,
@@ -183,6 +190,7 @@ export default function registerRoute<
 
         if (typeof permissions === 'undefined') {
             const registrarWithoutBody = registrar as unknown as RegisterRoute<
+                P,
                 Params,
                 Query,
                 RequestMethodWithoutBody,
@@ -196,6 +204,7 @@ export default function registerRoute<
         }
 
         const registrarWithBody = registrar as unknown as RegisterRoute<
+            P,
             Params,
             Query,
             RequestMethodWithoutBody,

@@ -44,13 +44,11 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
             publication: publication.id,
             status: IReviewStatus.Completed,
         })
-            .populate<{ publication: IPublication }[]>('publication')
-            .populate<{ owner: IUser }[]>('owner')
+            .populate<{ publication: IPublication }>('publication')
+            .populate<{ owner: IUser }>('owner')
             .exec();
 
-        const reviews = await Promise.all(
-            result.map(async (link) => await Review.project(link as typeof result[number])),
-        );
+        const reviews = await Promise.all(result.map(async (link) => await Review.project(link)));
 
         return res.status(200).json({
             status: true,

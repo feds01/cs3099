@@ -30,7 +30,7 @@ export type SgUserId = z.infer<typeof SgUserIdSchema>;
 export const SgUserSchema = z.object({
     name: z.string().min(1),
     email: z.string().email(),
-    user_id: SgUserIdSchema,
+    id: SgUserIdSchema,
     profilePictureUrl: z.string().url().optional(),
 });
 
@@ -42,12 +42,20 @@ export type SgUser = z.infer<typeof SgUserSchema>;
 export const SgPublicationSchema = z.object({
     name: z.string().min(1),
     title: z.string().min(1),
+    introduction: z.string(),
     owner: SgUserIdSchema,
     revision: z.string().min(1).optional(),
     collaborators: z.array(SgUserIdSchema),
 });
 
 export type SgPublication = z.infer<typeof SgPublicationSchema>;
+
+export const ExportSgPublicationSchema = SgPublicationSchema.omit({
+    owner: true,
+    collaborators: true,
+}).merge(z.object({ owner: z.string(), collaborators: z.array(z.string()) }));
+
+export type ExportSgPublication = z.infer<typeof ExportSgPublicationSchema>;
 
 /**
  * Type representing a Supergroup comment on a publication.

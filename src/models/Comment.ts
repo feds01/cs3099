@@ -29,7 +29,7 @@ interface ICommentDocument extends IComment, Document {}
 
 interface ICommentModel extends Model<ICommentDocument> {
     project: (user: IComment) => Partial<IComment>;
-    projectAsSg: (id: number, user: PopulatedComment) => SgComment;
+    projectAsSg: (id: number, user: PopulatedComment, replying?: number) => SgComment;
 }
 
 const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
@@ -95,7 +95,7 @@ CommentSchema.statics.projectAsSg = (
         id,
         replying,
         ...(typeof filename !== 'undefined' && { filename }),
-        anchor,
+        ...(typeof anchor !== 'undefined' && typeof anchor.start !== 'undefined' && { anchor }),
         contents,
         author: User.getExternalId(comment.owner),
         postedAt: comment.updatedAt.getTime(),

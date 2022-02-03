@@ -16,7 +16,7 @@ const router = express.Router();
  * @method POST
  * @url api/publication/<id>/bookmark
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/publications/XXXXXXXX/bookmark
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publications/XXXXXXXX/bookmark
  * >>> body: {}
  *
  * @description This route is used to bookmark a publication. The router accepts a token
@@ -90,7 +90,7 @@ registerRoute(router, '/:username/:name/bookmark', {
  * @method DELETE
  * @url api/publication/<id>/bookmark
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/publications/XXXXXXXX/bookmark
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publications/XXXXXXXX/bookmark
  * >>> body: {}
  *
  * @description This route is used to un-bookmark a publication. The router accepts a token
@@ -141,7 +141,7 @@ registerRoute(router, '/:username/:name/bookmark', {
  * @method GET
  * @url api/publication/<name>/bookmark
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/publications/XXXXXXXX/bookmark
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publications/XXXXXXXX/bookmark
  * >>> body: {}
  *
  * @description This route is used to check if a user has bookmarked a publication.
@@ -195,7 +195,7 @@ registerRoute(router, '/:username/:name/bookmark', {
  * @method GET
  * @url api/publication/<name>/bookmarkers
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/publications/XXXXXXXX/bookmark
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publications/XXXXXXXX/bookmark
  * >>> body: {}
  *
  * @description This route is used to check all user who have bookmarked a publication.
@@ -250,7 +250,7 @@ registerRoute(router, '/:username/:name/bookmarkers', {
  * @method GET
  * @url api/publication/<username>/bookmarks
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/publications/XXXXXXXX/bookmark
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publications/XXXXXXXX/bookmark
  * >>> body: {}
  *
  * @description This route is used to check all bookmarked publications by a user.

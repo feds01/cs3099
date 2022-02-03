@@ -144,7 +144,7 @@ registerRoute(router, '/:id/comment', {
 
         try {
             await newComment.save();
-            const populated = await newComment.populate<{ owner: IUserDocument }[]>('owner');
+            const populated = await newComment.populate<{ owner: IUserDocument }>('owner');
 
             return res.status(201).json({
                 status: 'ok',
@@ -203,10 +203,10 @@ registerRoute(router, '/:id/comments', {
 
         // Find all the comments on the current review...
         const result = await Comment.find({ review: review.id })
-            .populate<{ owner: IUser }[]>('owner')
+            .populate<{ owner: IUser }>('owner')
             .exec();
 
-        const comments = result.map((link) => Comment.project(link as typeof result[number]));
+        const comments = result.map(Comment.project);
 
         return res.status(200).json({
             status: true,
@@ -260,14 +260,11 @@ registerRoute(router, '/:id', {
 
         const review = await Review.findById(id)
             .populate<{ publication: IPublication }>('publication')
-            .populate<{ owner: IUser & { _id: any } }>('owner')
+            .populate<{ owner: IUserDocument }>('owner')
             .exec();
 
         // verify that the review exists and the owner is trying to publish it...
-        if (
-            !review ||
-            (review.owner as unknown as IUser & { _id: any })._id.toString() !== ownerId
-        ) {
+        if (!review || review.owner.id.toString() !== ownerId) {
             return res.status(404).json({
                 status: 'error',
                 message: errors.NON_EXISTENT_REVIEW,

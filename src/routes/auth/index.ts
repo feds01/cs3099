@@ -29,7 +29,7 @@ const router = express.Router();
  * @method GET
  * @url /api/auth/username_validity
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/auth/username_validity
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/auth/username_validity
  *
  * >>> response:
  * {
@@ -89,7 +89,7 @@ router.get('/username_validity', async (req, res) => {
  * @method GET
  * @url /api/auth/email_validity
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/auth/email_validitiy
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/auth/email_validitiy
  *
  * >>> response:
  * {
@@ -152,7 +152,7 @@ router.get('/email_validity', async (req, res) => {
  * @method POST
  * @url /api/auth/session
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/auth/session
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/auth/session
  *
  * @description This route is used to essentially refresh provided tokens and return a
  * user session with refreshed tokens.
@@ -239,7 +239,7 @@ registerRoute(router, '/session', {
  * @method GET
  * @url /api/auth/sso
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/auth/sso
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/auth/sso
  *
  * @description This route is used to internally send of a request to sign on with a different
  * service instead of using the internal login process. It accepts a `to` url in the body which
@@ -289,7 +289,7 @@ registerRoute(router, '/sso', {
  * @method POST
  * @url api/user/register
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/user/register
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/register
  * >>> body: {
  *     "email": "feds01@gmail.com",
  *     "name": "feds01",
@@ -415,7 +415,7 @@ router.post('/register', async (req, res) => {
  * @method POST
  * @url /api/user/login
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/user/login
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/login
  * >>> body: {
  *     "email": "feds01@gmail.com",
  *     "password": "Password2020"
