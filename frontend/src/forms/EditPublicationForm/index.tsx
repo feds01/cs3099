@@ -62,7 +62,7 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
     }, [isLoading, isError, data]);
 
     const onSubmit: SubmitHandler<EditPublication> = async (data) => await mutateAsync({ username, name, data });
-
+    
     return (
         <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%', marginTop: '8px' }}>
             <Grid container maxWidth={'lg'}>
@@ -107,9 +107,6 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
                         >
                             Save Changes
                         </LoadingButton>
-                        <Button disabled={isLoading} sx={{ mt: 1 }} variant="outlined" type={'submit'}>
-                            Cancel
-                        </Button>
                     </Box>
                     {isError && <ErrorBanner message={error?.message || 'Something went wrong.'} />}
                 </Grid>

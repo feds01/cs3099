@@ -20,6 +20,7 @@ import type {
   ApiErrorResponse,
   CreatePublicationRequest,
   DeletionResponseResponse,
+  DeletePublicationUsernameNameParams,
   PatchPublicationResponseResponse,
   PatchPublicationRequest,
   GetPublicationUsernameName200,
@@ -81,9 +82,11 @@ export const postPublication = (
 export const deletePublicationUsernameName = (
     username: string,
     name: string,
+    params?: DeletePublicationUsernameNameParams,
  ) => {
       return customInstance<DeletionResponseResponse>(
-      {url: `/publication/${username}/${name}`, method: 'delete'
+      {url: `/publication/${username}/${name}`, method: 'delete',
+        params,
     },
       );
     }
@@ -92,20 +95,20 @@ export const deletePublicationUsernameName = (
 
     export const useDeletePublicationUsernameName = <TError = ApiErrorResponse,
     
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deletePublicationUsernameName>, TError,{username: string;name: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deletePublicationUsernameName>, TError,{username: string;name: string;params?: DeletePublicationUsernameNameParams}, TContext>, }
 ) => {
       const {mutation: mutationOptions} = options || {}
 
       
 
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof deletePublicationUsernameName>, {username: string;name: string}> = (props) => {
-          const {username,name} = props || {};
+      const mutationFn: MutationFunction<AsyncReturnType<typeof deletePublicationUsernameName>, {username: string;name: string;params?: DeletePublicationUsernameNameParams}> = (props) => {
+          const {username,name,params} = props || {};
 
-          return  deletePublicationUsernameName(username,name,)
+          return  deletePublicationUsernameName(username,name,params,)
         }
 
-      return useMutation<AsyncReturnType<typeof deletePublicationUsernameName>, TError, {username: string;name: string}, TContext>(mutationFn, mutationOptions)
+      return useMutation<AsyncReturnType<typeof deletePublicationUsernameName>, TError, {username: string;name: string;params?: DeletePublicationUsernameNameParams}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * Patch the publication resource.

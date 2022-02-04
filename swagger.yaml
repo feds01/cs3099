@@ -742,6 +742,12 @@ paths:
                       type: string
                   required: true
                   description: The name of the publication for the current user.
+                - in: query
+                  name: draft
+                  schema:
+                      type: boolean
+                  required: false
+                  description: Whether or not the publication that is to be deleted is a draft version.
             responses:
                 '200':
                     $ref: '#/components/responses/DeletionResponse'
