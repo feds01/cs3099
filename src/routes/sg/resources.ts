@@ -1,17 +1,17 @@
 import { z } from 'zod';
 import express from 'express';
-import User, { IUser } from '../../models/User';
+import { IUser } from '../../models/User';
 import Review, { IReviewStatus } from '../../models/Review';
 import Publication, { IPublication } from '../../models/Publication';
 
 import { moveResource } from '../../lib/fs';
+import { importUser } from '../../lib/import';
 import registerRoute from '../../lib/requests';
 import { archiveIndexToPath } from '../../lib/zip';
-import { downloadOctetStream, makeRequest } from '../../utils/fetch';
+import { downloadOctetStream, makeRequest } from '../../lib/fetch';
 
 import Logger from '../../common/logger';
 import * as errors from '../../common/errors';
-import { convertSgId } from '../../transformers/sg';
 
 import { SgMetadataSchema } from '../../validators/sg';
 import { ObjectIdSchema } from '../../validators/requests';
@@ -48,19 +48,19 @@ registerRoute(router, '/import', {
 
         // Here we essentially need to make a request to the publication zip file and
         // the metadata endpoint
-        const publication = await downloadOctetStream(from, `/api/sg/export/publication/${id}`, {
-            headers: {...headers, 'Content-Type': 'application/zip'},
+        const publicationArchive = await downloadOctetStream(from, `/api/sg/export/publication/${id}`, {
+            headers: { ...headers, 'Content-Type': 'application/zip' },
         });
 
-        if (publication.status === 'error') {
+        if (publicationArchive.status === 'error') {
             return res.status(400).json({
                 status: 'error',
-                message: `request failed due to: ${publication.type}`,
-                error: publication.errors || {},
+                message: `request failed due to: ${publicationArchive.type}`,
+                error: publicationArchive.errors || {},
             });
         }
 
-        // TODO: Here we currently ignore the metadata due to the complexities of migrating them.
+        // Attempt to fetch the metadata of the review
         const metadata = await makeRequest(
             from,
             `/api/sg/export/publication/${id}/metadata`,
@@ -69,8 +69,7 @@ registerRoute(router, '/import', {
         );
 
         if (metadata.status === 'error') {
-            Logger.warn("Service replied with error status when downloading metadata.")
-            Logger.warn(JSON.stringify(metadata));
+            Logger.warn(`Service replied with error status when downloading metadata:\n${JSON.stringify(metadata.errors)}`)
             return res.status(400).json({
                 status: 'error',
                 message: `request failed due to: ${metadata.type}`,
@@ -78,25 +77,22 @@ registerRoute(router, '/import', {
             });
         }
 
+        const { publication, reviews } = metadata.response.data;
+
         // So here's where it gets pretty complicated. We need to check if the publication
         // owner which is a global id exists in our external id. If it does, then we can just
         // use that owner as the owner of the publication we're about to create. Otherwise, we
         // will have to make the user in addition to making the publication.
-        const externalId = convertSgId(metadata.data.data.publication.owner);
-        const user = await User.findOne({ externalId }).exec();
+        const userImport = await importUser(publication.owner);
 
-        if (!user) {
-            Logger.warn("Couldn't save the publication due to it being in an orphaned state.")
+        if (userImport.status === "error") {
             return res.status(400).json({
-                status: 'error',
-                message: "Attempt to import publication onto user that doesn't exist.",
-            });
-        }
-
-        const doc = new Publication({ ...metadata.data.data.publication, owner: user.id });
+                ...userImport,
+            })
+        }        
 
         try {
-            await doc.save();
+            const doc = await new Publication({ ...publication, owner: userImport.item.id.toString() }).save();
 
             // now we need to move the file to it's home location...
             const finalPath = archiveIndexToPath({
@@ -104,9 +100,13 @@ registerRoute(router, '/import', {
                 name: doc.name,
             });
 
-            await moveResource(publication.data, finalPath);
+            await moveResource(publicationArchive.response, finalPath);
 
             //@@TODO: We have to deal with reviews here...
+            // const reviewImportErrors = []
+            for (const review of reviews) {
+                Logger.info(`Attempting to import user ${review.owner} for review`);
+            }
 
             return res.status(200).json({
                 status: 'ok',

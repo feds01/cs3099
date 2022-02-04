@@ -4,7 +4,7 @@ import FileType from 'file-type/browser';
 import fetch, { FetchError } from 'node-fetch';
 import { promises as fs } from 'fs';
 import Logger from '../common/logger';
-import { joinPathsRaw } from './resources';
+import { joinPathsRaw } from '../utils/resources';
 import { config } from '../server';
 
 const RawResponseSchema = z.union([
@@ -22,7 +22,7 @@ type ServiceResponse<T> =
       }
     | {
           status: 'ok';
-          data: T;
+          response: T;
       };
 
 function buildUrl(baseUrl: string, endpoint: string, query?: Record<string, string>): string {
@@ -118,7 +118,7 @@ export async function downloadOctetStream(
             // @@Wrapping: We should move this function into it's own wrapper!
             await fs.appendFile(tmpFilePath, Buffer.from(blob));
 
-            return { status: 'ok', data: tmpFilePath };
+            return { status: 'ok', response: tmpFilePath };
         } catch (e: unknown) {
             Logger.warn('Failed to save file.');
             return { status: 'error', type: 'fetch' };
@@ -187,7 +187,7 @@ export async function makeRequest<I, O>(
         const bodyValidation = schema.safeParse(rest);
 
         if (bodyValidation.success) {
-            return { status: 'ok', data: bodyValidation.data };
+            return { status: 'ok', response: bodyValidation.data };
         }
         Logger.warn('Service replied with an invalid format');
         return { status: 'error', type: 'service', errors: bodyValidation.error };

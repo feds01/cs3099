@@ -24,22 +24,22 @@ type RegisterRoute<
     Method extends RequestMethod,
     Body,
     RoutePermission extends Permission | null,
-> = {
-    method: Method;
-    permission: RoutePermission;
-    sgMode?: boolean;
-    params: z.Schema<Params, z.ZodTypeDef, P>;
-    query: z.Schema<Query>;
-    handler: (
-        req: Request<
-            Params,
-            Query,
-            RoutePermission extends null ? null : IUserDocument,
-            Method extends RequestMethodWithBody ? Body : null
-        >,
-        res: express.Response,
-    ) => Promise<unknown>;
-} & (Method extends RequestMethodWithBody ? { body: z.Schema<Body> } : {});
+    > = {
+        method: Method;
+        permission: RoutePermission;
+        sgMode?: boolean;
+        params: z.Schema<Params, z.ZodTypeDef, P>;
+        query: z.Schema<Query>;
+        handler: (
+            req: Request<
+                Params,
+                Query,
+                RoutePermission extends null ? null : IUserDocument,
+                Method extends RequestMethodWithBody ? Body : null
+            >,
+            res: express.Response,
+        ) => Promise<unknown>;
+    } & (Method extends RequestMethodWithBody ? { body: z.Schema<Body> } : {});
 
 export default function registerRoute<
     P,
@@ -48,10 +48,10 @@ export default function registerRoute<
     Method extends RequestMethod,
     Body,
     RoutePermission extends Permission | null,
->(
-    router: express.Router,
-    path: string,
-    registrar: RegisterRoute<P, Params, Query, Method, Body, RoutePermission>,
+    >(
+        router: express.Router,
+        path: string,
+        registrar: RegisterRoute<P, Params, Query, Method, Body, RoutePermission>,
 ) {
     const wrappedHandler = async (req: express.Request, res: express.Response) => {
         const params = await registrar.params.safeParseAsync(req.params);
@@ -237,4 +237,13 @@ export default function registerRoute<
         default:
             throw new Error('Unreachable');
     }
+}
+type Dictionary = { [index: string]: string }
+export const GROUP_URI_MAP: Dictionary = {
+    "t06": "https://cs3099user06.host.cs.st-andrews.ac.uk/",
+    "t12": "https://cs3099user12.host.cs.st-andrews.ac.uk/",
+    "t15": "https://cs3099user15.host.cs.st-andrews.ac.uk/",
+    "t21": "https://cs3099user21.host.cs.st-andrews.ac.uk/",
+    "t24": "https://cs3099user24.host.cs.st-andrews.ac.uk/",
+    "t27": "https://cs3099user27.host.cs.st-andrews.ac.uk/"
 }

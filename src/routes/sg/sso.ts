@@ -7,10 +7,11 @@ import Logger from '../../common/logger';
 import State from '../../models/State';
 import registerRoute from '../../lib/requests';
 import { IJwtSchema } from '../../validators/auth';
-import { makeRequest } from '../../utils/fetch';
+import { makeRequest } from '../../lib/fetch';
 import { SgUserSchema } from '../../validators/sg';
 import { createTokens, JwtError, verifyToken } from '../../lib/auth';
-import { transformSgUserToInternal } from '../../transformers/sg';
+import { convertSgId, transformSgUserToInternal } from '../../transformers/sg';
+import assert from 'assert';
 
 const router = express.Router();
 
@@ -53,51 +54,35 @@ registerRoute(router, '/callback', {
         }
 
         // We also need to make a verify request to the from service
-        const response = await makeRequest(stateLink.from, '/api/sg/sso/verify', SgUserSchema, {
+        const userData = await makeRequest(stateLink.from, '/api/sg/sso/verify', SgUserSchema, {
             query: { token },
             method: 'post',
         });
 
-        if (response.status === 'error') {
+        if (userData.status === 'error') {
             return res.status(400).json({
                 status: 'error',
-                message: `request failed due to: ${response.type}`,
-                ...(typeof response.errors !== 'undefined' && { extra: response.errors }),
+                message: `request failed due to: ${userData.type}`,
+                error: userData.errors || {}
             });
         }
 
-        const { data } = response;
+
+        const { email, id} = userData.response;
+        const transformedUser = transformSgUserToInternal(userData.response);
 
         // try to find the user
-        const { id, group } = data.id;
-        const externalUser = await User.findOne({
-            email: data.email,
-            externalId: `${id}:${group}`,
-        }).exec();
+        const importedUser = await User.findOneAndUpdate({
+            email,
+            externalId: convertSgId(id)
+        }, { $set: { ...transformedUser } }, { upsert: true }).exec();
 
-        const transformedUser = transformSgUserToInternal(data);
-        let userId;
-
-        if (!externalUser) {
-            // we need to create the new user...
-            const doc = new User(transformedUser);
-            await doc.save();
-
-            userId = doc.id;
-        } else {
-            await User.findByIdAndUpdate(
-                externalUser.id,
-                { $set: { ...transformedUser } },
-                {},
-            ).exec();
-            userId = externalUser.id;
-        }
-
+        assert(importedUser !== null && typeof importedUser._id !== 'undefined');
         await State.findByIdAndDelete(stateLink.id).exec();
 
         // create the tokens
         const tokens = createTokens({
-            id: userId,
+            id: importedUser._id,
             email: transformedUser.email,
             username: transformedUser.username,
         });
