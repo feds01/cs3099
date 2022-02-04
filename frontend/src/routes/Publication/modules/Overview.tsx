@@ -3,12 +3,11 @@ import React, { ReactElement } from 'react';
 import UserLink from '../../../components/UserLink';
 import { Publication } from '../../../lib/api/models';
 import MarkdownRenderer from '../../../components/MarkdownRenderer';
+import { usePublicationState } from '../../../hooks/publication';
 
-interface Props {
-    publication: Publication;
-}
+export default function Overview(): ReactElement {
+    const { publication } = usePublicationState();
 
-export default function Overview({ publication }: Props): ReactElement {
     return (
         <Box>
             {publication.introduction ? (

@@ -20,7 +20,7 @@ import SkeletonList from '../../components/SkeletonList';
 import MarkdownRenderer from '../../components/MarkdownRenderer';
 import { transformQueryIntoContentState } from '../../wrappers/react-query';
 
-import { GetPublicationUsernameNameRevision200 as PublicationResponse, Publication } from '../../lib/api/models';
+import { GetPublicationUsernameNameRevision200 as PublicationResponse } from '../../lib/api/models';
 import { useGetPublicationUsernameNameRevision as useGetPublication } from '../../lib/api/publications/publications';
 import Overview from './modules/Overview';
 import Source from './modules/Source';
@@ -30,6 +30,7 @@ import assert from 'assert';
 import { useAuth } from '../../hooks/auth';
 
 import ExportDialog from '../../forms/ExportPublicationForm';
+import { PublicationProvider } from '../../hooks/publication';
 
 interface Props {}
 
@@ -41,32 +42,30 @@ interface PublicationParams {
 }
 
 interface TabMapProps {
-    publication: Publication;
     isOwner: boolean;
-    refetchPublication: () => void;
 }
 
-const TabMap = ({ publication, refetchPublication, isOwner }: TabMapProps) => ({
+const TabMap = ({ isOwner }: TabMapProps) => ({
     '/': {
         exact: true,
         strict: false,
         label: 'Overview',
         canonical: '',
-        component: () => <Overview publication={publication} />,
+        component: () => <Overview />,
     },
     '/tree/:path?': {
         exact: false,
         strict: false,
         label: 'Source',
         canonical: 'tree',
-        component: () => <Source refetchPublication={refetchPublication} publication={publication} />,
+        component: () => <Source />,
     },
     '/reviews': {
         exact: false,
         strict: false,
         label: 'Reviews',
         canonical: 'reviews',
-        component: () => <Reviews publication={publication} />,
+        component: () => <Reviews />,
     },
     ...(isOwner && {
         '/settings': {
@@ -74,7 +73,7 @@ const TabMap = ({ publication, refetchPublication, isOwner }: TabMapProps) => ({
             strict: true,
             label: 'Settings',
             canonical: 'settings',
-            component: () => <Settings publication={publication} />,
+            component: () => <Settings />,
         },
     }),
 });
@@ -132,6 +131,8 @@ function PublicationView() {
 
     const getPublicationQuery = useGetPublication(username, name, canonicalName[1]);
 
+    const refetchPublication = () => getPublicationQuery.refetch();
+
     //setting constants for the export dialog
     const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
@@ -165,14 +166,12 @@ function PublicationView() {
             const { publication } = publicationInfo.data;
             const basename = `/${username}/${name}` + (canonicalName[1] !== '' ? `/${canonicalName[1]}` : '');
             const tabMap = TabMap({
-                publication,
-                refetchPublication: () => getPublicationQuery.refetch(),
                 isOwner: username === session.username,
             });
 
             // @@Bug: The export button and the title of the publication aren't aligned properly.
             return (
-                <>
+                <PublicationProvider state={{ publication }} refetch={refetchPublication}>
                     <Box sx={{ mb: 1 }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
@@ -238,7 +237,7 @@ function PublicationView() {
                             })}
                         </>
                     </Switch>
-                </>
+                </PublicationProvider>
             );
         }
     }

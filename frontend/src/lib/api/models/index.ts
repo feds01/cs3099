@@ -114,3 +114,4 @@ export * from './apiSuccessResponse';
 export * from './apiSuccessResponseExtra';
 export * from './apiSuccessResponseStatus';
 export * from './postPublicationUsernameNameExportParams';
+export * from './deletePublicationUsernameNameParams';

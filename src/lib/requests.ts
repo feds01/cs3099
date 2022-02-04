@@ -3,7 +3,7 @@ import express from 'express';
 import * as errors from '../common/errors';
 import { getTokensFromHeader } from './auth';
 import { IUserDocument } from '../models/User';
-import { ensureValidPermissions, Permission } from './permissions';
+import { ensureValidPermissions, ExternalId, Permission } from './permissions';
 
 type RequestMethodWithBody = 'post' | 'put' | 'patch';
 type RequestMethodWithoutBody = 'delete' | 'get';
@@ -98,7 +98,7 @@ export default function registerRoute<
                 });
             }
 
-            let externalId;
+            let externalId: ExternalId | undefined;
             // @@Hack: so we assume that any requests that need a permission check via a sub-system pass their
             //         DocumentId parameter via the path parameters instead of any other way, therefore after verifying
             //         that the parameter ZodSchema has an id and it is an `ObjectId`, we can get this and use it as
@@ -110,7 +110,13 @@ export default function registerRoute<
             const { hasOwnProperty } = Object.prototype;
             if (typeof params.data === 'object' && hasOwnProperty.call(params.data, 'id')) {
                 // @ts-ignore @@CLEANUP @@CLEANUP @@CLEANUP
-                externalId = params.data.id as string;
+                externalId = { id: params.data.id, type: 'id' };
+            } else if (
+                typeof params.data === 'object' &&
+                hasOwnProperty.call(params.data, 'name')
+            ) {
+                // @ts-ignore @@CLEANUP @@CLEANUP @@CLEANUP
+                externalId = { name: params.data.name, type: 'publication' }; // @@Fixme: this is a terrible assumption
             }
 
             // Validate the permissions, but skip it if there are no specified permissions for the

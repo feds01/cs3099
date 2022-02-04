@@ -11,16 +11,13 @@ import { useGetPublicationUsernameNameRevisionTreePath as useGetPublicationSourc
 import { useAuth } from '../../../hooks/auth';
 import { ContentState } from '../../../types/requests';
 import Void from './../../../static/images/void.svg';
+import { usePublicationDispatch, usePublicationState } from '../../../hooks/publication';
 
-interface Props {
-    publication: Publication;
-    refetchPublication: () => void;
-}
-
-export default function Source({ refetchPublication, publication }: Props): ReactElement {
+export default function Source(): ReactElement {
     const { session } = useAuth();
     const location = useLocation();
-    const { name, owner, revision } = publication;
+    const { publication: {name, owner, revision}, publication } = usePublicationState();
+    const { refetch } = usePublicationDispatch();
 
     const [path, setPath] = useState<string>('');
     const [publicationSource, setPublicationSource] = useState<ContentState<ResourceResponseResponse, any>>({
@@ -61,7 +58,7 @@ export default function Source({ refetchPublication, publication }: Props): Reac
             ) : publication.owner.id === session.id ? (
                 <UploadAttachment
                     refetchData={() => {
-                        refetchPublication();
+                        refetch();
 
                         if (!publication.attachment) return;
                         getPublicationSourceQuery.refetch();

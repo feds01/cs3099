@@ -74,8 +74,8 @@ export default function Publications({ user, limit, withTitle = true }: Props): 
                                 >
                                     {publications.data.map((pub) => {
                                         return (
-                                            <Grid key={pub.name} item xs={2} sm={3} md={3}>
-                                                <PublicationCard key={pub.name} user={user} pub={pub} />
+                                            <Grid key={pub.id} item xs={2} sm={3} md={3}>
+                                                <PublicationCard user={user} pub={pub} />
                                             </Grid>
                                         );
                                     })}
