@@ -102,5 +102,5 @@ export const SgMetadataSchema = z.object({
     data: z.object({
         publication: SgPublicationSchema,
         reviews: z.array(SgReviewSchema),
-    })
+    }),
 });

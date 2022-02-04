@@ -48,9 +48,13 @@ registerRoute(router, '/import', {
 
         // Here we essentially need to make a request to the publication zip file and
         // the metadata endpoint
-        const publicationArchive = await downloadOctetStream(from, `/api/sg/export/publication/${id}`, {
-            headers: { ...headers, 'Content-Type': 'application/zip' },
-        });
+        const publicationArchive = await downloadOctetStream(
+            from,
+            `/api/sg/export/publication/${id}`,
+            {
+                headers: { ...headers, 'Content-Type': 'application/zip' },
+            },
+        );
 
         if (publicationArchive.status === 'error') {
             return res.status(400).json({
@@ -69,7 +73,11 @@ registerRoute(router, '/import', {
         );
 
         if (metadata.status === 'error') {
-            Logger.warn(`Service replied with error status when downloading metadata:\n${JSON.stringify(metadata.errors)}`)
+            Logger.warn(
+                `Service replied with error status when downloading metadata:\n${JSON.stringify(
+                    metadata.errors,
+                )}`,
+            );
             return res.status(400).json({
                 status: 'error',
                 message: `request failed due to: ${metadata.type}`,
@@ -85,14 +93,17 @@ registerRoute(router, '/import', {
         // will have to make the user in addition to making the publication.
         const userImport = await importUser(publication.owner);
 
-        if (userImport.status === "error") {
+        if (userImport.status === 'error') {
             return res.status(400).json({
                 ...userImport,
-            })
-        }        
+            });
+        }
 
         try {
-            const doc = await new Publication({ ...publication, owner: userImport.item.id.toString() }).save();
+            const doc = await new Publication({
+                ...publication,
+                owner: userImport.item.id.toString(),
+            }).save();
 
             // now we need to move the file to it's home location...
             const finalPath = archiveIndexToPath({

@@ -562,7 +562,7 @@ registerRoute(router, '/:username/:name', {
             queryOptions,
         ).exec();
 
-        // If we couldn't find the user.
+        // If we couldn't find the publication, return a not found.
         if (!newPublication) {
             return res.status(404).json({
                 status: 'error',
@@ -572,8 +572,8 @@ registerRoute(router, '/:username/:name', {
 
         return res.status(200).json({
             status: 'ok',
-            message: 'Successfully updated user details.',
-            user: await Publication.project(newPublication, false),
+            message: 'Successfully updated publication.',
+            publication: await Publication.project(newPublication, false),
         });
     },
 });

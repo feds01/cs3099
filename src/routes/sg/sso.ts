@@ -63,19 +63,22 @@ registerRoute(router, '/callback', {
             return res.status(400).json({
                 status: 'error',
                 message: `request failed due to: ${userData.type}`,
-                error: userData.errors || {}
+                error: userData.errors || {},
             });
         }
 
-
-        const { email, id} = userData.response;
+        const { email, id } = userData.response;
         const transformedUser = transformSgUserToInternal(userData.response);
 
         // try to find the user
-        const importedUser = await User.findOneAndUpdate({
-            email,
-            externalId: convertSgId(id)
-        }, { $set: { ...transformedUser } }, { upsert: true }).exec();
+        const importedUser = await User.findOneAndUpdate(
+            {
+                email,
+                externalId: convertSgId(id),
+            },
+            { $set: { ...transformedUser } },
+            { upsert: true },
+        ).exec();
 
         assert(importedUser !== null && typeof importedUser._id !== 'undefined');
         await State.findByIdAndDelete(stateLink.id).exec();

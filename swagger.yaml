@@ -718,17 +718,13 @@ paths:
                             $ref: '#/components/schemas/CreatePublicationRequest'
             responses:
                 '201':
-                    description: Returns information about the created publication.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/CreatePublicationResponse'
+                    $ref: '#/components/responses/CreatePublicationResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}:
         delete:
             summary: Delete a publication
-            description: Create a new publication resource for a given user account.
+            description: Delete the publication resource.
             tags:
                 - publications
             security:
@@ -749,6 +745,38 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/DeletionResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
+        patch:
+            summary: Patch an existing publication
+            description: Patch the publication resource.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                description: Provide information about the upload
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PatchPublicationRequest'
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+            responses:
+                '200':
+                    $ref: '#/components/responses/PatchPublicationResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
         get:
@@ -1741,7 +1769,6 @@ components:
                             profilePictureUrl:
                                 type: string
                                 example: https://some-cdn.some-company.com/profiles/avatar.jpg
-
         PublicationExportResponse:
             description: Response archive file.
             content:
@@ -1776,6 +1803,42 @@ components:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/SgReview'
+        CreatePublicationResponse:
+            description: Response creating a publication.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - publication
+                        properties:
+                            status:
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
+                            message:
+                                type: string
+                            publication:
+                                $ref: '#/components/schemas/Publication'
+        PatchPublicationResponse:
+            description: Response patching publication information.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - publication
+                        properties:
+                            status:
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
+                            message: 
+                                type: string
+                            publication:
+                                $ref: '#/components/schemas/Publication'
     schemas:
         TokenRequest:
             type: object
@@ -2001,6 +2064,27 @@ components:
                 updatedAt:
                     type: number
                     example: 1636065460
+        PatchPublicationRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                    example: 'Iamus'
+                title:
+                    type: string
+                    example: 'Iamus: A platform for sharing astronomy code journals.'
+                introduction:
+                    type: string
+                    example: 'Iamus is a platform for managing code journals...'
+                revision:
+                    type: string
+                    example: 'v1.0.0'
+                collaborators:
+                    type: array
+                    items:
+                        type: string
+                        example: jdoe1
+
         CreatePublicationRequest:
             type: object
             required:
@@ -2025,18 +2109,6 @@ components:
                     items:
                         type: string
                         example: jdoe1
-        CreatePublicationResponse:
-            type: object
-            required:
-                - status
-                - publication
-            properties:
-                status:
-                    type: string
-                    example: 'ok'
-                    enum: ['ok']
-                publication:
-                    $ref: '#/components/schemas/Publication'
         FileResponse:
             type: object
             required:
@@ -2117,7 +2189,7 @@ components:
                     example: 1636065460
                 status:
                     type: string
-                    example: "started"
+                    example: 'started'
                     enum: ['started', 'completed']
                 id:
                     type: string
@@ -2135,7 +2207,7 @@ components:
             properties:
                 id:
                     type: string
-                    example: "id"
+                    example: 'id'
                 edited:
                     type: boolean
                     example: false

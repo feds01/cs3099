@@ -105,3 +105,8 @@ export * from './putReviewIdComment200';
 export * from './getReviewIdComments200Status';
 export * from './getReviewId200';
 export * from './getUserUsernameRole200';
+export * from './patchPublicationRequest';
+export * from './patchPublicationResponseResponse';
+export * from './createPublicationResponseResponse';
+export * from './createPublicationResponseResponseStatus';
+export * from './patchPublicationResponseResponseStatus';
