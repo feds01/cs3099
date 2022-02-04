@@ -25,6 +25,8 @@ import type {
   GetPublicationUsernameName200,
   GetPublicationUsername200,
   GetPublicationUsernameParams,
+  ApiSuccessResponse,
+  PostPublicationUsernameNameExportParams,
   GetPublicationUsernameNameRevisions200,
   ResourceResponseResponse,
   GetPublicationUsernameNameRevision200,
@@ -224,6 +226,41 @@ export const useGetPublicationUsername = <TData = AsyncReturnType<typeof getPubl
 }
 
 /**
+ * Begin a transactional request to export a publication.
+ * @summary Export a publication
+ */
+export const postPublicationUsernameNameExport = (
+    username: string,
+    name: string,
+    params?: PostPublicationUsernameNameExportParams,
+ ) => {
+      return customInstance<ApiSuccessResponse>(
+      {url: `/publication/${username}/${name}/export`, method: 'post',
+        params,
+    },
+      );
+    }
+  
+
+
+    export const usePostPublicationUsernameNameExport = <TError = ApiErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postPublicationUsernameNameExport>, TError,{username: string;name: string;params?: PostPublicationUsernameNameExportParams}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      
+
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postPublicationUsernameNameExport>, {username: string;name: string;params?: PostPublicationUsernameNameExportParams}> = (props) => {
+          const {username,name,params} = props || {};
+
+          return  postPublicationUsernameNameExport(username,name,params,)
+        }
+
+      return useMutation<AsyncReturnType<typeof postPublicationUsernameNameExport>, TError, {username: string;name: string;params?: PostPublicationUsernameNameExportParams}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
  * Get a paginated list of publication revisions.
  * @summary Get a list of revisions for a publication
  */

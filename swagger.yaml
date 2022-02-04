@@ -862,6 +862,50 @@ paths:
                                             $ref: '#/components/schemas/Publication'
                 default:
                     $ref: '#/components/responses/ApiError'
+    /publication/{username}/{name}/export:
+        post:
+            summary: Export a publication
+            description: Begin a transactional request to export a publication.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: query
+                  required: true
+                  name: to
+                  schema:
+                      type: string
+                      description: URL of the service to export the publication to.
+                - in: query
+                  required: true
+                  name: exportReviews
+                  schema:
+                    type: boolean
+                    description: Whether to export reviews or not to export reviews.  
+                - in: query
+                  required: false
+                  name: revision
+                  schema:
+                      type: string
+                      description: Revision number of the publication.
+            responses:
+                '200':
+                    $ref: '#/components/responses/ApiSuccess'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/revisions:
         get:
             summary: Get a list of revisions for a publication
@@ -1642,6 +1686,25 @@ components:
     responses:
         NoContent:
             description: No Content. Server acknowledges request but has no return body.
+        ApiSuccess:
+            description: General success response from the API.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: string
+                                example: 'ok'
+                                enum: ['ik']
+                            message:
+                                type: string
+                                example: 'Message describing the success.'
+                            extra:
+                                type: object
         ApiError:
             description: General Error response from the API.
             content:
@@ -1835,7 +1898,7 @@ components:
                                 type: string
                                 example: 'ok'
                                 enum: ['ok']
-                            message: 
+                            message:
                                 type: string
                             publication:
                                 $ref: '#/components/schemas/Publication'

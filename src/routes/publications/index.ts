@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import express from 'express';
 import assert from 'assert';
-import qs from 'query-string';
 import Logger from '../../common/logger';
 import * as zip from '../../lib/zip';
 import * as errors from './../../common/errors';
@@ -22,6 +21,7 @@ import { config } from '../../server';
 import { createTokens } from '../../lib/auth';
 import { deleteResource } from '../../lib/fs';
 import { resourceIndexToPath } from '../../lib/zip';
+import { makeRequest } from '../../lib/fetch';
 
 const router = express.Router();
 router.use('/', searchRouter);
@@ -588,23 +588,32 @@ registerRoute(router, '/:username/:name', {
  * @description This endpoint is used to initiate the exporting process for a publication. The endpoint
  * takes to required parameters which specify to where the publication should be exported and
  * if the export should also export reviews with the publication.
+ *
+ * @@TODO: handle whether we export reviews or not in the form of providing permissions in the tokens
+ *         that we send!
  */
-registerRoute(router, '/:id/export', {
+registerRoute(router, '/:username/:name/export', {
     method: 'post',
     params: z.object({
         username: z.string().nonempty(),
         name: z.string().nonempty(),
-        revision: z.string(),
     }),
     body: z.object({}),
-    query: z.object({ mode: ModeSchema, to: z.string().url(), exportReviews: z.boolean() }),
+    query: z.object({
+        mode: ModeSchema,
+        to: z.string().url(),
+        revision: z.string().optional(),
+        exportReviews: z.boolean(),
+    }),
     permission: { kind: 'publication', level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
         // Get the publication
-        const { revision, name } = req.params;
+        const { name } = req.params;
+        const { revision } = req.query;
+
         const publication = await Publication.findOne({
             owner: user.id,
             name: name.toLowerCase(),
@@ -623,9 +632,24 @@ registerRoute(router, '/:id/export', {
         // @@ Hack: this should be done by some kind of token service...
         const { token } = createTokens({ username: user.username, id: user.id, email: user.email });
 
-        const query = qs.stringify({ from: config.frontendURI, token, id: publication.id });
-        const url = new URL(`/api/sg/resource/import?${query}`, req.query.to);
-        return res.redirect(url.toString());
+        const result = await makeRequest(req.query.to, '/api/sg/resources/import', z.any(), {
+            query: { from: config.frontendURI, token, id: publication.id },
+            method: 'post',
+        });
+
+        if (result.status === 'error') {
+            Logger.warn(`Failed to export a review: ${result.errors}`);
+
+            return res.status(400).json({
+                status: 'error',
+                message: `Failed to export review due to ${result.type}.`,
+            });
+        }
+
+        return res.status(200).json({
+            status: 'ok',
+            message: 'Review has been successfully exported.',
+        });
     },
 });
 
