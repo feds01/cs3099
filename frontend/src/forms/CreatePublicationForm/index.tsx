@@ -98,7 +98,7 @@ export default function CreatePublicationForm(): ReactElement {
                         >
                             Create
                         </LoadingButton>
-                        <Button disabled={isLoading} sx={{ mt: 1 }} variant="outlined" type={'submit'}>
+                        <Button disabled={isLoading} sx={{ mt: 1 }} variant="outlined" href="/">
                             Cancel
                         </Button>
                     </Box>

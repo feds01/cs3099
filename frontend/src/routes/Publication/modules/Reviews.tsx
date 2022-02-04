@@ -8,16 +8,14 @@ import { Publication } from '../../../lib/api/models';
 import PublicationReviews from '../../../views/PublicationReviews';
 import { useNotificationDispatch } from '../../../hooks/notification';
 import { usePostPublicationUsernameNameRevisionReview as useCreateReview } from '../../../lib/api/reviews/reviews';
+import { usePublicationState } from '../../../hooks/publication';
 
-interface Props {
-    publication: Publication;
-}
 
-export default function Reviews({ publication }: Props): ReactElement {
+export default function Reviews(): ReactElement {
     const history = useHistory();
     const notificationDispatcher = useNotificationDispatch();
 
-    const { owner, name, revision } = publication;
+    const { publication: {owner, name, revision}, publication } = usePublicationState();
     const createReviewQuery = useCreateReview();
     const createReview = () => createReviewQuery.mutate({ username: owner.username, name, revision });
 

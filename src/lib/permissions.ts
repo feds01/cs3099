@@ -9,7 +9,6 @@ export type PermissionKind =
     | 'resource'
     | 'publication'
     | 'review'
-    | 'bookmark'
     | 'follower';
 
 export interface Permission {
@@ -57,6 +56,16 @@ export function compareUserRoles(left: IUserRole, right: IUserRole): boolean {
     return leftPermission >= rightPermission;
 }
 
+export type ExternalId =
+    | {
+          type: 'publication';
+          name: string;
+      }
+    | {
+          type: 'id';
+          id: string;
+      };
+
 /**
  * Check if a user has sufficient permissions.
  *
@@ -67,7 +76,7 @@ export function compareUserRoles(left: IUserRole, right: IUserRole): boolean {
 export async function ensureValidPermissions(
     permission: Permission | null,
     id: string,
-    externalId?: string,
+    externalId?: ExternalId,
 ): Promise<ResolvedPermission> {
     if (permission === null) return { valid: false };
 
@@ -89,10 +98,18 @@ export async function ensureValidPermissions(
         return { valid: false };
     }
 
+    let findQuery = {};
+
+    if (externalId.type === 'publication') {
+        findQuery = { name: externalId.name };
+    } else if (externalId.type === 'id') {
+        findQuery = { id: externalId.id };
+    }
+
     // Ok here, we need to actually perform some more advanced checks based on the type of permission that is requested
     switch (permission.kind) {
         case 'comment': {
-            const comment = await Comment.findOne({ id: externalId }).exec();
+            const comment = await Comment.findOne(findQuery).exec();
 
             if (!comment || comment.owner.toString() !== user.id) {
                 return { valid: false };
@@ -109,7 +126,7 @@ export async function ensureValidPermissions(
             return { valid: false };
         }
         case 'publication': {
-            const publication = await Publication.findOne({ id: externalId }).exec();
+            const publication = await Publication.findOne({ owner: user.id, ...findQuery }).exec();
 
             if (!publication || publication.owner.toString() !== user.id) {
                 return { valid: false };
@@ -119,10 +136,6 @@ export async function ensureValidPermissions(
         }
         case 'review': {
             // TODO: Add permission sub-system for review
-            return { valid: false };
-        }
-        case 'bookmark': {
-            // TODO: Add permission sub-system for bookmark
             return { valid: false };
         }
         case 'follower': {

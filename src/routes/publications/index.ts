@@ -552,12 +552,14 @@ registerRoute(router, '/:username/:name', {
         const update = { $set: { ...req.body } };
         const queryOptions = { new: true }; // new as in return the updated document
 
+        const { name } = req.params;
+
         // So take the fields that are to be updated into the set request, it's okay to this because
         // we validated the request previously and we should be able to add all of the fields into the
         // database. If the user tries to update the username or an email that's already in use, mongo
         // will return an error because these fields have to be unique.
-        let newPublication = await Publication.findByIdAndUpdate(
-            user.id,
+        let newPublication = await Publication.findOneAndUpdate(
+            { owner: user.id, name: name.toLowerCase() },
             update,
             queryOptions,
         ).exec();
