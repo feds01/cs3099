@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type GetPublicationUsernameNameBookmark200Status = 'ok';
+export type CreatePublicationResponseResponseStatus = 'ok';
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const GetPublicationUsernameNameBookmark200Status = {
-  ok: 'ok' as GetPublicationUsernameNameBookmark200Status,
+export const CreatePublicationResponseResponseStatus = {
+  ok: 'ok' as CreatePublicationResponseResponseStatus,
 };

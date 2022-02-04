@@ -6,10 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type GetPublicationUsernameBookmarks200Status = 'ok';
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const GetPublicationUsernameBookmarks200Status = {
-  ok: 'ok' as GetPublicationUsernameBookmarks200Status,
-};
+export type PostPublicationUsernameNameExportParams = { to: string; exportReviews: boolean; revision?: string };

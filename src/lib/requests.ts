@@ -238,3 +238,12 @@ export default function registerRoute<
             throw new Error('Unreachable');
     }
 }
+type Dictionary = { [index: string]: string };
+export const GROUP_URI_MAP: Dictionary = {
+    t06: 'https://cs3099user06.host.cs.st-andrews.ac.uk/',
+    t12: 'https://cs3099user12.host.cs.st-andrews.ac.uk/',
+    t15: 'https://cs3099user15.host.cs.st-andrews.ac.uk/',
+    t21: 'https://cs3099user21.host.cs.st-andrews.ac.uk/',
+    t24: 'https://cs3099user24.host.cs.st-andrews.ac.uk/',
+    t27: 'https://cs3099user27.host.cs.st-andrews.ac.uk/',
+};

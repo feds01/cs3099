@@ -21,10 +21,10 @@ export function convertSgId(external: SgUserId): string {
 export function transformSgUserToInternal(
     user: SgUser,
 ): Partial<IUserDocument> & { username: string; email: string } {
-    const { name, email, user_id: id, profilePictureUrl } = user;
+    const { name, email, id, profilePictureUrl } = user;
 
-    const firstName = name.substr(0, name.indexOf(' '));
-    const lastName = name.substr(name.indexOf(' ') + 1);
+    const firstName = name.substring(0, name.indexOf(' '));
+    const lastName = name.substring(name.indexOf(' ') + 1);
 
     return {
         username: id.id, // TODO: this is somewhat flaky since what if the username is already taken?

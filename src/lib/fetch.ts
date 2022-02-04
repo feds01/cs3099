@@ -4,7 +4,7 @@ import FileType from 'file-type/browser';
 import fetch, { FetchError } from 'node-fetch';
 import { promises as fs } from 'fs';
 import Logger from '../common/logger';
-import { joinPathsRaw } from './resources';
+import { joinPathsRaw } from '../utils/resources';
 import { config } from '../server';
 
 const RawResponseSchema = z.union([
@@ -22,7 +22,7 @@ type ServiceResponse<T> =
       }
     | {
           status: 'ok';
-          data: T;
+          response: T;
       };
 
 function buildUrl(baseUrl: string, endpoint: string, query?: Record<string, string>): string {
@@ -48,20 +48,31 @@ function buildUrl(baseUrl: string, endpoint: string, query?: Record<string, stri
 export async function downloadOctetStream(
     baseUrl: string,
     endpoint: string,
-    additional?: {
+    additional: {
         query?: Record<string, string>;
         method?: RequestMethod;
-        headers?: Record<string, string>;
+        headers: Record<string, string>;
     },
 ): Promise<ServiceResponse<string>> {
-    const url = buildUrl(baseUrl, endpoint, additional?.headers);
+    const url = buildUrl(baseUrl, endpoint, additional?.query);
     Logger.info(`Attempting to download stream at: ${url}`);
 
     try {
         const rawResponse = await fetch(url, {
-            ...(typeof additional?.headers !== 'undefined' && { headers: additional.headers }),
+            headers: additional.headers,
             ...(typeof additional?.method !== 'undefined' && { method: additional.method }),
         });
+
+        if (rawResponse.status !== 200) {
+            Logger.warn(
+                `Failed to download the stream from the external service. Body responded with ${rawResponse.body}`,
+            );
+            return {
+                status: 'error',
+                type: 'service',
+                errors: "Couldn't download the file due to non ok status code.",
+            };
+        }
 
         // get the blob from the response
         const blob = await rawResponse.arrayBuffer();
@@ -70,6 +81,8 @@ export async function downloadOctetStream(
         const meta = await FileType.fromBuffer(blob);
 
         if (!meta) {
+            Logger.warn('Failed to deduce mime-type from downloaded stream.');
+
             return {
                 status: 'error',
                 type: 'service',
@@ -78,6 +91,9 @@ export async function downloadOctetStream(
         }
 
         if (meta.mime !== 'application/zip' && !meta.mime.startsWith('text')) {
+            Logger.warn(
+                "The mime-type from downloaded stream isn't an `application/zip` or `text/*`.",
+            );
             return {
                 status: 'error',
                 type: 'service',
@@ -102,7 +118,7 @@ export async function downloadOctetStream(
             // @@Wrapping: We should move this function into it's own wrapper!
             await fs.appendFile(tmpFilePath, Buffer.from(blob));
 
-            return { status: 'ok', data: tmpFilePath };
+            return { status: 'ok', response: tmpFilePath };
         } catch (e: unknown) {
             Logger.warn('Failed to save file.');
             return { status: 'error', type: 'fetch' };
@@ -117,7 +133,7 @@ export async function downloadOctetStream(
             return { status: 'error', type: 'fetch' };
         }
 
-        // Logger.warn(`Service request failed with: ${e}`);
+        Logger.warn(`Service request failed with: ${e}`);
         return { status: 'error', type: 'unknown' };
     }
 }
@@ -138,7 +154,7 @@ export async function makeRequest<I, O>(
         headers?: Record<string, string>;
     },
 ): Promise<ServiceResponse<O>> {
-    const url = buildUrl(baseUrl, endpoint, additional?.headers);
+    const url = buildUrl(baseUrl, endpoint, additional?.query);
     Logger.info(`Attempting to request external service at: ${url}`);
 
     try {
@@ -151,7 +167,7 @@ export async function makeRequest<I, O>(
         const validation = RawResponseSchema.safeParse(json);
 
         if (!validation.success) {
-            Logger.warn('Service replied with an invalid format');
+            Logger.warn(`Service replied with an invalid format:\n${validation.error}`);
             return { status: 'error', type: 'service', errors: validation.error };
         }
 
@@ -171,7 +187,7 @@ export async function makeRequest<I, O>(
         const bodyValidation = schema.safeParse(rest);
 
         if (bodyValidation.success) {
-            return { status: 'ok', data: bodyValidation.data };
+            return { status: 'ok', response: bodyValidation.data };
         }
         Logger.warn('Service replied with an invalid format');
         return { status: 'error', type: 'service', errors: bodyValidation.error };

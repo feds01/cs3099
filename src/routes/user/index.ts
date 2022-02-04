@@ -102,7 +102,7 @@ registerRoute(router, '/:username', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     body: IUserPatchRequestSchema,
-    permission: { kind: 'user', level: IUserRole.Default },
+    permission: { kind: 'user', level: IUserRole.Administrator },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;

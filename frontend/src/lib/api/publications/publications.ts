@@ -16,13 +16,17 @@ import {
   QueryKey
 } from 'react-query'
 import type {
-  CreatePublicationResponse,
+  CreatePublicationResponseResponse,
   ApiErrorResponse,
   CreatePublicationRequest,
   DeletionResponseResponse,
+  PatchPublicationResponseResponse,
+  PatchPublicationRequest,
   GetPublicationUsernameName200,
   GetPublicationUsername200,
   GetPublicationUsernameParams,
+  ApiSuccessResponse,
+  PostPublicationUsernameNameExportParams,
   GetPublicationUsernameNameRevisions200,
   ResourceResponseResponse,
   GetPublicationUsernameNameRevision200,
@@ -44,7 +48,7 @@ T extends (...args: any) => Promise<any>
 export const postPublication = (
     createPublicationRequest: CreatePublicationRequest,
  ) => {
-      return customInstance<CreatePublicationResponse>(
+      return customInstance<CreatePublicationResponseResponse>(
       {url: `/publication`, method: 'post',
       data: createPublicationRequest
     },
@@ -71,7 +75,7 @@ export const postPublication = (
       return useMutation<AsyncReturnType<typeof postPublication>, TError, {data: CreatePublicationRequest}, TContext>(mutationFn, mutationOptions)
     }
     /**
- * Create a new publication resource for a given user account.
+ * Delete the publication resource.
  * @summary Delete a publication
  */
 export const deletePublicationUsernameName = (
@@ -102,6 +106,41 @@ export const deletePublicationUsernameName = (
         }
 
       return useMutation<AsyncReturnType<typeof deletePublicationUsernameName>, TError, {username: string;name: string}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
+ * Patch the publication resource.
+ * @summary Patch an existing publication
+ */
+export const patchPublicationUsernameName = (
+    username: string,
+    name: string,
+    patchPublicationRequest: PatchPublicationRequest,
+ ) => {
+      return customInstance<PatchPublicationResponseResponse>(
+      {url: `/publication/${username}/${name}`, method: 'patch',
+      data: patchPublicationRequest
+    },
+      );
+    }
+  
+
+
+    export const usePatchPublicationUsernameName = <TError = ApiErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof patchPublicationUsernameName>, TError,{username: string;name: string;data: PatchPublicationRequest}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      
+
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof patchPublicationUsernameName>, {username: string;name: string;data: PatchPublicationRequest}> = (props) => {
+          const {username,name,data} = props || {};
+
+          return  patchPublicationUsernameName(username,name,data,)
+        }
+
+      return useMutation<AsyncReturnType<typeof patchPublicationUsernameName>, TError, {username: string;name: string;data: PatchPublicationRequest}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * Get a publication resource for a given user account with the specified name. This will return the most recent publication revision.
@@ -187,6 +226,41 @@ export const useGetPublicationUsername = <TData = AsyncReturnType<typeof getPubl
 }
 
 /**
+ * Begin a transactional request to export a publication.
+ * @summary Export a publication
+ */
+export const postPublicationUsernameNameExport = (
+    username: string,
+    name: string,
+    params?: PostPublicationUsernameNameExportParams,
+ ) => {
+      return customInstance<ApiSuccessResponse>(
+      {url: `/publication/${username}/${name}/export`, method: 'post',
+        params,
+    },
+      );
+    }
+  
+
+
+    export const usePostPublicationUsernameNameExport = <TError = ApiErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postPublicationUsernameNameExport>, TError,{username: string;name: string;params?: PostPublicationUsernameNameExportParams}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      
+
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postPublicationUsernameNameExport>, {username: string;name: string;params?: PostPublicationUsernameNameExportParams}> = (props) => {
+          const {username,name,params} = props || {};
+
+          return  postPublicationUsernameNameExport(username,name,params,)
+        }
+
+      return useMutation<AsyncReturnType<typeof postPublicationUsernameNameExport>, TError, {username: string;name: string;params?: PostPublicationUsernameNameExportParams}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
  * Get a paginated list of publication revisions.
  * @summary Get a list of revisions for a publication
  */

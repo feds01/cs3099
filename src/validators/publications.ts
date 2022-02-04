@@ -18,6 +18,10 @@ export const IPublicationCreationSchema = z.object({
     collaborators: CollaboratorArraySchema,
 });
 
+export const IPublicationPatchRequestSchema = IPublicationCreationSchema.partial();
+
+export type IUserPatchRequest = z.infer<typeof IPublicationPatchRequestSchema>;
+
 // TODO: Implement better schema
 export const SearchQuerySchema = z.object({
     owner: z.string().optional(),
