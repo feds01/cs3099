@@ -15,6 +15,7 @@ import ControlledAutocomplete from '../../components/ControlledAutocomplete';
 import { usePostPublication } from '../../lib/api/publications/publications';
 import { CreatePublication, CreatePublicationSchema } from '../../validators/publication';
 
+
 export default function CreatePublicationForm(): ReactElement {
     const auth = useAuth();
 

@@ -9,6 +9,7 @@ import Chip from '@mui/material/Chip';
 import { formatDistance } from 'date-fns';
 import Tab from '@mui/material/Tab';
 import { Link } from 'react-router-dom';
+
 import Divider from '@mui/material/Divider';
 import Skeleton from '@mui/material/Skeleton';
 import Container from '@mui/material/Container';
@@ -27,6 +28,8 @@ import Settings from './modules/Settings';
 import Reviews from './modules/Reviews';
 import assert from 'assert';
 import { useAuth } from '../../hooks/auth';
+
+import ExportDialog from '../../forms/ExportPublicationForm';
 
 interface Props {}
 
@@ -73,7 +76,7 @@ const TabMap = ({ publication, refetchPublication, isOwner }: TabMapProps) => ({
             canonical: 'settings',
             component: () => <Settings publication={publication} />,
         },
-    })
+    }),
 });
 
 /**
@@ -129,6 +132,9 @@ function PublicationView() {
 
     const getPublicationQuery = useGetPublication(username, name, canonicalName[1]);
 
+    //setting constants for the export dialog
+    const [exportDialogOpen, setExportDialogOpen] = useState(false);
+
     useEffect(() => {
         setCanonicalName(getCanonicalName(location.pathname, username, name));
     }, [location.pathname]);
@@ -173,7 +179,14 @@ function PublicationView() {
                                 <MarkdownRenderer fontSize={24} contents={publication.title} />
                             </Box>
                             <Box>
-                                <Button>Export</Button>
+                                <Button onClick={() => setExportDialogOpen(true)}>Export</Button>
+                                <ExportDialog
+                                    username={username}
+                                    name={name}
+                                    revision={publication.revision}
+                                    open={exportDialogOpen}
+                                    onClose={() => setExportDialogOpen(false)}
+                                />
                             </Box>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
@@ -215,7 +228,7 @@ function PublicationView() {
                                         path={`${basename}${path}`}
                                         render={(routeProps) => {
                                             return (
-                                                <Box sx={{pt: 2, width: '100%', alignSelf: 'stretch' }}>
+                                                <Box sx={{ pt: 2, width: '100%', alignSelf: 'stretch' }}>
                                                     {props.component()}
                                                 </Box>
                                             );
