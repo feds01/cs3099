@@ -3,7 +3,6 @@ import json
 import click
 import requests
 
-# password = "Passwordexample123!"
 base_url = "http://localhost:5000"
 
 def get_auth():
