@@ -16,8 +16,20 @@ import assert from 'assert';
 const router = express.Router();
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/sg/sso/login
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/sg/sso/login
  *
- */
+ *
+ * @description This route is used to initiate the sso authentication process between our service
+ * and an external service. This endpoint essentially acts as a forefront for redirecting external
+ * requesters to our login portal from where we can authenticate the user and redirect the back
+ * to the '/callback' endpoint defined in the external service.
+ *
+ * @see https://app.swaggerhub.com/apis/feds01/supergroup-c_api/1.0.0#/authentication/get_api_sg_sso_login
+ * */
 registerRoute(router, '/login', {
     method: 'get',
     params: z.object({}),
@@ -32,8 +44,20 @@ registerRoute(router, '/login', {
 });
 
 /**
+ * @version v1.0.0
+ * @method POST
+ * @url /api/sg/sso/callback
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/sg/sso/login
  *
- */
+ *
+ * @description This route is used to handle the response from the external service when they
+ * have replied with the authentication status. The external service will invoke this endpoint
+ * and provide information about the logged in user. In here, we essentially create or update
+ * the user from the details that we receive from the '/verify' endpoint.
+ *
+ * @see https://app.swaggerhub.com/apis/feds01/supergroup-c_api/1.0.0#/resources/post_api_sg_resources_import
+ * */
 registerRoute(router, '/callback', {
     method: 'get',
     params: z.object({}),
@@ -103,8 +127,18 @@ registerRoute(router, '/callback', {
 });
 
 /**
+ * @version v1.0.0
+ * @method POST
+ * @url /api/sg/sso/verify
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/sg/sso/verify
  *
- */
+ *
+ * @description This route is used by external services to verify the web token that they receive from
+ * the callback and consequently receive user information using the token.
+ *
+ * @see https://app.swaggerhub.com/apis/feds01/supergroup-c_api/1.0.0#/authentication/post_api_sg_sso_verify
+ * */
 registerRoute(router, '/verify', {
     method: 'post',
     params: z.object({}),

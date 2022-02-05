@@ -263,13 +263,11 @@ registerRoute(router, '/sso', {
         // create a new state using nano-id for url safe random strings
         const stateString = nanoid();
 
-        const state = new State({
+        await new State({
             state: stateString,
             from: to,
             path: path ?? '/', // re-direct the user back to / if the path isn't provided.
-        });
-
-        await state.save();
+        }).save();
 
         // re-direct the user to the external service to begin the sso process...
         const url = new URL(

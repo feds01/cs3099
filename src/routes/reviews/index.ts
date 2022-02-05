@@ -11,10 +11,21 @@ import Review, { IReviewStatus } from '../../models/Review';
 import { ObjectIdSchema } from '../../validators/requests';
 import { ICommentCreationSchema } from '../../validators/comments';
 import { IPublication, IPublicationDocument } from '../../models/Publication';
+import { verifyReviewPermission } from '../../lib/permissions';
 
 const router = express.Router();
 
 /**
+ * @version v1.0.0
+ * @method PUT
+ * @url /api/review/:id/comment
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/review/89183192381293/comment
+ *
+ * @description This endpoint is used to add a comment to a given review specified
+ * by it's id. The endpoint accepts a comment object that contains information about
+ * it's relation to the publication sources, the content of the comment and whether
+ * it is a replying comment rather than a standalone comment.
  *
  */
 registerRoute(router, '/:id/comment', {
@@ -22,7 +33,8 @@ registerRoute(router, '/:id/comment', {
     body: ICommentCreationSchema,
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: { kind: 'review', level: IUserRole.Default },
+    permissionVerification: verifyReviewPermission,
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { id: owner } = req.requester;
@@ -48,6 +60,7 @@ registerRoute(router, '/:id/comment', {
         }
 
         // check that the publication isn't in draft mode...
+        // @@Verify: It is impossible to begin publications that are in 'draft' mode.
         if (review.publication.draft) {
             return res.status(400).json({
                 status: 'error',
@@ -131,19 +144,18 @@ registerRoute(router, '/:id/comment', {
             }
         }
 
-        const newComment = new Comment({
-            filename,
-            anchor,
-            contents,
-            replying,
-            review: id,
-            thread,
-            owner,
-            publication: review.publication.id as mongoose.Schema.Types.ObjectId,
-        });
-
         try {
-            await newComment.save();
+            const newComment = await new Comment({
+                filename,
+                anchor,
+                contents,
+                replying,
+                review: id,
+                thread,
+                owner,
+                publication: review.publication.id as mongoose.Schema.Types.ObjectId,
+            }).save();
+
             const populated = await newComment.populate<{ owner: IUserDocument }>('owner');
 
             return res.status(201).json({
@@ -163,13 +175,25 @@ registerRoute(router, '/:id/comment', {
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/review/:id/comments
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/review/89183192381293/comments
  *
+ * @description This endpoint is used to list the comments on a particular review specified
+ * by the id of the review.
+ *
+ * @@TODO: Should be able to specify some filtration parameters with regards to which comments
+ * should be listed from this endpoint. More specifically, we want to filter by owner, thread,
+ * file, etc.
  */
 registerRoute(router, '/:id/comments', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: { kind: 'review', level: IUserRole.Default },
+    permissionVerification: verifyReviewPermission,
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { id: owner } = req.requester;
@@ -214,7 +238,16 @@ registerRoute(router, '/:id/comments', {
         });
     },
 });
+
 /**
+ * @version v1.0.0
+ * @method POST
+ * @url /api/review/:id/complete
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/review/89183192381293/complete
+ *
+ * @description This endpoint is used to signal that the owner of the review has finalised
+ * their review and wishes to publish it on the platform.
  *
  */
 registerRoute(router, '/:id/complete', {
@@ -222,11 +255,13 @@ registerRoute(router, '/:id/complete', {
     body: z.object({}),
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: { kind: 'review', level: IUserRole.Default },
+    permissionVerification: verifyReviewPermission,
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { id: ownerId } = req.requester;
 
+        // @@TODO: Use findByIdAndUpdate
         const review = await Review.findById(id).exec();
 
         // verify that the review exists and the owner is trying to publish it...
@@ -247,24 +282,30 @@ registerRoute(router, '/:id/complete', {
 });
 
 /**
+ * @version v1.0.0
+ * @method POST
+ * @url /api/review/:id
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/review/89183192381293
+ *
+ * @description This endpoint is used to get a review specified by the id.
  *
  */
 registerRoute(router, '/:id', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: { kind: 'review', level: IUserRole.Default },
+    permissionVerification: verifyReviewPermission,
+    permission: { level: IUserRole.Moderator },
     handler: async (req, res) => {
         const { id } = req.params;
-        const { id: ownerId } = req.requester;
 
         const review = await Review.findById(id)
             .populate<{ publication: IPublication }>('publication')
             .populate<{ owner: IUserDocument }>('owner')
             .exec();
 
-        // verify that the review exists and the owner is trying to publish it...
-        if (!review || review.owner.id.toString() !== ownerId) {
+        if (!review) {
             return res.status(404).json({
                 status: 'error',
                 message: errors.NON_EXISTENT_REVIEW,
@@ -279,13 +320,21 @@ registerRoute(router, '/:id', {
 });
 
 /**
+ * @version v1.0.0
+ * @method DELETE
+ * @url /api/review/:id
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/review/89183192381293
+ *
+ * @description This endpoint is used to delete a review specified by it's id.
  *
  */
 registerRoute(router, '/:id', {
     method: 'delete',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: { kind: 'review', level: IUserRole.Administrator },
+    permissionVerification: verifyReviewPermission,
+    permission: { level: IUserRole.Administrator },
     handler: async (req, res) => {
         const { id } = req.params;
 

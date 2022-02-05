@@ -9,18 +9,27 @@ import { ModeSchema } from '../../validators/requests';
 import Review, { IReviewStatus } from '../../models/Review';
 import Publication, { IPublication } from '../../models/Publication';
 import { IReviewCreationSchema } from '../../validators/reviews';
-import assert from 'assert';
+import { verifyPublicationPermission } from '../../lib/permissions';
 
 const router = express.Router();
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/publication/:username/:name/:revision/reviews
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap/v1/reviews
+ *
+ * @description This endpoint is used to list all of the reviews on a specific publication
+ * which is specified by the owner's username, publication name and publication revision.
  *
  */
 registerRoute(router, '/:username/:name/:revision/reviews', {
     method: 'get',
     params: z.object({ username: z.string(), name: z.string(), revision: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'review', level: IUserRole.Default },
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -58,6 +67,14 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
 });
 
 /**
+ * @version v1.0.0
+ * @method POST
+ * @url /api/publication/:username/:name/:revision/review
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap/v1/review
+ *
+ * @description This endpoint is used to initiate the process of reviewing a publication.
+ * It sets up the necessary information in the database for a review of a publication to start.
  *
  */
 registerRoute(router, '/:username/:name/:revision/review', {
@@ -69,7 +86,8 @@ registerRoute(router, '/:username/:name/:revision/review', {
         name: z.string(),
         revision: z.string(),
     }),
-    permission: { kind: 'review', level: IUserRole.Default },
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -119,20 +137,14 @@ registerRoute(router, '/:username/:name/:revision/review', {
         try {
             const newDoc = await new Review(docParams).save();
 
-            // @@HACK: We should be able to modify the returned doc and project it.
-            // populate the fields in the new document so that it can be projected...
-            const projected = await Review.findById(newDoc._id)
-                .populate<{ publication: IPublication }>('publication')
-                .populate<{ owner: IUser }>('owner')
-                .exec();
+            const populated = await (
+                await newDoc.populate<{ publication: IPublication }>('publication')
+            ).populate<{ owner: IUser }>('owner');
 
-            // @@Cleanup!
-            assert(projected);
-
-            return res.status(200).json({
+            return res.status(201).json({
                 status: 'ok',
                 message: 'Successfully initialised review.',
-                review: await Review.project(projected),
+                review: await Review.project(populated),
             });
         } catch (e: unknown) {
             Logger.error(e);

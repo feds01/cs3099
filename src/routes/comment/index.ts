@@ -5,17 +5,25 @@ import registerRoute from '../../lib/requests';
 import Comment from '../../models/Comment';
 import { IUserDocument, IUserRole } from '../../models/User';
 import { ObjectIdSchema } from '../../validators/requests';
+import { verifyCommentPermission } from '../../lib/permissions';
 
 const router = express.Router();
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/comment/:id
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/comment/89183192381293
  *
+ * @description This endpoint is used to get the comment with the specified id.
  */
 registerRoute(router, '/:id', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: { kind: 'comment', level: IUserRole.Default },
+    permissionVerification: verifyCommentPermission,
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
 
@@ -66,7 +74,8 @@ registerRoute(router, '/:id', {
     query: z.object({}),
     body: z.object({ contents: z.string().min(1) }),
     params: z.object({ id: ObjectIdSchema }),
-    permission: { kind: 'comment', level: IUserRole.Default },
+    permissionVerification: verifyCommentPermission,
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { contents } = req.body;
@@ -95,13 +104,23 @@ registerRoute(router, '/:id', {
 });
 
 /**
+ * @version v1.0.0
+ * @method DELETE
+ * @url /api/comment/:id
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/comment/89183192381293
  *
+ * @description This endpoint is used to delete a comment with the specified id. The endpoint
+ * verifies that you must be an administrator to delete comments or the owner of the comment.
+ *
+ * @error {UNAUTHORIZED} if the user doesn't have permissions to delete the comment.
  */
 registerRoute(router, '/:id', {
     method: 'delete',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: { kind: 'comment', level: IUserRole.Administrator },
+    permissionVerification: verifyCommentPermission,
+    permission: { level: IUserRole.Administrator },
     handler: async (req, res) => {
         const { id } = req.params;
 

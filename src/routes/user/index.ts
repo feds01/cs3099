@@ -9,8 +9,10 @@ import Follower from '../../models/Follower';
 import * as userUtils from './../../utils/users';
 import User, { IUserRole } from '../../models/User';
 import registerRoute from '../../lib/requests';
-import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
 import { ModeSchema } from '../../validators/requests';
+import { verifyUserPermission } from '../../lib/permissions';
+import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
+import assert from 'assert';
 
 const router = express.Router();
 
@@ -48,7 +50,8 @@ registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'user', level: IUserRole.Default },
+    permissionVerification: verifyUserPermission,
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -102,7 +105,8 @@ registerRoute(router, '/:username', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     body: IUserPatchRequestSchema,
-    permission: { kind: 'user', level: IUserRole.Administrator },
+    permissionVerification: verifyUserPermission,
+    permission: { level: IUserRole.Administrator },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -153,9 +157,9 @@ registerRoute(router, '/:username', {
 /**
  * @version v1.0.0
  * @method DELETE
- * @url /api/user
+ * @url /api/user/:username
  * @example
- * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/feds01
  *
  * @description This route is used to delete  a user account, the route
  * will accept a token in the header of the request to authenticate the request.
@@ -168,7 +172,8 @@ registerRoute(router, '/:username', {
     method: 'delete',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'user', level: IUserRole.Default },
+    permissionVerification: verifyUserPermission,
+    permission: { level: IUserRole.Administrator },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -195,12 +200,12 @@ registerRoute(router, '/:username', {
 /**
  * @version v1.0.0
  * @method GET
- * @url /api/user/<id>/role
+ * @url /api/user/:username/role
  * @example
- * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/<616f115feb505663f8bce3e2>/role
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/616f115feb505663f8bce3e2/role
  * >>> response: {
  *  "status": "true",
- *  "role": "default" // TO CHECK
+ *  "role": "default"
  * }
  *
  * @description This route is used to get the role of a user.
@@ -213,7 +218,8 @@ registerRoute(router, '/:username/role', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'user', level: IUserRole.Administrator },
+    permissionVerification: verifyUserPermission,
+    permission: { level: IUserRole.Administrator },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -239,9 +245,7 @@ registerRoute(router, '/:username/role', {
  * >>> response:
  * {
  *  "message": "Successfully updated user role",
- *  "user": {
- *      "role": "moderator"
- *  }
+ *  "role": "moderator"
  * }
  *
  * @description This route is used to allow administrator to update any user's role.
@@ -256,44 +260,22 @@ registerRoute(router, '/:username/role', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     body: IUserRoleRequestSchema,
-    permission: { kind: 'user', level: IUserRole.Administrator },
+    permission: { level: IUserRole.Administrator },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
 
-        const update = { $set: { ...req.body } };
+        const newUser = await User.findByIdAndUpdate(
+            user.id,
+            { $set: { ...req.body } },
+            { new: true },
+        );
+        assert(newUser !== null);
 
-        User.findByIdAndUpdate(user.id, update, { new: true }, (err, newUser) => {
-            if (err) {
-                if (err instanceof mongoose.Error.ValidationError) {
-                    return res.status(400).json({
-                        status: 'error',
-                        message: error.BAD_REQUEST,
-                        extra: err.errors,
-                    });
-                }
-
-                // Something went wrong...
-                Logger.error(err);
-                return res.status(500).json({
-                    status: 'error',
-                    message: error.INTERNAL_SERVER_ERROR,
-                });
-            }
-
-            // If we couldn't find the user.
-            if (!newUser) {
-                return res.status(404).json({
-                    status: 'error',
-                    message: error.NON_EXISTENT_USER,
-                });
-            }
-
-            return res.status(200).json({
-                status: 'ok',
-                message: 'Successfully updated user role.',
-                role: newUser.role,
-            });
+        return res.status(200).json({
+            status: 'ok',
+            message: 'Successfully updated user role.',
+            role: newUser.role,
         });
     },
 });

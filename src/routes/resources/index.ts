@@ -8,6 +8,7 @@ import Publication from '../../models/Publication';
 import registerRoute from '../../lib/requests';
 import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
 import { joinPathsForResource, extractFile, joinPathsRaw } from '../../utils/resources';
+import { verifyPublicationIdPermission, verifyReviewPermission } from '../../lib/permissions';
 
 const router = express.Router();
 
@@ -26,7 +27,7 @@ registerRoute(router, '/upload/:username', {
     query: z.object({ mode: ModeSchema }),
     body: z.any(),
     method: 'post',
-    permission: { kind: 'resource', level: IUserRole.Default },
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -40,8 +41,6 @@ registerRoute(router, '/upload/:username', {
                 extra: 'No file sent.',
             });
         }
-
-        // @@Security: Ensure that the actual uploaded file is sane and don't just rely on mimetype.
 
         // check here that the correct mime type is set on the file, for now we
         // only accept jpg/png images...
@@ -90,7 +89,8 @@ registerRoute(router, '/upload/publication/:id', {
     query: z.object({ revision: z.string().optional() }),
     body: z.any(),
     method: 'post',
-    permission: { kind: 'resource', level: IUserRole.Default },
+    permissionVerification: verifyPublicationIdPermission,
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { revision } = req.query;
@@ -168,9 +168,9 @@ registerRoute(router, '/upload/publication/:id', {
  * @version v1.0.0
  * @method POST
  *
- * @url /api/resources/reviews/upload/:id
+ * @url /api/resources/upload/review/:id
  * @example
- * https://af268.cs.st-andrews.ac.uk/api/resources/reviews/upload/617ec2675afcca834c21b5fd
+ * https://af268.cs.st-andrews.ac.uk/api/resources/upload/review/617ec2675afcca834c21b5fd
  *
  * Endpoint for uploading attachements on reviwew commetns, items such as images/files or even
  * videos.
@@ -180,7 +180,8 @@ registerRoute(router, '/upload/review/:id', {
     query: z.object({}),
     body: z.any(),
     method: 'post',
-    permission: { kind: 'resource', level: IUserRole.Default },
+    permissionVerification: verifyReviewPermission,
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const { id } = req.params;
         const { id: userId } = req.requester;

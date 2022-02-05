@@ -13,7 +13,7 @@ const router = express.Router({ mergeParams: true });
 /**
  * @version v1.0.0
  * @method POST
- * @url api/user/<id>/follow
+ * @url /api/user/:id/follow
  * @example
  * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/616f115feb325663f8bce3a4/follow
  * >>> body: {}
@@ -23,18 +23,16 @@ const router = express.Router({ mergeParams: true });
  * accepts the followee's id which is specified in the url. Then it adds a
  * mapping of them to the database.
  *
- * @error {ALREADY_FOLLOWED} if the followee is already followed by the current user.
  * @error {SELF_FOLLOWING} if the user account is trying to follow itself.
  * @error {NON_EXISTENT_USER} if the specified user does not exist.
  *
- * @return response to client if mapping was created and added to the system.
  * */
 registerRoute(router, '/:username/follow', {
     method: 'post',
     params: z.object({ username: z.string() }),
     body: z.object({}),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'follower', level: IUserRole.Default },
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -93,13 +91,23 @@ registerRoute(router, '/:username/follow', {
 });
 
 /**
+ * @version v1.0.0
+ * @method DELETE
+ * @url /api/user/:id/follow
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/616f115feb325663f8bce3a4/follow
  *
- */
+ * @description This route is used to remove a follow from a user.
+ *
+ * @error {SELF_FOLLOWING} if the user account is trying to unfollow itself.
+ * @error {NON_EXISTENT_USER} if the specified user does not exist.
+ *
+ * */
 registerRoute(router, '/:username/follow', {
     method: 'delete',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'follower', level: IUserRole.Default },
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -117,17 +125,10 @@ registerRoute(router, '/:username/follow', {
             });
         }
 
-        const link = await Follower.findOneAndDelete({
+        await Follower.findOneAndDelete({
             follower: follower.id,
             following: user.id,
         }).exec();
-
-        if (!link) {
-            return res.status(404).json({
-                status: 'ok',
-                message: "User isn't following the other user",
-            });
-        }
 
         return res.status(200).json({
             status: 'ok',
@@ -137,13 +138,20 @@ registerRoute(router, '/:username/follow', {
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/:id/follow
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/616f115feb325663f8bce3a4/follow
  *
- */
+ * @description This route is used to check if the requester is following the specified
+ * user by their username.
+ * */
 registerRoute(router, '/:username/follow', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'follower', level: IUserRole.Default },
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -166,30 +174,27 @@ registerRoute(router, '/:username/follow', {
             following: user.id,
         }).exec();
 
-        if (!link) {
-            return res.status(404).json({
-                status: 'ok',
-                following: false,
-                message: "User isn't following the other user",
-            });
-        } else {
-            return res.status(200).json({
-                status: 'ok',
-                following: true,
-                message: 'User is following the other user',
-            });
-        }
+        return res.status(200).json({
+            status: 'ok',
+            following: link !== null,
+        });
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/:id/followers
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/616f115feb325663f8bce3a4/followers
  *
- */
+ * @description This route is used to list all of the followers of the requester.
+ * */
 registerRoute(router, '/:username/followers', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'follower', level: IUserRole.Default },
+    permission: { level: IUserRole.Default },
     handler: async (req, res) => {
         const user = await userUtils.transformUsernameIntoId(req, res);
         if (!user) return;
@@ -213,8 +218,14 @@ registerRoute(router, '/:username/followers', {
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/:id/followers
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/616f115feb325663f8bce3a4/followers
  *
- */
+ * @description This route is used to list all of the users that the requester is following.
+ * */
 registerRoute(router, '/:username/following', {
     method: 'get',
     params: z.object({ username: z.string() }),
