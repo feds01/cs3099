@@ -8,8 +8,7 @@
 
 export type PatchUserUsername200Status = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PatchUserUsername200Status = {
-  ok: 'ok' as PatchUserUsername200Status,
+    ok: 'ok' as PatchUserUsername200Status,
 };

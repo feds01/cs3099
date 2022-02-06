@@ -8,8 +8,7 @@
 
 export type DeleteUserUsernameFollow200Status = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DeleteUserUsernameFollow200Status = {
-  ok: 'ok' as DeleteUserUsernameFollow200Status,
+    ok: 'ok' as DeleteUserUsernameFollow200Status,
 };

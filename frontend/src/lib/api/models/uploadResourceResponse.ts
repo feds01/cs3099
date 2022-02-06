@@ -8,5 +8,5 @@
 import type { UploadResourceResponseStatus } from './uploadResourceResponseStatus';
 
 export interface UploadResourceResponse {
-  status: UploadResourceResponseStatus;
+    status: UploadResourceResponseStatus;
 }

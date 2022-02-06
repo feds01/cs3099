@@ -8,6 +8,6 @@
 import type { DeletionResponseResponseStatus } from './deletionResponseResponseStatus';
 
 export type DeletionResponseResponse = {
-  status: DeletionResponseResponseStatus;
-  message: string;
+    status: DeletionResponseResponseStatus;
+    message: string;
 };

@@ -7,5 +7,5 @@
  */
 
 export interface UsernameValidation {
-  username: string;
+    username: string;
 }

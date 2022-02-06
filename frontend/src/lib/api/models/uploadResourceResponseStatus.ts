@@ -8,8 +8,7 @@
 
 export type UploadResourceResponseStatus = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UploadResourceResponseStatus = {
-  ok: 'ok' as UploadResourceResponseStatus,
+    ok: 'ok' as UploadResourceResponseStatus,
 };

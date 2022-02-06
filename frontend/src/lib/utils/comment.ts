@@ -1,4 +1,4 @@
-import { Comment, CommentAnchor } from "../api/models";
+import { Comment, CommentAnchor } from '../api/models';
 
 export type CommentThread = {
     comments: Comment[];

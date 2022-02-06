@@ -1,4 +1,4 @@
-import { z, ZodError } from 'zod';
+import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import bcrypt from 'bcryptjs';
 import express from 'express';
@@ -6,27 +6,17 @@ import User from '../../models/User';
 import Logger from '../../common/logger';
 import { config } from './../../server';
 import * as error from '../../common/errors';
-import {
-    IEmailValidity,
-    IEmailValiditySchema,
-    IUsernameValidity,
-    IUsernameValiditySchema,
-} from '../../validators/auth';
-import { createTokens, JwtError, refreshTokens, verifyToken } from '../../lib/auth';
-import {
-    IUserLoginRequest,
-    IUserLoginRequestSchema,
-    IUserRegisterRequest,
-    IUserRegisterRequestSchema,
-} from '../../validators/user';
 import registerRoute from '../../lib/requests';
 import State from '../../models/State';
+import { createTokens, JwtError, refreshTokens, verifyToken } from '../../lib/auth';
+import { IEmailValiditySchema, IUsernameValiditySchema } from '../../validators/auth';
+import { IUserLoginRequestSchema, IUserRegisterRequestSchema } from '../../validators/user';
 
 const router = express.Router();
 
 /**
  * @version v1.0.0
- * @method GET
+ * @method POST
  * @url /api/auth/username_validity
  * @example
  * https://cs3099user06.host.cs.st-andrews.ac.uk/api/auth/username_validity
@@ -46,47 +36,37 @@ const router = express.Router();
  * whether username is in use.
  *
  * */
-router.get('/username_validity', async (req, res) => {
-    let request: IUsernameValidity;
+registerRoute(router, '/username_validity', {
+    method: 'post',
+    body: IUsernameValiditySchema,
+    params: z.object({}),
+    query: z.object({}),
+    permission: null,
+    handler: async (req, res) => {
+        const result = await User.findOne({
+            name: req.body.username,
+            externalId: { $exists: false },
+        }).exec();
 
-    try {
-        request = IUsernameValiditySchema.parse(req.body);
-    } catch (e) {
-        if (e instanceof ZodError) {
-            return res.status(400).json({
-                status: 'error',
-                message: error.BAD_REQUEST,
-                errors: e.errors,
+        // If the email wasn't found, then return a not found status.
+        if (!result) {
+            return res.status(404).json({
+                status: 'ok',
+                message: 'Username address not in use',
             });
         }
 
-        Logger.error(e);
-        return res.status(500).json({
-            status: 'error',
-            message: error.INTERNAL_SERVER_ERROR,
+        // Unprocessable Entity
+        return res.status(422).json({
+            status: 'ok',
+            message: 'Username exists',
         });
-    }
-
-    const result = await User.findOne({ username: request.username }).exec();
-
-    // If the user wasn't found, then return a not found status.
-    if (!result) {
-        return res.status(200).json({
-            status: 'error',
-            message: 'No user with given username exists',
-        });
-    }
-
-    // Unprocessable entity
-    return res.status(422).json({
-        status: 'ok',
-        message: 'Username exists',
-    });
+    },
 });
 
 /**
  * @version v1.0.0
- * @method GET
+ * @method POST
  * @url /api/auth/email_validity
  * @example
  * https://cs3099user06.host.cs.st-andrews.ac.uk/api/auth/email_validitiy
@@ -106,45 +86,32 @@ router.get('/username_validity', async (req, res) => {
  * whether the email is in use.
  *
  * */
-router.get('/email_validity', async (req, res) => {
-    let request: IEmailValidity;
+registerRoute(router, '/email_validity', {
+    method: 'post',
+    body: IEmailValiditySchema,
+    params: z.object({}),
+    query: z.object({}),
+    permission: null,
+    handler: async (req, res) => {
+        const result = await User.findOne({
+            email: req.body.email,
+            externalId: { $exists: false },
+        }).exec();
 
-    try {
-        request = IEmailValiditySchema.parse(req.body);
-    } catch (e) {
-        if (e instanceof ZodError) {
-            return res.status(400).json({
-                status: 'error',
-                message: error.BAD_REQUEST,
-                errors: e.errors,
+        // If the email wasn't found, then return a not found status.
+        if (!result) {
+            return res.status(404).json({
+                status: 'ok',
+                message: 'Email address not in use',
             });
         }
 
-        Logger.error(e);
-        return res.status(500).json({
-            status: 'error',
-            message: error.INTERNAL_SERVER_ERROR,
-        });
-    }
-
-    const result = await User.findOne({
-        email: request.email,
-        externalId: { $exists: false },
-    }).exec();
-
-    // If the email wasn't found, then return a not found status.
-    if (!result) {
-        return res.status(404).json({
+        // Unprocessable Entity
+        return res.status(422).json({
             status: 'ok',
-            message: 'Email address not in use',
+            message: 'Email exists',
         });
-    }
-
-    // Unprocessable Entity
-    return res.status(422).json({
-        status: 'ok',
-        message: 'Email exists',
-    });
+    },
 });
 
 /**
@@ -185,7 +152,7 @@ registerRoute(router, '/session', {
                 if (typeof refreshedTokensOrError === 'string') {
                     return res.status(400).json({
                         status: 'error',
-                        message: refreshTokens,
+                        message: refreshedTokensOrError,
                     });
                 }
 
@@ -318,94 +285,52 @@ registerRoute(router, '/sso', {
  *
  * @return response to client if user was created and added to the system.
  * */
-router.post('/register', async (req, res) => {
-    let response: IUserRegisterRequest;
+registerRoute(router, '/register', {
+    method: 'post',
+    body: IUserRegisterRequestSchema,
+    params: z.object({}),
+    query: z.object({}),
+    permission: null,
+    handler: async (req, res) => {
+        // generate the salt for the new user account;
+        const salt = await bcrypt.genSalt();
 
-    try {
-        response = await IUserRegisterRequestSchema.parseAsync(req.body);
-    } catch (e: any) {
-        if (e instanceof ZodError) {
-            return res.status(400).json({
-                status: 'error',
-                message: error.BAD_REQUEST,
-                errors: e.errors,
-            });
-        }
+        return bcrypt.hash(req.body.password, salt, async (err, hash) => {
+            if (err) {
+                Logger.error(err);
 
-        Logger.error(e);
-        return res.status(500).json({
-            status: 'error',
-            message: error.INTERNAL_SERVER_ERROR,
+                return res.status(500).json({
+                    status: 'error',
+                    message: error.INTERNAL_SERVER_ERROR,
+                });
+            }
+
+            try {
+                const savedUser = await new User({ ...req.body, password: hash }).save();
+
+                const { email, username } = req.body;
+                const { token, refreshToken } = await createTokens({
+                    email,
+                    username,
+                    id: savedUser.id,
+                });
+
+                return res.status(201).json({
+                    status: 'ok',
+                    user: User.project(savedUser),
+                    token,
+                    refreshToken,
+                });
+            } catch (e: unknown) {
+                Logger.error(e);
+
+                return res.status(500).json({
+                    status: 'error',
+                    message: error.INTERNAL_SERVER_ERROR,
+                });
+            }
         });
-    }
-
-    const { password, email, username } = response;
-
-    // Check if username or email is already in use
-
-    const searchQueryUser = {
-        $or: [{ username }, { email, externalId: { $exists: false } }],
-    };
-
-    const resultUser = await User.findOne(searchQueryUser).exec();
-
-    if (resultUser) {
-        if (resultUser.username === username) {
-            return res.status(409).json({
-                status: 'error',
-                message: error.REGISTRATION_FAILED,
-                extra: error.USER_EXISTS,
-            });
-        }
-        if (resultUser.email === email) {
-            return res.status(409).json({
-                status: 'error',
-                message: error.REGISTRATION_FAILED,
-                extra: error.MAIL_EXISTS,
-            });
-        }
-    }
-
-    // generate the salt for the new user account;
-    const salt = await bcrypt.genSalt();
-
-    return bcrypt.hash(password, salt, async (err, hash) => {
-        if (err) {
-            Logger.error(err);
-
-            return res.status(500).json({
-                status: 'error',
-                message: error.INTERNAL_SERVER_ERROR,
-            });
-        }
-
-        // create the user object and save it to the table
-        const newUser = new User({ ...response, password: hash });
-
-        try {
-            const savedUser = await newUser.save();
-
-            const { token, refreshToken } = await createTokens({
-                email,
-                username,
-                id: savedUser.id,
-            });
-
-            return res.status(201).json({
-                status: 'ok',
-                user: User.project(savedUser),
-                token,
-                refreshToken,
-            });
-        } catch (e: unknown) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: error.INTERNAL_SERVER_ERROR,
-            });
-        }
-    });
+    },
 });
 
 /**
@@ -448,36 +373,31 @@ router.post('/register', async (req, res) => {
  * @return sends a response to client if user successfully (or not) logged in.
  *
  * */
-router.post('/login', async (req, res) => {
-    let response: IUserLoginRequest;
+registerRoute(router, '/login', {
+    method: 'post',
+    body: IUserLoginRequestSchema,
+    params: z.object({}),
+    query: z.object({}),
+    permission: null,
+    handler: async (req, res) => {
+        const { username, password, isEmail } = req.body;
 
-    try {
-        response = await IUserLoginRequestSchema.parseAsync(req.body);
-    } catch (e) {
-        if (e instanceof ZodError) {
-            return res.status(400).json({
+        const searchQuery = isEmail ? { email: username } : { username };
+        const result = await User.findOne({
+            ...searchQuery,
+            externalId: { $exists: false },
+        }).exec();
+
+        // Important to send an authentication failure request, rather than a
+        // username not found. This could lead to a brute force attack to retrieve
+        // all existent user names.
+        if (!result) {
+            return res.status(401).json({
                 status: 'error',
-                message: error.BAD_REQUEST,
-                errors: e.errors,
+                message: error.MISMATCHING_LOGIN,
             });
         }
 
-        Logger.error(e);
-        return res.status(500).json({
-            status: 'error',
-            message: error.INTERNAL_SERVER_ERROR,
-        });
-    }
-
-    const { username, password, isEmail } = response;
-
-    const searchQuery = isEmail ? { email: username } : { username };
-    const result = await User.findOne({ ...searchQuery, externalId: { $exists: false } }).exec();
-
-    // Important to send an authentication failure request, rather than a
-    // username not found. This could lead to a brute force attack to retrieve
-    // all existent user names.
-    if (result) {
         return bcrypt.compare(password, result.password, async (err, response) => {
             if (err) {
                 // Log the error in the server console & respond to the client with an
@@ -511,17 +431,10 @@ router.post('/login', async (req, res) => {
             // password did not match the stored hashed password within the database
             return res.status(401).json({
                 status: 'error',
-                message: error.AUTHENTICATION_FAILED,
-                extra: error.MISMATCHING_LOGIN,
+                message: error.MISMATCHING_LOGIN,
             });
         });
-    } else {
-        return res.status(401).json({
-            status: 'error',
-            message: error.AUTHENTICATION_FAILED,
-            extra: error.MISMATCHING_LOGIN,
-        });
-    }
+    },
 });
 
 export default router;

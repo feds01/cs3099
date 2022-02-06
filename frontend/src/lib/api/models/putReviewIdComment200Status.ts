@@ -8,8 +8,7 @@
 
 export type PutReviewIdComment200Status = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PutReviewIdComment200Status = {
-  ok: 'ok' as PutReviewIdComment200Status,
+    ok: 'ok' as PutReviewIdComment200Status,
 };

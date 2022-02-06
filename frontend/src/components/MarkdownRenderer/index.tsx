@@ -12,8 +12,8 @@ interface MarkdownRendererProps {
 
 const useStyles = makeStyles<Theme, MarkdownRendererProps>((theme) => ({
     wrapper: {
-        fontSize: ({ fontSize }) => fontSize ? `${fontSize}px !important` : "inherit",
-        listStylePosition: "inside"
+        fontSize: ({ fontSize }) => (fontSize ? `${fontSize}px !important` : 'inherit'),
+        listStylePosition: 'inside',
     },
 }));
 
@@ -29,7 +29,11 @@ export default function MarkdownRenderer(props: MarkdownRendererProps): ReactEle
                     const match = /language-(\w+)/.exec(className || '');
 
                     return !inline && match ? (
-                        <CodeRenderer contents={String(children).replace(/\n$/, '')} filename={''} language={match[1]} />
+                        <CodeRenderer
+                            contents={String(children).replace(/\n$/, '')}
+                            filename={''}
+                            language={match[1]}
+                        />
                     ) : (
                         <code className={className} {...props}>
                             {children}

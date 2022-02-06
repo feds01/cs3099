@@ -25,10 +25,7 @@ export default function PageLayout({ children, drawerWidth = 180, title, sidebar
                 wordBreak: 'break-word',
             }}
         >
-            <Box
-                component="main"
-                sx={{ display: 'flex', flexDirection: 'column', flex: 1, height: 'inherit' }}
-            >
+            <Box component="main" sx={{ display: 'flex', flexDirection: 'column', flex: 1, height: 'inherit' }}>
                 <Header title={title} />
                 <Box sx={{ display: 'flex', flexDirection: 'row', flexGrow: 1, pt: 8 }}>
                     {sidebar && <Sidebar />}

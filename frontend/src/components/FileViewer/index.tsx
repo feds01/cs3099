@@ -166,7 +166,7 @@ export default function FileViewer({ contents, filename, id, review, threads, la
                             flexDirection: 'row',
                             alignItems: 'center',
                             width: '100%',
-                            justifyContent: 'space-between'
+                            justifyContent: 'space-between',
                         }}
                     >
                         <Typography {...(typeof id !== 'undefined' && { id })}>{filename}</Typography>

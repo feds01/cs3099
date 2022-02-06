@@ -39,7 +39,7 @@ registerRoute(router, '/:id', {
         }
 
         return res.status(200).json({
-            status: true,
+            status: 'ok',
             comment: Comment.project(comment),
         });
     },
@@ -97,7 +97,7 @@ registerRoute(router, '/:id', {
         }
 
         return res.status(200).json({
-            status: true,
+            status: 'ok',
             comment: Comment.project(updatedComment),
         });
     },
@@ -137,7 +137,7 @@ registerRoute(router, '/:id', {
         }
 
         return res.status(200).json({
-            status: true,
+            status: 'ok',
             message: 'Successfully deleted comment.',
         });
     },

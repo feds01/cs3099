@@ -5,138 +5,118 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import {
-  useQuery,
-  UseQueryOptions,
-  QueryFunction,
-  UseQueryResult,
-  QueryKey
-} from 'react-query'
+import { useQuery, UseQueryOptions, QueryFunction, UseQueryResult, QueryKey } from 'react-query';
 import type {
-  GetUserUsernameFollow200,
-  ApiErrorResponse,
-  GetUserUsernameFollowers200,
-  GetUserUsernameFollowing200
-} from '.././models'
-import { customInstance } from '.././mutator/custom-instance'
+    GetUserUsernameFollow200,
+    ApiErrorResponse,
+    GetUserUsernameFollowers200,
+    GetUserUsernameFollowing200,
+} from '.././models';
+import { customInstance } from '.././mutator/custom-instance';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AsyncReturnType<
-T extends (...args: any) => Promise<any>
-> = T extends (...args: any) => Promise<infer R> ? R : any;
-
+type AsyncReturnType<T extends (...args: any) => Promise<any>> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 /**
  * Endpoint for checking if the current user is following another user specified by the given id.
  * @summary Get the current user's follow status.
  */
-export const getUserUsernameFollow = (
+export const getUserUsernameFollow = (username: string) => {
+    return customInstance<GetUserUsernameFollow200>({ url: `/user/${username}/follow`, method: 'get' });
+};
+
+export const getGetUserUsernameFollowQueryKey = (username: string) => [`/user/${username}/follow`];
+
+export const useGetUserUsernameFollow = <
+    TData = AsyncReturnType<typeof getUserUsernameFollow>,
+    TError = ApiErrorResponse,
+>(
     username: string,
- ) => {
-      return customInstance<GetUserUsernameFollow200>(
-      {url: `/user/${username}/follow`, method: 'get'
-    },
-      );
-    }
-  
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollow>, TError, TData> },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+    const { query: queryOptions } = options || {};
 
-export const getGetUserUsernameFollowQueryKey = (username: string,) => [`/user/${username}/follow`];
+    const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowQueryKey(username);
 
-    
-export const useGetUserUsernameFollow = <TData = AsyncReturnType<typeof getUserUsernameFollow>, TError = ApiErrorResponse>(
- username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollow>, TError, TData>, }
+    const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollow>> = () => getUserUsernameFollow(username);
 
-  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+    const query = useQuery<AsyncReturnType<typeof getUserUsernameFollow>, TError, TData>(queryKey, queryFn, {
+        enabled: !!username,
+        ...queryOptions,
+    });
 
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowQueryKey(username);
-
-  
-
-  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollow>> = () => getUserUsernameFollow(username, );
-
-  const query = useQuery<AsyncReturnType<typeof getUserUsernameFollow>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
+    return {
+        queryKey,
+        ...query,
+    };
+};
 
 /**
  * Endpoint for getting any user's follower list.
  * @summary Get a user's follower list.
  */
-export const getUserUsernameFollowers = (
+export const getUserUsernameFollowers = (username: string) => {
+    return customInstance<GetUserUsernameFollowers200>({ url: `/user/${username}/followers`, method: 'get' });
+};
+
+export const getGetUserUsernameFollowersQueryKey = (username: string) => [`/user/${username}/followers`];
+
+export const useGetUserUsernameFollowers = <
+    TData = AsyncReturnType<typeof getUserUsernameFollowers>,
+    TError = ApiErrorResponse,
+>(
     username: string,
- ) => {
-      return customInstance<GetUserUsernameFollowers200>(
-      {url: `/user/${username}/followers`, method: 'get'
-    },
-      );
-    }
-  
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowers>, TError, TData> },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+    const { query: queryOptions } = options || {};
 
-export const getGetUserUsernameFollowersQueryKey = (username: string,) => [`/user/${username}/followers`];
+    const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowersQueryKey(username);
 
-    
-export const useGetUserUsernameFollowers = <TData = AsyncReturnType<typeof getUserUsernameFollowers>, TError = ApiErrorResponse>(
- username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowers>, TError, TData>, }
+    const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollowers>> = () =>
+        getUserUsernameFollowers(username);
 
-  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+    const query = useQuery<AsyncReturnType<typeof getUserUsernameFollowers>, TError, TData>(queryKey, queryFn, {
+        enabled: !!username,
+        ...queryOptions,
+    });
 
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowersQueryKey(username);
-
-  
-
-  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollowers>> = () => getUserUsernameFollowers(username, );
-
-  const query = useQuery<AsyncReturnType<typeof getUserUsernameFollowers>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
+    return {
+        queryKey,
+        ...query,
+    };
+};
 
 /**
  * Endpoint for fetching a user's follows list
  * @summary Get a user's following list.
  */
-export const getUserUsernameFollowing = (
+export const getUserUsernameFollowing = (username: string) => {
+    return customInstance<GetUserUsernameFollowing200>({ url: `/user/${username}/following`, method: 'get' });
+};
+
+export const getGetUserUsernameFollowingQueryKey = (username: string) => [`/user/${username}/following`];
+
+export const useGetUserUsernameFollowing = <
+    TData = AsyncReturnType<typeof getUserUsernameFollowing>,
+    TError = ApiErrorResponse,
+>(
     username: string,
- ) => {
-      return customInstance<GetUserUsernameFollowing200>(
-      {url: `/user/${username}/following`, method: 'get'
-    },
-      );
-    }
-  
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowing>, TError, TData> },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+    const { query: queryOptions } = options || {};
 
-export const getGetUserUsernameFollowingQueryKey = (username: string,) => [`/user/${username}/following`];
+    const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowingQueryKey(username);
 
-    
-export const useGetUserUsernameFollowing = <TData = AsyncReturnType<typeof getUserUsernameFollowing>, TError = ApiErrorResponse>(
- username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowing>, TError, TData>, }
+    const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollowing>> = () =>
+        getUserUsernameFollowing(username);
 
-  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+    const query = useQuery<AsyncReturnType<typeof getUserUsernameFollowing>, TError, TData>(queryKey, queryFn, {
+        enabled: !!username,
+        ...queryOptions,
+    });
 
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowingQueryKey(username);
-
-  
-
-  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollowing>> = () => getUserUsernameFollowing(username, );
-
-  const query = useQuery<AsyncReturnType<typeof getUserUsernameFollowing>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
-
+    return {
+        queryKey,
+        ...query,
+    };
+};

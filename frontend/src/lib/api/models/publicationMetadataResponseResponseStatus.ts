@@ -8,8 +8,7 @@
 
 export type PublicationMetadataResponseResponseStatus = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PublicationMetadataResponseResponseStatus = {
-  ok: 'ok' as PublicationMetadataResponseResponseStatus,
+    ok: 'ok' as PublicationMetadataResponseResponseStatus,
 };

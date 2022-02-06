@@ -81,7 +81,7 @@ registerRoute(router, '/import', {
             return res.status(400).json({
                 status: 'error',
                 message: `request failed due to: ${metadata.type}`,
-                error: metadata.errors || {},
+                errors: metadata.errors,
             });
         }
 
@@ -119,10 +119,7 @@ registerRoute(router, '/import', {
                 Logger.info(`Attempting to import user ${review.owner} for review`);
             }
 
-            return res.status(200).json({
-                status: 'ok',
-                message: 'Successfully imported publication',
-            });
+            return res.status(200).json({ status: 'ok' });
         } catch (e: unknown) {
             Logger.error(e);
 
@@ -164,8 +161,6 @@ registerRoute(router, '/export/:id/metadata', {
             });
         }
 
-        const projectedPublication = await Publication.projectAsSg(publication);
-
         // Okay, let's find all the reviews that are related to the current revision
         // of the publication, for now we don't consider revisions of a publication
         // a concept at all because external groups don't know about our revision system.
@@ -177,17 +172,13 @@ registerRoute(router, '/export/:id/metadata', {
             .populate<{ owner: IUser }>('owner')
             .exec();
 
-        const projectedReviews = await Promise.all(
-            reviews.map(async (review) => {
-                return await Review.projectAsSg(review);
-            }),
-        );
 
         return res.status(200).json({
-            publication: projectedPublication,
-            reviews: projectedReviews,
+            status: 'ok',
+            publication: await Publication.projectAsSg(publication),
+            reviews: await Promise.all(reviews.map(Review.projectAsSg)),
         });
-    },
+    }
 });
 
 /**

@@ -201,9 +201,9 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
 /**
  * @version v1.0.0
  * @method POST
- * @url /api/publications/
+ * @url /api/publication
  * @example
- * https://cs3099user06.host.cs.st-andrews.ac.uk/publication/
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/
  * >>> body:
  * {
  *   "revision": "v1",
@@ -236,8 +236,7 @@ registerRoute(router, '/', {
         if (existingPublication > 0) {
             return res.status(400).json({
                 status: 'error',
-                message: errors.PUBLICATION_FAILED,
-                extra: errors.PUBLICATION_EXISTS,
+                message: errors.PUBLICATION_EXISTS,
             });
         }
 
@@ -315,14 +314,9 @@ registerRoute(router, '/:username', {
             .limit(50)
             .exec();
 
-        // project each publication and then return it
-        const publications = result.map((link) =>
-            Publication.projectWith(link as typeof result[number], user),
-        );
-
         return res.status(200).json({
-            status: true,
-            data: publications,
+            status: 'ok',
+            data: result.map((item) => Publication.projectWith(item, user)),
         });
     },
 });
@@ -353,16 +347,9 @@ registerRoute(router, '/:username/:name/revisions', {
             .limit(50)
             .exec();
 
-        // project each publication and then return it
-        const revisions = result.map((link) =>
-            Publication.projectWith(link as typeof result[number], user),
-        );
-
         return res.status(200).json({
             status: 'ok',
-            data: {
-                revisions,
-            },
+            revisions: result.map((item) => Publication.projectWith(item, user)),
         });
     },
 });
@@ -497,10 +484,7 @@ registerRoute(router, '/:username/:name/all', {
             // we need to try to remove the folder that stores the publications...
             await deleteResource(publicationPath);
 
-            return res.status(200).json({
-                status: 'ok',
-                message: 'Successfully deleted resource.',
-            });
+            return res.status(200).json({ status: 'ok' });
         } catch (e: unknown) {
             Logger.error(e);
 
@@ -574,10 +558,7 @@ registerRoute(router, '/:username/:name', {
             // we need to try to remove the folder that stores the publications...
             await deleteResource(publicationPath);
 
-            return res.status(200).json({
-                status: 'ok',
-                message: 'Successfully deleted resource.',
-            });
+            return res.status(200).json({ status: 'ok' });
         } catch (e: unknown) {
             Logger.error(e);
 
@@ -639,7 +620,6 @@ registerRoute(router, '/:username/:name', {
 
         return res.status(200).json({
             status: 'ok',
-            message: 'Successfully updated publication.',
             publication: await Publication.project(newPublication, false),
         });
     },
@@ -716,7 +696,6 @@ registerRoute(router, '/:username/:name/export', {
 
         return res.status(200).json({
             status: 'ok',
-            message: 'Review has been successfully exported.',
         });
     },
 });

@@ -8,8 +8,7 @@
 
 export type GetUserUsername200Status = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GetUserUsername200Status = {
-  ok: 'ok' as GetUserUsername200Status,
+    ok: 'ok' as GetUserUsername200Status,
 };

@@ -7,6 +7,6 @@
  */
 
 export interface FollowerCount {
-  followers: number;
-  following: number;
+    followers: number;
+    following: number;
 }

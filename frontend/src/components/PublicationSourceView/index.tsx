@@ -22,15 +22,13 @@ function SourceViewer({ contents, filename, basePath }: SourceViewerProps): Reac
             return <LinearProgress />;
         }
         case 'error': {
-            return <ErrorBanner message={contents.error.message}/>;
+            return <ErrorBanner message={contents.error.message} />;
         }
         case 'ok': {
             const { data } = contents.data;
 
             if (data.type === 'file') {
-                return (
-                    <CodeRenderer contents={data.contents} filename={filename} />
-                );
+                return <CodeRenderer contents={data.contents} filename={filename} />;
             } else {
                 return (
                     <DirectoryViewer type={data.type} entries={data.entries} basePath={basePath} filename={filename} />

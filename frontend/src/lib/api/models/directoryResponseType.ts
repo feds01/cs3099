@@ -8,8 +8,7 @@
 
 export type DirectoryResponseType = 'directory';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DirectoryResponseType = {
-  directory: 'directory' as DirectoryResponseType,
+    directory: 'directory' as DirectoryResponseType,
 };

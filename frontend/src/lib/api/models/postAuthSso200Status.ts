@@ -8,8 +8,7 @@
 
 export type PostAuthSso200Status = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PostAuthSso200Status = {
-  ok: 'ok' as PostAuthSso200Status,
+    ok: 'ok' as PostAuthSso200Status,
 };

@@ -29,11 +29,9 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
     const { publication, owner } = review;
 
     const notificationDispatcher = useNotificationDispatch();
-    const fileQuery = useGetPublicationUsernameNameAll(
-        publication.owner.username,
-        publication.name,
-        { revision: publication.revision }
-    );
+    const fileQuery = useGetPublicationUsernameNameAll(publication.owner.username, publication.name, {
+        revision: publication.revision,
+    });
 
     const getCommentsQuery = useGetReviewIdComments(review.id);
     const completeReviewQuery = usePostReviewIdComplete();

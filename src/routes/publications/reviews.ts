@@ -57,11 +57,9 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
             .populate<{ owner: IUser }>('owner')
             .exec();
 
-        const reviews = await Promise.all(result.map(async (link) => await Review.project(link)));
-
         return res.status(200).json({
-            status: true,
-            reviews,
+            status: 'ok',
+            reviews: await Promise.all(result.map(Review.project)),
         });
     },
 });
@@ -129,7 +127,6 @@ registerRoute(router, '/:username/:name/:revision/review', {
             Logger.info('Using pre-created review for user instead of creating a new one...');
             return res.status(200).json({
                 status: 'ok',
-                message: 'Successfully initialised review.',
                 review: await Review.project(doc),
             });
         }
@@ -143,7 +140,6 @@ registerRoute(router, '/:username/:name/:revision/review', {
 
             return res.status(201).json({
                 status: 'ok',
-                message: 'Successfully initialised review.',
                 review: await Review.project(populated),
             });
         } catch (e: unknown) {

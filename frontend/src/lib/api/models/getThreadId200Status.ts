@@ -8,8 +8,7 @@
 
 export type GetThreadId200Status = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GetThreadId200Status = {
-  ok: 'ok' as GetThreadId200Status,
+    ok: 'ok' as GetThreadId200Status,
 };

@@ -8,8 +8,7 @@
 
 export type PatchCommentId200Status = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PatchCommentId200Status = {
-  ok: 'ok' as PatchCommentId200Status,
+    ok: 'ok' as PatchCommentId200Status,
 };

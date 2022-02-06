@@ -8,8 +8,7 @@
 
 export type TokenVerificationResponseResponseStatus = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TokenVerificationResponseResponseStatus = {
-  ok: 'ok' as TokenVerificationResponseResponseStatus,
+    ok: 'ok' as TokenVerificationResponseResponseStatus,
 };

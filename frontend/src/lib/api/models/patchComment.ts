@@ -7,5 +7,5 @@
  */
 
 export interface PatchComment {
-  contents: string;
+    contents: string;
 }

@@ -118,9 +118,11 @@ registerRoute(router, '/:id/comment', {
             if (!entry) {
                 return res.status(400).json({
                     status: 'error',
-                    error: errors.BAD_REQUEST,
-                    extra: {
-                        filename: "Filename path doesn't exist in the current archive.", // @@TODO: Use a ZodError here...
+                    message: errors.BAD_REQUEST,
+                    errors: {
+                        filename: {
+                            message: "Filename path doesn't exist in the current archive.",
+                        },
                     },
                 });
             }
@@ -134,9 +136,9 @@ registerRoute(router, '/:id/comment', {
                 if (anchor.start > lines || anchor.end > lines) {
                     return res.status(400).json({
                         status: 'error',
-                        error: errors.BAD_REQUEST,
-                        extra: {
-                            anchor: 'Anchor range is invalid.', // @@TODO: Use a ZodError here...
+                        message: errors.BAD_REQUEST,
+                        errors: {
+                            anchor: { message: 'Anchor range is invalid.' },
                         },
                     });
                 }
@@ -159,7 +161,6 @@ registerRoute(router, '/:id/comment', {
 
             return res.status(201).json({
                 status: 'ok',
-                message: 'Created comment.',
                 comment: Comment.project(populated),
             });
         } catch (e) {
@@ -232,7 +233,7 @@ registerRoute(router, '/:id/comments', {
         const comments = result.map(Comment.project);
 
         return res.status(200).json({
-            status: true,
+            status: 'ok',
             comments,
         });
     },
@@ -275,7 +276,6 @@ registerRoute(router, '/:id/complete', {
 
         return res.status(200).json({
             status: 'ok',
-            message: 'Marked the review as complete.',
         });
     },
 });

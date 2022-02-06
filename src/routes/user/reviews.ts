@@ -47,7 +47,7 @@ registerRoute(router, '/:username/reviews', {
         const reviews = await Promise.all(result.map(Review.project));
 
         return res.status(200).json({
-            status: true,
+            status: 'ok',
             reviews,
         });
     },

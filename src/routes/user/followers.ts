@@ -65,20 +65,13 @@ registerRoute(router, '/:username/follow', {
         const doc = await Follower.findOne(mapping).exec();
 
         if (doc) {
-            return res.status(401).json({
-                status: 'error',
-                message: error.ALREADY_FOLLOWED,
-            });
+            return res.status(200).json({ status: 'ok' });
         }
 
-        const newFollow = new Follower(mapping);
         try {
-            newFollow.save();
+            await new Follower(mapping).save();
 
-            return res.status(201).json({
-                status: 'ok',
-                message: 'Successfully followed user.',
-            });
+            return res.status(201).json({ status: 'ok' });
         } catch (e) {
             Logger.error(e);
 
@@ -130,10 +123,7 @@ registerRoute(router, '/:username/follow', {
             following: user.id,
         }).exec();
 
-        return res.status(200).json({
-            status: 'ok',
-            message: 'User was unfollowed',
-        });
+        return res.status(200).json({ status: 'ok' });
     },
 });
 
@@ -210,9 +200,7 @@ registerRoute(router, '/:username/followers', {
 
         return res.status(200).json({
             status: 'ok',
-            data: {
-                followers,
-            },
+            followers,
         });
     },
 });
@@ -249,9 +237,7 @@ registerRoute(router, '/:username/following', {
 
         return res.status(200).json({
             status: 'ok',
-            data: {
-                following: followers,
-            },
+            following: followers,
         });
     },
 });

@@ -8,8 +8,7 @@
 
 export type GetPublicationUsernameNameRevisionAll200Status = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GetPublicationUsernameNameRevisionAll200Status = {
-  ok: 'ok' as GetPublicationUsernameNameRevisionAll200Status,
+    ok: 'ok' as GetPublicationUsernameNameRevisionAll200Status,
 };

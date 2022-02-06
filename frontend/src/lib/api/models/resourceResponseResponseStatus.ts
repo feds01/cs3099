@@ -8,8 +8,7 @@
 
 export type ResourceResponseResponseStatus = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ResourceResponseResponseStatus = {
-  ok: 'ok' as ResourceResponseResponseStatus,
+    ok: 'ok' as ResourceResponseResponseStatus,
 };

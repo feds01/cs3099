@@ -8,8 +8,8 @@
 import type { FileResponseType } from './fileResponseType';
 
 export interface FileResponse {
-  type: FileResponseType;
-  filename: string;
-  contents: string;
-  updatedAt: number;
+    type: FileResponseType;
+    filename: string;
+    contents: string;
+    updatedAt: number;
 }

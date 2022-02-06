@@ -8,10 +8,10 @@
 import type { SgUser } from './sgUser';
 
 export interface SgPublication {
-  name: string;
-  title: string;
-  owner: SgUser;
-  introduction: string;
-  revision?: string;
-  collaborators: SgUser[];
+    name: string;
+    title: string;
+    owner: SgUser;
+    introduction: string;
+    revision?: string;
+    collaborators: SgUser[];
 }

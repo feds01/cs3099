@@ -16,7 +16,10 @@ import { usePublicationDispatch, usePublicationState } from '../../../hooks/publ
 export default function Source(): ReactElement {
     const { session } = useAuth();
     const location = useLocation();
-    const { publication: {name, owner, revision}, publication } = usePublicationState();
+    const {
+        publication: { name, owner, revision },
+        publication,
+    } = usePublicationState();
     const { refetch } = usePublicationDispatch();
 
     const [path, setPath] = useState<string>('');
@@ -36,7 +39,6 @@ export default function Source(): ReactElement {
         } else {
             setPath(newPath);
         }
-
     }, [location.pathname]);
 
     useEffect(() => {

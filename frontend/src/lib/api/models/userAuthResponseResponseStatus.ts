@@ -8,8 +8,7 @@
 
 export type UserAuthResponseResponseStatus = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UserAuthResponseResponseStatus = {
-  ok: 'ok' as UserAuthResponseResponseStatus,
+    ok: 'ok' as UserAuthResponseResponseStatus,
 };

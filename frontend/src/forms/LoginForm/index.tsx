@@ -2,10 +2,8 @@ import { Link } from 'react-router-dom';
 import { ReactElement, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Alert from '@mui/material/Alert';
 import Checkbox from '@mui/material/Checkbox';
 import Typography from '@mui/material/Typography';
-import AlertTitle from '@mui/material/AlertTitle';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -16,6 +14,7 @@ import { usePostAuthLogin } from '../../lib/api/auth/auth';
 import { ILoginForm, LoginSchema } from '../../validators/login';
 import ControlledTextField from '../../components/ControlledTextField';
 import ControlledPasswordField from '../../components/ControlledPasswordField';
+import ErrorBanner from '../../components/ErrorBanner';
 
 interface LoginFormProps {
     onSuccess: (session: User, token: string, refreshToken: string, rememberUser: boolean) => void;
@@ -36,7 +35,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
         },
     });
 
-    const { isLoading, isError, data: response, error, mutateAsync } = usePostAuthLogin();
+    const { isLoading, data: response, error, mutateAsync } = usePostAuthLogin();
 
     useEffect(() => {
         if (!isLoading && typeof response !== 'undefined') {
@@ -111,12 +110,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
                     Sign In
                 </LoadingButton>
             </Box>
-            {isError && (
-                <Alert severity="error">
-                    <AlertTitle>Error</AlertTitle>
-                    <strong>{error?.extra || error?.message || 'Something went wrong'}</strong>
-                </Alert>
-            )}
+            {error && <ErrorBanner message={error.message} />}
         </form>
     );
 }

@@ -8,8 +8,7 @@
 
 export type DeletionResponseResponseStatus = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DeletionResponseResponseStatus = {
-  ok: 'ok' as DeletionResponseResponseStatus,
+    ok: 'ok' as DeletionResponseResponseStatus,
 };

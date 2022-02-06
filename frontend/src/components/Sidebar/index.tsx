@@ -77,7 +77,7 @@ export default function Sidebar(): ReactElement {
                     position: 'fixed',
                     justifyContent: 'space-between',
                     flex: 1,
-                    height: '100%'
+                    height: '100%',
                 }}
             >
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>

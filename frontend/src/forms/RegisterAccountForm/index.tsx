@@ -1,13 +1,12 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Alert from '@mui/material/Alert';
 import LoadingButton from '@mui/lab/LoadingButton';
-import AlertTitle from '@mui/material/AlertTitle';
 import Typography from '@mui/material/Typography';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { User } from '../../lib/api/models';
 import { ReactElement, useEffect } from 'react';
+import ErrorBanner from '../../components/ErrorBanner';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { usePostAuthRegister } from '../../lib/api/auth/auth';
 import ControlledTextField from '../../components/ControlledTextField';
@@ -89,12 +88,7 @@ export default function RegisterForm({ onSuccess }: RegisterAccountFormProps): R
                     </LoadingButton>
                 </Box>
             </Box>
-            {isError && (
-                <Alert severity="error">
-                    <AlertTitle>Error</AlertTitle>
-                    <strong>{error?.extra || error?.message || 'Something went wrong'}</strong>
-                </Alert>
-            )}
+            {error && <ErrorBanner message={error.message} />}
         </form>
     );
 }

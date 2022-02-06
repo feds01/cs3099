@@ -74,7 +74,6 @@ registerRoute(router, '/:id', {
 
         return res.status(204).json({
             status: 'ok',
-            message: 'Successfully deleted thread',
         });
     },
 });

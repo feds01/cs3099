@@ -8,8 +8,7 @@
 
 export type GetReviewIdComments200Status = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GetReviewIdComments200Status = {
-  ok: 'ok' as GetReviewIdComments200Status,
+    ok: 'ok' as GetReviewIdComments200Status,
 };

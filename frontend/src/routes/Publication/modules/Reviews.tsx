@@ -9,12 +9,14 @@ import { useNotificationDispatch } from '../../../hooks/notification';
 import { usePostPublicationUsernameNameRevisionReview as useCreateReview } from '../../../lib/api/reviews/reviews';
 import { usePublicationState } from '../../../hooks/publication';
 
-
 export default function Reviews(): ReactElement {
     const history = useHistory();
     const notificationDispatcher = useNotificationDispatch();
 
-    const { publication: {owner, name, revision}, publication } = usePublicationState();
+    const {
+        publication: { owner, name, revision },
+        publication,
+    } = usePublicationState();
     const createReviewQuery = useCreateReview();
     const createReview = () => createReviewQuery.mutate({ username: owner.username, name, revision });
 

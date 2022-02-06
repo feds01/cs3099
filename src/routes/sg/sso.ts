@@ -87,7 +87,7 @@ registerRoute(router, '/callback', {
             return res.status(400).json({
                 status: 'error',
                 message: `request failed due to: ${userData.type}`,
-                error: userData.errors || {},
+                error: userData.errors,
             });
         }
 

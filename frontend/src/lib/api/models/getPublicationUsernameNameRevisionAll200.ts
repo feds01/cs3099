@@ -9,6 +9,6 @@ import type { GetPublicationUsernameNameRevisionAll200Status } from './getPublic
 import type { FileResponse } from './fileResponse';
 
 export type GetPublicationUsernameNameRevisionAll200 = {
-  status: GetPublicationUsernameNameRevisionAll200Status;
-  entries: FileResponse[];
+    status: GetPublicationUsernameNameRevisionAll200Status;
+    entries: FileResponse[];
 };

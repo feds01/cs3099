@@ -8,8 +8,7 @@
 
 export type ApiSuccessResponseStatus = 'ik';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ApiSuccessResponseStatus = {
-  ik: 'ik' as ApiSuccessResponseStatus,
+    ik: 'ik' as ApiSuccessResponseStatus,
 };

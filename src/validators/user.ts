@@ -3,9 +3,12 @@ import { z } from 'zod';
 import * as error from '../common/errors';
 import User, { IUserRole } from '../models/User';
 
+/**
+ * Schema for validating login requests.
+ */
 export const IUserLoginRequestSchema = z
     .object({
-        username: z.string().optional(),
+        username: z.string().nonempty(),
         password: z.string().nonempty(),
     })
     .transform((val) => {
@@ -19,9 +22,11 @@ export const IUserLoginRequestSchema = z
         return { ...val, isEmail: false };
     });
 
-export type IUserLoginRequest = z.infer<typeof IUserLoginRequestSchema>;
-
-export const IUserRegisterRequestSchema = z.object({
+/**
+ * Generic User schema that can be used for registering, patching and other more
+ * advanced schemas.
+ */
+export const IUserSchema = z.object({
     username: z
         .string()
         .nonempty()
@@ -36,6 +41,58 @@ export const IUserRegisterRequestSchema = z.object({
     profilePictureUrl: z.string().url().optional(),
 });
 
+/**
+ * This schema is an expansion of the generic 'User' schema because it adds additional validation
+ * about if the email or the name exists. This can't be on the generic schema because we don't always
+ * want this check to occur.
+ *
+ */
+export const IUserRegisterRequestSchema = IUserSchema.superRefine(async (val, ctx) => {
+    const { username, email } = val;
+
+    // Check if username or email is already in use
+    const searchQueryUser = {
+        $or: [{ username }, { email, externalId: { $exists: false } }],
+    };
+
+    const user = await User.findOne(searchQueryUser).exec();
+
+    if (user?.username === username) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Username already taken',
+        });
+    }
+
+    if (user?.email === email) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Email already taken',
+        });
+    }
+});
+
+/**
+ * This Schema is used to validate patch requests for users, omitting fields
+ * that cannot be patched like the 'password', 'profilePictureUrl'
+ */
+export const IUserPatchRequestSchema = IUserSchema.omit({
+    password: true,
+    profilePictureUrl: true,
+}).partial();
+
+/**
+ * This Schema is used to validate requests that attempt to patch
+ * the role of a user. Roles are constrained to an enum @see IUserRole.
+ */
+export const IUserRoleRequestSchema = z.object({
+    role: z.nativeEnum(IUserRole),
+});
+
+/**
+ * This Schema is used to verify that a given username must exist in the
+ * current database, otherwise the schema will fail.
+ */
 export const ExistUsernameSchema = z
     .string()
     .nonempty()
@@ -44,17 +101,3 @@ export const ExistUsernameSchema = z
     .refine(async (username) => (await User.count({ username })) > 0, {
         message: error.NON_EXISTENT_USER,
     });
-
-export type IUserRegisterRequest = z.infer<typeof IUserRegisterRequestSchema>;
-
-export const IUserPatchRequestSchema = IUserRegisterRequestSchema.omit({
-    password: true,
-}).partial();
-
-export type IUserPatchRequest = z.infer<typeof IUserPatchRequestSchema>;
-
-export const IUserRoleRequestSchema = z.object({
-    role: z.nativeEnum(IUserRole),
-});
-
-export type IUserRoleRequest = z.infer<typeof IUserRoleRequestSchema>;

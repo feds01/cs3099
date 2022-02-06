@@ -1,11 +1,12 @@
-import { z, ZodError } from 'zod';
+import { z } from 'zod';
 import qs from 'query-string';
-import FileType from 'file-type/browser';
-import fetch, { FetchError } from 'node-fetch';
+import { config } from '../server';
 import { promises as fs } from 'fs';
 import Logger from '../common/logger';
+import FileType from 'file-type/browser';
+import fetch, { FetchError } from 'node-fetch';
 import { joinPathsRaw } from '../utils/resources';
-import { config } from '../server';
+import { ResponseErrorSummary, transformZodErrorIntoResponseError } from '../transformers/error';
 
 const RawResponseSchema = z.union([
     z.object({ status: z.literal('error'), message: z.string() }),
@@ -18,7 +19,7 @@ type ServiceResponse<T> =
     | {
           status: 'error';
           type: 'fetch' | 'service' | 'unknown';
-          errors?: ZodError | string;
+          errors: ResponseErrorSummary;
       }
     | {
           status: 'ok';
@@ -70,7 +71,9 @@ export async function downloadOctetStream(
             return {
                 status: 'error',
                 type: 'service',
-                errors: "Couldn't download the file due to non ok status code.",
+                errors: {
+                    resource: { message: "Couldn't download the file due to non ok status code." },
+                },
             };
         }
 
@@ -86,7 +89,7 @@ export async function downloadOctetStream(
             return {
                 status: 'error',
                 type: 'service',
-                errors: "Couldn't compute mime-type from data.",
+                errors: { resource: { message: "Couldn't compute mime-type from data." } },
             };
         }
 
@@ -97,13 +100,11 @@ export async function downloadOctetStream(
             return {
                 status: 'error',
                 type: 'service',
-                errors: new ZodError([
-                    {
-                        code: 'custom',
-                        path: [],
+                errors: {
+                    resource: {
                         message: `Expected mime-type to be application/zip or plaintext, but received ${meta.mime}`,
                     },
-                ]),
+                },
             };
         }
 
@@ -121,7 +122,7 @@ export async function downloadOctetStream(
             return { status: 'ok', response: tmpFilePath };
         } catch (e: unknown) {
             Logger.warn('Failed to save file.');
-            return { status: 'error', type: 'fetch' };
+            return { status: 'error', type: 'fetch', errors: {} };
         }
     } catch (e: unknown) {
         if (e instanceof FetchError) {
@@ -130,11 +131,11 @@ export async function downloadOctetStream(
                     e.message
                 }`,
             );
-            return { status: 'error', type: 'fetch' };
+            return { status: 'error', type: 'fetch', errors: {} };
         }
 
         Logger.warn(`Service request failed with: ${e}`);
-        return { status: 'error', type: 'unknown' };
+        return { status: 'error', type: 'unknown', errors: {} };
     }
 }
 
@@ -168,7 +169,11 @@ export async function makeRequest<I, O>(
 
         if (!validation.success) {
             Logger.warn(`Service replied with an invalid format:\n${validation.error}`);
-            return { status: 'error', type: 'service', errors: validation.error };
+            return {
+                status: 'error',
+                type: 'service',
+                errors: transformZodErrorIntoResponseError(validation.error),
+            };
         }
 
         const response = validation.data;
@@ -178,7 +183,15 @@ export async function makeRequest<I, O>(
                 `Failed to make external response to: ${url.toString()}. 
                  Service responded with: ${response.message}`,
             );
-            return { status: 'error', type: 'service' };
+            return {
+                status: 'error',
+                type: 'service',
+                errors: {
+                    resource: {
+                        message: "Couldn't download the metadata due to non ok status code.",
+                    },
+                },
+            };
         }
 
         const { status: _, ...rest } = response;
@@ -189,8 +202,13 @@ export async function makeRequest<I, O>(
         if (bodyValidation.success) {
             return { status: 'ok', response: bodyValidation.data };
         }
+
         Logger.warn('Service replied with an invalid format');
-        return { status: 'error', type: 'service', errors: bodyValidation.error };
+        return {
+            status: 'error',
+            type: 'service',
+            errors: transformZodErrorIntoResponseError(bodyValidation.error),
+        };
     } catch (e: unknown) {
         if (e instanceof FetchError) {
             Logger.warn(
@@ -198,10 +216,10 @@ export async function makeRequest<I, O>(
                     e.message
                 }`,
             );
-            return { status: 'error', type: 'fetch' };
+            return { status: 'error', type: 'fetch', errors: {} };
         }
 
         // Logger.warn(`Service request failed with: ${e}`);
-        return { status: 'error', type: 'unknown' };
+        return { status: 'error', type: 'unknown', errors: {} };
     }
 }

@@ -6,9 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { SuccessStatus } from './successStatus';
-import type { Comment } from './comment';
 
-export type GetCommentId200 = {
+export interface SuccessStatusObject {
     status: SuccessStatus;
-    comment?: Comment;
-};
+}

@@ -47,8 +47,7 @@ registerRoute(router, '/upload/:username', {
         if (file.mimetype !== 'image/png' && file.mimetype !== 'image/jpeg') {
             return res.status(400).json({
                 status: 'error',
-                message: errors.BAD_REQUEST,
-                extra: "Invalid file mimetype sent. Image upload only accepts 'png' or 'jpeg'.",
+                message: "Invalid file mimetype sent. Image upload only accepts 'png' or 'jpeg'.",
             });
         }
 
@@ -66,10 +65,7 @@ registerRoute(router, '/upload/:username', {
             }
 
             Logger.info('Successfully saved uploaded file to filesystem');
-            return res.status(200).json({
-                status: 'ok',
-                message: 'Successfully uploaded file.',
-            });
+            return res.status(200).json({ status: 'ok' });
         });
     },
 });
@@ -111,8 +107,8 @@ registerRoute(router, '/upload/publication/:id', {
         if (file.mimetype !== 'application/zip') {
             return res.status(400).json({
                 status: 'error',
-                message: errors.BAD_REQUEST,
-                extra: "Invalid file mimetype sent. Publication uploads only accepts 'application/zip' mime-type.",
+                message:
+                    "Invalid file mimetype sent. Publication uploads only accepts 'application/zip' mime-type.",
             });
         }
 
@@ -128,7 +124,7 @@ registerRoute(router, '/upload/publication/:id', {
         if (!publication.draft) {
             return res.status(400).json({
                 status: 'error',
-                message: 'Cannot modify publication sources.',
+                message: "Cannot modify publication sources that aren't marked as draft.",
             });
         }
 
@@ -156,10 +152,7 @@ registerRoute(router, '/upload/publication/:id', {
             await publication.update({ $set: { draft: false } }).exec();
 
             Logger.info(`Successfully saved uploaded file to filesystem at: ${uploadPath}`);
-            return res.status(200).json({
-                status: 'ok',
-                message: 'Successfully uploaded file.',
-            });
+            return res.status(200).json({ status: 'ok' });
         });
     },
 });

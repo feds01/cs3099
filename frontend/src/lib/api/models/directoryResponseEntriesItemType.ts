@@ -8,9 +8,8 @@
 
 export type DirectoryResponseEntriesItemType = 'file' | 'directory';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DirectoryResponseEntriesItemType = {
-  file: 'file' as DirectoryResponseEntriesItemType,
-  directory: 'directory' as DirectoryResponseEntriesItemType,
+    file: 'file' as DirectoryResponseEntriesItemType,
+    directory: 'directory' as DirectoryResponseEntriesItemType,
 };

@@ -8,7 +8,7 @@
 import type { DirectoryResponseEntriesItemType } from './directoryResponseEntriesItemType';
 
 export type DirectoryResponseEntriesItem = {
-  type: DirectoryResponseEntriesItemType;
-  filename: string;
-  updatedAt: number;
+    type: DirectoryResponseEntriesItemType;
+    filename: string;
+    updatedAt: number;
 };

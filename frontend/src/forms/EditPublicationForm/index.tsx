@@ -61,7 +61,7 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
     }, [isLoading, isError, data]);
 
     const onSubmit: SubmitHandler<IEditPublication> = async (data) => await mutateAsync({ username, name, data });
-    
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%', marginTop: '8px' }}>
             <Grid container maxWidth={'lg'}>

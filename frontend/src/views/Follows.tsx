@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Grid';
 import { useAuth } from '../hooks/auth';
-import { User } from '../lib/api/models';
+import { ApiErrorResponse, User } from '../lib/api/models';
 import { Container, Typography } from '@mui/material';
 import { ReactElement, useEffect, useState } from 'react';
 import { ContentState } from '../types/requests';
@@ -15,22 +15,13 @@ interface Props {
 
 export default function Follows({ type, username }: Props): ReactElement {
     const { session } = useAuth();
-    const [followers, setFollowers] = useState<ContentState<User[], any>>({ state: 'loading' });
+    const [followers, setFollowers] = useState<ContentState<User[], ApiErrorResponse>>({ state: 'loading' });
 
     // TODO(alex): Creating both queries is very unclean but because you can't call hooks
     //             in react conditionally, we have to create two instances of the hooks (lazy version)
     //             and call it on demand using the refetch...
-    const followerQuery = useGetUserUsernameFollowers(username, {
-        query: {
-            enabled: false,
-        },
-    });
-
-    const followingQuery = useGetUserUsernameFollowing(username, {
-        query: {
-            enabled: false,
-        },
-    });
+    const followerQuery = useGetUserUsernameFollowers(username);
+    const followingQuery = useGetUserUsernameFollowing(username);
 
     useEffect(() => {
         async function loadData() {
@@ -49,10 +40,10 @@ export default function Follows({ type, username }: Props): ReactElement {
             if (followerQuery.isError) {
                 setFollowers({ state: 'error', error: followerQuery.error });
             } else if (followerQuery.data) {
-                setFollowers({ state: 'ok', data: followerQuery.data.data.followers });
+                setFollowers({ state: 'ok', data: followerQuery.data.followers });
             }
         } else if (followingQuery.data) {
-            setFollowers({ state: 'ok', data: followingQuery.data.data.following });
+            setFollowers({ state: 'ok', data: followingQuery.data.followers });
         } else if (followingQuery.isError) {
             setFollowers({ state: 'error', error: followingQuery.error });
         }

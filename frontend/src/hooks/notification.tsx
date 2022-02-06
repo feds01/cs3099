@@ -1,6 +1,5 @@
 import React from 'react';
 
-
 export type NotificationSeverity = 'error' | 'warn' | 'success';
 export type NotificationUpdateAction = 'add' | 'remove' | 'removeAll';
 export type NotificationUpdate = { type: 'add'; item: Notification } | { type: 'remove' } | { type: 'removeAll' };
@@ -11,7 +10,6 @@ export type Notification = {
 };
 
 export type NotificationState = Notification[];
-
 
 const NotificationStateContext = React.createContext<{
     state: NotificationState;

@@ -5,52 +5,83 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import {
-  rest
-} from 'msw'
-import faker from 'faker'
+import { rest } from 'msw';
+import faker from 'faker';
+import { SuccessStatus } from '.././models';
 
-export const getPostAuthSessionMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(['ok']), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
+export const getPostAuthSessionMock = () => ({
+    status: faker.helpers.randomize([faker.helpers.randomize(Object.values(SuccessStatus)), undefined]),
+    token: faker.random.word(),
+    refreshToken: faker.random.word(),
+    user: {
+        id: faker.random.word(),
+        email: faker.random.word(),
+        username: faker.random.word(),
+        firstName: faker.random.word(),
+        lastName: faker.random.word(),
+        createdAt: faker.datatype.number(),
+        profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+        status: faker.helpers.randomize([faker.random.word(), undefined]),
+        about: faker.helpers.randomize([faker.random.word(), undefined]),
+    },
+});
 
-export const getPostAuthSsoMock = () => ({status: faker.helpers.randomize(['ok']), follow: faker.random.word()})
+export const getPostAuthSsoMock = () => ({
+    status: faker.helpers.randomize(Object.values(SuccessStatus)),
+    follow: faker.random.word(),
+});
 
-export const getPostAuthLoginMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(['ok']), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
+export const getPostAuthLoginMock = () => ({
+    status: faker.helpers.randomize([faker.helpers.randomize(Object.values(SuccessStatus)), undefined]),
+    token: faker.random.word(),
+    refreshToken: faker.random.word(),
+    user: {
+        id: faker.random.word(),
+        email: faker.random.word(),
+        username: faker.random.word(),
+        firstName: faker.random.word(),
+        lastName: faker.random.word(),
+        createdAt: faker.datatype.number(),
+        profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+        status: faker.helpers.randomize([faker.random.word(), undefined]),
+        about: faker.helpers.randomize([faker.random.word(), undefined]),
+    },
+});
 
-export const getPostAuthRegisterMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(['ok']), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
+export const getPostAuthRegisterMock = () => ({
+    status: faker.helpers.randomize([faker.helpers.randomize(Object.values(SuccessStatus)), undefined]),
+    token: faker.random.word(),
+    refreshToken: faker.random.word(),
+    user: {
+        id: faker.random.word(),
+        email: faker.random.word(),
+        username: faker.random.word(),
+        firstName: faker.random.word(),
+        lastName: faker.random.word(),
+        createdAt: faker.datatype.number(),
+        profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+        status: faker.helpers.randomize([faker.random.word(), undefined]),
+        about: faker.helpers.randomize([faker.random.word(), undefined]),
+    },
+});
 
 export const getAuthMSW = () => [
-rest.post('*/auth/email_validation', (_req, res, ctx) => {
-        return res(
-          ctx.delay(1000),
-          ctx.status(200, 'Mocked status'),
-        )
-      }),rest.post('*/auth/username_validation', (_req, res, ctx) => {
-        return res(
-          ctx.delay(1000),
-          ctx.status(200, 'Mocked status'),
-        )
-      }),rest.post('*/auth/session', (_req, res, ctx) => {
-        return res(
-          ctx.delay(1000),
-          ctx.status(200, 'Mocked status'),
-ctx.json(getPostAuthSessionMock()),
-        )
-      }),rest.post('*/auth/sso', (_req, res, ctx) => {
-        return res(
-          ctx.delay(1000),
-          ctx.status(200, 'Mocked status'),
-ctx.json(getPostAuthSsoMock()),
-        )
-      }),rest.post('*/auth/login', (_req, res, ctx) => {
-        return res(
-          ctx.delay(1000),
-          ctx.status(200, 'Mocked status'),
-ctx.json(getPostAuthLoginMock()),
-        )
-      }),rest.post('*/auth/register', (_req, res, ctx) => {
-        return res(
-          ctx.delay(1000),
-          ctx.status(200, 'Mocked status'),
-ctx.json(getPostAuthRegisterMock()),
-        )
-      }),]
+    rest.post('*/auth/email_validation', (_req, res, ctx) => {
+        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'));
+    }),
+    rest.post('*/auth/username_validation', (_req, res, ctx) => {
+        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'));
+    }),
+    rest.post('*/auth/session', (_req, res, ctx) => {
+        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPostAuthSessionMock()));
+    }),
+    rest.post('*/auth/sso', (_req, res, ctx) => {
+        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPostAuthSsoMock()));
+    }),
+    rest.post('*/auth/login', (_req, res, ctx) => {
+        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPostAuthLoginMock()));
+    }),
+    rest.post('*/auth/register', (_req, res, ctx) => {
+        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPostAuthRegisterMock()));
+    }),
+];

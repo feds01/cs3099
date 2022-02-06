@@ -8,8 +8,7 @@
 
 export type PatchPublicationResponseResponseStatus = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PatchPublicationResponseResponseStatus = {
-  ok: 'ok' as PatchPublicationResponseResponseStatus,
+    ok: 'ok' as PatchPublicationResponseResponseStatus,
 };

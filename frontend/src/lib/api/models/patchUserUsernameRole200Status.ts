@@ -8,8 +8,7 @@
 
 export type PatchUserUsernameRole200Status = 'ok';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PatchUserUsernameRole200Status = {
-  ok: 'ok' as PatchUserUsernameRole200Status,
+    ok: 'ok' as PatchUserUsernameRole200Status,
 };

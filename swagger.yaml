@@ -268,9 +268,7 @@ paths:
                                     - follow
                                 properties:
                                     status:
-                                        type: string
-                                        enum: ['ok']
-                                        example: 'ok'
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     follow:
                                         type: string
                                         example: 'http://localhost:8000'
@@ -337,9 +335,7 @@ paths:
                                 type: object
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     description:
                                         type: string
                                         example: 'User deleted'
@@ -372,9 +368,7 @@ paths:
                                     - follows
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     user:
                                         $ref: '#/components/schemas/User'
                                     follows:
@@ -414,9 +408,7 @@ paths:
                                     - user
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     user:
                                         $ref: '#/components/schemas/User'
                 default:
@@ -448,9 +440,7 @@ paths:
                                     - reviews
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     reviews:
                                         type: array
                                         items:
@@ -484,9 +474,7 @@ paths:
                                     - role
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     role:
                                         type: string
                                         example: 'default'
@@ -516,15 +504,9 @@ paths:
                                 required:
                                     - status
                                     - role
-                                    - message
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
-                                    message:
-                                        type: string
-                                        example: 'Successfully updated user role.'
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     role:
                                         type: string
                                         example: 'default'
@@ -557,9 +539,7 @@ paths:
                                     - following
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     following:
                                         type: boolean
                                         example: true
@@ -588,15 +568,9 @@ paths:
                                 type: object
                                 required:
                                     - status
-                                    - message
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
-                                    message:
-                                        type: string
-                                        example: 'Successfully added new follows.'
+                                        $ref: '#/components/schemas/SuccessStatus'
                 default:
                     $ref: '#/components/responses/ApiError'
         delete:
@@ -615,22 +589,7 @@ paths:
                   description: Username.
             responses:
                 '200':
-                    description: Successfully unfollowed another user.
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                required:
-                                    - status
-                                    - message
-                                properties:
-                                    status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
-                                    message:
-                                        type: string
-                                        example: 'User was unfollowed'
+                    $ref: '#/components/responses/ApiSuccess'
                 default:
                     $ref: '#/components/responses/ApiError'
     /user/{username}/followers:
@@ -654,17 +613,9 @@ paths:
                     content:
                         application/json:
                             schema:
-                                type: object
-                                required:
-                                    - data
-                                    - status
-                                properties:
-                                    status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
-                                    data:
-                                        $ref: '#/components/schemas/FollowerListData'
+                                allOf:
+                                    - $ref: '#/components/schemas/SuccessStatusObject'
+                                    - $ref: '#/components/schemas/FollowerListData'
                 default:
                     $ref: '#/components/responses/ApiError'
     /user/{username}/following:
@@ -688,17 +639,9 @@ paths:
                     content:
                         application/json:
                             schema:
-                                type: object
-                                required:
-                                    - status
-                                    - data
-                                properties:
-                                    status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
-                                    data:
-                                        $ref: '#/components/schemas/FollowingListData'
+                                allOf:
+                                    - $ref: '#/components/schemas/SuccessStatusObject'
+                                    - $ref: '#/components/schemas/FollowerListData'
                 default:
                     $ref: '#/components/responses/ApiError'
     /publication:
@@ -756,7 +699,7 @@ paths:
                   description: Whether or not the publication that is to be deleted is a draft version.
             responses:
                 '200':
-                    $ref: '#/components/responses/DeletionResponse'
+                    $ref: '#/components/responses/ApiSuccess'
                 default:
                     $ref: '#/components/responses/ApiError'
         patch:
@@ -835,9 +778,7 @@ paths:
                                     - publication
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     publication:
                                         $ref: '#/components/schemas/Publication'
                 default:
@@ -877,9 +818,7 @@ paths:
                                     - data
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     data:
                                         type: array
                                         items:
@@ -960,20 +899,14 @@ paths:
                                 type: object
                                 required:
                                     - status
-                                    - data
+                                    - revisions
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
-                                    data:
-                                        type: object
-                                        required:
-                                            - revisions
-                                        properties:
-                                            revisions:
-                                                type: array
-                                                items:
-                                                    $ref: '#/components/schemas/Publication'
+                                      $ref: '#/components/schemas/SuccessStatus'
+                                    revisions:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Publication'
                 default:
                     $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/tree/{path}:
@@ -1052,9 +985,7 @@ paths:
                                     - entries
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     entries:
                                         type: array
                                         items:
@@ -1177,11 +1108,7 @@ paths:
                   description: Username.
             responses:
                 '201':
-                    description: Information about the uploaded resource, where it can be found.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UploadResourceResponse'
+                    $ref: '#/components/responses/ApiSuccess'
                 default:
                     $ref: '#/components/responses/ApiError'
     /resource/upload/publication/{id}:
@@ -1208,11 +1135,7 @@ paths:
                   description: The identifier of the publication.
             responses:
                 '201':
-                    description: Information about the uploaded resource, where it can be found.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UploadResourceResponse'
+                    $ref: '#/components/responses/ApiSuccess'
                 default:
                     $ref: '#/components/responses/ApiError'
     /resource/upload/review/{id}:
@@ -1239,11 +1162,7 @@ paths:
                   description: The identifier of the publication.
             responses:
                 '201':
-                    description: Information about the uploaded resource, where it can be found.
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UploadResourceResponse'
+                    $ref: '#/components/responses/ApiSuccess'
                 default:
                     $ref: '#/components/responses/ApiError'
     /thread/{id}:
@@ -1272,9 +1191,7 @@ paths:
                                     - comments
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                       $ref: '#/components/schemas/SuccessStatus'
                                     comments:
                                         type: array
                                         items:
@@ -1329,9 +1246,7 @@ paths:
                                     - comment
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     comment:
                                         $ref: '#/components/schemas/Comment'
                 default:
@@ -1363,9 +1278,7 @@ paths:
                                     - status
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     comment:
                                         $ref: '#/components/schemas/Comment'
                 default:
@@ -1400,11 +1313,10 @@ paths:
                                 type: object
                                 required:
                                     - status
+                                    - comment
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                       $ref: '#/components/schemas/SuccessStatus'
                                     comment:
                                         $ref: '#/components/schemas/Comment'
                 default:
@@ -1455,9 +1367,7 @@ paths:
                                     - review
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     review:
                                         $ref: '#/components/schemas/Review'
                 default:
@@ -1508,9 +1418,7 @@ paths:
                                     - comments
                                 properties:
                                     status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     comments:
                                         type: array
                                         items:
@@ -1577,17 +1485,9 @@ components:
                         type: object
                         required:
                             - status
-                            - message
                         properties:
                             status:
-                                type: string
-                                example: 'ok'
-                                enum: ['ik']
-                            message:
-                                type: string
-                                example: 'Message describing the success.'
-                            extra:
-                                type: object
+                                $ref: '#/components/schemas/SuccessStatus'
         ApiError:
             description: General Error response from the API.
             content:
@@ -1605,7 +1505,7 @@ components:
                             message:
                                 type: string
                                 example: 'Message describing the error.'
-                            extra:
+                            errors:
                                 type: object
         UserAuthResponse:
             description: Authentication tokens with user information.
@@ -1620,9 +1520,7 @@ components:
                             - refreshToken
                         properties:
                             status:
-                                type: string
-                                example: 'ok'
-                                enum: ['ok']
+                                $ref: '#/components/schemas/SuccessStatus'
                             token:
                                 type: string
                                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
@@ -1631,23 +1529,6 @@ components:
                                 example: ABCDE921312DAB23AE
                             user:
                                 $ref: '#/components/schemas/User'
-        DeletionResponse:
-            description: When a specified resource has been deleted.
-            content:
-                application/json:
-                    schema:
-                        type: object
-                        required:
-                            - status
-                            - message
-                        properties:
-                            status:
-                                type: string
-                                example: 'ok'
-                                enum: ['ok']
-                            message:
-                                type: string
-                                example: 'Resource has been successfully deleted.'
         ResourceResponse:
             description: Returned resource for a given publication.
             content:
@@ -1659,9 +1540,7 @@ components:
                             - data
                         properties:
                             status:
-                                type: string
-                                example: 'ok'
-                                enum: ['ok']
+                                $ref: '#/components/schemas/SuccessStatus'
                             data:
                                 oneOf:
                                     - $ref: '#/components/schemas/FileResponse'
@@ -1678,9 +1557,7 @@ components:
                             - refreshToken
                         properties:
                             status:
-                                type: string
-                                example: 'ok'
-                                enum: ['ok']
+                                $ref: '#/components/schemas/SuccessStatus'
                             token:
                                 type: string
                                 example: 'Token is valid'
@@ -1700,9 +1577,7 @@ components:
                             - email
                         properties:
                             status:
-                                type: string
-                                example: 'ok'
-                                enum: ['ok']
+                                $ref: '#/components/schemas/SuccessStatus'
                             user_id:
                                 type: string
                                 example: 'ABCDE921312DAB23AE:t06'
@@ -1734,9 +1609,7 @@ components:
                             - data
                         properties:
                             status:
-                                type: string
-                                example: 'ok'
-                                enum: ['ok']
+                                $ref: '#/components/schemas/SuccessStatus'
                             data:
                                 type: object
                                 required:
@@ -1760,11 +1633,7 @@ components:
                             - publication
                         properties:
                             status:
-                                type: string
-                                example: 'ok'
-                                enum: ['ok']
-                            message:
-                                type: string
+                                $ref: '#/components/schemas/SuccessStatus'
                             publication:
                                 $ref: '#/components/schemas/Publication'
         PatchPublicationResponse:
@@ -1778,14 +1647,21 @@ components:
                             - publication
                         properties:
                             status:
-                                type: string
-                                example: 'ok'
-                                enum: ['ok']
-                            message:
-                                type: string
+                                $ref: '#/components/schemas/SuccessStatus'
                             publication:
                                 $ref: '#/components/schemas/Publication'
     schemas:
+        SuccessStatus:
+            type: string
+            example: 'ok'
+            enum: ['ok']
+        SuccessStatusObject:
+            type: object
+            required:
+                - status
+            properties:
+                status:
+                    $ref: '#/components/schemas/SuccessStatus'
         TokenRequest:
             type: object
             properties:
@@ -1950,15 +1826,6 @@ components:
                 file:
                     type: string
                     format: binary
-        UploadResourceResponse:
-            type: object
-            required:
-                - status
-            properties:
-                status:
-                    type: string
-                    example: 'ok'
-                    enum: ['ok']
         Publication:
             type: object
             required:
@@ -2002,7 +1869,7 @@ components:
                 collaborators:
                     type: array
                     items:
-                        type: string # TODO: maybe resolve collaborators later?
+                        type: string
                         example: 'jdoe1'
                 createdAt:
                     type: number
