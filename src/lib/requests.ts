@@ -177,7 +177,7 @@ export default function registerRoute<
                   error: ZodError<Body>;
               };
 
-        const body: Req = await expr(async () => {
+        const parsedBody: Req = await expr(async () => {
             if (registrarHasBody(registrar)) {
                 const parsedBody = await registrar.body.safeParseAsync(req.body);
 
@@ -193,13 +193,13 @@ export default function registerRoute<
         });
 
         // hack
-        if (body.status === 'error') {
+        if (parsedBody.status === 'error') {
             return res.status(400).json({
                 status: 'error',
                 message: "Bad request, endpoint body schema didn't match to provided body.",
                 extra: {
                     errors: {
-                        ...body.error,
+                        ...parsedBody.error,
                     },
                 },
             });
@@ -207,7 +207,7 @@ export default function registerRoute<
 
         return await registrar.handler(
             // @ts-ignore
-            { ...basicRequest, raw: req, requester: permissions?.user ?? null },
+            { ...basicRequest, body: parsedBody.body, raw: req, requester: permissions?.user ?? null },
             res,
         );
     };

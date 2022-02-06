@@ -92,7 +92,6 @@ registerRoute(router, '/:id/comment', {
             }
 
             thread = new mongoose.Types.ObjectId(replyingComment.thread.toString());
-            console.log(thread);
         }
 
         // If either the filename or the anchor is present on the comment, we need

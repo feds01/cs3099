@@ -1,7 +1,6 @@
 import Box from '@mui/material/Box';
 import React, { ReactElement } from 'react';
 import UserLink from '../../../components/UserLink';
-import { Publication } from '../../../lib/api/models';
 import MarkdownRenderer from '../../../components/MarkdownRenderer';
 import { usePublicationState } from '../../../hooks/publication';
 

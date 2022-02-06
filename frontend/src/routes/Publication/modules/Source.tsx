@@ -4,10 +4,10 @@ import Typography from '@mui/material/Typography';
 import UploadAttachment from '../../../views/UploadAttachment';
 import { ReactElement, useEffect, useState } from 'react';
 import PublicationViewSource from '../../../components/PublicationSourceView';
-import { Publication, ResourceResponseResponse } from '../../../lib/api/models';
+import { ResourceResponseResponse } from '../../../lib/api/models';
 import { transformQueryIntoContentState } from '../../../wrappers/react-query';
 
-import { useGetPublicationUsernameNameRevisionTreePath as useGetPublicationSource } from '../../../lib/api/publications/publications';
+import { useGetPublicationUsernameNameTreePath as useGetPublicationSource } from '../../../lib/api/publications/publications';
 import { useAuth } from '../../../hooks/auth';
 import { ContentState } from '../../../types/requests';
 import Void from './../../../static/images/void.svg';
@@ -24,7 +24,7 @@ export default function Source(): ReactElement {
         state: 'loading',
     });
 
-    const getPublicationSourceQuery = useGetPublicationSource(owner.username, name, revision, path);
+    const getPublicationSourceQuery = useGetPublicationSource(owner.username, name, path, { revision });
 
     // We need to update the path if it changes...
     useEffect(() => {

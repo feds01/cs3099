@@ -40,7 +40,7 @@ router.use('/', reviewRouter);
  * specified by the owner's name, the name of the publication and which revision of the publication
  * to index.
  */
-registerRoute(router, '/:username/:name/all/', {
+registerRoute(router, '/:username/:name/all', {
     method: 'get',
     params: z.object({
         username: z.string(),

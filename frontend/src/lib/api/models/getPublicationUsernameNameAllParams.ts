@@ -6,4 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type DeletePublicationUsernameNameParams = { revision?: string; draft?: boolean };
+export type GetPublicationUsernameNameAllParams = { revision: string };

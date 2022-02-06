@@ -23,16 +23,18 @@ import type {
   DeletePublicationUsernameNameParams,
   PatchPublicationResponseResponse,
   PatchPublicationRequest,
+  PatchPublicationUsernameNameParams,
   GetPublicationUsernameName200,
+  GetPublicationUsernameNameParams,
   GetPublicationUsername200,
   GetPublicationUsernameParams,
   ApiSuccessResponse,
   PostPublicationUsernameNameExportParams,
   GetPublicationUsernameNameRevisions200,
   ResourceResponseResponse,
-  GetPublicationUsernameNameRevision200,
-  GetPublicationUsernameNameRevisionAll200,
-  NoContentResponse
+  GetPublicationUsernameNameTreePathParams,
+  GetPublicationUsernameNameAll200,
+  GetPublicationUsernameNameAllParams
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
 
@@ -118,10 +120,12 @@ export const patchPublicationUsernameName = (
     username: string,
     name: string,
     patchPublicationRequest: PatchPublicationRequest,
+    params?: PatchPublicationUsernameNameParams,
  ) => {
       return customInstance<PatchPublicationResponseResponse>(
       {url: `/publication/${username}/${name}`, method: 'patch',
-      data: patchPublicationRequest
+      data: patchPublicationRequest,
+        params,
     },
       );
     }
@@ -130,20 +134,20 @@ export const patchPublicationUsernameName = (
 
     export const usePatchPublicationUsernameName = <TError = ApiErrorResponse,
     
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof patchPublicationUsernameName>, TError,{username: string;name: string;data: PatchPublicationRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof patchPublicationUsernameName>, TError,{username: string;name: string;data: PatchPublicationRequest;params?: PatchPublicationUsernameNameParams}, TContext>, }
 ) => {
       const {mutation: mutationOptions} = options || {}
 
       
 
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof patchPublicationUsernameName>, {username: string;name: string;data: PatchPublicationRequest}> = (props) => {
-          const {username,name,data} = props || {};
+      const mutationFn: MutationFunction<AsyncReturnType<typeof patchPublicationUsernameName>, {username: string;name: string;data: PatchPublicationRequest;params?: PatchPublicationUsernameNameParams}> = (props) => {
+          const {username,name,data,params} = props || {};
 
-          return  patchPublicationUsernameName(username,name,data,)
+          return  patchPublicationUsernameName(username,name,data,params,)
         }
 
-      return useMutation<AsyncReturnType<typeof patchPublicationUsernameName>, TError, {username: string;name: string;data: PatchPublicationRequest}, TContext>(mutationFn, mutationOptions)
+      return useMutation<AsyncReturnType<typeof patchPublicationUsernameName>, TError, {username: string;name: string;data: PatchPublicationRequest;params?: PatchPublicationUsernameNameParams}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * Get a publication resource for a given user account with the specified name. This will return the most recent publication revision.
@@ -152,31 +156,35 @@ export const patchPublicationUsernameName = (
 export const getPublicationUsernameName = (
     username: string,
     name: string,
+    params?: GetPublicationUsernameNameParams,
  ) => {
       return customInstance<GetPublicationUsernameName200>(
-      {url: `/publication/${username}/${name}`, method: 'get'
+      {url: `/publication/${username}/${name}`, method: 'get',
+        params,
     },
       );
     }
   
 
 export const getGetPublicationUsernameNameQueryKey = (username: string,
-    name: string,) => [`/publication/${username}/${name}`];
+    name: string,
+    params?: GetPublicationUsernameNameParams,) => [`/publication/${username}/${name}`, ...(params ? [params]: [])];
 
     
 export const useGetPublicationUsernameName = <TData = AsyncReturnType<typeof getPublicationUsernameName>, TError = ApiErrorResponse>(
  username: string,
-    name: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameName>, TError, TData>, }
+    name: string,
+    params?: GetPublicationUsernameNameParams, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameName>, TError, TData>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
 
   const {query: queryOptions} = options || {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameQueryKey(username,name);
+  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameQueryKey(username,name,params);
 
   
 
-  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameName>> = () => getPublicationUsernameName(username,name, );
+  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameName>> = () => getPublicationUsernameName(username,name,params, );
 
   const query = useQuery<AsyncReturnType<typeof getPublicationUsernameName>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name), ...queryOptions})
 
@@ -312,9 +320,11 @@ export const getPublicationUsernameNameTreePath = (
     username: string,
     name: string,
     path: string,
+    params?: GetPublicationUsernameNameTreePathParams,
  ) => {
       return customInstance<ResourceResponseResponse>(
-      {url: `/publication/${username}/${name}/tree/${path}`, method: 'get'
+      {url: `/publication/${username}/${name}/tree/${path}`, method: 'get',
+        params,
     },
       );
     }
@@ -322,23 +332,25 @@ export const getPublicationUsernameNameTreePath = (
 
 export const getGetPublicationUsernameNameTreePathQueryKey = (username: string,
     name: string,
-    path: string,) => [`/publication/${username}/${name}/tree/${path}`];
+    path: string,
+    params?: GetPublicationUsernameNameTreePathParams,) => [`/publication/${username}/${name}/tree/${path}`, ...(params ? [params]: [])];
 
     
 export const useGetPublicationUsernameNameTreePath = <TData = AsyncReturnType<typeof getPublicationUsernameNameTreePath>, TError = ApiErrorResponse>(
  username: string,
     name: string,
-    path: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameTreePath>, TError, TData>, }
+    path: string,
+    params?: GetPublicationUsernameNameTreePathParams, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameTreePath>, TError, TData>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
 
   const {query: queryOptions} = options || {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameTreePathQueryKey(username,name,path);
+  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameTreePathQueryKey(username,name,path,params);
 
   
 
-  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameTreePath>> = () => getPublicationUsernameNameTreePath(username,name,path, );
+  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameTreePath>> = () => getPublicationUsernameNameTreePath(username,name,path,params, );
 
   const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameTreePath>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name && path), ...queryOptions})
 
@@ -349,166 +361,42 @@ export const useGetPublicationUsernameNameTreePath = <TData = AsyncReturnType<ty
 }
 
 /**
- * Create a new publication resource for a given user account.
- * @summary Delete a specific revision of a publication
- */
-export const deletePublicationUsernameNameRevision = (
-    username: string,
-    name: string,
-    revision: string,
- ) => {
-      return customInstance<DeletionResponseResponse>(
-      {url: `/publication/${username}/${name}/${revision}`, method: 'delete'
-    },
-      );
-    }
-  
-
-
-    export const useDeletePublicationUsernameNameRevision = <TError = ApiErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deletePublicationUsernameNameRevision>, TError,{username: string;name: string;revision: string}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
-
-      
-
-
-      const mutationFn: MutationFunction<AsyncReturnType<typeof deletePublicationUsernameNameRevision>, {username: string;name: string;revision: string}> = (props) => {
-          const {username,name,revision} = props || {};
-
-          return  deletePublicationUsernameNameRevision(username,name,revision,)
-        }
-
-      return useMutation<AsyncReturnType<typeof deletePublicationUsernameNameRevision>, TError, {username: string;name: string;revision: string}, TContext>(mutationFn, mutationOptions)
-    }
-    /**
- * Get a publication resource for a given user account with the specified name and the particular revision.
- * @summary Get a specific revision of a publication
- */
-export const getPublicationUsernameNameRevision = (
-    username: string,
-    name: string,
-    revision: string,
- ) => {
-      return customInstance<GetPublicationUsernameNameRevision200>(
-      {url: `/publication/${username}/${name}/${revision}`, method: 'get'
-    },
-      );
-    }
-  
-
-export const getGetPublicationUsernameNameRevisionQueryKey = (username: string,
-    name: string,
-    revision: string,) => [`/publication/${username}/${name}/${revision}`];
-
-    
-export const useGetPublicationUsernameNameRevision = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevision>, TError = ApiErrorResponse>(
- username: string,
-    name: string,
-    revision: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevision>, TError, TData>, }
-
-  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameRevisionQueryKey(username,name,revision);
-
-  
-
-  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameRevision>> = () => getPublicationUsernameNameRevision(username,name,revision, );
-
-  const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameRevision>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name && revision), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
-
-/**
- * Get a publication resource file for a given user account with the specified name and the particular revision.
- * @summary Get a file from a publication
- */
-export const getPublicationUsernameNameRevisionTreePath = (
-    username: string,
-    name: string,
-    revision: string,
-    path: string,
- ) => {
-      return customInstance<ResourceResponseResponse>(
-      {url: `/publication/${username}/${name}/${revision}/tree/${path}`, method: 'get'
-    },
-      );
-    }
-  
-
-export const getGetPublicationUsernameNameRevisionTreePathQueryKey = (username: string,
-    name: string,
-    revision: string,
-    path: string,) => [`/publication/${username}/${name}/${revision}/tree/${path}`];
-
-    
-export const useGetPublicationUsernameNameRevisionTreePath = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevisionTreePath>, TError = ApiErrorResponse>(
- username: string,
-    name: string,
-    revision: string,
-    path: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevisionTreePath>, TError, TData>, }
-
-  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-
-  const {query: queryOptions} = options || {}
-
-  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameRevisionTreePathQueryKey(username,name,revision,path);
-
-  
-
-  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameRevisionTreePath>> = () => getPublicationUsernameNameRevisionTreePath(username,name,revision,path, );
-
-  const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameRevisionTreePath>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name && revision && path), ...queryOptions})
-
-  return {
-    queryKey,
-    ...query
-  }
-}
-
-/**
  * @summary Get a paginated list of sources for a publication
  */
-export const getPublicationUsernameNameRevisionAll = (
+export const getPublicationUsernameNameAll = (
     username: string,
     name: string,
-    revision: string,
+    params?: GetPublicationUsernameNameAllParams,
  ) => {
-      return customInstance<GetPublicationUsernameNameRevisionAll200>(
-      {url: `/publication/${username}/${name}/${revision}/all`, method: 'get'
+      return customInstance<GetPublicationUsernameNameAll200>(
+      {url: `/publication/${username}/${name}/all`, method: 'get',
+        params,
     },
       );
     }
   
 
-export const getGetPublicationUsernameNameRevisionAllQueryKey = (username: string,
+export const getGetPublicationUsernameNameAllQueryKey = (username: string,
     name: string,
-    revision: string,) => [`/publication/${username}/${name}/${revision}/all`];
+    params?: GetPublicationUsernameNameAllParams,) => [`/publication/${username}/${name}/all`, ...(params ? [params]: [])];
 
     
-export const useGetPublicationUsernameNameRevisionAll = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevisionAll>, TError = ApiErrorResponse>(
+export const useGetPublicationUsernameNameAll = <TData = AsyncReturnType<typeof getPublicationUsernameNameAll>, TError = ApiErrorResponse>(
  username: string,
     name: string,
-    revision: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevisionAll>, TError, TData>, }
+    params?: GetPublicationUsernameNameAllParams, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameAll>, TError, TData>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
 
   const {query: queryOptions} = options || {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameRevisionAllQueryKey(username,name,revision);
+  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameAllQueryKey(username,name,params);
 
   
 
-  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameRevisionAll>> = () => getPublicationUsernameNameRevisionAll(username,name,revision, );
+  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameAll>> = () => getPublicationUsernameNameAll(username,name,params, );
 
-  const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameRevisionAll>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name && revision), ...queryOptions})
+  const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameAll>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name), ...queryOptions})
 
   return {
     queryKey,
@@ -516,38 +404,3 @@ export const useGetPublicationUsernameNameRevisionAll = <TData = AsyncReturnType
   }
 }
 
-/**
- * This will initialise the process of exporting a said publication.
- * @summary Initiate a process of exporting the publication
- */
-export const postPublicationUsernameNameRevisionExport = (
-    username: string,
-    name: string,
-    revision: string,
- ) => {
-      return customInstance<NoContentResponse>(
-      {url: `/publication/${username}/${name}/${revision}/export`, method: 'post'
-    },
-      );
-    }
-  
-
-
-    export const usePostPublicationUsernameNameRevisionExport = <TError = ApiErrorResponse,
-    
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postPublicationUsernameNameRevisionExport>, TError,{username: string;name: string;revision: string}, TContext>, }
-) => {
-      const {mutation: mutationOptions} = options || {}
-
-      
-
-
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postPublicationUsernameNameRevisionExport>, {username: string;name: string;revision: string}> = (props) => {
-          const {username,name,revision} = props || {};
-
-          return  postPublicationUsernameNameRevisionExport(username,name,revision,)
-        }
-
-      return useMutation<AsyncReturnType<typeof postPublicationUsernameNameRevisionExport>, TError, {username: string;name: string;revision: string}, TContext>(mutationFn, mutationOptions)
-    }
-    

@@ -743,6 +743,12 @@ paths:
                   required: true
                   description: The name of the publication for the current user.
                 - in: query
+                  required: false
+                  name: revision
+                  schema:
+                      type: string
+                      description: Revision number of the publication.
+                - in: query
                   name: draft
                   schema:
                       type: boolean
@@ -780,6 +786,12 @@ paths:
                       type: string
                   required: true
                   description: The name of the publication for the current user.
+                - in: query
+                  required: false
+                  name: revision
+                  schema:
+                      type: string
+                      description: Revision number of the publication.
             responses:
                 '200':
                     $ref: '#/components/responses/PatchPublicationResponse'
@@ -805,6 +817,12 @@ paths:
                       type: string
                   required: true
                   description: The name of the publication for the current user.
+                - in: query
+                  required: false
+                  name: revision
+                  schema:
+                      type: string
+                      description: Revision number of the publication.
             responses:
                 '200':
                     description: Returns the requested publication.
@@ -899,8 +917,8 @@ paths:
                   required: true
                   name: exportReviews
                   schema:
-                    type: boolean
-                    description: Whether to export reviews or not to export reviews.  
+                      type: boolean
+                      description: Whether to export reviews or not to export reviews.
                 - in: query
                   required: false
                   name: revision
@@ -985,127 +1003,18 @@ paths:
                       type: string
                       example: 'src/server.ts'
                   required: true
+                - in: query
+                  required: false
+                  name: revision
+                  schema:
+                      type: string
+                      description: Revision number of the publication.
             responses:
                 '200':
                     $ref: '#/components/responses/ResourceResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
-    /publication/{username}/{name}/{revision}:
-        delete:
-            summary: Delete a specific revision of a publication
-            description: Create a new publication resource for a given user account.
-            tags:
-                - publications
-            security:
-                - BearerAuth: []
-            parameters:
-                - in: path
-                  name: username
-                  schema:
-                      type: string
-                  required: true
-                  description: Username.
-                - in: path
-                  name: name
-                  schema:
-                      type: string
-                  required: true
-                  description: The name of the publication for the current user.
-                - in: path
-                  name: revision
-                  schema:
-                      type: string
-                  required: true
-                  description: Get a specific revision of a given publication.
-            responses:
-                '200':
-                    $ref: '#/components/responses/DeletionResponse'
-                default:
-                    $ref: '#/components/responses/ApiError'
-        get:
-            summary: Get a specific revision of a publication
-            description: Get a publication resource for a given user account with the specified name and the particular revision.
-            tags:
-                - publications
-            security:
-                - BearerAuth: []
-            parameters:
-                - in: path
-                  name: username
-                  schema:
-                      type: string
-                  required: true
-                  description: Username.
-                - in: path
-                  name: name
-                  schema:
-                      type: string
-                  required: true
-                  description: The name of the publication for the current user.
-                - in: path
-                  name: revision
-                  schema:
-                      type: string
-                  required: true
-                  description: Get a specific revision of a given publication.
-            responses:
-                '200':
-                    description: Returns the requested publication.
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                required:
-                                    - status
-                                    - publication
-                                properties:
-                                    status:
-                                        type: string
-                                        example: 'ok'
-                                        enum: ['ok']
-                                    publication:
-                                        $ref: '#/components/schemas/Publication'
-                default:
-                    $ref: '#/components/responses/ApiError'
-    /publication/{username}/{name}/{revision}/tree/{path}:
-        get:
-            summary: Get a file from a publication
-            description: Get a publication resource file for a given user account with the specified name and the particular revision.
-            tags:
-                - publications
-            security:
-                - BearerAuth: []
-            parameters:
-                - in: path
-                  name: username
-                  schema:
-                      type: string
-                  required: true
-                  description: Username.
-                - in: path
-                  name: name
-                  schema:
-                      type: string
-                  required: true
-                  description: The name of the publication for the current user.
-                - in: path
-                  name: revision
-                  schema:
-                      type: string
-                  required: true
-                  description: Get a specific revision of a given publication.
-                - in: path
-                  name: path
-                  schema:
-                      type: string
-                      example: 'src/server.ts'
-                  required: true
-            responses:
-                '200':
-                    $ref: '#/components/responses/ResourceResponse'
-                default:
-                    $ref: '#/components/responses/ApiError'
-    /publication/{username}/{name}/{revision}/all:
+    /publication/{username}/{name}/all:
         get:
             summary: Get a paginated list of sources for a publication
             tags:
@@ -1125,7 +1034,7 @@ paths:
                       type: string
                   required: true
                   description: The name of the publication for the current user.
-                - in: path
+                - in: query
                   name: revision
                   schema:
                       type: string
@@ -1242,38 +1151,6 @@ paths:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/Review'
-                default:
-                    $ref: '#/components/responses/ApiError'
-    /publication/{username}/{name}/{revision}/export:
-        post:
-            summary: Initiate a process of exporting the publication
-            description: This will initialise the process of exporting a said publication.
-            tags:
-                - publications
-            security:
-                - BearerAuth: []
-            parameters:
-                - in: path
-                  name: username
-                  schema:
-                      type: string
-                  required: true
-                  description: Username.
-                - in: path
-                  name: name
-                  schema:
-                      type: string
-                  required: true
-                  description: The name of the publication for the current user.
-                - in: path
-                  name: revision
-                  schema:
-                      type: string
-                  required: true
-                  description: The revision of the publication.
-            responses:
-                '204':
-                    $ref: '#/components/responses/NoContent'
                 default:
                     $ref: '#/components/responses/ApiError'
     /resource/upload/{username}:

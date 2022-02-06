@@ -21,7 +21,7 @@ import MarkdownRenderer from '../../components/MarkdownRenderer';
 import { transformQueryIntoContentState } from '../../wrappers/react-query';
 
 import { GetPublicationUsernameNameRevision200 as PublicationResponse } from '../../lib/api/models';
-import { useGetPublicationUsernameNameRevision as useGetPublication } from '../../lib/api/publications/publications';
+import { useGetPublicationUsernameName as useGetPublication } from '../../lib/api/publications/publications';
 import Overview from './modules/Overview';
 import Source from './modules/Source';
 import Settings from './modules/Settings';
@@ -129,9 +129,9 @@ function PublicationView() {
         state: 'loading',
     });
 
-    const getPublicationQuery = useGetPublication(username, name, canonicalName[1]);
-
-    const refetchPublication = () => getPublicationQuery.refetch();
+    const getPublicationQuery = useGetPublication(username, name, {
+        ...(canonicalName[1] !== '' && { revision: canonicalName[1] }),
+    });
 
     //setting constants for the export dialog
     const [exportDialogOpen, setExportDialogOpen] = useState(false);
@@ -171,7 +171,7 @@ function PublicationView() {
 
             // @@Bug: The export button and the title of the publication aren't aligned properly.
             return (
-                <PublicationProvider state={{ publication }} refetch={refetchPublication}>
+                <PublicationProvider state={{ publication }} refetch={getPublicationQuery.refetch}>
                     <Box sx={{ mb: 1 }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
