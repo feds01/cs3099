@@ -13,7 +13,7 @@ import ErrorBanner from '../../components/ErrorBanner';
 import ControlledTextField from '../../components/ControlledTextField';
 import ControlledAutocomplete from '../../components/ControlledAutocomplete';
 import { usePostPublication } from '../../lib/api/publications/publications';
-import { CreatePublication, CreatePublicationSchema } from '../../validators/publication';
+import { ICreatePublication, CreatePublicationSchema } from '../../validators/publication';
 
 
 export default function CreatePublicationForm(): ReactElement {
@@ -24,17 +24,21 @@ export default function CreatePublicationForm(): ReactElement {
         control,
         handleSubmit,
         formState: { isSubmitting },
-    } = useForm<CreatePublication>({
+    } = useForm<ICreatePublication>({
         resolver: zodResolver(CreatePublicationSchema),
         reValidateMode: 'onBlur',
         defaultValues: {
+            title: '',
+            name: '',
+            introduction: '',
+            revision: '',
             collaborators: [],
         },
     });
 
     const { isLoading, isError, data, error, mutateAsync } = usePostPublication();
 
-    const onSubmit: SubmitHandler<CreatePublication> = async (data) => await mutateAsync({ data });
+    const onSubmit: SubmitHandler<ICreatePublication> = async (data) => await mutateAsync({ data });
 
     // When the request completes, we want to re-direct the user to the publication page
     useEffect(() => {

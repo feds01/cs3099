@@ -207,7 +207,12 @@ export default function registerRoute<
 
         return await registrar.handler(
             // @ts-ignore
-            { ...basicRequest, body: parsedBody.body, raw: req, requester: permissions?.user ?? null },
+            {
+                ...basicRequest,
+                body: parsedBody.body,
+                raw: req,
+                requester: permissions?.user ?? null,
+            },
             res,
         );
     };

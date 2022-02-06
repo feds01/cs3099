@@ -36,7 +36,7 @@ export const ALREADY_FOLLOWED = 'The user is already followed by you';
 
 // Publications endpoints
 export const PUBLICATION_FAILED = 'Upload publication failed';
-export const PUBLICATION_EXISTS = 'Publication of yours with the same information exists';
+export const PUBLICATION_EXISTS = 'Publication with the same name already exists÷';
 export const NON_EXISTENT_PUBLICATION = 'No publication with the given keyword exists';
 export const NON_EXISTENT_PUBLICATION_ID = 'No publication with the given id exists';
 

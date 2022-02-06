@@ -12,7 +12,7 @@ import { useNotificationDispatch } from '../../hooks/notification';
 import ControlledTextField from '../../components/ControlledTextField';
 import ControlledAutocomplete from '../../components/ControlledAutocomplete';
 import { usePatchPublicationUsernameName } from '../../lib/api/publications/publications';
-import { EditPublication, EditPublicationSchema } from '../../validators/publication';
+import { IEditPublication, EditPublicationSchema } from '../../validators/publication';
 import { usePublicationDispatch } from '../../hooks/publication';
 
 interface EditPublicationFormProps {
@@ -33,7 +33,7 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
         control,
         handleSubmit,
         formState: { isSubmitting },
-    } = useForm<EditPublication>({
+    } = useForm<IEditPublication>({
         resolver: zodResolver(EditPublicationSchema),
         reValidateMode: 'onBlur',
         defaultValues: {
@@ -60,7 +60,7 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
         }
     }, [isLoading, isError, data]);
 
-    const onSubmit: SubmitHandler<EditPublication> = async (data) => await mutateAsync({ username, name, data });
+    const onSubmit: SubmitHandler<IEditPublication> = async (data) => await mutateAsync({ username, name, data });
     
     return (
         <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%', marginTop: '8px' }}>

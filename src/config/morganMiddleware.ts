@@ -7,12 +7,12 @@ import Logger from '../common/logger';
 const stream: StreamOptions = {
     // Use the http severity
     write: (message: string) => {
-        if (message.endsWith("\n")) {
-            Logger.http(message.substring(0, message.lastIndexOf('\n')))   
+        if (message.endsWith('\n')) {
+            Logger.http(message.substring(0, message.lastIndexOf('\n')));
         } else {
-            Logger.http(message)
+            Logger.http(message);
         }
-    }
+    },
 };
 
 // Skip all the Morgan http log if the

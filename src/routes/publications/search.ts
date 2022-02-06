@@ -2,7 +2,6 @@ import express from 'express';
 
 import { z } from 'zod';
 import { IUserRole } from '../../models/User';
-import { SearchQuerySchema } from '../../validators/publications';
 import registerRoute from '../../lib/requests';
 
 const router = express.Router({ mergeParams: true });
@@ -20,7 +19,7 @@ const router = express.Router({ mergeParams: true });
 registerRoute(router, '/search', {
     method: 'get',
     params: z.object({}),
-    query: SearchQuerySchema,
+    query: z.object({}),
     permission: { level: IUserRole.Default },
     handler: async (_req, res) => {
         // TODO: Implement search endpoint
