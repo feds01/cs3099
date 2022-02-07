@@ -8,9 +8,9 @@
 import type { SuccessStatus } from './successStatus';
 
 export type TokenVerificationResponseResponse = {
-    status: SuccessStatus;
-    user_id: string;
-    name: string;
-    email: string;
-    profilePictureUrl?: string;
+  status: SuccessStatus;
+  user_id: string;
+  name: string;
+  email: string;
+  profilePictureUrl?: string;
 };

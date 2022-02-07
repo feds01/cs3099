@@ -6,12 +6,13 @@ import Logger from '../../common/logger';
 import * as errors from '../../common/errors';
 import Comment from '../../models/Comment';
 import registerRoute from '../../lib/requests';
-import { IUser, IUserDocument, IUserRole } from '../../models/User';
 import Review, { IReviewStatus } from '../../models/Review';
 import { ObjectIdSchema } from '../../validators/requests';
-import { ICommentCreationSchema } from '../../validators/comments';
-import { IPublication, IPublicationDocument } from '../../models/Publication';
 import { verifyReviewPermission } from '../../lib/permissions';
+import { ResponseErrorSummary } from '../../transformers/error';
+import { ICommentCreationSchema } from '../../validators/comments';
+import { IUser, IUserDocument, IUserRole } from '../../models/User';
+import { IPublication, IPublicationDocument } from '../../models/Publication';
 
 const router = express.Router();
 
@@ -35,13 +36,13 @@ registerRoute(router, '/:id/comment', {
     params: z.object({ id: ObjectIdSchema }),
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { id } = req.params;
         const { id: owner } = req.requester;
         const { replying, filename, anchor, contents } = req.body;
 
         const review = await Review.findById(id)
-            .populate<{ owner: IUser }>('owner')
+            .populate<{ owner: IUserDocument }>('owner')
             .populate<{ publication: IPublicationDocument }>('publication')
             .exec();
 
@@ -51,21 +52,23 @@ registerRoute(router, '/:id/comment', {
         if (
             !review ||
             (review.status === 'started' &&
-                (review.owner as unknown as IUser & { id: string }).id !== owner)
+                review.owner.id !== owner)
         ) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_REVIEW,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         // check that the publication isn't in draft mode...
         // @@Verify: It is impossible to begin publications that are in 'draft' mode.
         if (review.publication.draft) {
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message: 'Cannot comment on a drafted publication.',
-            });
+            };
         }
 
         // Check if the thread is replying to another comment
@@ -75,20 +78,22 @@ registerRoute(router, '/:id/comment', {
             const replyingComment = await Comment.findById(replying).exec();
 
             if (!replyingComment) {
-                return res.status(400).json({
+                return {
                     status: 'error',
+                    code: 400,
                     message: 'Attempt to reply on a non-existent comment',
-                });
+                };
             }
 
             // Verify that the comment has a thread since it'll be created if it doesn't...
             if (typeof replyingComment.thread === 'undefined') {
                 Logger.error('Comment selected for replying should have a thread id...');
 
-                return res.status(500).json({
+                return {
                     status: 'error',
+                    code: 500,
                     message: errors.INTERNAL_SERVER_ERROR,
-                });
+                };
             }
 
             thread = new mongoose.Types.ObjectId(replyingComment.thread.toString());
@@ -106,25 +111,27 @@ registerRoute(router, '/:id/comment', {
             const archive = zip.loadArchive(archiveIndex);
 
             if (archive === null) {
-                return res.status(500).json({
+                return {
                     status: 'error',
-                    error: errors.INTERNAL_SERVER_ERROR,
-                });
+                    code: 500,
+                    message: errors.INTERNAL_SERVER_ERROR,
+                };
             }
 
             // check that the given filename exists within the publication...
             const entry = archive.getEntry(filename);
 
             if (!entry) {
-                return res.status(400).json({
+                return {
                     status: 'error',
+                    code: 400,
                     message: errors.BAD_REQUEST,
                     errors: {
                         filename: {
                             message: "Filename path doesn't exist in the current archive.",
                         },
-                    },
-                });
+                    } as ResponseErrorSummary,
+                };
             }
 
             // If the anchor is specified, check that the line range makes sense, we don't have to
@@ -134,43 +141,39 @@ registerRoute(router, '/:id/comment', {
                 const lines = zip.countLines(entry.getData().toString());
 
                 if (anchor.start > lines || anchor.end > lines) {
-                    return res.status(400).json({
+                    return {
                         status: 'error',
                         message: errors.BAD_REQUEST,
+                        code: 400,
                         errors: {
                             anchor: { message: 'Anchor range is invalid.' },
-                        },
-                    });
+                        } as ResponseErrorSummary,
+                    };
                 }
             }
         }
 
-        try {
-            const newComment = await new Comment({
-                filename,
-                anchor,
-                contents,
-                replying,
-                review: id,
-                thread,
-                owner,
-                publication: review.publication.id as mongoose.Schema.Types.ObjectId,
-            }).save();
+        const newComment = await new Comment({
+            filename,
+            anchor,
+            contents,
+            replying,
+            review: id,
+            thread,
+            owner,
+            publication: review.publication.id as mongoose.Schema.Types.ObjectId,
+        }).save();
 
-            const populated = await newComment.populate<{ owner: IUserDocument }>('owner');
+        const populated = await newComment.populate<{ owner: IUserDocument }>('owner');
 
-            return res.status(201).json({
-                status: 'ok',
+        return {
+            status: 'ok',
+            code: 201,
+            data: {
                 comment: Comment.project(populated),
-            });
-        } catch (e) {
-            Logger.error(e);
+            }
+        };
 
-            return res.status(500).json({
-                status: 'error',
-                message: errors.INTERNAL_SERVER_ERROR,
-            });
-        }
     },
 });
 
@@ -194,12 +197,12 @@ registerRoute(router, '/:id/comments', {
     params: z.object({ id: ObjectIdSchema }),
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { id } = req.params;
-        const { id: owner } = req.requester;
+        const { id: ownerId } = req.requester;
 
         const review = await Review.findById(id)
-            .populate<{ owner: IUser }>('owner')
+            .populate<{ owner: IUserDocument }>('owner')
             .populate<{ publication: IPublication }>('publication')
             .exec();
 
@@ -209,20 +212,22 @@ registerRoute(router, '/:id/comments', {
         if (
             !review ||
             (review.status === 'started' &&
-                (review.owner as unknown as IUser & { id: string }).id !== owner)
+                review.owner.id !== ownerId)
         ) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_REVIEW,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         // check that the publication isn't in draft mode...
         if (review.publication.draft) {
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message: 'Cannot comment on a drafted publication.',
-            });
+            };
         }
 
         // Find all the comments on the current review...
@@ -232,10 +237,13 @@ registerRoute(router, '/:id/comments', {
 
         const comments = result.map(Comment.project);
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            comments,
-        });
+            code: 200,
+            data: {
+                comments,
+            }
+        };
     },
 });
 
@@ -257,26 +265,27 @@ registerRoute(router, '/:id/complete', {
     params: z.object({ id: ObjectIdSchema }),
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { id } = req.params;
-        const { id: ownerId } = req.requester;
 
         // @@TODO: Use findByIdAndUpdate
         const review = await Review.findById(id).exec();
 
         // verify that the review exists and the owner is trying to publish it...
-        if (!review || review.owner.toString() !== ownerId) {
-            return res.status(404).json({
+        if (!review) {
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_REVIEW,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         await review.updateOne({ $set: { status: IReviewStatus.Completed } }).exec();
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-        });
+            code: 200,
+        };
     },
 });
 
@@ -296,7 +305,7 @@ registerRoute(router, '/:id', {
     params: z.object({ id: ObjectIdSchema }),
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Moderator },
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { id } = req.params;
 
         const review = await Review.findById(id)
@@ -305,16 +314,20 @@ registerRoute(router, '/:id', {
             .exec();
 
         if (!review) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_REVIEW,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            review: await Review.project(review),
-        });
+            code: 200,
+            data: {
+                review: await Review.project(review),
+            }
+        };
     },
 });
 
@@ -334,25 +347,26 @@ registerRoute(router, '/:id', {
     params: z.object({ id: ObjectIdSchema }),
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Administrator },
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { id } = req.params;
 
         // Delete the entire review and delete all the comments on the review...
         const review = await Review.findByIdAndDelete(id).exec();
 
         if (!review) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_REVIEW,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         await Comment.deleteMany({ review: review.id }).exec();
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            message: 'Review is deleted.',
-        });
+            code: 200
+        };
     },
 });
 

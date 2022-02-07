@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import express from 'express';
-import Logger from '../../common/logger';
 import * as error from '../../common/errors';
 import Follower from '../../models/Follower';
 import * as userUtils from '../../utils/users';
@@ -33,9 +32,8 @@ registerRoute(router, '/:username/follow', {
     body: z.object({}),
     query: z.object({ mode: ModeSchema }),
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { id: followerId } = req.requester;
 
@@ -44,18 +42,20 @@ registerRoute(router, '/:username/follow', {
         const follower = await User.findById(followerId).exec();
 
         if (!follower) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: error.NON_EXISTENT_USER,
-            });
+            };
         }
 
         // if the user is trying to follow itself
         // Just return a NoContent since we don't need to create anything
         if (follower.id === user.id) {
-            return res.status(204).json({
+            return {
+                code: 204,
                 status: 'ok',
-            });
+            };
         }
 
         let mapping = { follower: follower.id, following: user.id };
@@ -65,21 +65,12 @@ registerRoute(router, '/:username/follow', {
         const doc = await Follower.findOne(mapping).exec();
 
         if (doc) {
-            return res.status(200).json({ status: 'ok' });
+            return { status: 'ok', code: 200 };
         }
 
-        try {
-            await new Follower(mapping).save();
+        await new Follower(mapping).save();
 
-            return res.status(201).json({ status: 'ok' });
-        } catch (e) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: error.INTERNAL_SERVER_ERROR,
-            });
-        }
+        return { status: 'ok', code: 201 };
     },
 });
 
@@ -101,9 +92,8 @@ registerRoute(router, '/:username/follow', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { id: followerId } = req.requester;
 
@@ -112,10 +102,11 @@ registerRoute(router, '/:username/follow', {
         const follower = await User.findById(followerId).exec();
 
         if (!follower) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: error.NON_EXISTENT_USER,
-            });
+                code: 404,
+                message: error.RESOURCE_NOT_FOUND,
+            };
         }
 
         await Follower.findOneAndDelete({
@@ -123,7 +114,7 @@ registerRoute(router, '/:username/follow', {
             following: user.id,
         }).exec();
 
-        return res.status(200).json({ status: 'ok' });
+        return { status: 'ok', code: 200 };
     },
 });
 
@@ -142,9 +133,8 @@ registerRoute(router, '/:username/follow', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { id: followerId } = req.requester;
 
@@ -152,11 +142,13 @@ registerRoute(router, '/:username/follow', {
         // then exit early and don't create the new follower link.
         const follower = await User.findById(followerId).exec();
 
+
         if (!follower) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: error.NON_EXISTENT_USER,
-            });
+                code: 404,
+                message: error.RESOURCE_NOT_FOUND,
+            };
         }
 
         const link = await Follower.findOne({
@@ -164,10 +156,13 @@ registerRoute(router, '/:username/follow', {
             following: user.id,
         }).exec();
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            following: link !== null,
-        });
+            code: 200,
+            data: {
+                following: link !== null,
+            }
+        };
     },
 });
 
@@ -185,23 +180,23 @@ registerRoute(router, '/:username/followers', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         // TODO:(alex) Implement pagination for this endpoint since the current limit will
         //             be 50 documents.
         // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
         const result = await Follower.find({ following: user.id })
-            .populate<{ follower: IUser }[]>('follower')
+            .populate<{ follower: IUser }>('follower')
             .limit(50);
 
-        const followers = result.map((link) => User.project(link.follower as unknown as IUser));
-
-        return res.status(200).json({
+        return {
             status: 'ok',
-            followers,
-        });
+            code: 200,
+            data: {
+                followers: result.map(item => User.project(item.follower))
+            }
+        };
     },
 });
 
@@ -219,26 +214,25 @@ registerRoute(router, '/:username/following', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     permission: { kind: 'follower', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         // TODO:(alex) Implement pagination for this endpoint since the current limit will
         //             be 50 documents.
         // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
         const result = await Follower.find({ follower: user.id })
-            .populate<{ following: IUser }[]>('following')
+            .populate<{ following: IUser }>('following')
             .limit(50)
             .exec();
 
-        const followers = result.map((link) => {
-            return User.project(link.following as unknown as IUser);
-        });
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            following: followers,
-        });
+            code: 200,
+            data: {
+                following: result.map(item => User.project(item.following))
+            }
+        };
     },
 });
 

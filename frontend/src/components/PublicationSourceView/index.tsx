@@ -25,13 +25,13 @@ function SourceViewer({ contents, filename, basePath }: SourceViewerProps): Reac
             return <ErrorBanner message={contents.error.message} />;
         }
         case 'ok': {
-            const { data } = contents.data;
+            const { entry } = contents.data;
 
-            if (data.type === 'file') {
-                return <CodeRenderer contents={data.contents} filename={filename} />;
+            if (entry.type === 'file') {
+                return <CodeRenderer contents={entry.contents} filename={filename} />;
             } else {
                 return (
-                    <DirectoryViewer type={data.type} entries={data.entries} basePath={basePath} filename={filename} />
+                    <DirectoryViewer type={entry.type} entries={entry.entries} basePath={basePath} filename={filename} />
                 );
             }
         }

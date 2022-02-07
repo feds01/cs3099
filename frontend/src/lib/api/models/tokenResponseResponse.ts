@@ -8,7 +8,7 @@
 import type { SuccessStatus } from './successStatus';
 
 export type TokenResponseResponse = {
-    status: SuccessStatus;
-    token: string;
-    refreshToken: string;
+  status: SuccessStatus;
+  token: string;
+  refreshToken: string;
 };

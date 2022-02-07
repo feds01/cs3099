@@ -124,3 +124,4 @@ export * from './getPublicationUsernameNameAll200Status';
 export * from './apiErrorResponseErrors';
 export * from './successStatus';
 export * from './successStatusObject';
+export * from './resourceResponseResponseEntry';

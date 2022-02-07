@@ -27,9 +27,8 @@ registerRoute(router, '/:username/reviews', {
     query: z.object({ mode: ModeSchema }),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         // We don't want to return all of the reviews if it isn't the owner. We
         // filter out un-completed reviews if the requester isn't the owner, but
@@ -46,10 +45,13 @@ registerRoute(router, '/:username/reviews', {
 
         const reviews = await Promise.all(result.map(Review.project));
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            reviews,
-        });
+            code: 200,
+            data: {
+                reviews,
+            }
+        };
     },
 });
 

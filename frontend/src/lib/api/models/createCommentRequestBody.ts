@@ -8,8 +8,8 @@
 import type { CommentAnchor } from './commentAnchor';
 
 export type CreateCommentRequestBody = {
-    replying?: string;
-    contents: string;
-    filename?: string;
-    anchor?: CommentAnchor;
+  replying?: string;
+  contents: string;
+  filename?: string;
+  anchor?: CommentAnchor;
 };

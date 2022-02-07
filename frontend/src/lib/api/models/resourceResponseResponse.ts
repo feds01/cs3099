@@ -6,9 +6,9 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { SuccessStatus } from './successStatus';
-import type { ResourceResponseResponseData } from './resourceResponseResponseData';
+import type { ResourceResponseResponseEntry } from './resourceResponseResponseEntry';
 
 export type ResourceResponseResponse = {
-    status: SuccessStatus;
-    data: ResourceResponseResponseData;
+  status: SuccessStatus;
+  entry: ResourceResponseResponseEntry;
 };

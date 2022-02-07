@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import express from 'express';
-import assert from 'assert';
 import Logger from '../../common/logger';
 import * as zip from '../../lib/zip';
 import searchRouter from './search';
@@ -49,9 +48,8 @@ registerRoute(router, '/:username/:name/all', {
     query: z.object({ mode: ModeSchema, revision: z.string() }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { name } = req.params;
         const { revision } = req.query;
@@ -65,10 +63,11 @@ registerRoute(router, '/:username/:name/all', {
             .exec();
 
         if (!publication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: errors.RESOURCE_NOT_FOUND,
-            });
+            };
         }
 
         let archiveIndex = {
@@ -83,28 +82,32 @@ registerRoute(router, '/:username/:name/all', {
         //            it must of been deleted off the disk... which means we might have to invalidate
         //            the current revision?
         if (!archive) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: errors.RESOURCE_NOT_FOUND,
-            });
+            };
         }
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            entries: archive
-                .getEntries()
-                .filter((entry) => !entry.isDirectory)
-                .map((entry) => {
-                    const contents = entry.getData();
+            code: 200,
+            data: {
+                entries: archive
+                    .getEntries()
+                    .filter((entry) => !entry.isDirectory)
+                    .map((entry) => {
+                        const contents = entry.getData();
 
-                    return {
-                        type: 'file',
-                        updatedAt: entry.header.time.getTime(),
-                        contents: contents.toString(),
-                        filename: entry.entryName,
-                    };
-                }),
-        });
+                        return {
+                            type: 'file',
+                            updatedAt: entry.header.time.getTime(),
+                            contents: contents.toString(),
+                            filename: entry.entryName,
+                        };
+                    }),
+            }
+        };
     },
 });
 
@@ -133,9 +136,8 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
     }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { name, path } = req.params;
         const { revision } = req.query;
@@ -149,10 +151,11 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
             .exec();
 
         if (!publication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: errors.RESOURCE_NOT_FOUND,
-            });
+            };
         }
 
         let archive = {
@@ -165,10 +168,11 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
         let entry = zip.getEntry(archive, transformedPath);
 
         if (!entry) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: errors.RESOURCE_NOT_FOUND,
-            });
+            };
         } else {
             // Here we need to apply sorting to the particular entry if the entry is a directory type
             if (entry.type === 'directory') {
@@ -190,10 +194,13 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
                 });
             }
 
-            return res.status(200).json({
+            return {
                 status: 'ok',
-                data: entry,
-            });
+                code: 200,
+                data: {
+                    entry
+                },
+            };
         }
     },
 });
@@ -223,7 +230,7 @@ registerRoute(router, '/', {
     body: IPublicationCreationSchema,
     query: z.object({}),
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { name, collaborators } = req.body;
         const { id: owner } = req.requester;
 
@@ -234,24 +241,30 @@ registerRoute(router, '/', {
         }).exec();
 
         if (existingPublication > 0) {
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message: errors.PUBLICATION_EXISTS,
-            });
+            };
         }
 
         // Find all corresponding ids of each collaborators' username
         const collaboratorDocs = await User.find({ username: { $in: collaborators } }).exec();
 
         if (collaboratorDocs.length < collaborators.length) {
-            const namesFound = collaboratorDocs.map((doc) => doc.username);
-            const missingNames = collaborators.filter((name) => !namesFound.includes(name));
+            const found = collaboratorDocs.map((doc) => doc.username);
+            const missing = collaborators.filter((name) => !found.includes(name));
 
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_USER,
-                extra: missingNames,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+                errors: {
+                    "collaborators": {
+                        message: `Collaborators ${missing.map(item => `'${item}'`).join(", ")} don't exist.`
+                    }
+                }
+            };
         }
 
         const newPublication = new Publication({
@@ -262,22 +275,15 @@ registerRoute(router, '/', {
             owner,
         });
 
-        try {
-            const publication = await newPublication.save();
+        const publication = await newPublication.save();
 
-            return res.status(201).json({
-                status: 'ok',
-                message: 'Successfully submitted new publication.',
+        return {
+            status: 'ok',
+            code: 201,
+            data: {
                 publication: Publication.projectWith(publication, req.requester),
-            });
-        } catch (e) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: errors.INTERNAL_SERVER_ERROR,
-            });
-        }
+            }
+        };
     },
 });
 
@@ -297,9 +303,8 @@ registerRoute(router, '/:username', {
     query: z.object({ mode: ModeSchema, pinned: FlagSchema.optional() }),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { pinned } = req.query;
 
@@ -314,10 +319,13 @@ registerRoute(router, '/:username', {
             .limit(50)
             .exec();
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            data: result.map((item) => Publication.projectWith(item, user)),
-        });
+            code: 200,
+            data: {
+                publications: result.map((item) => Publication.projectWith(item, user))
+            },
+        };
     },
 });
 
@@ -336,9 +344,8 @@ registerRoute(router, '/:username/:name/revisions', {
     query: z.object({ mode: ModeSchema }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const result = await Publication.find({
             owner: user.id,
@@ -347,10 +354,13 @@ registerRoute(router, '/:username/:name/revisions', {
             .limit(50)
             .exec();
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            revisions: result.map((item) => Publication.projectWith(item, user)),
-        });
+            code: 200,
+            data: {
+                revisions: result.map((item) => Publication.projectWith(item, user)),
+            }
+        };
     },
 });
 
@@ -377,9 +387,8 @@ registerRoute(router, '/:username/:name', {
     }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { name } = req.params;
         const { revision } = req.query;
@@ -396,10 +405,11 @@ registerRoute(router, '/:username/:name', {
             .exec();
 
         if (!publication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         // So we don't need to actually specify the draft flag to the query
@@ -415,17 +425,19 @@ registerRoute(router, '/:username/:name', {
             !isOwner &&
             !compareUserRoles(req.requester.role, IUserRole.Moderator)
         ) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         } else if (typeof req.query.draft !== 'undefined') {
             // So now here we can allow explicit filtering by draft or not...
             if (publication.draft !== req.query.draft) {
-                return res.status(404).json({
+                return {
                     status: 'error',
-                    message: errors.NON_EXISTENT_PUBLICATION,
-                });
+                    code: 404,
+                    message: errors.RESOURCE_NOT_FOUND,
+                };
             }
         }
 
@@ -437,10 +449,13 @@ registerRoute(router, '/:username/:name', {
         };
         const archive = zip.loadArchive(archiveIndex);
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            publication: await Publication.project(publication, archive !== null),
-        });
+            code: 200,
+            data: {
+                publication: await Publication.project(publication, archive !== null),
+            }
+        };
     },
 });
 
@@ -463,36 +478,23 @@ registerRoute(router, '/:username/:name/all', {
     query: z.object({ mode: ModeSchema }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Administrator },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name, username } = req.params;
+        const { name } = req.params;
 
-        const owner = await User.findOne({ username }).exec();
-        assert(owner !== null);
+        await Publication.deleteMany({ owner: user.id, name: name.toLowerCase() }).exec();
 
-        await Publication.deleteMany({ owner: owner.id, name: name.toLowerCase() }).exec();
+        const publicationPath = zip.resourceIndexToPath({
+            type: 'publication',
+            owner: user.id,
+            name: name,
+        });
 
-        try {
-            const publicationPath = zip.resourceIndexToPath({
-                type: 'publication',
-                owner: owner.id,
-                name: name,
-            });
+        // we need to try to remove the folder that stores the publications...
+        await deleteResource(publicationPath);
 
-            // we need to try to remove the folder that stores the publications...
-            await deleteResource(publicationPath);
-
-            return res.status(200).json({ status: 'ok' });
-        } catch (e: unknown) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: errors.INTERNAL_SERVER_ERROR,
-            });
-        }
+        return { status: 'ok', code: 200 };
     },
 });
 
@@ -521,15 +523,11 @@ registerRoute(router, '/:username/:name', {
     }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Administrator },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { revision, draft } = req.query;
-        const { name, username } = req.params;
-
-        const owner = await User.findOne({ username }).exec();
-        assert(owner !== null);
+        const { name } = req.params;;
 
         const publication = await Publication.findOneAndDelete({
             owner: user.id,
@@ -541,32 +539,24 @@ registerRoute(router, '/:username/:name', {
             .exec(); // get the most recent document
 
         if (!publication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
-        try {
-            const publicationPath = zip.resourceIndexToPath({
-                type: 'publication',
-                owner: owner.id.toString(),
-                name,
-                ...(typeof revision !== 'undefined' && { path: [revision, 'publication.zip'] }),
-            });
+        const publicationPath = zip.resourceIndexToPath({
+            type: 'publication',
+            owner: user.id.toString(),
+            name,
+            ...(typeof revision !== 'undefined' && { path: [revision, 'publication.zip'] }),
+        });
 
-            // we need to try to remove the folder that stores the publications...
-            await deleteResource(publicationPath);
+        // we need to try to remove the folder that stores the publications...
+        await deleteResource(publicationPath);
 
-            return res.status(200).json({ status: 'ok' });
-        } catch (e: unknown) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: errors.INTERNAL_SERVER_ERROR,
-            });
-        }
+        return { status: 'ok', code: 200 };
     },
 });
 
@@ -589,9 +579,8 @@ registerRoute(router, '/:username/:name', {
     body: IPublicationPatchRequestSchema,
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Administrator },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { name } = req.params;
         const { revision } = req.query;
@@ -612,16 +601,20 @@ registerRoute(router, '/:username/:name', {
 
         // If we couldn't find the publication, return a not found.
         if (!newPublication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            publication: await Publication.project(newPublication, false),
-        });
+            code: 200,
+            data: {
+                publication: await Publication.project(newPublication, false),
+            }
+        };
     },
 });
 
@@ -654,9 +647,8 @@ registerRoute(router, '/:username/:name/export', {
     }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         // Get the publication
         const { name } = req.params;
@@ -671,10 +663,11 @@ registerRoute(router, '/:username/:name/export', {
             .exec(); // get the most recent document
 
         if (!publication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         // @@ Hack: this should be done by some kind of token service...
@@ -688,15 +681,14 @@ registerRoute(router, '/:username/:name/export', {
         if (result.status === 'error') {
             Logger.warn(`Failed to export a review: ${result.errors}`);
 
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message: `Failed to export review due to ${result.type}.`,
-            });
+            };
         }
 
-        return res.status(200).json({
-            status: 'ok',
-        });
+        return { status: 'ok', code: 200 };
     },
 });
 

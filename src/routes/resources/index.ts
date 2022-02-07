@@ -28,45 +28,37 @@ registerRoute(router, '/upload/:username', {
     body: z.any(),
     method: 'post',
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
+        // @@TODO: CLEANUP
         const file = extractFile(req.raw);
 
         if (!file) {
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message: errors.BAD_REQUEST,
-                extra: 'No file sent.',
-            });
+            };
         }
 
         // check here that the correct mime type is set on the file, for now we
         // only accept jpg/png images...
         if (file.mimetype !== 'image/png' && file.mimetype !== 'image/jpeg') {
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message: "Invalid file mimetype sent. Image upload only accepts 'png' or 'jpeg'.",
-            });
+            };
         }
 
         const uploadPath = joinPathsForResource('avatar', user.username, 'avatar');
 
         // Move the file into it's appropriate storage location
-        return file.mv(uploadPath, (err) => {
-            if (err) {
-                Logger.error(err);
+        await file.mv(uploadPath);
 
-                return res.status(500).json({
-                    status: 'error',
-                    message: errors.INTERNAL_SERVER_ERROR,
-                });
-            }
-
-            Logger.info('Successfully saved uploaded file to filesystem');
-            return res.status(200).json({ status: 'ok' });
-        });
+        Logger.info('Successfully saved uploaded file to filesystem');
+        return { status: 'ok', code: 200 };
     },
 });
 
@@ -87,17 +79,18 @@ registerRoute(router, '/upload/publication/:id', {
     method: 'post',
     permissionVerification: verifyPublicationIdPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { id } = req.params;
         const { revision } = req.query;
         const { id: userId } = req.requester;
         const file = extractFile(req.raw);
 
         if (!file) {
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message: 'Bad Request. No file sent',
-            });
+            };
         }
 
         // @@Security: Ensure that the actual uploaded file is sane and don't just rely on mimetype.
@@ -105,27 +98,30 @@ registerRoute(router, '/upload/publication/:id', {
         // "application/zip" representing an archive. Other mime-types are currently banned
         // and we don't allow binary data uploads (at the moment).
         if (file.mimetype !== 'application/zip') {
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message:
                     "Invalid file mimetype sent. Publication uploads only accepts 'application/zip' mime-type.",
-            });
+            };
         }
 
         const publication = await Publication.findById(id).exec();
 
         if (!publication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: errors.RESOURCE_NOT_FOUND,
-            });
+            };
         }
 
         if (!publication.draft) {
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message: "Cannot modify publication sources that aren't marked as draft.",
-            });
+            };
         }
 
         let uploadPath = joinPathsForResource('publication', userId, publication.name);
@@ -138,22 +134,13 @@ registerRoute(router, '/upload/publication/:id', {
         }
 
         // Move the file into it's appropriate storage location
-        return file.mv(uploadPath, async (err) => {
-            if (err) {
-                Logger.error(err);
+        await file.mv(uploadPath);
 
-                return res.status(500).json({
-                    status: 'error',
-                    message: errors.INTERNAL_SERVER_ERROR,
-                });
-            }
+        // Update the publication to become live instead of draft
+        await publication.update({ $set: { draft: false } }).exec();
 
-            // Update the publication to become live instead of draft
-            await publication.update({ $set: { draft: false } }).exec();
-
-            Logger.info(`Successfully saved uploaded file to filesystem at: ${uploadPath}`);
-            return res.status(200).json({ status: 'ok' });
-        });
+        Logger.info(`Successfully saved uploaded file to filesystem at: ${uploadPath}`);
+        return { status: 'ok', code: 200 };
     },
 });
 
@@ -175,16 +162,12 @@ registerRoute(router, '/upload/review/:id', {
     method: 'post',
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const { id } = req.params;
-        const { id: userId } = req.requester;
-
-        console.log(id, userId);
-
-        return res.status(503).json({
+    handler: async (_req) => {
+        return {
             status: 'error',
+            code: 503,
             message: 'Service Unavailable',
-        });
+        };
     },
 });
 

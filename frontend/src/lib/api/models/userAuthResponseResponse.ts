@@ -12,8 +12,8 @@ import type { User } from './user';
  * Successful authentication, returning a token, and a refreshToken.
  */
 export type UserAuthResponseResponse = {
-    status?: SuccessStatus;
-    token: string;
-    refreshToken: string;
-    user: User;
+  status?: SuccessStatus;
+  token: string;
+  refreshToken: string;
+  user: User;
 };

@@ -30,9 +30,8 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
     query: z.object({ mode: ModeSchema }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { name, revision } = req.params;
 
@@ -43,10 +42,11 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
         });
 
         if (!publication) {
-            return res.status(404).json({
-                status: false,
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+            return {
+                status: 'error',
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         const result = await Review.find({
@@ -57,10 +57,13 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
             .populate<{ owner: IUser }>('owner')
             .exec();
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            reviews: await Promise.all(result.map(Review.project)),
-        });
+            code: 200,
+            data: {
+                reviews: await Promise.all(result.map(Review.project)),
+            }
+        };
     },
 });
 
@@ -86,9 +89,8 @@ registerRoute(router, '/:username/:name/:revision/review', {
     }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { name, revision } = req.params;
 
@@ -103,10 +105,11 @@ registerRoute(router, '/:username/:name/:revision/review', {
 
         // Check that the publication isn't currently in draft mode...
         if (!publication || publication.draft) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         // Now attempt to create the new review
@@ -125,31 +128,28 @@ registerRoute(router, '/:username/:name/:revision/review', {
         // is returned instead of making a new review...
         if (doc) {
             Logger.info('Using pre-created review for user instead of creating a new one...');
-            return res.status(200).json({
+            return {
                 status: 'ok',
-                review: await Review.project(doc),
-            });
+                code: 200,
+                data: {
+                    review: await Review.project(doc),
+                }
+            };
         }
 
-        try {
-            const newDoc = await new Review(docParams).save();
+        const newDoc = await new Review(docParams).save();
 
-            const populated = await (
-                await newDoc.populate<{ publication: IPublication }>('publication')
-            ).populate<{ owner: IUser }>('owner');
+        const populated = await (
+            await newDoc.populate<{ publication: IPublication }>('publication')
+        ).populate<{ owner: IUser }>('owner');
 
-            return res.status(201).json({
-                status: 'ok',
+        return {
+            status: 'ok',
+            code: 201,
+            data: {
                 review: await Review.project(populated),
-            });
-        } catch (e: unknown) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: errors.INTERNAL_SERVER_ERROR,
-            });
-        }
+            }
+        };
     },
 });
 

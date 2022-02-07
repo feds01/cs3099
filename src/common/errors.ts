@@ -8,6 +8,8 @@
  * specific error messages.
  */
 
+import { ResponseErrorSummary } from "../transformers/error";
+
 interface ExpressError extends Error {
     status?: number;
 }
@@ -19,6 +21,19 @@ export function isExpressError(err: unknown): err is ExpressError {
         typeof (err as { status?: unknown }).status === 'number'
     );
 }
+
+export class ApiError extends Error {
+    readonly code: number;
+    readonly errors?: ResponseErrorSummary;
+
+    constructor(code: number, message: string, errors?: ResponseErrorSummary) {
+        super(message);
+
+        this.code = code;
+        this.errors = errors;
+    }
+}
+
 
 // User Accounts API request errors
 export const USER_EXISTS = 'Username already in use.';

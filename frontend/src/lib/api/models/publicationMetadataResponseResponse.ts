@@ -6,9 +6,11 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { SuccessStatus } from './successStatus';
-import type { PublicationMetadataResponseResponseData } from './publicationMetadataResponseResponseData';
+import type { SgPublication } from './sgPublication';
+import type { SgReview } from './sgReview';
 
 export type PublicationMetadataResponseResponse = {
-    status: SuccessStatus;
-    data: PublicationMetadataResponseResponseData;
+  status: SuccessStatus;
+  publication: SgPublication;
+  reviews: SgReview[];
 };

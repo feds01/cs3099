@@ -7,5 +7,5 @@
  */
 
 export interface EmailValidation {
-    email: string;
+  email: string;
 }

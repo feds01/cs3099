@@ -26,21 +26,25 @@ registerRoute(router, '/:id', {
     query: z.object({}),
     permissionVerification: verifyCommentThreadPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { id } = req.params;
         const comments = Comment.find({ thread: new Schema.Types.ObjectId(id) });
 
         if (!comments) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: errors.NON_EXISTENT_THREAD,
-            });
+            };
         }
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            comments,
-        });
+            code: 200,
+            data: {
+                comments,
+            }
+        };
     },
 });
 
@@ -60,21 +64,23 @@ registerRoute(router, '/:id', {
     query: z.object({}),
     permissionVerification: verifyCommentThreadPermission,
     permission: { level: IUserRole.Moderator },
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { id } = req.params;
 
         const thread = await Comment.deleteMany({ thread: new Schema.Types.ObjectId(id) }).exec();
 
         if (!thread) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                extra: errors.NON_EXISTENT_THREAD,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
-        return res.status(204).json({
+        return {
             status: 'ok',
-        });
+            code: 204,
+        };
     },
 });
 

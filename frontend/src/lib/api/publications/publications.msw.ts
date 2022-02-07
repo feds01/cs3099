@@ -5,228 +5,85 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import { rest } from 'msw';
-import faker from 'faker';
-import { SuccessStatus } from '.././models';
+import {
+  rest
+} from 'msw'
+import faker from 'faker'
+import {
+  SuccessStatus
+} from '.././models'
 
-export const getPostPublicationMock = () => ({
-    status: faker.helpers.randomize(Object.values(SuccessStatus)),
-    publication: {
-        id: faker.random.word(),
-        name: faker.random.word(),
-        title: faker.random.word(),
-        introduction: faker.helpers.randomize([faker.random.word(), undefined]),
-        revision: faker.random.word(),
-        pinned: faker.datatype.boolean(),
-        draft: faker.datatype.boolean(),
-        owner: {
-            id: faker.random.word(),
-            email: faker.random.word(),
-            username: faker.random.word(),
-            firstName: faker.random.word(),
-            lastName: faker.random.word(),
-            createdAt: faker.datatype.number(),
-            profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
-            status: faker.helpers.randomize([faker.random.word(), undefined]),
-            about: faker.helpers.randomize([faker.random.word(), undefined]),
-        },
-        attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
-        collaborators: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => faker.random.word()),
-        createdAt: faker.datatype.number(),
-        updatedAt: faker.datatype.number(),
-    },
-});
+export const getPostPublicationMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), publication: {id: faker.random.word(), name: faker.random.word(), title: faker.random.word(), introduction: faker.helpers.randomize([faker.random.word(), undefined]), revision: faker.random.word(), pinned: faker.datatype.boolean(), draft: faker.datatype.boolean(), owner: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]), collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => (faker.random.word())), createdAt: faker.datatype.number(), updatedAt: faker.datatype.number()}})
 
-export const getDeletePublicationUsernameNameMock = () => ({
-    status: faker.helpers.randomize(Object.values(SuccessStatus)),
-});
+export const getDeletePublicationUsernameNameMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus))})
 
-export const getPatchPublicationUsernameNameMock = () => ({
-    status: faker.helpers.randomize(Object.values(SuccessStatus)),
-    publication: {
-        id: faker.random.word(),
-        name: faker.random.word(),
-        title: faker.random.word(),
-        introduction: faker.helpers.randomize([faker.random.word(), undefined]),
-        revision: faker.random.word(),
-        pinned: faker.datatype.boolean(),
-        draft: faker.datatype.boolean(),
-        owner: {
-            id: faker.random.word(),
-            email: faker.random.word(),
-            username: faker.random.word(),
-            firstName: faker.random.word(),
-            lastName: faker.random.word(),
-            createdAt: faker.datatype.number(),
-            profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
-            status: faker.helpers.randomize([faker.random.word(), undefined]),
-            about: faker.helpers.randomize([faker.random.word(), undefined]),
-        },
-        attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
-        collaborators: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => faker.random.word()),
-        createdAt: faker.datatype.number(),
-        updatedAt: faker.datatype.number(),
-    },
-});
+export const getPatchPublicationUsernameNameMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), publication: {id: faker.random.word(), name: faker.random.word(), title: faker.random.word(), introduction: faker.helpers.randomize([faker.random.word(), undefined]), revision: faker.random.word(), pinned: faker.datatype.boolean(), draft: faker.datatype.boolean(), owner: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]), collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => (faker.random.word())), createdAt: faker.datatype.number(), updatedAt: faker.datatype.number()}})
 
-export const getGetPublicationUsernameNameMock = () => ({
-    status: faker.helpers.randomize(Object.values(SuccessStatus)),
-    publication: {
-        id: faker.random.word(),
-        name: faker.random.word(),
-        title: faker.random.word(),
-        introduction: faker.helpers.randomize([faker.random.word(), undefined]),
-        revision: faker.random.word(),
-        pinned: faker.datatype.boolean(),
-        draft: faker.datatype.boolean(),
-        owner: {
-            id: faker.random.word(),
-            email: faker.random.word(),
-            username: faker.random.word(),
-            firstName: faker.random.word(),
-            lastName: faker.random.word(),
-            createdAt: faker.datatype.number(),
-            profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
-            status: faker.helpers.randomize([faker.random.word(), undefined]),
-            about: faker.helpers.randomize([faker.random.word(), undefined]),
-        },
-        attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
-        collaborators: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => faker.random.word()),
-        createdAt: faker.datatype.number(),
-        updatedAt: faker.datatype.number(),
-    },
-});
+export const getGetPublicationUsernameNameMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), publication: {id: faker.random.word(), name: faker.random.word(), title: faker.random.word(), introduction: faker.helpers.randomize([faker.random.word(), undefined]), revision: faker.random.word(), pinned: faker.datatype.boolean(), draft: faker.datatype.boolean(), owner: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]), collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => (faker.random.word())), createdAt: faker.datatype.number(), updatedAt: faker.datatype.number()}})
 
-export const getGetPublicationUsernameMock = () => ({
-    status: faker.helpers.randomize(Object.values(SuccessStatus)),
-    data: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
-        id: faker.random.word(),
-        name: faker.random.word(),
-        title: faker.random.word(),
-        introduction: faker.helpers.randomize([faker.random.word(), undefined]),
-        revision: faker.random.word(),
-        pinned: faker.datatype.boolean(),
-        draft: faker.datatype.boolean(),
-        owner: {
-            id: faker.random.word(),
-            email: faker.random.word(),
-            username: faker.random.word(),
-            firstName: faker.random.word(),
-            lastName: faker.random.word(),
-            createdAt: faker.datatype.number(),
-            profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
-            status: faker.helpers.randomize([faker.random.word(), undefined]),
-            about: faker.helpers.randomize([faker.random.word(), undefined]),
-        },
-        attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
-        collaborators: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => faker.random.word()),
-        createdAt: faker.datatype.number(),
-        updatedAt: faker.datatype.number(),
-    })),
-});
+export const getGetPublicationUsernameMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), publications: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({id: faker.random.word(), name: faker.random.word(), title: faker.random.word(), introduction: faker.helpers.randomize([faker.random.word(), undefined]), revision: faker.random.word(), pinned: faker.datatype.boolean(), draft: faker.datatype.boolean(), owner: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]), collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => (faker.random.word())), createdAt: faker.datatype.number(), updatedAt: faker.datatype.number()}))})
 
-export const getPostPublicationUsernameNameExportMock = () => ({
-    status: faker.helpers.randomize(Object.values(SuccessStatus)),
-});
+export const getPostPublicationUsernameNameExportMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus))})
 
-export const getGetPublicationUsernameNameRevisionsMock = () => ({
-    status: faker.datatype.boolean(),
-    data: {
-        revisions: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
-            id: faker.random.word(),
-            name: faker.random.word(),
-            title: faker.random.word(),
-            introduction: faker.helpers.randomize([faker.random.word(), undefined]),
-            revision: faker.random.word(),
-            pinned: faker.datatype.boolean(),
-            draft: faker.datatype.boolean(),
-            owner: {
-                id: faker.random.word(),
-                email: faker.random.word(),
-                username: faker.random.word(),
-                firstName: faker.random.word(),
-                lastName: faker.random.word(),
-                createdAt: faker.datatype.number(),
-                profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
-                status: faker.helpers.randomize([faker.random.word(), undefined]),
-                about: faker.helpers.randomize([faker.random.word(), undefined]),
-            },
-            attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
-            collaborators: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => faker.random.word()),
-            createdAt: faker.datatype.number(),
-            updatedAt: faker.datatype.number(),
-        })),
-    },
-});
+export const getGetPublicationUsernameNameRevisionsMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), revisions: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({id: faker.random.word(), name: faker.random.word(), title: faker.random.word(), introduction: faker.helpers.randomize([faker.random.word(), undefined]), revision: faker.random.word(), pinned: faker.datatype.boolean(), draft: faker.datatype.boolean(), owner: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]), collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => (faker.random.word())), createdAt: faker.datatype.number(), updatedAt: faker.datatype.number()}))})
 
-export const getGetPublicationUsernameNameTreePathMock = () => ({
-    status: faker.helpers.randomize(Object.values(SuccessStatus)),
-    data: faker.helpers.randomize([
-        {
-            type: faker.helpers.randomize(['file']),
-            filename: faker.random.word(),
-            contents: faker.random.word(),
-            updatedAt: faker.datatype.number(),
-        },
-        {
-            type: faker.helpers.randomize(['directory']),
-            entries: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
-                type: faker.helpers.randomize(['file', 'directory']),
-                filename: faker.random.word(),
-                updatedAt: faker.datatype.number(),
-            })),
-        },
-    ]),
-});
+export const getGetPublicationUsernameNameTreePathMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), entry: faker.helpers.randomize([{type: faker.helpers.randomize(['file']), filename: faker.random.word(), contents: faker.random.word(), updatedAt: faker.datatype.number()},{type: faker.helpers.randomize(['directory']), entries: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({type: faker.helpers.randomize(['file','directory']), filename: faker.random.word(), updatedAt: faker.datatype.number()}))}])})
 
-export const getGetPublicationUsernameNameAllMock = () => ({
-    status: faker.helpers.randomize(Object.values(SuccessStatus)),
-    entries: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
-        type: faker.helpers.randomize(['file']),
-        filename: faker.random.word(),
-        contents: faker.random.word(),
-        updatedAt: faker.datatype.number(),
-    })),
-});
+export const getGetPublicationUsernameNameAllMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), entries: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({type: faker.helpers.randomize(['file']), filename: faker.random.word(), contents: faker.random.word(), updatedAt: faker.datatype.number()}))})
 
 export const getPublicationsMSW = () => [
-    rest.post('*/publication', (_req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPostPublicationMock()));
-    }),
-    rest.delete('*/publication/:username/:name', (_req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getDeletePublicationUsernameNameMock()));
-    }),
-    rest.patch('*/publication/:username/:name', (_req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPatchPublicationUsernameNameMock()));
-    }),
-    rest.get('*/publication/:username/:name', (_req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetPublicationUsernameNameMock()));
-    }),
-    rest.get('*/publication/:username', (_req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetPublicationUsernameMock()));
-    }),
-    rest.post('*/publication/:username/:name/export', (_req, res, ctx) => {
+rest.post('*/publication', (_req, res, ctx) => {
         return res(
-            ctx.delay(1000),
-            ctx.status(200, 'Mocked status'),
-            ctx.json(getPostPublicationUsernameNameExportMock()),
-        );
-    }),
-    rest.get('*/publication/:username/:name/revisions', (_req, res, ctx) => {
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getPostPublicationMock()),
+        )
+      }),rest.delete('*/publication/:username/:name', (_req, res, ctx) => {
         return res(
-            ctx.delay(1000),
-            ctx.status(200, 'Mocked status'),
-            ctx.json(getGetPublicationUsernameNameRevisionsMock()),
-        );
-    }),
-    rest.get('*/publication/:username/:name/tree/:path', (_req, res, ctx) => {
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getDeletePublicationUsernameNameMock()),
+        )
+      }),rest.patch('*/publication/:username/:name', (_req, res, ctx) => {
         return res(
-            ctx.delay(1000),
-            ctx.status(200, 'Mocked status'),
-            ctx.json(getGetPublicationUsernameNameTreePathMock()),
-        );
-    }),
-    rest.get('*/publication/:username/:name/all', (_req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetPublicationUsernameNameAllMock()));
-    }),
-];
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getPatchPublicationUsernameNameMock()),
+        )
+      }),rest.get('*/publication/:username/:name', (_req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetPublicationUsernameNameMock()),
+        )
+      }),rest.get('*/publication/:username', (_req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetPublicationUsernameMock()),
+        )
+      }),rest.post('*/publication/:username/:name/export', (_req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getPostPublicationUsernameNameExportMock()),
+        )
+      }),rest.get('*/publication/:username/:name/revisions', (_req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetPublicationUsernameNameRevisionsMock()),
+        )
+      }),rest.get('*/publication/:username/:name/tree/:path', (_req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetPublicationUsernameNameTreePathMock()),
+        )
+      }),rest.get('*/publication/:username/:name/all', (_req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetPublicationUsernameNameAllMock()),
+        )
+      }),]

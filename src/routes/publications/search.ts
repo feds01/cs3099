@@ -21,12 +21,13 @@ registerRoute(router, '/search', {
     params: z.object({}),
     query: z.object({}),
     permission: { level: IUserRole.Default },
-    handler: async (_req, res) => {
+    handler: async (_req) => {
         // TODO: Implement search endpoint
-        return res.status(503).json({
+        return {
             status: 'error',
+            code: 503,
             message: 'Service Unavailable',
-        });
+        };
     },
 });
 

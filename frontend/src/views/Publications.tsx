@@ -25,7 +25,7 @@ export default function Publications({ user, limit, withTitle = true }: Props): 
         if (getPublicationQuery.data) {
             // Here we essentially have to sort by pinned publications and then add remaining
             // publications that have been added up to the specified limit.
-            const data = getPublicationQuery.data.data.sort((a, b) => {
+            const data = getPublicationQuery.data.publications.sort((a, b) => {
                 if (a.pinned && b.pinned) return 0;
 
                 return a.pinned > b.pinned ? -1 : 0;

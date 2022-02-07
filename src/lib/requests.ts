@@ -12,6 +12,7 @@ import {
 import { expr } from '../utils/expr';
 import { transformZodErrorIntoResponseError } from '../transformers/error';
 import Logger from '../common/logger';
+import { ApiResponse, handleResponse } from './response';
 
 type RequestMethodWithBody = 'post' | 'put' | 'patch';
 type RequestMethodWithoutBody = 'delete' | 'get';
@@ -23,14 +24,16 @@ function registrarHasBody<
     Method extends RequestMethod,
     Body,
     RoutePermission extends Permission | null,
+    Res,
     >(
-        registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission>,
+        registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
 ): registrar is RegisterRoute<
     Params,
     Query,
     Method & RequestMethodWithBody,
     Body,
-    RoutePermission
+    RoutePermission,
+    Res
 > {
     return (
         registrar.method === 'post' || registrar.method === 'put' || registrar.method === 'patch'
@@ -54,6 +57,7 @@ type RegisterRoute<
     Method extends RequestMethod,
     Body,
     RoutePermission extends Permission | null,
+    Res,
     > = {
         method: Method;
         permission: RoutePermission;
@@ -71,9 +75,8 @@ type RegisterRoute<
                 Query,
                 RoutePermission extends null ? null : IUserDocument,
                 Method extends RequestMethodWithBody ? Body : null
-            >,
-            res: express.Response,
-        ) => Promise<unknown>;
+            >
+        ) => Promise<ApiResponse<Res>>;
     } & (Method extends RequestMethodWithBody
         ? { body: z.Schema<Body, z.ZodTypeDef, Record<string, any>> }
         : {});
@@ -84,19 +87,20 @@ export default function registerRoute<
     Method extends RequestMethod,
     Body,
     RoutePermission extends Permission | null,
+    Res,
     >(
         router: express.Router,
         path: string,
-        registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission>,
+        registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
 ) {
-    const wrappedHandler = async (req: express.Request, res: express.Response) => {
+    const wrappedHandler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
             const params = await registrar.params.parseAsync(req.params);
             const query = await registrar.query.parseAsync(req.query);
 
             let body: Body | null = null;
 
-            // Only attempt to parse the body if this method type demands that there is 
+            // Only attempt to parse the body if this method type demands that there is
             // a body on the request.
             if (registrarHasBody(registrar)) {
                 body = await registrar.body.parseAsync(req.body);
@@ -128,21 +132,13 @@ export default function registerRoute<
                 return null;
             });
 
-            if (typeof permissions === 'string') {
-                return res.status(401).json({
-                    status: 'error',
-                    message: permissions,
-                });
+            if (typeof permissions === 'string' ||
+                permissions?.valid === false
+            ) {
+                throw new errors.ApiError(401, errors.UNAUTHORIZED);
             }
 
-            if (permissions?.valid === false) {
-                return res.status(401).json({
-                    status: 'error',
-                    message: errors.UNAUTHORIZED,
-                });
-            }
-
-            return await registrar.handler(
+            const result = await registrar.handler(
                 {
                     ...basicRequest,
                     // @@Cleanup: would be nice if we could get rid of this!
@@ -150,25 +146,38 @@ export default function registerRoute<
                     // @ts-ignore
                     requester: permissions?.user ?? null,
                 },
-                res,
             );
+
+            return handleResponse(res, result)
+
         } catch (e: unknown) {
             if (e instanceof ZodError) {
-                return res.status(400).json({
+                res.status(400).json({
                     status: 'error',
                     message: "Request parameters didn't match the expected format.",
                     errors: transformZodErrorIntoResponseError(e),
                 });
+                return;
+            }
+
+            if (e instanceof errors.ApiError) {
+                res.status(e.code).json({
+                    status: false,
+                    message: e.message,
+                    ...(e.errors && { errors: e.errors })
+                });
+                return;
             }
 
             // If something else went wrong that we don't quite understand, then we return an
             // internal server error as this was unexpected
             Logger.error(`Server encountered an unexpected error:\n${e}`);
 
-            return res.status(500).json({
+            res.status(500).json({
                 status: 'error',
                 message: errors.INTERNAL_SERVER_ERROR,
             });
+            return;
         }
     };
 

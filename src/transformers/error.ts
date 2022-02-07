@@ -5,7 +5,7 @@ export type ResponseError = {
     message: string;
 };
 
-export type ResponseErrorSummary = { [path: string]: ResponseError };
+export type ResponseErrorSummary = Record<string, ResponseError>;
 
 /**
  *

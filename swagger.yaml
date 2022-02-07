@@ -815,11 +815,11 @@ paths:
                                 type: object
                                 required:
                                     - status
-                                    - data
+                                    - publications
                                 properties:
                                     status:
                                         $ref: '#/components/schemas/SuccessStatus'
-                                    data:
+                                    publications:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/Publication'
@@ -895,6 +895,7 @@ paths:
                     description: Returns the requested publications.
                     content:
                         application/json:
+
                             schema:
                                 type: object
                                 required:
@@ -1031,8 +1032,7 @@ paths:
                                     - review
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     review:
                                         $ref: '#/components/schemas/Review'
                 default:
@@ -1076,8 +1076,7 @@ paths:
                                     - reviews
                                 properties:
                                     status:
-                                        type: boolean
-                                        example: true
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     reviews:
                                         type: array
                                         items:
@@ -1537,11 +1536,11 @@ components:
                         type: object
                         required:
                             - status
-                            - data
+                            - entry
                         properties:
                             status:
                                 $ref: '#/components/schemas/SuccessStatus'
-                            data:
+                            entry:
                                 oneOf:
                                     - $ref: '#/components/schemas/FileResponse'
                                     - $ref: '#/components/schemas/DirectoryResponse'
@@ -1606,22 +1605,17 @@ components:
                         type: object
                         required:
                             - status
-                            - data
+                            - publication
+                            - reviews
                         properties:
                             status:
                                 $ref: '#/components/schemas/SuccessStatus'
-                            data:
-                                type: object
-                                required:
-                                    - publication
-                                    - reviews
-                                properties:
-                                    publication:
-                                        $ref: '#/components/schemas/SgPublication'
-                                    reviews:
-                                        type: array
-                                        items:
-                                            $ref: '#/components/schemas/SgReview'
+                            publication:
+                                $ref: '#/components/schemas/SgPublication'
+                            reviews:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/SgReview'
         CreatePublicationResponse:
             description: Response creating a publication.
             content:

@@ -24,7 +24,7 @@ registerRoute(router, '/:id', {
     params: z.object({ id: ObjectIdSchema }),
     permissionVerification: verifyCommentPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { id } = req.params;
 
         const comment = await Comment.findById(id)
@@ -32,16 +32,20 @@ registerRoute(router, '/:id', {
             .exec();
 
         if (!comment) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: error.NON_EXISTENT_COMMENT,
-            });
+            };
         }
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            comment: Comment.project(comment),
-        });
+            code: 200,
+            data: {
+                comment: Comment.project(comment),
+            }
+        };
     },
 });
 
@@ -76,7 +80,7 @@ registerRoute(router, '/:id', {
     params: z.object({ id: ObjectIdSchema }),
     permissionVerification: verifyCommentPermission,
     permission: { level: IUserRole.Default },
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { id } = req.params;
         const { contents } = req.body;
 
@@ -90,16 +94,20 @@ registerRoute(router, '/:id', {
             .exec();
 
         if (!updatedComment) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: error.NON_EXISTENT_COMMENT,
-            });
+            };
         }
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            comment: Comment.project(updatedComment),
-        });
+            code: 200,
+            data: {
+                comment: Comment.project(updatedComment),
+            }
+        };
     },
 });
 
@@ -121,7 +129,7 @@ registerRoute(router, '/:id', {
     params: z.object({ id: ObjectIdSchema }),
     permissionVerification: verifyCommentPermission,
     permission: { level: IUserRole.Administrator },
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { id } = req.params;
 
         // @@Future: We shouldn't actually delete the comment, what we should do is remove
@@ -130,16 +138,17 @@ registerRoute(router, '/:id', {
         const comment = await Comment.findByIdAndDelete(id).exec();
 
         if (!comment) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: error.NON_EXISTENT_COMMENT,
-            });
+            };
         }
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            message: 'Successfully deleted comment.',
-        });
+            code: 200,
+        };
     },
 });
 

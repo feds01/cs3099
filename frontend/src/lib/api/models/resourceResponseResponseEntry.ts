@@ -5,15 +5,7 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import type { CommentAnchor } from './commentAnchor';
+import type { FileResponse } from './fileResponse';
+import type { DirectoryResponse } from './directoryResponse';
 
-export interface SgComment {
-  id: number;
-  replying?: number;
-  filename?: string;
-  anchor?: CommentAnchor;
-  contents: string;
-  author: string;
-  thread: number;
-  postedAt: number;
-}
+export type ResourceResponseResponseEntry = FileResponse | DirectoryResponse;

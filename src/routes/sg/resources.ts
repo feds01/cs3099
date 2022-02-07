@@ -40,7 +40,7 @@ registerRoute(router, '/import', {
     body: z.object({}),
     query: z.object({ from: z.string().url(), id: z.string(), token: z.string() }),
     permission: null,
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { from, token, id } = req.query;
 
         // we'll send off these headers with both requests...
@@ -57,11 +57,12 @@ registerRoute(router, '/import', {
         );
 
         if (publicationArchive.status === 'error') {
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message: `request failed due to: ${publicationArchive.type}`,
-                error: publicationArchive.errors || {},
-            });
+                errors: publicationArchive.errors
+            };
         }
 
         // Attempt to fetch the metadata of the review
@@ -78,11 +79,12 @@ registerRoute(router, '/import', {
                     metadata.errors,
                 )}`,
             );
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message: `request failed due to: ${metadata.type}`,
                 errors: metadata.errors,
-            });
+            };
         }
 
         const { publication, reviews } = metadata.response.data;
@@ -94,40 +96,33 @@ registerRoute(router, '/import', {
         const userImport = await importUser(publication.owner);
 
         if (userImport.status === 'error') {
-            return res.status(400).json({
+            return {
+                code: 400,
                 ...userImport,
-            });
+            };
         }
 
-        try {
-            const doc = await new Publication({
-                ...publication,
-                owner: userImport.item.id.toString(),
-            }).save();
 
-            // now we need to move the file to it's home location...
-            const finalPath = archiveIndexToPath({
-                userId: doc.owner.toString(),
-                name: doc.name,
-            });
+        const doc = await new Publication({
+            ...publication,
+            owner: userImport.item.id.toString(),
+        }).save();
 
-            await moveResource(publicationArchive.response, finalPath);
+        // now we need to move the file to it's home location...
+        const finalPath = archiveIndexToPath({
+            userId: doc.owner.toString(),
+            name: doc.name,
+        });
 
-            //@@TODO: We have to deal with reviews here...
-            // const reviewImportErrors = []
-            for (const review of reviews) {
-                Logger.info(`Attempting to import user ${review.owner} for review`);
-            }
+        await moveResource(publicationArchive.response, finalPath);
 
-            return res.status(200).json({ status: 'ok' });
-        } catch (e: unknown) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: errors.INTERNAL_SERVER_ERROR,
-            });
+        //@@TODO: We have to deal with reviews here...
+        // const reviewImportErrors = []
+        for (const review of reviews) {
+            Logger.info(`Attempting to import user ${review.owner} for review`);
         }
+
+        return { status: 'ok', code: 200 };
     },
 });
 
@@ -151,14 +146,15 @@ registerRoute(router, '/export/:id/metadata', {
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({ from: z.string().url(), state: z.string() }),
     permission: null,
-    handler: async (req, res) => {
+    handler: async (req) => {
         const publication = await Publication.findById(req.params.id).exec();
 
         if (!publication || publication.draft) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                error: errors.NON_EXISTENT_PUBLICATION_ID,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         // Okay, let's find all the reviews that are related to the current revision
@@ -172,13 +168,15 @@ registerRoute(router, '/export/:id/metadata', {
             .populate<{ owner: IUser }>('owner')
             .exec();
 
-
-        return res.status(200).json({
+        return {
             status: 'ok',
-            publication: await Publication.projectAsSg(publication),
-            reviews: await Promise.all(reviews.map(Review.projectAsSg)),
-        });
-    }
+            code: 200,
+            data: {
+                publication: await Publication.projectAsSg(publication),
+                reviews: await Promise.all(reviews.map(Review.projectAsSg)),
+            }
+        };
+    },
 });
 
 /**
@@ -200,20 +198,25 @@ registerRoute(router, '/export/:id', {
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({ from: z.string().url(), state: z.string() }),
     permission: null,
-    handler: async (req, res) => {
+    handler: async (req) => {
         const publication = await Publication.findById(req.params.id);
 
         if (!publication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                error: errors.NON_EXISTENT_PUBLICATION_ID,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         const { owner, name, revision } = publication;
         const archive = archiveIndexToPath({ userId: owner.toString(), name, revision });
 
-        return res.status(200).sendFile(archive);
+        return {
+            status: "file",
+            code: 200,
+            file: archive
+        };
     },
 });
 

@@ -9,8 +9,8 @@ import * as error from '../../common/errors';
 import registerRoute from '../../lib/requests';
 import State from '../../models/State';
 import { createTokens, JwtError, refreshTokens, verifyToken } from '../../lib/auth';
-import { IEmailValiditySchema, IUsernameValiditySchema } from '../../validators/auth';
 import { IUserLoginRequestSchema, IUserRegisterRequestSchema } from '../../validators/user';
+import { ApiResponse } from '../../lib/response';
 
 const router = express.Router();
 
@@ -36,33 +36,33 @@ const router = express.Router();
  * whether username is in use.
  *
  * */
-registerRoute(router, '/username_validity', {
-    method: 'post',
-    body: IUsernameValiditySchema,
-    params: z.object({}),
-    query: z.object({}),
-    permission: null,
-    handler: async (req, res) => {
-        const result = await User.findOne({
-            name: req.body.username,
-            externalId: { $exists: false },
-        }).exec();
+// registerRoute(router, '/username_validity', {
+//     method: 'post',
+//     body: IUsernameValiditySchema,
+//     params: z.object({}),
+//     query: z.object({}),
+//     permission: null,
+//     handler: async (req, res) => {
+//         const result = await User.findOne({
+//             name: req.body.username,
+//             externalId: { $exists: false },
+//         }).exec();
 
-        // If the email wasn't found, then return a not found status.
-        if (!result) {
-            return res.status(404).json({
-                status: 'ok',
-                message: 'Username address not in use',
-            });
-        }
+//         // If the email wasn't found, then return a not found status.
+//         if (!result) {
+//             return res.status(404).json({
+//                 status: 'ok',
+//                 message: 'Username address not in use',
+//             });
+//         }
 
-        // Unprocessable Entity
-        return res.status(422).json({
-            status: 'ok',
-            message: 'Username exists',
-        });
-    },
-});
+//         // Unprocessable Entity
+//         return res.status(422).json({
+//             status: 'ok',
+//             message: 'Username exists',
+//         });
+//     },
+// });
 
 /**
  * @version v1.0.0
@@ -86,33 +86,34 @@ registerRoute(router, '/username_validity', {
  * whether the email is in use.
  *
  * */
-registerRoute(router, '/email_validity', {
-    method: 'post',
-    body: IEmailValiditySchema,
-    params: z.object({}),
-    query: z.object({}),
-    permission: null,
-    handler: async (req, res) => {
-        const result = await User.findOne({
-            email: req.body.email,
-            externalId: { $exists: false },
-        }).exec();
+// registerRoute(router, '/email_validity', {
+//     method: 'post',
+//     body: IEmailValiditySchema,
+//     params: z.object({}),
+//     query: z.object({}),
+//     permission: null,
+//     handler: async (req) => {
+//         const result = await User.findOne({
+//             email: req.body.email,
+//             externalId: { $exists: false },
+//         }).exec();
 
-        // If the email wasn't found, then return a not found status.
-        if (!result) {
-            return res.status(404).json({
-                status: 'ok',
-                message: 'Email address not in use',
-            });
-        }
+//         // If the email wasn't found, then return a not found status.
+//         if (!result) {
+//             return res.status(404).json({
+//                 status: 'ok',
 
-        // Unprocessable Entity
-        return res.status(422).json({
-            status: 'ok',
-            message: 'Email exists',
-        });
-    },
-});
+//                 message: 'Email address not in use',
+//             });
+//         }
+
+//         // Unprocessable Entity
+//         return res.status(422).json({
+//             status: 'ok',
+//             message: 'Email exists',
+//         });
+//     },
+// });
 
 /**
  * @version v1.0.0
@@ -130,10 +131,10 @@ registerRoute(router, '/session', {
     params: z.object({}),
     query: z.object({}),
     permission: null,
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { token, refreshToken } = req.body;
 
-        async function attemptToRefreshTokens(token: string) {
+        async function attemptToRefreshTokens(token: string): Promise<ApiResponse<unknown>> {
             try {
                 const { id } = await verifyToken(token, config.jwtRefreshSecret);
                 const refreshedTokensOrError = refreshTokens(token);
@@ -142,37 +143,45 @@ registerRoute(router, '/session', {
                 const user = await User.findById(id);
 
                 if (!user) {
-                    return res.status(400).json({
+                    return {
                         status: 'error',
+                        code: 400,
                         message: 'Invalid JWT',
-                    });
+                    }
                 }
 
                 // Check if refreshing the tokens failed so that we can return it earlier
                 if (typeof refreshedTokensOrError === 'string') {
-                    return res.status(400).json({
+                    return {
                         status: 'error',
+                        code: 400,
                         message: refreshedTokensOrError,
-                    });
+                    };
                 }
 
-                return res.status(200).json({
+                return {
                     status: 'ok',
-                    user: User.project(user),
-                    ...refreshedTokensOrError,
-                });
+                    code: 200,
+                    data: {
+                        user: User.project(user),
+                        ...refreshedTokensOrError,
+                    }
+                }
             } catch (e: unknown) {
                 if (e instanceof JwtError) {
-                    return res.status(400).json({
+                    return {
                         status: 'error',
+                        code: 400,
                         message: e.type,
-                    });
+                    };
                 }
 
-                return res.status(500).json({
+                Logger.error(`Server encountered an unexpected error:\n${e}`);
+                return {
                     status: 'error',
+                    code: 500,
                     message: error.INTERNAL_SERVER_ERROR,
-                });
+                };
             }
         }
 
@@ -187,16 +196,19 @@ registerRoute(router, '/session', {
                     return attemptToRefreshTokens(refreshToken);
                 }
 
-                return res.status(400).json({
+                return {
                     status: 'error',
+                    code: 400,
                     message: e.type,
-                });
+                };
             }
 
-            return res.status(500).json({
+            Logger.error(`Server encountered an unexpected error:\n${e}`);
+            return {
                 status: 'error',
+                code: 500,
                 message: error.INTERNAL_SERVER_ERROR,
-            });
+            };
         }
     },
 });
@@ -222,7 +234,7 @@ registerRoute(router, '/sso', {
     query: z.object({ to: z.string().url(), path: z.string().optional() }),
     params: z.object({}),
     body: z.object({}),
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { to, path } = req.query;
 
         // @@Security: assert that the to URL is valid and exists in the supergroup service map.
@@ -242,10 +254,13 @@ registerRoute(router, '/sso', {
             to,
         );
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            follow: url.toString(),
-        });
+            code: 200,
+            data: {
+                follow: url.toString(),
+            }
+        };
     },
 });
 
@@ -291,45 +306,29 @@ registerRoute(router, '/register', {
     params: z.object({}),
     query: z.object({}),
     permission: null,
-    handler: async (req, res) => {
+    handler: async (req) => {
         // generate the salt for the new user account;
         const salt = await bcrypt.genSalt();
+        const hash = await bcrypt.hash(req.body.password, salt);
 
-        return bcrypt.hash(req.body.password, salt, async (err, hash) => {
-            if (err) {
-                Logger.error(err);
+        const savedUser = await new User({ ...req.body, password: hash }).save();
 
-                return res.status(500).json({
-                    status: 'error',
-                    message: error.INTERNAL_SERVER_ERROR,
-                });
-            }
-
-            try {
-                const savedUser = await new User({ ...req.body, password: hash }).save();
-
-                const { email, username } = req.body;
-                const { token, refreshToken } = await createTokens({
-                    email,
-                    username,
-                    id: savedUser.id,
-                });
-
-                return res.status(201).json({
-                    status: 'ok',
-                    user: User.project(savedUser),
-                    token,
-                    refreshToken,
-                });
-            } catch (e: unknown) {
-                Logger.error(e);
-
-                return res.status(500).json({
-                    status: 'error',
-                    message: error.INTERNAL_SERVER_ERROR,
-                });
-            }
+        const { email, username } = req.body;
+        const { token, refreshToken } = await createTokens({
+            email,
+            username,
+            id: savedUser.id,
         });
+
+        return {
+            status: 'ok',
+            code: 201,
+            data: {
+                user: User.project(savedUser),
+                token,
+                refreshToken,
+            }
+        };
     },
 });
 
@@ -379,7 +378,7 @@ registerRoute(router, '/login', {
     params: z.object({}),
     query: z.object({}),
     permission: null,
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { username, password, isEmail } = req.body;
 
         const searchQuery = isEmail ? { email: username } : { username };
@@ -392,48 +391,43 @@ registerRoute(router, '/login', {
         // username not found. This could lead to a brute force attack to retrieve
         // all existent user names.
         if (!result) {
-            return res.status(401).json({
+            return {
                 status: 'error',
+                code: 401,
                 message: error.MISMATCHING_LOGIN,
-            });
+            };
         }
 
-        return bcrypt.compare(password, result.password, async (err, response) => {
-            if (err) {
-                // Log the error in the server console & respond to the client with an
-                // INTERNAL_SERVER_ERROR, since this was an unexpected exception.
-                Logger.error(err);
+        const passwordEqual = await bcrypt.compare(password, result.password);
 
-                return res.status(500).json({
-                    status: 'error',
-                    message: error.INTERNAL_SERVER_ERROR,
-                });
-            }
 
-            // If the sent over password matches the hashed password within the database, generate the
-            // token and refreshToken JWT's . Also, update the 'last_login' timestamp and record
-            // an entry for the user logging in into the system.
-            if (response) {
-                const { token, refreshToken } = createTokens({
-                    email: result.email,
-                    username: result.username,
-                    id: result.id,
-                });
+        // If the sent over password matches the hashed password within the database, generate the
+        // token and refreshToken JWT's . Also, update the 'last_login' timestamp and record
+        // an entry for the user logging in into the system.
+        if (passwordEqual) {
+            const { token, refreshToken } = createTokens({
+                email: result.email,
+                username: result.username,
+                id: result.id,
+            });
 
-                return res.status(200).json({
-                    status: 'ok',
-                    message: 'Authentication successful',
+            return {
+                status: 'ok',
+                code: 200,
+                data: {
                     user: User.project(result),
                     token,
                     refreshToken,
-                });
-            }
-            // password did not match the stored hashed password within the database
-            return res.status(401).json({
-                status: 'error',
-                message: error.MISMATCHING_LOGIN,
-            });
-        });
+                }
+            };
+        }
+
+        // password did not match the stored hashed password within the database
+        return {
+            status: 'error',
+            code: 401,
+            message: error.MISMATCHING_LOGIN,
+        }
     },
 });
 

@@ -8,7 +8,8 @@
 
 export type SuccessStatus = 'ok';
 
+
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const SuccessStatus = {
-    ok: 'ok' as SuccessStatus,
+  ok: 'ok' as SuccessStatus,
 };
