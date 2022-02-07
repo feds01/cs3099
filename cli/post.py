@@ -58,7 +58,7 @@ def show(prod):
     if publications_res["status"] is True:
         publications = publications_res["data"]
         for pub in publications:
-            print(f"{pub['title']} : {pub['id']}")
+            print(f"{pub['title']} ({pub['revision']}) : {pub['id']}")
     else:
         print("No publications found")
 
