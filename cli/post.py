@@ -63,20 +63,20 @@ def show(prod):
         print("No publications found")
 
 @cli.command()
-@click.option("--file", help="Path of the file to be uploaded", type=str, default=None)
-@click.option("--publication", help="Publication ID", type=str, default=None)
+@click.option("--file", prompt="File Path", help="Path of the file to be uploaded", type=click.Path(exists=True))
+@click.option("--publication", prompt="Publication ID", help="Publication ID", type=str)
 @click.option("--prod", help="Use production server", is_flag=True)
 def upload(file, publication, prod):
     base_url = prod_url if prod else dev_url
     username, headers = get_auth()
     if username is None or headers is None:
         return
-    
-    if file is None:
-        file = click.prompt("File path")
-    if publication is None:
-        publication = click.prompt("Publication ID")
-        
+
+    # TODO: A validator will be implemented in the future
+    if not file.endswith(".zip"):
+        click.echo("File must be a zip file")
+        return
+
     upload_body = {"file": (file, open(file, "rb"), "application/zip")}
     upload_res = requests.post(f"{base_url}/resource/upload/publication/{publication}", files=upload_body, headers=headers)
 
