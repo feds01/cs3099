@@ -31,7 +31,7 @@ def cli():
 @click.option("--username", prompt="Username", help="Username", type=str)
 @click.option("--password", prompt="Password", hide_input=True, help="Password", type=str)
 @click.option("--prod", help="Use production server", is_flag=True)
-def login(username, password, prod):
+def login(username: str, password: str, prod: bool):
     base_url = prod_url if prod else dev_url
     login_body = {
         "username": username,
@@ -48,7 +48,7 @@ def login(username, password, prod):
 
 @cli.command()
 @click.option("--prod", help="Use production server", is_flag=True)
-def show(prod):
+def show(prod: bool):
     base_url = prod_url if prod else dev_url
     username, headers = get_auth()
     if username is None or headers is None:
@@ -66,7 +66,7 @@ def show(prod):
 @click.option("--file", prompt="File Path", help="Path of the file to be uploaded", type=click.Path(exists=True))
 @click.option("--publication", prompt="Publication ID", help="Publication ID", type=str)
 @click.option("--prod", help="Use production server", is_flag=True)
-def upload(file, publication, prod):
+def upload(file: click.types.Path, publication: str, prod: bool):
     base_url = prod_url if prod else dev_url
     username, headers = get_auth()
     if username is None or headers is None:
