@@ -3,7 +3,8 @@ import json
 import click
 import requests
 
-base_url = "http://localhost:5000"
+dev_url = "http://localhost:5000"
+prod_url = "https://cs3099user06.host.cs.st-andrews.ac.uk/api"
 
 def get_auth():
     username = None
@@ -29,7 +30,9 @@ def cli():
 @cli.command()
 @click.option("--username", prompt="Username", help="Username", type=str)
 @click.option("--password", prompt="Password", hide_input=True, help="Password", type=str)
-def login(username, password):
+@click.option("--prod", help="Use production server", is_flag=True)
+def login(username, password, prod):
+    base_url = prod_url if prod else dev_url
     login_body = {
         "username": username,
         "password": password
@@ -44,7 +47,9 @@ def login(username, password):
         click.echo("Login failed")
 
 @cli.command()
-def show():
+@click.option("--prod", help="Use production server", is_flag=True)
+def show(prod):
+    base_url = prod_url if prod else dev_url
     username, headers = get_auth()
     if username is None or headers is None:
         return
@@ -60,7 +65,9 @@ def show():
 @cli.command()
 @click.option("--file", help="Path of the file to be uploaded", type=str, default=None)
 @click.option("--publication", help="Publication ID", type=str, default=None)
-def upload(file, publication):
+@click.option("--prod", help="Use production server", is_flag=True)
+def upload(file, publication, prod):
+    base_url = prod_url if prod else dev_url
     username, headers = get_auth()
     if username is None or headers is None:
         return
