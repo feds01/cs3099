@@ -62,7 +62,7 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
             code: 200,
             data: {
                 reviews: await Promise.all(result.map(Review.project)),
-            }
+            },
         };
     },
 });
@@ -133,7 +133,7 @@ registerRoute(router, '/:username/:name/:revision/review', {
                 code: 200,
                 data: {
                     review: await Review.project(doc),
-                }
+                },
             };
         }
 
@@ -148,7 +148,7 @@ registerRoute(router, '/:username/:name/:revision/review', {
             code: 201,
             data: {
                 review: await Review.project(populated),
-            }
+            },
         };
     },
 });

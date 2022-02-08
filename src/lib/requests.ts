@@ -25,8 +25,8 @@ function registrarHasBody<
     Body,
     RoutePermission extends Permission | null,
     Res,
-    >(
-        registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
+>(
+    registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
 ): registrar is RegisterRoute<
     Params,
     Query,
@@ -58,28 +58,28 @@ type RegisterRoute<
     Body,
     RoutePermission extends Permission | null,
     Res,
-    > = {
-        method: Method;
-        permission: RoutePermission;
-        sgMode?: boolean;
-        // @@Cleanup: Since permission verification doesn't actually use the body for any
-        //            verification at the moment, we don't actually include in the verification
-        //            of the permissions. This could be a limitation in the future, but it is hard
-        //            to reason about whether it is null or not a given point,
-        permissionVerification?: PermissionVerificationFn<Params, Query>;
-        params: z.Schema<Params, z.ZodTypeDef, Record<string, any>>;
-        query: z.Schema<Query, z.ZodTypeDef, Record<string, any>>;
-        handler: (
-            req: Request<
-                Params,
-                Query,
-                RoutePermission extends null ? null : IUserDocument,
-                Method extends RequestMethodWithBody ? Body : null
-            >
-        ) => Promise<ApiResponse<Res>>;
-    } & (Method extends RequestMethodWithBody
-        ? { body: z.Schema<Body, z.ZodTypeDef, Record<string, any>> }
-        : {});
+> = {
+    method: Method;
+    permission: RoutePermission;
+    sgMode?: boolean;
+    // @@Cleanup: Since permission verification doesn't actually use the body for any
+    //            verification at the moment, we don't actually include in the verification
+    //            of the permissions. This could be a limitation in the future, but it is hard
+    //            to reason about whether it is null or not a given point,
+    permissionVerification?: PermissionVerificationFn<Params, Query>;
+    params: z.Schema<Params, z.ZodTypeDef, Record<string, any>>;
+    query: z.Schema<Query, z.ZodTypeDef, Record<string, any>>;
+    handler: (
+        req: Request<
+            Params,
+            Query,
+            RoutePermission extends null ? null : IUserDocument,
+            Method extends RequestMethodWithBody ? Body : null
+        >,
+    ) => Promise<ApiResponse<Res>>;
+} & (Method extends RequestMethodWithBody
+    ? { body: z.Schema<Body, z.ZodTypeDef, Record<string, any>> }
+    : {});
 
 export default function registerRoute<
     Params,
@@ -88,10 +88,10 @@ export default function registerRoute<
     Body,
     RoutePermission extends Permission | null,
     Res,
-    >(
-        router: express.Router,
-        path: string,
-        registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
+>(
+    router: express.Router,
+    path: string,
+    registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
 ) {
     const wrappedHandler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
@@ -132,24 +132,19 @@ export default function registerRoute<
                 return null;
             });
 
-            if (typeof permissions === 'string' ||
-                permissions?.valid === false
-            ) {
+            if (typeof permissions === 'string' || permissions?.valid === false) {
                 throw new errors.ApiError(401, errors.UNAUTHORIZED);
             }
 
-            const result = await registrar.handler(
-                {
-                    ...basicRequest,
-                    // @@Cleanup: would be nice if we could get rid of this!
-                    raw: req,
-                    // @ts-ignore
-                    requester: permissions?.user ?? null,
-                },
-            );
+            const result = await registrar.handler({
+                ...basicRequest,
+                // @@Cleanup: would be nice if we could get rid of this!
+                raw: req,
+                // @ts-ignore
+                requester: permissions?.user ?? null,
+            });
 
-            return handleResponse(res, result)
-
+            return handleResponse(res, result);
         } catch (e: unknown) {
             if (e instanceof ZodError) {
                 res.status(400).json({
@@ -164,7 +159,7 @@ export default function registerRoute<
                 res.status(e.code).json({
                     status: false,
                     message: e.message,
-                    ...(e.errors && { errors: e.errors })
+                    ...(e.errors && { errors: e.errors }),
                 });
                 return;
             }

@@ -7,6 +7,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import { usePutReviewIdComment } from '../../lib/api/reviews/reviews';
 import { useNotificationDispatch } from '../../hooks/notification';
 import { usePatchCommentId } from '../../lib/api/comments/comments';
+import { SxProps, Theme } from '@mui/material';
 
 type CommentEditorProps = {
     reviewId: string;
@@ -14,6 +15,7 @@ type CommentEditorProps = {
     filename?: string;
     onClose: () => void;
     contents?: string;
+    sx?: SxProps<Theme>
 } & (CommentReply | CommentModify | CommentPost);
 
 type CommentReply = {
@@ -50,6 +52,7 @@ export default function CommentEditor({
     filename,
     onClose,
     location,
+    sx,
     ...rest
 }: CommentEditorProps): ReactElement {
     const { refetch } = useReviewDispatch();
@@ -97,7 +100,7 @@ export default function CommentEditor({
     };
 
     return (
-        <Box>
+        <Box sx={{width: '100%', ...sx}}>
             <CommentField contents={contents} onChange={setValue} />
             <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', pt: 1, pb: 1 }}>
                 <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>

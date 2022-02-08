@@ -44,7 +44,7 @@ registerRoute(router, '/:id', {
             code: 200,
             data: {
                 comment: Comment.project(comment),
-            }
+            },
         };
     },
 });
@@ -106,7 +106,7 @@ registerRoute(router, '/:id', {
             code: 200,
             data: {
                 comment: Comment.project(updatedComment),
-            }
+            },
         };
     },
 });

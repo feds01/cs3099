@@ -147,7 +147,7 @@ registerRoute(router, '/session', {
                         status: 'error',
                         code: 400,
                         message: 'Invalid JWT',
-                    }
+                    };
                 }
 
                 // Check if refreshing the tokens failed so that we can return it earlier
@@ -165,8 +165,8 @@ registerRoute(router, '/session', {
                     data: {
                         user: User.project(user),
                         ...refreshedTokensOrError,
-                    }
-                }
+                    },
+                };
             } catch (e: unknown) {
                 if (e instanceof JwtError) {
                     return {
@@ -259,7 +259,7 @@ registerRoute(router, '/sso', {
             code: 200,
             data: {
                 follow: url.toString(),
-            }
+            },
         };
     },
 });
@@ -327,7 +327,7 @@ registerRoute(router, '/register', {
                 user: User.project(savedUser),
                 token,
                 refreshToken,
-            }
+            },
         };
     },
 });
@@ -400,7 +400,6 @@ registerRoute(router, '/login', {
 
         const passwordEqual = await bcrypt.compare(password, result.password);
 
-
         // If the sent over password matches the hashed password within the database, generate the
         // token and refreshToken JWT's . Also, update the 'last_login' timestamp and record
         // an entry for the user logging in into the system.
@@ -418,7 +417,7 @@ registerRoute(router, '/login', {
                     user: User.project(result),
                     token,
                     refreshToken,
-                }
+                },
             };
         }
 
@@ -427,7 +426,7 @@ registerRoute(router, '/login', {
             status: 'error',
             code: 401,
             message: error.MISMATCHING_LOGIN,
-        }
+        };
     },
 });
 

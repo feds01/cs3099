@@ -67,7 +67,7 @@ registerRoute(router, '/:username', {
                     followers: followerCount,
                     following: followingCount,
                 },
-            }
+            },
         };
     },
 });
@@ -118,7 +118,7 @@ registerRoute(router, '/:username', {
         // we validated the request previously and we should be able to add all of the fields into the
         // database. If the user tries to update the username or an email that's already in use, mongo
         // will return an error because these fields have to be unique.
-        const newUser = await User.findByIdAndUpdate(user.id, update, queryOptions).exec()
+        const newUser = await User.findByIdAndUpdate(user.id, update, queryOptions).exec();
 
         // If we couldn't find the user.
         if (!newUser) {
@@ -134,7 +134,7 @@ registerRoute(router, '/:username', {
             code: 200,
             data: {
                 user: User.project(newUser),
-            }
+            },
         };
     },
 });
@@ -175,7 +175,7 @@ registerRoute(router, '/:username', {
         // Now we need to delete any follower entries that contain the current user's id
         await Follower.deleteMany({ $or: [{ following: user.id }, { follower: user.id }] }).exec();
 
-        return { status: 'ok', code: 200, };
+        return { status: 'ok', code: 200 };
     },
 });
 
@@ -210,7 +210,7 @@ registerRoute(router, '/:username/role', {
             code: 200,
             data: {
                 role: user.role,
-            }
+            },
         };
     },
 });
@@ -260,7 +260,7 @@ registerRoute(router, '/:username/role', {
             code: 200,
             data: {
                 role: newUser.role,
-            }
+            },
         };
     },
 });

@@ -64,6 +64,7 @@ interface CodeRendererProps {
     language?: string;
     review?: Review;
     commentMap?: Map<number, CommentThread[]>;
+    lineNumbers?: boolean;
 }
 
 export default function CodeRenderer({
@@ -72,6 +73,7 @@ export default function CodeRenderer({
     review,
     commentMap,
     language,
+    lineNumbers = true,
 }: CodeRendererProps): ReactElement {
     const extension = coerceExtensionToLanguage(getExtension(filename) ?? language ?? '');
 
@@ -89,7 +91,7 @@ export default function CodeRenderer({
                             <React.Fragment key={i}>
                                 <CommentButton review={review} location={i} filename={filename}>
                                     <Line {...getLineProps({ line, key: i })}>
-                                        <LineNo>{i + 1}</LineNo>
+                                        {lineNumbers && <LineNo>{i + 1}</LineNo>}
                                         <LineContent>
                                             {line.map((token, key) => (
                                                 <span key={key} {...getTokenProps({ token, key })} />
@@ -107,7 +109,7 @@ export default function CodeRenderer({
                             </React.Fragment>
                         ) : (
                             <Line {...getLineProps({ line, key: i })}>
-                                <LineNo>{i + 1}</LineNo>
+                                {lineNumbers && <LineNo>{i + 1}</LineNo>}
                                 <LineContent>
                                     {line.map((token, key) => (
                                         <span key={key} {...getTokenProps({ token, key })} />

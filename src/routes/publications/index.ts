@@ -106,7 +106,7 @@ registerRoute(router, '/:username/:name/all', {
                             filename: entry.entryName,
                         };
                     }),
-            }
+            },
         };
     },
 });
@@ -198,7 +198,7 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
                 status: 'ok',
                 code: 200,
                 data: {
-                    entry
+                    entry,
                 },
             };
         }
@@ -260,10 +260,12 @@ registerRoute(router, '/', {
                 code: 404,
                 message: errors.RESOURCE_NOT_FOUND,
                 errors: {
-                    "collaborators": {
-                        message: `Collaborators ${missing.map(item => `'${item}'`).join(", ")} don't exist.`
-                    }
-                }
+                    collaborators: {
+                        message: `Collaborators ${missing
+                            .map((item) => `'${item}'`)
+                            .join(', ')} don't exist.`,
+                    },
+                },
             };
         }
 
@@ -282,7 +284,7 @@ registerRoute(router, '/', {
             code: 201,
             data: {
                 publication: Publication.projectWith(publication, req.requester),
-            }
+            },
         };
     },
 });
@@ -323,7 +325,7 @@ registerRoute(router, '/:username', {
             status: 'ok',
             code: 200,
             data: {
-                publications: result.map((item) => Publication.projectWith(item, user))
+                publications: result.map((item) => Publication.projectWith(item, user)),
             },
         };
     },
@@ -359,7 +361,7 @@ registerRoute(router, '/:username/:name/revisions', {
             code: 200,
             data: {
                 revisions: result.map((item) => Publication.projectWith(item, user)),
-            }
+            },
         };
     },
 });
@@ -454,7 +456,7 @@ registerRoute(router, '/:username/:name', {
             code: 200,
             data: {
                 publication: await Publication.project(publication, archive !== null),
-            }
+            },
         };
     },
 });
@@ -527,7 +529,7 @@ registerRoute(router, '/:username/:name', {
         const user = await userUtils.transformUsernameIntoId(req);
 
         const { revision, draft } = req.query;
-        const { name } = req.params;;
+        const { name } = req.params;
 
         const publication = await Publication.findOneAndDelete({
             owner: user.id,
@@ -613,7 +615,7 @@ registerRoute(router, '/:username/:name', {
             code: 200,
             data: {
                 publication: await Publication.project(newPublication, false),
-            }
+            },
         };
     },
 });

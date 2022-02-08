@@ -37,12 +37,12 @@ registerRoute(router, '/login', {
     permission: null,
     handler: async (req) => {
         const { from, state } = req.query;
-        
+
         // just forward the request with the query parameters to the frontend login endpoint.
         return {
-            status: "redirect",
-            url: `${config.frontendURI}/login?from=${from}&state=${state}`
-        }
+            status: 'redirect',
+            url: `${config.frontendURI}/login?from=${from}&state=${state}`,
+        };
     },
 });
 
@@ -92,7 +92,7 @@ registerRoute(router, '/callback', {
                 status: 'error',
                 code: 400,
                 message: `request failed due to: ${userData.type}`,
-                errors: userData.errors
+                errors: userData.errors,
             };
         }
 
@@ -129,8 +129,8 @@ registerRoute(router, '/callback', {
 
         return {
             status: 'redirect',
-            url: path.toString()
-        }
+            url: path.toString(),
+        };
     },
 });
 
@@ -175,7 +175,7 @@ registerRoute(router, '/verify', {
                 data: {
                     id: `${user.id}:${config.teamName}`,
                     ...User.projectAsSg(user),
-                }
+                },
             };
         } catch (e: unknown) {
             if (e instanceof JwtError) {

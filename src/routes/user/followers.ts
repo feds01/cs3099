@@ -142,7 +142,6 @@ registerRoute(router, '/:username/follow', {
         // then exit early and don't create the new follower link.
         const follower = await User.findById(followerId).exec();
 
-
         if (!follower) {
             return {
                 status: 'error',
@@ -161,7 +160,7 @@ registerRoute(router, '/:username/follow', {
             code: 200,
             data: {
                 following: link !== null,
-            }
+            },
         };
     },
 });
@@ -194,8 +193,8 @@ registerRoute(router, '/:username/followers', {
             status: 'ok',
             code: 200,
             data: {
-                followers: result.map(item => User.project(item.follower))
-            }
+                followers: result.map((item) => User.project(item.follower)),
+            },
         };
     },
 });
@@ -225,13 +224,12 @@ registerRoute(router, '/:username/following', {
             .limit(50)
             .exec();
 
-
         return {
             status: 'ok',
             code: 200,
             data: {
-                following: result.map(item => User.project(item.following))
-            }
+                following: result.map((item) => User.project(item.following)),
+            },
         };
     },
 });

@@ -65,7 +65,7 @@ registerRoute(router, '/export/:id/metadata', {
             data: {
                 id: convertSgId(req.params.id),
                 ...User.projectAsSg(user),
-            }
+            },
         };
     },
 });

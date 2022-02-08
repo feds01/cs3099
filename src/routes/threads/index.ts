@@ -43,7 +43,7 @@ registerRoute(router, '/:id', {
             code: 200,
             data: {
                 comments,
-            }
+            },
         };
     },
 });

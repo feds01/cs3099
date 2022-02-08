@@ -50,7 +50,7 @@ registerRoute(router, '/:username/reviews', {
             code: 200,
             data: {
                 reviews,
-            }
+            },
         };
     },
 });

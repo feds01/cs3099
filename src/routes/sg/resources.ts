@@ -61,7 +61,7 @@ registerRoute(router, '/import', {
                 status: 'error',
                 code: 400,
                 message: `request failed due to: ${publicationArchive.type}`,
-                errors: publicationArchive.errors
+                errors: publicationArchive.errors,
             };
         }
 
@@ -101,7 +101,6 @@ registerRoute(router, '/import', {
                 ...userImport,
             };
         }
-
 
         const doc = await new Publication({
             ...publication,
@@ -174,7 +173,7 @@ registerRoute(router, '/export/:id/metadata', {
             data: {
                 publication: await Publication.projectAsSg(publication),
                 reviews: await Promise.all(reviews.map(Review.projectAsSg)),
-            }
+            },
         };
     },
 });
@@ -213,9 +212,9 @@ registerRoute(router, '/export/:id', {
         const archive = archiveIndexToPath({ userId: owner.toString(), name, revision });
 
         return {
-            status: "file",
+            status: 'file',
             code: 200,
-            file: archive
+            file: archive,
         };
     },
 });

@@ -49,11 +49,7 @@ registerRoute(router, '/:id/comment', {
         // Check that the review exists and that the current commenter isn't trying
         // to publish comments on a non-public review. Only a review owner can comment
         // on a review whilst creating it.
-        if (
-            !review ||
-            (review.status === 'started' &&
-                review.owner.id !== owner)
-        ) {
+        if (!review || (review.status === 'started' && review.owner.id !== owner)) {
             return {
                 status: 'error',
                 code: 404,
@@ -171,9 +167,8 @@ registerRoute(router, '/:id/comment', {
             code: 201,
             data: {
                 comment: Comment.project(populated),
-            }
+            },
         };
-
     },
 });
 
@@ -209,11 +204,7 @@ registerRoute(router, '/:id/comments', {
         // Check that the review exists and that the current commenter isn't trying
         // to publish comments on a non-public review. Only a review owner can comment
         // on a review whilst creating it.
-        if (
-            !review ||
-            (review.status === 'started' &&
-                review.owner.id !== ownerId)
-        ) {
+        if (!review || (review.status === 'started' && review.owner.id !== ownerId)) {
             return {
                 status: 'error',
                 code: 404,
@@ -242,7 +233,7 @@ registerRoute(router, '/:id/comments', {
             code: 200,
             data: {
                 comments,
-            }
+            },
         };
     },
 });
@@ -326,7 +317,7 @@ registerRoute(router, '/:id', {
             code: 200,
             data: {
                 review: await Review.project(review),
-            }
+            },
         };
     },
 });
@@ -365,7 +356,7 @@ registerRoute(router, '/:id', {
 
         return {
             status: 'ok',
-            code: 200
+            code: 200,
         };
     },
 });

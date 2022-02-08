@@ -8,7 +8,7 @@
  * specific error messages.
  */
 
-import { ResponseErrorSummary } from "../transformers/error";
+import { ResponseErrorSummary } from '../transformers/error';
 
 interface ExpressError extends Error {
     status?: number;
@@ -33,7 +33,6 @@ export class ApiError extends Error {
         this.errors = errors;
     }
 }
-
 
 // User Accounts API request errors
 export const USER_EXISTS = 'Username already in use.';

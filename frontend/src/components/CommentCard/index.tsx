@@ -1,20 +1,15 @@
-import { formatDistance } from 'date-fns';
+import { format } from 'date-fns';
 import React, { ReactElement, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
 import Menu from '@mui/material/Menu';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
-import TextField from '@mui/material/TextField';
-import CardHeader from '@mui/material/CardHeader';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import CardContent from '@mui/material/CardContent';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 import UserLink from '../UserLink';
 import UserAvatar from '../UserAvatar';
-import { useAuth } from '../../hooks/auth';
 import CommentEditor from '../CommentEditor';
 import MarkdownRenderer from '../MarkdownRenderer';
 import { useReviewDispatch } from '../../hooks/review';
@@ -28,16 +23,12 @@ interface CommentCardProps {
 }
 
 export default function CommentCard({ comment, review }: CommentCardProps): ReactElement {
-    const { session } = useAuth();
     const { refetch } = useReviewDispatch();
     const notificationDispatcher = useNotificationDispatch();
 
     // Comment card editing menu
     const [editingComment, setEditingComment] = useState<boolean>(false);
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
-    // Comment reply mechanism
-    const [replyingToComment, setReplyingToComment] = useState<boolean>(false);
 
     // Comment card deleting functionality
     const deleteComment = useDeleteCommentId();
@@ -64,65 +55,68 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
     };
 
     return (
-        <Card variant={'outlined'} sx={{ width: '100%', p: 1 }}>
-            <CardHeader
-                avatar={<UserAvatar {...comment.author} displayName={false} size={40} />}
-                title={
-                    <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                        <Typography variant={'body1'}>
-                            {comment.author.firstName} {comment.author.lastName}
-                        </Typography>
-                        {comment.edited && (
-                            <>
-                                <span
-                                    style={{
-                                        display: 'inline-block',
-                                        padding: '2px 4px',
-                                    }}
-                                >
-                                    &bull;
-                                </span>
-                                <Typography variant={'body1'}>edited</Typography>
-                            </>
+        <>
+            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', pb: 2, fontFamily: 'Noto Sans !important' }}>
+                <UserAvatar {...comment.author} displayName={false} size={32} />
+                <Box sx={{ pl: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Box sx={{ height: 32, display: 'flex', alignItems: 'center' }}>
+                            <UserLink username={comment.author.username} />
+                            on{' '}
+                            {format(comment.updatedAt, 'do MMM')}
+                            {comment.edited && (
+                                <>
+                                    <span
+                                        style={{
+                                            display: 'inline-block',
+                                            padding: '2px 4px',
+                                        }}
+                                    >
+                                        &bull;
+                                    </span>
+                                    <Typography variant={'body1'}>edited</Typography>
+                                </>
+                            )}
+                        </Box>
+                        <IconButton
+                            aria-label="comment-settings"
+                            onClick={handleClick}
+                            size={'small'}
+                            aria-expanded={anchorEl ? 'true' : undefined}
+                        >
+                            <MoreVertIcon />
+                        </IconButton>
+                    </Box>
+                    <Box>
+                        {editingComment ? (
+                            <CommentEditor
+                                type={'modify'}
+                                filename={comment.filename}
+                                contents={comment.contents}
+                                // TODO: Support comment anchors!
+                                location={comment.anchor?.start || 0}
+                                reviewId={review.id}
+                                commentId={comment.id}
+                                onClose={() => setEditingComment(false)}
+                            />
+                        ) : (
+                            <MarkdownRenderer contents={comment.contents} />
                         )}
                     </Box>
-                }
-                subheader={
-                    <Typography variant={'body2'}>
-                        <UserLink username={comment.author.username} />{' '}
-                        {formatDistance(comment.updatedAt, new Date(), { addSuffix: true })}
-                    </Typography>
-                }
-                action={
-                    <IconButton
-                        aria-label="comment-settings"
-                        onClick={handleClick}
-                        aria-expanded={anchorEl ? 'true' : undefined}
-                    >
-                        <MoreVertIcon />
-                    </IconButton>
-                }
-            />
-            <CardContent sx={{ display: 'flex', flexDirection: 'column' }}>
-                {editingComment ? (
-                    <CommentEditor
-                        type={'modify'}
-                        filename={comment.filename}
-                        contents={comment.contents}
-                        // TODO: Support comment anchors!
-                        location={comment.anchor?.start || 0}
-                        reviewId={review.id}
-                        commentId={comment.id}
-                        onClose={() => setEditingComment(false)}
-                    />
-                ) : (
-                    <MarkdownRenderer contents={comment.contents} />
-                )}
-            </CardContent>
+                </Box>
+            </Box>
             <Menu
                 id="comment-settings"
                 MenuListProps={{
                     'aria-labelledby': 'long-button',
+                }}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
                 }}
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
@@ -152,34 +146,6 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                     </Typography>
                 </MenuItem>
             </Menu>
-            {replyingToComment ? (
-                <CommentEditor
-                    type={'reply'}
-                    reviewId={review.id}
-                    commentId={comment.id}
-                    onClose={() => setReplyingToComment(false)}
-                />
-            ) : (
-                <Box
-                    sx={{
-                        pt: 1,
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        flex: 1,
-                    }}
-                >
-                    <UserAvatar {...session} />
-                    <TextField
-                        sx={{ ml: 0.5 }}
-                        variant="outlined"
-                        fullWidth
-                        size="small"
-                        placeholder="Reply..."
-                        onClick={() => setReplyingToComment(true)}
-                    />
-                </Box>
-            )}
-        </Card>
+        </>
     );
 }
