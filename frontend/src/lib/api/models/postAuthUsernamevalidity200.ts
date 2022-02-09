@@ -5,10 +5,9 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
+import type { SuccessStatus } from './successStatus';
 
-export type GetReviewId200Status = 'ok';
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const GetReviewId200Status = {
-    ok: 'ok' as GetReviewId200Status,
+export type PostAuthUsernamevalidity200 = {
+  status: SuccessStatus;
+  follow?: boolean;
 };

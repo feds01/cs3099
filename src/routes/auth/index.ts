@@ -8,9 +8,10 @@ import { config } from './../../server';
 import * as error from '../../common/errors';
 import registerRoute from '../../lib/requests';
 import State from '../../models/State';
+import { ApiResponse } from '../../lib/response';
+import { IEmailValiditySchema, IUsernameValiditySchema } from '../../validators/auth';
 import { createTokens, JwtError, refreshTokens, verifyToken } from '../../lib/auth';
 import { IUserLoginRequestSchema, IUserRegisterRequestSchema } from '../../validators/user';
-import { ApiResponse } from '../../lib/response';
 
 const router = express.Router();
 
@@ -36,33 +37,25 @@ const router = express.Router();
  * whether username is in use.
  *
  * */
-// registerRoute(router, '/username_validity', {
-//     method: 'post',
-//     body: IUsernameValiditySchema,
-//     params: z.object({}),
-//     query: z.object({}),
-//     permission: null,
-//     handler: async (req, res) => {
-//         const result = await User.findOne({
-//             name: req.body.username,
-//             externalId: { $exists: false },
-//         }).exec();
+registerRoute(router, '/username_validity', {
+    method: 'post',
+    body: IUsernameValiditySchema,
+    params: z.object({}),
+    query: z.object({}),
+    permission: null,
+    handler: async (req) => {
+        const result = await User.findOne({
+            name: req.body.username,
+            externalId: { $exists: false },
+        }).exec();
 
-//         // If the email wasn't found, then return a not found status.
-//         if (!result) {
-//             return res.status(404).json({
-//                 status: 'ok',
-//                 message: 'Username address not in use',
-//             });
-//         }
-
-//         // Unprocessable Entity
-//         return res.status(422).json({
-//             status: 'ok',
-//             message: 'Username exists',
-//         });
-//     },
-// });
+        return {
+            status: 'ok',
+            code: 200,
+            reserved: !!result,
+        }
+    },
+});
 
 /**
  * @version v1.0.0
@@ -86,34 +79,25 @@ const router = express.Router();
  * whether the email is in use.
  *
  * */
-// registerRoute(router, '/email_validity', {
-//     method: 'post',
-//     body: IEmailValiditySchema,
-//     params: z.object({}),
-//     query: z.object({}),
-//     permission: null,
-//     handler: async (req) => {
-//         const result = await User.findOne({
-//             email: req.body.email,
-//             externalId: { $exists: false },
-//         }).exec();
+registerRoute(router, '/email_validity', {
+    method: 'post',
+    body: IEmailValiditySchema,
+    params: z.object({}),
+    query: z.object({}),
+    permission: null,
+    handler: async (req) => {
+        const result = await User.findOne({
+            email: req.body.email,
+            externalId: { $exists: false },
+        }).exec();
 
-//         // If the email wasn't found, then return a not found status.
-//         if (!result) {
-//             return res.status(404).json({
-//                 status: 'ok',
-
-//                 message: 'Email address not in use',
-//             });
-//         }
-
-//         // Unprocessable Entity
-//         return res.status(422).json({
-//             status: 'ok',
-//             message: 'Email exists',
-//         });
-//     },
-// });
+        return {
+            status: 'ok',
+            code: 200,
+            reserved: !!result,
+        };
+    },
+});
 
 /**
  * @version v1.0.0

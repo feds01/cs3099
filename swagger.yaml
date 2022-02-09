@@ -181,7 +181,7 @@ paths:
                     $ref: '#/components/responses/TokenVerificationResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
-    /auth/email_validation:
+    /auth/email_validity:
         post:
             summary: Pre-registration email validation
             description: Check if an email is valid to use when registering
@@ -195,11 +195,24 @@ paths:
                         schema:
                             $ref: '#/components/schemas/EmailValidation'
             responses:
-                '204':
-                    description: No Content
+                '200':
+                    description: Returns whether item is reserved or not
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: 
+                                    - status
+                                    - reserved
+                                properties:
+                                        status:
+                                            $ref: '#/components/schemas/SuccessStatus'
+                                        follow:
+                                            type: boolean
+                                            example: false
                 default:
                     $ref: '#/components/responses/ApiError'
-    /auth/username_validation:
+    /auth/username_validity:
         post:
             summary: Pre-registration username validation
             description: Check if an email is valid to use when registering
@@ -213,8 +226,22 @@ paths:
                         schema:
                             $ref: '#/components/schemas/UsernameValidation'
             responses:
-                '204':
-                    description: No Content
+                '200':
+                    description: Returns whether item is reserved or not
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required: 
+                                    - status
+                                    - reserved
+                                properties:
+                                        status:
+                                            $ref: '#/components/schemas/SuccessStatus'
+                                        follow:
+                                            type: boolean
+                                            example: false
+
                 default:
                     $ref: '#/components/responses/ApiError'
     /auth/session:
