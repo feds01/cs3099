@@ -34,7 +34,7 @@ registerRoute(router, '/:id', {
             return {
                 status: 'error',
                 code: 404,
-                message: errors.NON_EXISTENT_THREAD,
+                message: errors.RESOURCE_NOT_FOUND,
             };
         }
 

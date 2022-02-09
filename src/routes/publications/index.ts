@@ -244,7 +244,7 @@ registerRoute(router, '/', {
             return {
                 status: 'error',
                 code: 400,
-                message: errors.PUBLICATION_EXISTS,
+                message: 'Publication with the same name already exists',
             };
         }
 

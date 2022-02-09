@@ -35,7 +35,7 @@ registerRoute(router, '/:id', {
             return {
                 status: 'error',
                 code: 404,
-                message: error.NON_EXISTENT_COMMENT,
+                message: error.RESOURCE_NOT_FOUND,
             };
         }
 
@@ -97,7 +97,7 @@ registerRoute(router, '/:id', {
             return {
                 status: 'error',
                 code: 404,
-                message: error.NON_EXISTENT_COMMENT,
+                message: error.RESOURCE_NOT_FOUND,
             };
         }
 
@@ -141,7 +141,7 @@ registerRoute(router, '/:id', {
             return {
                 status: 'error',
                 code: 404,
-                message: error.NON_EXISTENT_COMMENT,
+                message: error.RESOURCE_NOT_FOUND,
             };
         }
 
