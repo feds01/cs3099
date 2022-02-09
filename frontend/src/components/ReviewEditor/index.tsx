@@ -13,7 +13,7 @@ import { useGetReviewIdComments, usePostReviewIdComplete } from '../../lib/api/r
 import { useGetPublicationUsernameNameAll } from '../../lib/api/publications/publications';
 import {
     ApiErrorResponse,
-    GetPublicationUsernameNameRevisionAll200,
+    GetPublicationUsernameNameAll200,
     GetReviewIdComments200,
     Review,
 } from '../../lib/api/models';
@@ -37,7 +37,7 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
     const completeReviewQuery = usePostReviewIdComplete();
 
     const [resourceResponse, setResourceResponse] = useState<
-        ContentState<GetPublicationUsernameNameRevisionAll200, ApiErrorResponse>
+        ContentState<GetPublicationUsernameNameAll200, ApiErrorResponse>
     >({
         state: 'loading',
     });

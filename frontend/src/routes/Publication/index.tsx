@@ -20,7 +20,7 @@ import SkeletonList from '../../components/SkeletonList';
 import MarkdownRenderer from '../../components/MarkdownRenderer';
 import { transformQueryIntoContentState } from '../../wrappers/react-query';
 
-import { GetPublicationUsernameNameRevision200 as PublicationResponse } from '../../lib/api/models';
+import { GetPublicationUsernameName200 as PublicationResponse } from '../../lib/api/models';
 import { useGetPublicationUsernameName as useGetPublication } from '../../lib/api/publications/publications';
 import Overview from './modules/Overview';
 import Source from './modules/Source';
