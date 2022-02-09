@@ -1,14 +1,13 @@
 import { useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-import AlertTitle from '@mui/material/AlertTitle';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { User } from '../../lib/api/models';
 import { useDispatchAuth } from '../../hooks/auth';
+import ErrorBanner from '../../components/ErrorBanner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { usePatchUserUsername } from '../../lib/api/users/users';
@@ -158,12 +157,7 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
                             Cancel
                         </Button>
                     </Box>
-                    {isError && (
-                        <Alert severity="error" sx={{ marginTop: 2, maxWidth: 500 }}>
-                            <AlertTitle>Error</AlertTitle>
-                            <strong>{error!.message || 'Something went wrong'}</strong>
-                        </Alert>
-                    )}
+                    {error && <ErrorBanner message={error.message} />}
                 </Grid>
             </Grid>
         </form>

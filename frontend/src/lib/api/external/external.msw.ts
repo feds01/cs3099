@@ -9,16 +9,19 @@ import {
   rest
 } from 'msw'
 import faker from 'faker'
+import {
+  SuccessStatus
+} from '.././models'
 
-export const getGetSgSsoLoginMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(['ok']), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
+export const getGetSgSsoLoginMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(Object.values(SuccessStatus)), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.random.word(), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
 
-export const getPostSgSsoVerifyMock = () => ({status: faker.helpers.randomize(['ok']), user_id: faker.random.word(), name: faker.random.word(), email: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined])})
+export const getPostSgSsoVerifyMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), user_id: faker.random.word(), name: faker.random.word(), email: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined])})
 
 export const getGetSgResourcesExportIdMock = () => (faker.random.word())
 
-export const getGetSgResourcesExportIdMetadataMock = () => ({status: faker.helpers.randomize(['ok']), data: {publication: {name: faker.random.word(), title: faker.random.word(), owner: faker.random.word(), introduction: faker.random.word(), revision: faker.helpers.randomize([faker.random.word(), undefined]), collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => (faker.random.word()))}, reviews: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({owner: faker.random.word(), createdAt: faker.datatype.number(), comments: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({id: faker.datatype.number(), replying: faker.helpers.randomize([faker.datatype.number(), undefined]), filename: faker.helpers.randomize([faker.random.word(), undefined]), anchor: faker.helpers.randomize([{start: faker.datatype.number(), end: faker.datatype.number()}, undefined]), contents: faker.random.word(), author: faker.random.word(), thread: faker.datatype.number(), postedAt: faker.datatype.number()}))}))}})
+export const getGetSgResourcesExportIdMetadataMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), publication: {name: faker.random.word(), title: faker.random.word(), owner: faker.random.word(), introduction: faker.random.word(), revision: faker.helpers.randomize([faker.random.word(), undefined]), collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => (faker.random.word()))}, reviews: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({owner: faker.random.word(), createdAt: faker.datatype.number(), comments: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({id: faker.datatype.number(), replying: faker.helpers.randomize([faker.datatype.number(), undefined]), filename: faker.helpers.randomize([faker.random.word(), undefined]), anchor: faker.helpers.randomize([{start: faker.datatype.number(), end: faker.datatype.number()}, undefined]), contents: faker.random.word(), author: faker.random.word(), thread: faker.datatype.number(), postedAt: faker.datatype.number()}))}))})
 
-export const getGetSgUsersIdMock = () => ({status: faker.helpers.randomize(['ok']), user_id: faker.random.word(), name: faker.random.word(), email: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined])})
+export const getGetSgUsersIdMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), user_id: faker.random.word(), name: faker.random.word(), email: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined])})
 
 export const getExternalMSW = () => [
 rest.get('*/sg/sso/login', (_req, res, ctx) => {

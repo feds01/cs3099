@@ -5,18 +5,26 @@ import registerRoute from '../../lib/requests';
 import Comment from '../../models/Comment';
 import { IUserDocument, IUserRole } from '../../models/User';
 import { ObjectIdSchema } from '../../validators/requests';
+import { verifyCommentPermission } from '../../lib/permissions';
 
 const router = express.Router();
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/comment/:id
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/comment/89183192381293
  *
+ * @description This endpoint is used to get the comment with the specified id.
  */
 registerRoute(router, '/:id', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: { kind: 'comment', level: IUserRole.Default },
-    handler: async (req, res) => {
+    permissionVerification: verifyCommentPermission,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
         const { id } = req.params;
 
         const comment = await Comment.findById(id)
@@ -24,16 +32,20 @@ registerRoute(router, '/:id', {
             .exec();
 
         if (!comment) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: error.NON_EXISTENT_COMMENT,
-            });
+                code: 404,
+                message: error.RESOURCE_NOT_FOUND,
+            };
         }
 
-        return res.status(200).json({
-            status: true,
-            comment: Comment.project(comment),
-        });
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                comment: Comment.project(comment),
+            },
+        };
     },
 });
 
@@ -66,8 +78,9 @@ registerRoute(router, '/:id', {
     query: z.object({}),
     body: z.object({ contents: z.string().min(1) }),
     params: z.object({ id: ObjectIdSchema }),
-    permission: { kind: 'comment', level: IUserRole.Default },
-    handler: async (req, res) => {
+    permissionVerification: verifyCommentPermission,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
         const { id } = req.params;
         const { contents } = req.body;
 
@@ -81,28 +94,42 @@ registerRoute(router, '/:id', {
             .exec();
 
         if (!updatedComment) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: error.NON_EXISTENT_COMMENT,
-            });
+                code: 404,
+                message: error.RESOURCE_NOT_FOUND,
+            };
         }
 
-        return res.status(200).json({
-            status: true,
-            comment: Comment.project(updatedComment),
-        });
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                comment: Comment.project(updatedComment),
+            },
+        };
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method DELETE
+ * @url /api/comment/:id
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/comment/89183192381293
  *
+ * @description This endpoint is used to delete a comment with the specified id. The endpoint
+ * verifies that you must be an administrator to delete comments or the owner of the comment.
+ *
+ * @error {UNAUTHORIZED} if the user doesn't have permissions to delete the comment.
  */
 registerRoute(router, '/:id', {
     method: 'delete',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
-    permission: { kind: 'comment', level: IUserRole.Administrator },
-    handler: async (req, res) => {
+    permissionVerification: verifyCommentPermission,
+    permission: { level: IUserRole.Administrator },
+    handler: async (req) => {
         const { id } = req.params;
 
         // @@Future: We shouldn't actually delete the comment, what we should do is remove
@@ -111,16 +138,17 @@ registerRoute(router, '/:id', {
         const comment = await Comment.findByIdAndDelete(id).exec();
 
         if (!comment) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: error.NON_EXISTENT_COMMENT,
-            });
+                code: 404,
+                message: error.RESOURCE_NOT_FOUND,
+            };
         }
 
-        return res.status(200).json({
-            status: true,
-            message: 'Successfully deleted comment.',
-        });
+        return {
+            status: 'ok',
+            code: 200,
+        };
     },
 });
 

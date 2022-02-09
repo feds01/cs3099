@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import express from 'express';
-import Logger from '../../common/logger';
 import * as error from '../../common/errors';
 import Follower from '../../models/Follower';
 import * as userUtils from '../../utils/users';
@@ -13,7 +12,7 @@ const router = express.Router({ mergeParams: true });
 /**
  * @version v1.0.0
  * @method POST
- * @url api/user/<id>/follow
+ * @url /api/user/:id/follow
  * @example
  * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/616f115feb325663f8bce3a4/follow
  * >>> body: {}
@@ -23,21 +22,18 @@ const router = express.Router({ mergeParams: true });
  * accepts the followee's id which is specified in the url. Then it adds a
  * mapping of them to the database.
  *
- * @error {ALREADY_FOLLOWED} if the followee is already followed by the current user.
  * @error {SELF_FOLLOWING} if the user account is trying to follow itself.
  * @error {NON_EXISTENT_USER} if the specified user does not exist.
  *
- * @return response to client if mapping was created and added to the system.
  * */
 registerRoute(router, '/:username/follow', {
     method: 'post',
     params: z.object({ username: z.string() }),
     body: z.object({}),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'follower', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { id: followerId } = req.requester;
 
@@ -46,18 +42,20 @@ registerRoute(router, '/:username/follow', {
         const follower = await User.findById(followerId).exec();
 
         if (!follower) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: error.NON_EXISTENT_USER,
-            });
+            };
         }
 
         // if the user is trying to follow itself
         // Just return a NoContent since we don't need to create anything
         if (follower.id === user.id) {
-            return res.status(204).json({
+            return {
+                code: 204,
                 status: 'ok',
-            });
+            };
         }
 
         let mapping = { follower: follower.id, following: user.id };
@@ -67,42 +65,35 @@ registerRoute(router, '/:username/follow', {
         const doc = await Follower.findOne(mapping).exec();
 
         if (doc) {
-            return res.status(401).json({
-                status: 'error',
-                message: error.ALREADY_FOLLOWED,
-            });
+            return { status: 'ok', code: 200 };
         }
 
-        const newFollow = new Follower(mapping);
-        try {
-            newFollow.save();
+        await new Follower(mapping).save();
 
-            return res.status(201).json({
-                status: 'ok',
-                message: 'Successfully followed user.',
-            });
-        } catch (e) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: error.INTERNAL_SERVER_ERROR,
-            });
-        }
+        return { status: 'ok', code: 201 };
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method DELETE
+ * @url /api/user/:id/follow
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/616f115feb325663f8bce3a4/follow
  *
- */
+ * @description This route is used to remove a follow from a user.
+ *
+ * @error {SELF_FOLLOWING} if the user account is trying to unfollow itself.
+ * @error {NON_EXISTENT_USER} if the specified user does not exist.
+ *
+ * */
 registerRoute(router, '/:username/follow', {
     method: 'delete',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'follower', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { id: followerId } = req.requester;
 
@@ -111,42 +102,39 @@ registerRoute(router, '/:username/follow', {
         const follower = await User.findById(followerId).exec();
 
         if (!follower) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: error.NON_EXISTENT_USER,
-            });
+                code: 404,
+                message: error.RESOURCE_NOT_FOUND,
+            };
         }
 
-        const link = await Follower.findOneAndDelete({
+        await Follower.findOneAndDelete({
             follower: follower.id,
             following: user.id,
         }).exec();
 
-        if (!link) {
-            return res.status(404).json({
-                status: 'ok',
-                message: "User isn't following the other user",
-            });
-        }
-
-        return res.status(200).json({
-            status: 'ok',
-            message: 'User was unfollowed',
-        });
+        return { status: 'ok', code: 200 };
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/:id/follow
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/616f115feb325663f8bce3a4/follow
  *
- */
+ * @description This route is used to check if the requester is following the specified
+ * user by their username.
+ * */
 registerRoute(router, '/:username/follow', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'follower', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { id: followerId } = req.requester;
 
@@ -155,10 +143,11 @@ registerRoute(router, '/:username/follow', {
         const follower = await User.findById(followerId).exec();
 
         if (!follower) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: error.NON_EXISTENT_USER,
-            });
+                code: 404,
+                message: error.RESOURCE_NOT_FOUND,
+            };
         }
 
         const link = await Follower.findOne({
@@ -166,82 +155,82 @@ registerRoute(router, '/:username/follow', {
             following: user.id,
         }).exec();
 
-        if (!link) {
-            return res.status(404).json({
-                status: 'ok',
-                following: false,
-                message: "User isn't following the other user",
-            });
-        } else {
-            return res.status(200).json({
-                status: 'ok',
-                following: true,
-                message: 'User is following the other user',
-            });
-        }
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                following: link !== null,
+            },
+        };
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/:id/followers
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/616f115feb325663f8bce3a4/followers
  *
- */
+ * @description This route is used to list all of the followers of the requester.
+ * */
 registerRoute(router, '/:username/followers', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'follower', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         // TODO:(alex) Implement pagination for this endpoint since the current limit will
         //             be 50 documents.
         // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
         const result = await Follower.find({ following: user.id })
-            .populate<{ follower: IUser }[]>('follower')
+            .populate<{ follower: IUser }>('follower')
             .limit(50);
 
-        const followers = result.map((link) => User.project(link.follower as unknown as IUser));
-
-        return res.status(200).json({
+        return {
             status: 'ok',
+            code: 200,
             data: {
-                followers,
+                followers: result.map((item) => User.project(item.follower)),
             },
-        });
+        };
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/:id/followers
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/616f115feb325663f8bce3a4/followers
  *
- */
+ * @description This route is used to list all of the users that the requester is following.
+ * */
 registerRoute(router, '/:username/following', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     permission: { kind: 'follower', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         // TODO:(alex) Implement pagination for this endpoint since the current limit will
         //             be 50 documents.
         // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
         const result = await Follower.find({ follower: user.id })
-            .populate<{ following: IUser }[]>('following')
+            .populate<{ following: IUser }>('following')
             .limit(50)
             .exec();
 
-        const followers = result.map((link) => {
-            return User.project(link.following as unknown as IUser);
-        });
-
-        return res.status(200).json({
+        return {
             status: 'ok',
+            code: 200,
             data: {
-                following: followers,
+                following: result.map((item) => User.project(item.following)),
             },
-        });
+        };
     },
 });
 

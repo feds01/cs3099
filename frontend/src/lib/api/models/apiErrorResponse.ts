@@ -6,10 +6,10 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { ApiErrorResponseStatus } from './apiErrorResponseStatus';
-import type { ApiErrorResponseExtra } from './apiErrorResponseExtra';
+import type { ApiErrorResponseErrors } from './apiErrorResponseErrors';
 
 export type ApiErrorResponse = {
   status: ApiErrorResponseStatus;
   message: string;
-  extra?: ApiErrorResponseExtra;
+  errors?: ApiErrorResponseErrors;
 };

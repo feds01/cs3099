@@ -11,8 +11,10 @@ import {
   MutationFunction
 } from 'react-query'
 import type {
+  PostAuthEmailvalidity200,
   ApiErrorResponse,
   EmailValidation,
+  PostAuthUsernamevalidity200,
   UsernameValidation,
   UserAuthResponseResponse,
   TokenRequest,
@@ -33,11 +35,11 @@ T extends (...args: any) => Promise<any>
  * Check if an email is valid to use when registering
  * @summary Pre-registration email validation
  */
-export const postAuthEmailvalidation = (
+export const postAuthEmailvalidity = (
     emailValidation: EmailValidation,
  ) => {
-      return customInstance<void>(
-      {url: `/auth/email_validation`, method: 'post',
+      return customInstance<PostAuthEmailvalidity200>(
+      {url: `/auth/email_validity`, method: 'post',
       data: emailValidation
     },
       );
@@ -45,32 +47,32 @@ export const postAuthEmailvalidation = (
   
 
 
-    export const usePostAuthEmailvalidation = <TError = ApiErrorResponse,
+    export const usePostAuthEmailvalidity = <TError = ApiErrorResponse,
     
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthEmailvalidation>, TError,{data: EmailValidation}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthEmailvalidity>, TError,{data: EmailValidation}, TContext>, }
 ) => {
       const {mutation: mutationOptions} = options || {}
 
       
 
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthEmailvalidation>, {data: EmailValidation}> = (props) => {
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthEmailvalidity>, {data: EmailValidation}> = (props) => {
           const {data} = props || {};
 
-          return  postAuthEmailvalidation(data,)
+          return  postAuthEmailvalidity(data,)
         }
 
-      return useMutation<AsyncReturnType<typeof postAuthEmailvalidation>, TError, {data: EmailValidation}, TContext>(mutationFn, mutationOptions)
+      return useMutation<AsyncReturnType<typeof postAuthEmailvalidity>, TError, {data: EmailValidation}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * Check if an email is valid to use when registering
  * @summary Pre-registration username validation
  */
-export const postAuthUsernamevalidation = (
+export const postAuthUsernamevalidity = (
     usernameValidation: UsernameValidation,
  ) => {
-      return customInstance<void>(
-      {url: `/auth/username_validation`, method: 'post',
+      return customInstance<PostAuthUsernamevalidity200>(
+      {url: `/auth/username_validity`, method: 'post',
       data: usernameValidation
     },
       );
@@ -78,22 +80,22 @@ export const postAuthUsernamevalidation = (
   
 
 
-    export const usePostAuthUsernamevalidation = <TError = ApiErrorResponse,
+    export const usePostAuthUsernamevalidity = <TError = ApiErrorResponse,
     
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthUsernamevalidation>, TError,{data: UsernameValidation}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postAuthUsernamevalidity>, TError,{data: UsernameValidation}, TContext>, }
 ) => {
       const {mutation: mutationOptions} = options || {}
 
       
 
 
-      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthUsernamevalidation>, {data: UsernameValidation}> = (props) => {
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postAuthUsernamevalidity>, {data: UsernameValidation}> = (props) => {
           const {data} = props || {};
 
-          return  postAuthUsernamevalidation(data,)
+          return  postAuthUsernamevalidity(data,)
         }
 
-      return useMutation<AsyncReturnType<typeof postAuthUsernamevalidation>, TError, {data: UsernameValidation}, TContext>(mutationFn, mutationOptions)
+      return useMutation<AsyncReturnType<typeof postAuthUsernamevalidity>, TError, {data: UsernameValidation}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * Endpoint to refresh a JWT token

@@ -1,6 +1,5 @@
-import express from 'express';
-import User, { IUserDocument } from '../models/User';
 import * as errors from '../common/errors';
+import User, { IUserDocument } from '../models/User';
 import { ObjectIdSchema, UserRequestMode } from '../validators/requests';
 
 export interface RequestParameters<P, Q> {
@@ -24,8 +23,7 @@ interface UsernameQueryReq {
  */
 export async function transformUsernameIntoId<P extends UsernameReq, Q extends UsernameQueryReq>(
     req: RequestParameters<P, Q>,
-    res: express.Response,
-): Promise<IUserDocument | null> {
+): Promise<IUserDocument> {
     const { mode } = req.query;
     const { username } = req.params;
 
@@ -37,22 +35,14 @@ export async function transformUsernameIntoId<P extends UsernameReq, Q extends U
         const userId = ObjectIdSchema.safeParse(username);
 
         if (!userId.success) {
-            res.status(400).json({
-                status: false,
-                message: errors.BAD_REQUEST,
-            });
-            return null;
+            throw new errors.ApiError(400, errors.BAD_REQUEST);
         }
 
         user = await User.findById(userId.data);
     }
 
     if (!user) {
-        res.status(404).json({
-            status: false,
-            message: errors.NON_EXISTENT_USER,
-        });
-        return null;
+        throw new errors.ApiError(404, errors.NON_EXISTENT_USER);
     }
 
     return user;

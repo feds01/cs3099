@@ -6,7 +6,13 @@ import Logger from '../common/logger';
 // Morgan to use our custom logger instead of the console.log.
 const stream: StreamOptions = {
     // Use the http severity
-    write: (message) => Logger.http(message),
+    write: (message: string) => {
+        if (message.endsWith('\n')) {
+            Logger.http(message.substring(0, message.lastIndexOf('\n')));
+        } else {
+            Logger.http(message);
+        }
+    },
 };
 
 // Skip all the Morgan http log if the

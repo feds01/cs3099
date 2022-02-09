@@ -10,7 +10,7 @@ export default function ErrorBanner({ message }: Props): ReactElement {
     return (
         <Alert severity="error">
             <AlertTitle>Error</AlertTitle>
-            {message}
+            <strong>{message}</strong>
         </Alert>
     );
 }

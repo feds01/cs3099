@@ -37,31 +37,36 @@ registerRoute(router, '/export/:id/metadata', {
     params: z.object({ id: SgUserIdSchema }),
     query: z.object({}),
     permission: null,
-    handler: async (req, res) => {
+    handler: async (req) => {
         const { id, group } = req.params.id;
 
         if (group !== config.teamName) {
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message:
                     'Cannot retrieve information about user that is located in an external service.',
-            });
+            };
         }
 
         const user = await User.findById(id).exec();
 
         if (!user) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_USER,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            id: convertSgId(req.params.id),
-            ...User.projectAsSg(user),
-        });
+            code: 200,
+            data: {
+                id: convertSgId(req.params.id),
+                ...User.projectAsSg(user),
+            },
+        };
     },
 });
 

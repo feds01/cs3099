@@ -1,8 +1,9 @@
 import { ContentState } from '../types/requests';
 import Upload from '../static/images/upload.svg';
 import { Publication } from '../lib/api/models';
+import ErrorBanner from '../components/ErrorBanner';
 import React, { ReactElement, useEffect, useState } from 'react';
-import { Alert, Box, Button, LinearProgress, Typography } from '@mui/material';
+import { Box, Button, LinearProgress, Typography } from '@mui/material';
 import { usePostResourceUploadPublicationId } from '../lib/api/resources/resources';
 
 interface Props {
@@ -58,7 +59,7 @@ export default function UploadAttachment({ publication, refetchData }: Props): R
                     <label htmlFor="contained-button-file">
                         <Button
                             variant="contained"
-                            sx={{ fontWeight: 'bold' }}
+                            sx={{ fontWeight: 'bold', pb: 1 }}
                             size={'small'}
                             color="primary"
                             component="span"
@@ -66,11 +67,7 @@ export default function UploadAttachment({ publication, refetchData }: Props): R
                             Choose file
                         </Button>
                     </label>
-                    {upload.state === 'error' && (
-                        <Alert sx={{ pt: 1 }} severity="error">
-                            <Typography>Failed to read file.</Typography>
-                        </Alert>
-                    )}
+                    {upload.state === 'error' && <ErrorBanner message={'Failed to read file'} />}
                 </>
             )}
         </Box>

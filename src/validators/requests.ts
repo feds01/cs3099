@@ -7,7 +7,10 @@ export const ObjectIdSchema = z
 
 // Schema for describing if the request is querying by user ID or by username.
 const modes = ['username', 'id'] as const;
-export const ModeSchema = z.enum(modes).optional();
+export const ModeSchema = z.enum(modes).default('username');
+
+// Schema for describing whether a given flag is toggled or not
+export const FlagSchema = z.enum(['false', 'true']).transform((f) => f === 'true');
 
 export type UserRequestMode = z.infer<typeof ModeSchema>;
 

@@ -6,10 +6,4 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type GetUserUsernameFollowers200Status = 'ok';
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const GetUserUsernameFollowers200Status = {
-  ok: 'ok' as GetUserUsernameFollowers200Status,
-};
+export type ApiErrorResponseErrors = {};

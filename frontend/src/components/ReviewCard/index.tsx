@@ -40,13 +40,23 @@ export default function ReviewCard({ review }: Props): ReactElement {
                             <UserLink username={review.owner.username} />
                             {isComplete ? (
                                 <>
-                                    {' '}reviewed <PublicationLink username={username} name={name} revision={revision} />{' '}
-                                    publication {' '}
+                                    {' '}
+                                    reviewed <PublicationLink
+                                        username={username}
+                                        name={name}
+                                        revision={revision}
+                                    />{' '}
+                                    publication{' '}
                                 </>
                             ) : (
                                 <>
-                                    {' '}began reviewing{' '}
-                                    <PublicationLink username={username} name={name} revision={revision} /> publication {' '}
+                                    {' '}
+                                    began reviewing{' '}
+                                    <PublicationLink
+                                        username={username}
+                                        name={name}
+                                        revision={revision}
+                                    /> publication{' '}
                                 </>
                             )}
                             {formatDistance(review.updatedAt, new Date(), { addSuffix: true })}.

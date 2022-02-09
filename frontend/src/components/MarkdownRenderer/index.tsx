@@ -1,6 +1,6 @@
 import { ReactElement } from 'react';
 import remarkGfm from 'remark-gfm';
-import { Theme } from '@mui/material';
+import { Box, Theme } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import CodeRenderer from '../CodeRenderer';
 import makeStyles from '@mui/styles/makeStyles';
@@ -12,8 +12,15 @@ interface MarkdownRendererProps {
 
 const useStyles = makeStyles<Theme, MarkdownRendererProps>((theme) => ({
     wrapper: {
-        fontSize: ({ fontSize }) => fontSize ? `${fontSize}px !important` : "inherit",
-        listStylePosition: "inside"
+        fontSize: ({ fontSize }) => (fontSize ? `${fontSize}px !important` : 'inherit'),
+        listStylePosition: 'inside',
+    },
+    inlineCode: {
+        padding: '0.2em 0.4em',
+        fontSize: '85%',
+        backgroundColor: 'rgba(175, 184, 193, 0.2)',
+        borderRadius: 6,
+        margin: '0 !important',
     },
 }));
 
@@ -29,11 +36,16 @@ export default function MarkdownRenderer(props: MarkdownRendererProps): ReactEle
                     const match = /language-(\w+)/.exec(className || '');
 
                     return !inline && match ? (
-                        <CodeRenderer contents={String(children).replace(/\n$/, '')} filename={''} language={match[1]} />
+                        <Box sx={{ pt: 1, pb: 1 }}>
+                            <CodeRenderer
+                                contents={String(children).replace(/\n$/, '')}
+                                filename={''}
+                                language={match[1]}
+                                lineNumbers={false}
+                            />
+                        </Box>
                     ) : (
-                        <code className={className} {...props}>
-                            {children}
-                        </code>
+                        <code className={classes.inlineCode}>{children}</code>
                     );
                 },
             }}

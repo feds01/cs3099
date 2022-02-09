@@ -7,28 +7,18 @@ const CollaboratorArraySchema = ExistUsernameSchema.array().refine(
 );
 
 export const IPublicationCreationSchema = z.object({
-    revision: z.string().nonempty(),
-    title: z.string().nonempty(),
     name: z
         .string()
         .min(1)
         .regex(/^[a-zA-Z0-9_-]*$/, { message: 'Name must be URL safe.' })
         .transform((x) => x.toLowerCase()),
+    title: z.string().min(1).max(200),
     introduction: z.string().optional(),
+    revision: z.string().nonempty(),
     collaborators: CollaboratorArraySchema,
 });
 
-export const IPublicationPatchRequestSchema = IPublicationCreationSchema.partial();
-
-export type IUserPatchRequest = z.infer<typeof IPublicationPatchRequestSchema>;
-
-// TODO: Implement better schema
-export const SearchQuerySchema = z.object({
-    owner: z.string().optional(),
-    title: z.string().optional(),
-    introduction: z.string().optional(),
-    keyword: z.string().optional(),
-    collaborators: z.string().array(),
-});
-
 export type IPublicationCreationRequest = z.input<typeof IPublicationCreationSchema>;
+
+export const IPublicationPatchRequestSchema = IPublicationCreationSchema.partial();
+export type IUserPatchRequest = z.infer<typeof IPublicationPatchRequestSchema>;

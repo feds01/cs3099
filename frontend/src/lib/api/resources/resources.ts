@@ -11,7 +11,7 @@ import {
   MutationFunction
 } from 'react-query'
 import type {
-  UploadResourceResponse,
+  ApiSuccessResponse,
   ApiErrorResponse,
   UploadResource
 } from '.././models'
@@ -33,7 +33,7 @@ export const postResourceUploadUsername = (
  ) => {const formData = new FormData();
 formData.append('file', uploadResource.file)
 
-      return customInstance<UploadResourceResponse>(
+      return customInstance<ApiSuccessResponse>(
       {url: `/resource/upload/${username}`, method: 'post',
        data: formData
     },
@@ -69,7 +69,7 @@ export const postResourceUploadPublicationId = (
  ) => {const formData = new FormData();
 formData.append('file', uploadResource.file)
 
-      return customInstance<UploadResourceResponse>(
+      return customInstance<ApiSuccessResponse>(
       {url: `/resource/upload/publication/${id}`, method: 'post',
        data: formData
     },
@@ -105,7 +105,7 @@ export const postResourceUploadReviewId = (
  ) => {const formData = new FormData();
 formData.append('file', uploadResource.file)
 
-      return customInstance<UploadResourceResponse>(
+      return customInstance<ApiSuccessResponse>(
       {url: `/resource/upload/review/${id}`, method: 'post',
        data: formData
     },

@@ -12,13 +12,13 @@ export interface ReviewDispatch {
 export type ReviewContext = {
     state: ReviewState;
     dispatch: ReviewDispatch;
-  }
+};
 
 const ReviewStateContext = React.createContext<ReviewContext>({
-  state: {comments: []},
-  dispatch: {
-      refetch: () => undefined,
-  }
+    state: { comments: [] },
+    dispatch: {
+        refetch: () => undefined,
+    },
 });
 
 interface ReviewProviderProps {
@@ -28,29 +28,27 @@ interface ReviewProviderProps {
 }
 
 export const ReviewProvider = ({ children, state, refetch }: ReviewProviderProps) => {
-  return (
-    <ReviewStateContext.Provider value={{ state, dispatch: { refetch } }}>
-      {children}
-    </ReviewStateContext.Provider>
-  );
+    return (
+        <ReviewStateContext.Provider value={{ state, dispatch: { refetch } }}>{children}</ReviewStateContext.Provider>
+    );
 };
 
 export function useReviewDispatch(): ReviewDispatch {
     const context = React.useContext(ReviewStateContext);
 
     if (context === undefined) {
-      throw new Error('useReviewDispatch must be used within ReviewProvider');
+        throw new Error('useReviewDispatch must be used within ReviewProvider');
     }
-  
+
     return context.dispatch;
 }
 
 export function useReviewState(): ReviewState {
-  const context = React.useContext(ReviewStateContext);
+    const context = React.useContext(ReviewStateContext);
 
-  if (context === undefined) {
-    throw new Error('useReviewState must be used within ReviewProvider');
-  }
+    if (context === undefined) {
+        throw new Error('useReviewState must be used within ReviewProvider');
+    }
 
-  return context.state;
+    return context.state;
 }

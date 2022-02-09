@@ -4,7 +4,7 @@ import React, { ReactElement, useState } from 'react';
 import CommentEditor from '../CommentEditor';
 import { Review } from '../../lib/api/models';
 
-import "react-mde/lib/styles/css/react-mde-all.css";
+import 'react-mde/lib/styles/css/react-mde-all.css';
 
 interface Props {
     filename: string;

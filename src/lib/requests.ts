@@ -1,35 +1,74 @@
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 import express from 'express';
 import * as errors from '../common/errors';
 import { getTokensFromHeader } from './auth';
 import { IUserDocument } from '../models/User';
-import { ensureValidPermissions, ExternalId, Permission } from './permissions';
+import {
+    ensureValidPermissions,
+    Permission,
+    PermissionVerificationFn,
+    defaultPermissionVerifier,
+} from './permissions';
+import { expr } from '../utils/expr';
+import { transformZodErrorIntoResponseError } from '../transformers/error';
+import Logger from '../common/logger';
+import { ApiResponse, handleResponse } from './response';
 
 type RequestMethodWithBody = 'post' | 'put' | 'patch';
 type RequestMethodWithoutBody = 'delete' | 'get';
 type RequestMethod = RequestMethodWithBody | RequestMethodWithoutBody;
 
-interface Request<Params, Query, Requester, Body> {
-    params: Params;
-    query: Query;
-    raw: express.Request;
-    requester: Requester;
-    body: Body;
-}
-
-type RegisterRoute<
-    P,
+function registrarHasBody<
     Params,
     Query,
     Method extends RequestMethod,
     Body,
     RoutePermission extends Permission | null,
+    Res,
+>(
+    registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
+): registrar is RegisterRoute<
+    Params,
+    Query,
+    Method & RequestMethodWithBody,
+    Body,
+    RoutePermission,
+    Res
+> {
+    return (
+        registrar.method === 'post' || registrar.method === 'put' || registrar.method === 'patch'
+    );
+}
+
+export interface BasicRequest<Params, Query, Body> {
+    params: Params;
+    query: Query;
+    body: Body;
+}
+
+export interface Request<Params, Query, Requester, Body> extends BasicRequest<Params, Query, Body> {
+    raw: express.Request;
+    requester: Requester;
+}
+
+type RegisterRoute<
+    Params,
+    Query,
+    Method extends RequestMethod,
+    Body,
+    RoutePermission extends Permission | null,
+    Res,
 > = {
     method: Method;
     permission: RoutePermission;
     sgMode?: boolean;
-    params: z.Schema<Params, z.ZodTypeDef, P>;
-    query: z.Schema<Query>;
+    // @@Cleanup: Since permission verification doesn't actually use the body for any
+    //            verification at the moment, we don't actually include in the verification
+    //            of the permissions. This could be a limitation in the future, but it is hard
+    //            to reason about whether it is null or not a given point,
+    permissionVerification?: PermissionVerificationFn<Params, Query>;
+    params: z.Schema<Params, z.ZodTypeDef, Record<string, any>>;
+    query: z.Schema<Query, z.ZodTypeDef, Record<string, any>>;
     handler: (
         req: Request<
             Params,
@@ -37,190 +76,104 @@ type RegisterRoute<
             RoutePermission extends null ? null : IUserDocument,
             Method extends RequestMethodWithBody ? Body : null
         >,
-        res: express.Response,
-    ) => Promise<unknown>;
-} & (Method extends RequestMethodWithBody ? { body: z.Schema<Body> } : {});
+    ) => Promise<ApiResponse<Res>>;
+} & (Method extends RequestMethodWithBody
+    ? { body: z.Schema<Body, z.ZodTypeDef, Record<string, any>> }
+    : {});
 
 export default function registerRoute<
-    P,
     Params,
     Query,
     Method extends RequestMethod,
     Body,
     RoutePermission extends Permission | null,
+    Res,
 >(
     router: express.Router,
     path: string,
-    registrar: RegisterRoute<P, Params, Query, Method, Body, RoutePermission>,
+    registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
 ) {
-    const wrappedHandler = async (req: express.Request, res: express.Response) => {
-        const params = await registrar.params.safeParseAsync(req.params);
-        type InputParams = typeof registrar.params._type;
+    const wrappedHandler = async (req: express.Request, res: express.Response): Promise<void> => {
+        try {
+            const params = await registrar.params.parseAsync(req.params);
+            const query = await registrar.query.parseAsync(req.query);
 
-        const query = await registrar.query.safeParseAsync(req.query);
+            let body: Body | null = null;
 
-        // If the parameter parsing wasn't successful, fail here
-        if (!params.success) {
-            return res.status(400).json({
-                status: 'error',
-                message:
-                    "Bad request, endpoint path parameter schema didn't match to provided path parameters.",
-                extra: {
-                    errors: {
-                        ...params.error,
-                    },
-                },
+            // Only attempt to parse the body if this method type demands that there is
+            // a body on the request.
+            if (registrarHasBody(registrar)) {
+                body = await registrar.body.parseAsync(req.body);
+            }
+
+            let basicRequest = { query, params, body };
+
+            const permissions = await expr(async () => {
+                if (registrar.permission !== null) {
+                    const tokenOrError = getTokensFromHeader(req, res);
+
+                    // Check whether it is the error variant
+                    if (typeof tokenOrError === 'string') {
+                        return tokenOrError;
+                    }
+
+                    // Validate the permissions, but skip it if there are no specified permissions for the
+                    // current request.
+                    return await ensureValidPermissions(
+                        registrar.permission,
+                        tokenOrError.data.id,
+                        basicRequest,
+                        typeof registrar.permissionVerification === 'function'
+                            ? registrar.permissionVerification
+                            : defaultPermissionVerifier,
+                    );
+                }
+
+                return null;
             });
-        }
 
-        // If the query parsing wasn't successful, fail here
-        if (!query.success) {
-            return res.status(400).json({
-                status: 'error',
-                message:
-                    "Bad request, endpoint query schema didn't match to provided query fields.",
-                extra: {
-                    errors: {
-                        ...query.error,
-                    },
-                },
+            if (typeof permissions === 'string' || permissions?.valid === false) {
+                throw new errors.ApiError(401, errors.UNAUTHORIZED);
+            }
+
+            const result = await registrar.handler({
+                ...basicRequest,
+                // @@Cleanup: would be nice if we could get rid of this!
+                raw: req,
+                // @ts-ignore
+                requester: permissions?.user ?? null,
             });
-        }
 
-        let permissions;
-
-        if (registrar.permission !== null) {
-            const token = getTokensFromHeader(req, res);
-            if (typeof token === 'string') {
-                return res.status(401).json({
+            return handleResponse(res, result);
+        } catch (e: unknown) {
+            if (e instanceof ZodError) {
+                res.status(400).json({
                     status: 'error',
-                    message: token,
+                    message: "Request parameters didn't match the expected format.",
+                    errors: transformZodErrorIntoResponseError(e),
                 });
+                return;
             }
 
-            let externalId: ExternalId | undefined;
-            // @@Hack: so we assume that any requests that need a permission check via a sub-system pass their
-            //         DocumentId parameter via the path parameters instead of any other way, therefore after verifying
-            //         that the parameter ZodSchema has an id and it is an `ObjectId`, we can get this and use it as
-            //         an external id, thus making a permission check with the id...
-            //
-            //         Personally, I think this is very hacky and could be better handled by a more robust permission
-            //         system that can be generated based on the path of the endpoint using some generator function and
-            //         then checked that way rather than relying on specific endpoint formats.
-            const { hasOwnProperty } = Object.prototype;
-            if (typeof params.data === 'object' && hasOwnProperty.call(params.data, 'id')) {
-                // @ts-ignore @@CLEANUP @@CLEANUP @@CLEANUP
-                externalId = { id: params.data.id, type: 'id' };
-            } else if (
-                typeof params.data === 'object' &&
-                hasOwnProperty.call(params.data, 'name')
-            ) {
-                // @ts-ignore @@CLEANUP @@CLEANUP @@CLEANUP
-                externalId = { name: params.data.name, type: 'publication' }; // @@Fixme: this is a terrible assumption
-            }
-
-            // Validate the permissions, but skip it if there are no specified permissions for the
-            // current request.
-            permissions = await ensureValidPermissions(
-                registrar.permission,
-                token.data.id,
-                externalId,
-            );
-
-            if (!permissions.valid) {
-                return res.status(401).json({
-                    status: 'error',
-                    message: errors.UNAUTHORIZED,
+            if (e instanceof errors.ApiError) {
+                res.status(e.code).json({
+                    status: false,
+                    message: e.message,
+                    ...(e.errors && { errors: e.errors }),
                 });
-            }
-        }
-
-        const basicRequest = {
-            query: query.data,
-            params: params.data,
-            raw: req,
-        };
-
-        if ('body' in registrar) {
-            const registrarWithBody = registrar as RegisterRoute<
-                P,
-                Params,
-                Query,
-                RequestMethodWithBody,
-                Body,
-                Permission
-            >;
-            const body = await registrarWithBody.body.safeParseAsync(req.body);
-
-            // If the body parsing wasn't successful, fail here
-            if (!body.success) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: "Bad request, endpoint body schema didn't match to provided body.",
-                    extra: {
-                        errors: {
-                            ...body.error,
-                        },
-                    },
-                });
+                return;
             }
 
-            if (typeof permissions === 'undefined') {
-                const r = registrar as RegisterRoute<
-                    InputParams,
-                    Params,
-                    Query,
-                    RequestMethodWithBody,
-                    Body,
-                    null
-                >;
-                return await r.handler({ ...basicRequest, requester: null, body: body.data }, res);
-            }
+            // If something else went wrong that we don't quite understand, then we return an
+            // internal server error as this was unexpected
+            Logger.error(`Server encountered an unexpected error:\n${e}`);
 
-            // We only have to do this because typescript isn't smart enough to coerce types yet
-            // in the way we want to.
-            const r = registrar as RegisterRoute<
-                P,
-                Params,
-                Query,
-                RequestMethodWithBody,
-                Body,
-                Permission
-            >;
-
-            return await r.handler(
-                { ...basicRequest, requester: permissions.user, body: body.data },
-                res,
-            );
+            res.status(500).json({
+                status: 'error',
+                message: errors.INTERNAL_SERVER_ERROR,
+            });
+            return;
         }
-
-        if (typeof permissions === 'undefined') {
-            const registrarWithoutBody = registrar as unknown as RegisterRoute<
-                P,
-                Params,
-                Query,
-                RequestMethodWithoutBody,
-                Body,
-                null
-            >;
-            return await registrarWithoutBody.handler(
-                { ...basicRequest, requester: null, body: null },
-                res,
-            );
-        }
-
-        const registrarWithBody = registrar as unknown as RegisterRoute<
-            P,
-            Params,
-            Query,
-            RequestMethodWithoutBody,
-            Body,
-            Permission
-        >;
-        return await registrarWithBody.handler(
-            { ...basicRequest, requester: permissions.user, body: null },
-            res,
-        );
     };
 
     // now add the method to the router
@@ -244,6 +197,7 @@ export default function registerRoute<
             throw new Error('Unreachable');
     }
 }
+
 type Dictionary = { [index: string]: string };
 export const GROUP_URI_MAP: Dictionary = {
     t06: 'https://cs3099user06.host.cs.st-andrews.ac.uk/',

@@ -25,7 +25,7 @@ import type {
   GetUserUsernameRole200,
   PatchUserUsernameRole200,
   PostUserUsernameFollow200,
-  DeleteUserUsernameFollow200
+  ApiSuccessResponse
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
 
@@ -286,7 +286,7 @@ export const postUserUsernameFollow = (
 export const deleteUserUsernameFollow = (
     username: string,
  ) => {
-      return customInstance<DeleteUserUsernameFollow200>(
+      return customInstance<ApiSuccessResponse>(
       {url: `/user/${username}/follow`, method: 'delete'
     },
       );

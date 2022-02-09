@@ -9,7 +9,6 @@ import PageLayout from '../../components/PageLayout';
 import UserAvatar from '../../components/UserAvatar';
 import { AccountUpdateForm } from '../../forms/UpdateAccountForm';
 
-
 export default function Account() {
     const { session } = useAuth();
 

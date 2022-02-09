@@ -47,10 +47,14 @@ export default function ExportDialog({ username, name, revision, open, onClose }
     });
 
     const onSubmit: SubmitHandler<IExportPublication> = async (data) => {
-        await exportPub.mutateAsync({username, name, params: {
-            ...data,
-            revision
-        }});
+        await exportPub.mutateAsync({
+            username,
+            name,
+            params: {
+                ...data,
+                revision,
+            },
+        });
     };
 
     return (
@@ -95,10 +99,7 @@ export default function ExportDialog({ username, name, revision, open, onClose }
                 </DialogContent>
                 <DialogActions>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button
-                            disabled={!isValid || isSubmitting}
-                            type="submit"
-                        >
+                        <Button disabled={!isValid || isSubmitting} type="submit">
                             Confirm
                         </Button>
                     </Box>

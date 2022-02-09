@@ -5,10 +5,10 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import type { TokenResponseResponseStatus } from './tokenResponseResponseStatus';
+import type { SuccessStatus } from './successStatus';
 
 export type TokenResponseResponse = {
-  status: TokenResponseResponseStatus;
+  status: SuccessStatus;
   token: string;
   refreshToken: string;
 };

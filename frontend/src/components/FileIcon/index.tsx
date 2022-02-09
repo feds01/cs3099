@@ -6,7 +6,7 @@ interface Props {
     type: 'directory' | 'file';
     open: boolean;
     extension: string;
-};
+}
 
 export default function FileIcon({ type, open, extension }: Props): ReactElement {
     if (type === 'directory') {

@@ -10,7 +10,7 @@ import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import { useNotificationDispatch } from '../../hooks/notification';
 import { transformQueryIntoContentState } from '../../wrappers/react-query';
 import { useGetReviewIdComments, usePostReviewIdComplete } from '../../lib/api/reviews/reviews';
-import { useGetPublicationUsernameNameRevisionAll } from '../../lib/api/publications/publications';
+import { useGetPublicationUsernameNameAll } from '../../lib/api/publications/publications';
 import {
     ApiErrorResponse,
     GetPublicationUsernameNameRevisionAll200,
@@ -29,11 +29,9 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
     const { publication, owner } = review;
 
     const notificationDispatcher = useNotificationDispatch();
-    const fileQuery = useGetPublicationUsernameNameRevisionAll(
-        publication.owner.username,
-        publication.name,
-        publication.revision,
-    );
+    const fileQuery = useGetPublicationUsernameNameAll(publication.owner.username, publication.name, {
+        revision: publication.revision,
+    });
 
     const getCommentsQuery = useGetReviewIdComments(review.id);
     const completeReviewQuery = usePostReviewIdComplete();

@@ -9,12 +9,15 @@ import {
   rest
 } from 'msw'
 import faker from 'faker'
+import {
+  SuccessStatus
+} from '.././models'
 
-export const getPostResourceUploadUsernameMock = () => ({status: faker.helpers.randomize(['ok'])})
+export const getPostResourceUploadUsernameMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus))})
 
-export const getPostResourceUploadPublicationIdMock = () => ({status: faker.helpers.randomize(['ok'])})
+export const getPostResourceUploadPublicationIdMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus))})
 
-export const getPostResourceUploadReviewIdMock = () => ({status: faker.helpers.randomize(['ok'])})
+export const getPostResourceUploadReviewIdMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus))})
 
 export const getResourcesMSW = () => [
 rest.post('*/resource/upload/:username', (_req, res, ctx) => {

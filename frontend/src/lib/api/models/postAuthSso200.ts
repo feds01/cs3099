@@ -5,9 +5,9 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import type { PostAuthSso200Status } from './postAuthSso200Status';
+import type { SuccessStatus } from './successStatus';
 
 export type PostAuthSso200 = {
-  status: PostAuthSso200Status;
+  status: SuccessStatus;
   follow: string;
 };

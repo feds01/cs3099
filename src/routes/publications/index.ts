@@ -1,49 +1,58 @@
 import { z } from 'zod';
 import express from 'express';
-import assert from 'assert';
 import Logger from '../../common/logger';
 import * as zip from '../../lib/zip';
-import * as errors from './../../common/errors';
-import * as userUtils from './../../utils/users';
-import registerRoute from '../../lib/requests';
-import User, { IUserRole } from '../../models/User';
-import Publication from '../../models/Publication';
-import { compareUserRoles } from '../../lib/permissions';
-import { ModeSchema, ResourceSortSchema } from '../../validators/requests';
-import {
-    IPublicationCreationSchema,
-    IPublicationPatchRequestSchema,
-} from '../../validators/publications';
-
 import searchRouter from './search';
 import reviewRouter from './reviews';
 import { config } from '../../server';
 import { createTokens } from '../../lib/auth';
 import { deleteResource } from '../../lib/fs';
-import { resourceIndexToPath } from '../../lib/zip';
 import { makeRequest } from '../../lib/fetch';
+import * as errors from './../../common/errors';
+import * as userUtils from './../../utils/users';
+import registerRoute from '../../lib/requests';
+import User, { IUserRole } from '../../models/User';
+import Publication from '../../models/Publication';
+import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../validators/requests';
+import {
+    compareUserRoles,
+    verifyPublicationPermission,
+    verifyUserPermission,
+} from '../../lib/permissions';
+import {
+    IPublicationCreationSchema,
+    IPublicationPatchRequestSchema,
+} from '../../validators/publications';
 
 const router = express.Router();
 router.use('/', searchRouter);
 router.use('/', reviewRouter);
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /publication/:username/:name/all/
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap/all?revision=v1
  *
+ * @description This endpoint is used to get all of the files for a publication
+ * specified by the owner's name, the name of the publication and which revision of the publication
+ * to index.
  */
-registerRoute(router, '/:username/:name/:revision/all/', {
+registerRoute(router, '/:username/:name/all', {
     method: 'get',
     params: z.object({
         username: z.string(),
         name: z.string(),
-        revision: z.string(),
     }),
-    query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'publication', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    query: z.object({ mode: ModeSchema, revision: z.string() }),
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name, revision } = req.params;
+        const { name } = req.params;
+        const { revision } = req.query;
 
         const publication = await Publication.findOne({
             owner: user.id,
@@ -54,10 +63,11 @@ registerRoute(router, '/:username/:name/:revision/all/', {
             .exec();
 
         if (!publication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: errors.RESOURCE_NOT_FOUND,
-            });
+            };
         }
 
         let archiveIndex = {
@@ -72,49 +82,65 @@ registerRoute(router, '/:username/:name/:revision/all/', {
         //            it must of been deleted off the disk... which means we might have to invalidate
         //            the current revision?
         if (!archive) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: errors.RESOURCE_NOT_FOUND,
-            });
+            };
         }
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            entries: archive
-                .getEntries()
-                .filter((entry) => !entry.isDirectory)
-                .map((entry) => {
-                    const contents = entry.getData();
+            code: 200,
+            data: {
+                entries: archive
+                    .getEntries()
+                    .filter((entry) => !entry.isDirectory)
+                    .map((entry) => {
+                        const contents = entry.getData();
 
-                    return {
-                        type: 'file',
-                        updatedAt: entry.header.time.getTime(),
-                        contents: contents.toString(),
-                        filename: entry.entryName,
-                    };
-                }),
-        });
+                        return {
+                            type: 'file',
+                            updatedAt: entry.header.time.getTime(),
+                            contents: contents.toString(),
+                            filename: entry.entryName,
+                        };
+                    }),
+            },
+        };
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /publication/:username/:name/:revision/all/
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap/tree/blahblah
  *
+ * @description This endpoint is used to get all of the files for a publication
+ * specified by the owner's name, the name of the publication and which revision of the publication
+ * to index.
  */
-registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
+registerRoute(router, '/:username/:name/tree/:path(*)', {
     method: 'get',
     params: z.object({
         username: z.string(),
         name: z.string(),
         path: z.string().optional(),
+    }),
+    query: z.object({
+        mode: ModeSchema,
+        sortBy: ResourceSortSchema,
         revision: z.string().optional(),
     }),
-    query: z.object({ mode: ModeSchema, sortBy: ResourceSortSchema }),
-    permission: { kind: 'publication', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name, revision, path } = req.params;
+        const { name, path } = req.params;
+        const { revision } = req.query;
 
         const publication = await Publication.findOne({
             owner: user.id,
@@ -125,10 +151,11 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
             .exec();
 
         if (!publication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: errors.RESOURCE_NOT_FOUND,
-            });
+            };
         }
 
         let archive = {
@@ -141,10 +168,11 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
         let entry = zip.getEntry(archive, transformedPath);
 
         if (!entry) {
-            return res.status(404).json({
+            return {
                 status: 'error',
+                code: 404,
                 message: errors.RESOURCE_NOT_FOUND,
-            });
+            };
         } else {
             // Here we need to apply sorting to the particular entry if the entry is a directory type
             if (entry.type === 'directory') {
@@ -166,10 +194,13 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
                 });
             }
 
-            return res.status(200).json({
+            return {
                 status: 'ok',
-                data: entry,
-            });
+                code: 200,
+                data: {
+                    entry,
+                },
+            };
         }
     },
 });
@@ -177,9 +208,9 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
 /**
  * @version v1.0.0
  * @method POST
- * @url /api/publications/
+ * @url /api/publication
  * @example
- * https://cs3099user06.host.cs.st-andrews.ac.uk/publication/
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/
  * >>> body:
  * {
  *   "revision": "v1",
@@ -189,45 +220,53 @@ registerRoute(router, '/:username/:name/:revision?/tree/:path(*)', {
  *   "draft": true
  * }
  *
- * @description Route to create a new publication entry in the database.
+ * @description Route to create a new publication entry in the database. The route
+ * will prevent a creation of publications with the same name as ones that already
+ * exist under the current user.
  */
 registerRoute(router, '/', {
     method: 'post',
     params: z.object({}),
     body: IPublicationCreationSchema,
     query: z.object({}),
-    permission: { kind: 'publication', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const { name, collaborators, revision } = req.body;
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const { name, collaborators } = req.body;
         const { id: owner } = req.requester;
 
         // Check if the publication is already in use...
         const existingPublication = await Publication.count({
             owner,
             name,
-            revision,
         }).exec();
 
         if (existingPublication > 0) {
-            return res.status(400).json({
+            return {
                 status: 'error',
-                message: errors.PUBLICATION_FAILED,
-                extra: errors.PUBLICATION_EXISTS,
-            });
+                code: 400,
+                message: 'Publication with the same name already exists',
+            };
         }
 
         // Find all corresponding ids of each collaborators' username
         const collaboratorDocs = await User.find({ username: { $in: collaborators } }).exec();
 
         if (collaboratorDocs.length < collaborators.length) {
-            const namesFound = collaboratorDocs.map((doc) => doc.username);
-            const missingNames = collaborators.filter((name: string) => !namesFound.includes(name));
+            const found = collaboratorDocs.map((doc) => doc.username);
+            const missing = collaborators.filter((name) => !found.includes(name));
 
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_USER,
-                extra: missingNames,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+                errors: {
+                    collaborators: {
+                        message: `Collaborators ${missing
+                            .map((item) => `'${item}'`)
+                            .join(', ')} don't exist.`,
+                    },
+                },
+            };
         }
 
         const newPublication = new Publication({
@@ -238,120 +277,123 @@ registerRoute(router, '/', {
             owner,
         });
 
-        try {
-            const publication = await newPublication.save();
+        const publication = await newPublication.save();
 
-            return res.status(201).json({
-                status: 'ok',
-                message: 'Successfully submitted new publication.',
+        return {
+            status: 'ok',
+            code: 201,
+            data: {
                 publication: Publication.projectWith(publication, req.requester),
-            });
-        } catch (e) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: errors.INTERNAL_SERVER_ERROR,
-            });
-        }
+            },
+        };
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/publication/:username
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01
  *
+ * @description This endpoint is used to get all of the publications under the current
+ * user.
  */
 registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
-    query: z.object({ mode: ModeSchema, pinned: z.enum(['true', 'false']).optional() }),
-    permission: { kind: 'publication', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    query: z.object({ mode: ModeSchema, pinned: FlagSchema.optional() }),
+    permissionVerification: verifyUserPermission,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { pinned } = req.query;
-        const isPinned = pinned === 'true';
 
         // @@TODO: we might want to include revisions in the future with some options.
         const result = await Publication.find({
             owner: user.id,
             ...(typeof pinned !== 'undefined' && {
-                $or: [...(!isPinned ? [{ pinned: { $exists: false } }] : []), { pinned: isPinned }],
+                $or: [...(!pinned ? [{ pinned: { $exists: false } }] : []), { pinned }],
             }),
             current: true,
         })
             .limit(50)
             .exec();
 
-        // project each publication and then return it
-        const publications = result.map((link) =>
-            Publication.projectWith(link as typeof result[number], user),
-        );
-
-        return res.status(200).json({
-            status: true,
-            data: publications,
-        });
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                publications: result.map((item) => Publication.projectWith(item, user)),
+            },
+        };
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/publication/:id/revisions
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/507f1f77bcf86cd799439011
  *
+ * @description This endpoint is used to get all of the revisions for a given publication.
  */
 registerRoute(router, '/:username/:name/revisions', {
     method: 'get',
-    params: z.object({ username: z.string() }),
-    query: z.object({ mode: ModeSchema, pinned: z.enum(['true', 'false']).optional() }), // @@TODO: use a boolean schema here
-    permission: { kind: 'publication', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    params: z.object({ username: z.string(), name: z.string() }),
+    query: z.object({ mode: ModeSchema }),
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
-        const { pinned } = req.query;
-        const isPinned = pinned === 'true';
-
-        // @@TODO: we might want to include revisions in the future with some options.
         const result = await Publication.find({
             owner: user.id,
-            ...(typeof pinned !== 'undefined' && {
-                $or: [...(!isPinned ? [{ pinned: { $exists: false } }] : []), { pinned: isPinned }],
-            }),
             current: true,
         })
             .limit(50)
             .exec();
 
-        // project each publication and then return it
-        const revisions = result.map((link) =>
-            Publication.projectWith(link as typeof result[number], user),
-        );
-
-        return res.status(200).json({
+        return {
             status: 'ok',
+            code: 200,
             data: {
-                revisions,
+                revisions: result.map((item) => Publication.projectWith(item, user)),
             },
-        });
+        };
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/publication/:username/:name
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap
  *
+ * @description This endpoint is used to get a publication by the name of the owner
+ * and the name of the publication.
  */
-registerRoute(router, '/:username/:name/:revision?', {
+registerRoute(router, '/:username/:name', {
     method: 'get',
     params: z.object({
         username: z.string().nonempty(),
         name: z.string().nonempty(),
+    }),
+    query: z.object({
+        mode: ModeSchema,
+        draft: FlagSchema.optional(),
         revision: z.string().optional(),
     }),
-    query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).optional() }),
-    permission: { kind: 'publication', level: IUserRole.Default }, // @@Cleanup: needs to be moderator?
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name, revision } = req.params;
+        const { name } = req.params;
+        const { revision } = req.query;
 
         // sort by id in descending order since this is actually faster than using a 'createdAt' field because
         // ObjectID's in MongoDB have a natural ascending order of time. More information about the details
@@ -365,10 +407,11 @@ registerRoute(router, '/:username/:name/:revision?', {
             .exec();
 
         if (!publication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         // So we don't need to actually specify the draft flag to the query
@@ -384,19 +427,19 @@ registerRoute(router, '/:username/:name/:revision?', {
             !isOwner &&
             !compareUserRoles(req.requester.role, IUserRole.Moderator)
         ) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         } else if (typeof req.query.draft !== 'undefined') {
-            const draft = req.query.draft === 'true';
-
             // So now here we can allow explicit filtering by draft or not...
-            if (publication.draft !== draft) {
-                return res.status(404).json({
+            if (publication.draft !== req.query.draft) {
+                return {
                     status: 'error',
-                    message: errors.NON_EXISTENT_PUBLICATION,
-                });
+                    code: 404,
+                    message: errors.RESOURCE_NOT_FOUND,
+                };
             }
         }
 
@@ -408,15 +451,25 @@ registerRoute(router, '/:username/:name/:revision?', {
         };
         const archive = zip.loadArchive(archiveIndex);
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            publication: await Publication.project(publication, archive !== null),
-        });
+            code: 200,
+            data: {
+                publication: await Publication.project(publication, archive !== null),
+            },
+        };
     },
 });
 
 /**
- * @description endpoint to delete the entire series of publications revisions
+ * @version v1.0.0
+ * @method DELETE
+ * @url /api/publication/:username/:name/all
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap/all
+ *
+ * @description This endpoint is used to delete a publication and any found revision
+ * of the publication.
  */
 registerRoute(router, '/:username/:name/all', {
     method: 'delete',
@@ -425,64 +478,58 @@ registerRoute(router, '/:username/:name/all', {
         name: z.string().nonempty(),
     }),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'publication', level: IUserRole.Administrator },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Administrator },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name, username } = req.params;
+        const { name } = req.params;
 
-        const owner = await User.findOne({ username }).exec();
-        assert(owner !== null);
+        await Publication.deleteMany({ owner: user.id, name: name.toLowerCase() }).exec();
 
-        await Publication.deleteMany({ owner: owner.id, name: name.toLowerCase() }).exec();
+        const publicationPath = zip.resourceIndexToPath({
+            type: 'publication',
+            owner: user.id,
+            name: name,
+        });
 
-        try {
-            const publicationPath = resourceIndexToPath({
-                type: 'publication',
-                owner: owner.id,
-                name: name,
-            });
+        // we need to try to remove the folder that stores the publications...
+        await deleteResource(publicationPath);
 
-            // we need to try to remove the folder that stores the publications...
-            await deleteResource(publicationPath);
-
-            return res.status(200).json({
-                status: 'ok',
-                message: 'Successfully deleted resource.',
-            });
-        } catch (e: unknown) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: errors.INTERNAL_SERVER_ERROR,
-            });
-        }
+        return { status: 'ok', code: 200 };
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method DELETE
+ * @url /api/publication/:username/:name
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap
  *
+ * @description This endpoint is used to delete a specific revision of a publication.
+ * Optionally, it can be which revision should be deleted (by passing the revision in
+ * the query parameters). The endpoint also filters for if the publication is a draft
+ * or not.
  */
-registerRoute(router, '/:username/:name/:revision?', {
+registerRoute(router, '/:username/:name', {
     method: 'delete',
     params: z.object({
         username: z.string().nonempty(),
         name: z.string().nonempty(),
+    }),
+    query: z.object({
+        mode: ModeSchema,
+        draft: FlagSchema.default('false'),
         revision: z.string().optional(),
     }),
-    query: z.object({ mode: ModeSchema, draft: z.enum(['true', 'false']).default('false') }),
-    permission: { kind: 'publication', level: IUserRole.Administrator },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Administrator },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name, username, revision } = req.params;
-
-        const draft = req.query.draft === 'true';
-        const owner = await User.findOne({ username }).exec();
-        assert(owner !== null);
+        const { revision, draft } = req.query;
+        const { name } = req.params;
 
         const publication = await Publication.findOneAndDelete({
             owner: user.id,
@@ -494,47 +541,35 @@ registerRoute(router, '/:username/:name/:revision?', {
             .exec(); // get the most recent document
 
         if (!publication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
-        try {
-            const publicationPath = resourceIndexToPath({
-                type: 'publication',
-                owner: owner.id.toString(),
-                name,
-                ...(typeof revision !== 'undefined' && { path: [revision, 'publication.zip'] }),
-            });
+        const publicationPath = zip.resourceIndexToPath({
+            type: 'publication',
+            owner: user.id.toString(),
+            name,
+            ...(typeof revision !== 'undefined' && { path: [revision, 'publication.zip'] }),
+        });
 
-            // we need to try to remove the folder that stores the publications...
-            await deleteResource(publicationPath);
+        // we need to try to remove the folder that stores the publications...
+        await deleteResource(publicationPath);
 
-            return res.status(200).json({
-                status: 'ok',
-                message: 'Successfully deleted resource.',
-            });
-        } catch (e: unknown) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: errors.INTERNAL_SERVER_ERROR,
-            });
-        }
+        return { status: 'ok', code: 200 };
     },
 });
 
 /**
  * @version v1.0.0
  * @method PATCH
- * @url /api/publication/:id
+ * @url /api/publication/:username/:name
  * @example
  * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/507f1f77bcf86cd799439011
  *
  * @description This endpoint is used to patch a publication with the new details about the publication.
- *
  */
 registerRoute(router, '/:username/:name', {
     method: 'patch',
@@ -542,41 +577,46 @@ registerRoute(router, '/:username/:name', {
         username: z.string().nonempty(),
         name: z.string().nonempty(),
     }),
-    query: z.object({ mode: ModeSchema }),
+    query: z.object({ mode: ModeSchema, revision: z.string().optional() }),
     body: IPublicationPatchRequestSchema,
-    permission: { kind: 'publication', level: IUserRole.Administrator },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
-
-        const update = { $set: { ...req.body } };
-        const queryOptions = { new: true }; // new as in return the updated document
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Administrator },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { name } = req.params;
+        const { revision } = req.query;
 
         // So take the fields that are to be updated into the set request, it's okay to this because
         // we validated the request previously and we should be able to add all of the fields into the
         // database. If the user tries to update the username or an email that's already in use, mongo
         // will return an error because these fields have to be unique.
         let newPublication = await Publication.findOneAndUpdate(
-            { owner: user.id, name: name.toLowerCase() },
-            update,
-            queryOptions,
+            {
+                owner: user.id,
+                name: name.toLowerCase(),
+                ...(typeof revision !== 'undefined' && { revision }),
+            },
+            { $set: { ...req.body } },
+            { new: true },
         ).exec();
 
         // If we couldn't find the publication, return a not found.
         if (!newPublication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
-        return res.status(200).json({
+        return {
             status: 'ok',
-            message: 'Successfully updated publication.',
-            publication: await Publication.project(newPublication, false),
-        });
+            code: 200,
+            data: {
+                publication: await Publication.project(newPublication, false),
+            },
+        };
     },
 });
 
@@ -607,10 +647,10 @@ registerRoute(router, '/:username/:name/export', {
         revision: z.string().optional(),
         exportReviews: z.boolean(),
     }),
-    permission: { kind: 'publication', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         // Get the publication
         const { name } = req.params;
@@ -625,10 +665,11 @@ registerRoute(router, '/:username/:name/export', {
             .exec(); // get the most recent document
 
         if (!publication) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         // @@ Hack: this should be done by some kind of token service...
@@ -642,16 +683,14 @@ registerRoute(router, '/:username/:name/export', {
         if (result.status === 'error') {
             Logger.warn(`Failed to export a review: ${result.errors}`);
 
-            return res.status(400).json({
+            return {
                 status: 'error',
+                code: 400,
                 message: `Failed to export review due to ${result.type}.`,
-            });
+            };
         }
 
-        return res.status(200).json({
-            status: 'ok',
-            message: 'Review has been successfully exported.',
-        });
+        return { status: 'ok', code: 200 };
     },
 });
 

@@ -9,21 +9,29 @@ import { ModeSchema } from '../../validators/requests';
 import Review, { IReviewStatus } from '../../models/Review';
 import Publication, { IPublication } from '../../models/Publication';
 import { IReviewCreationSchema } from '../../validators/reviews';
-import assert from 'assert';
+import { verifyPublicationPermission } from '../../lib/permissions';
 
 const router = express.Router();
 
 /**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/publication/:username/:name/:revision/reviews
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap/v1/reviews
+ *
+ * @description This endpoint is used to list all of the reviews on a specific publication
+ * which is specified by the owner's username, publication name and publication revision.
  *
  */
 registerRoute(router, '/:username/:name/:revision/reviews', {
     method: 'get',
     params: z.object({ username: z.string(), name: z.string(), revision: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    permission: { kind: 'review', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { name, revision } = req.params;
 
@@ -34,10 +42,11 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
         });
 
         if (!publication) {
-            return res.status(404).json({
-                status: false,
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+            return {
+                status: 'error',
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         const result = await Review.find({
@@ -48,16 +57,25 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
             .populate<{ owner: IUser }>('owner')
             .exec();
 
-        const reviews = await Promise.all(result.map(async (link) => await Review.project(link)));
-
-        return res.status(200).json({
-            status: true,
-            reviews,
-        });
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                reviews: await Promise.all(result.map(Review.project)),
+            },
+        };
     },
 });
 
 /**
+ * @version v1.0.0
+ * @method POST
+ * @url /api/publication/:username/:name/:revision/review
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap/v1/review
+ *
+ * @description This endpoint is used to initiate the process of reviewing a publication.
+ * It sets up the necessary information in the database for a review of a publication to start.
  *
  */
 registerRoute(router, '/:username/:name/:revision/review', {
@@ -69,10 +87,10 @@ registerRoute(router, '/:username/:name/:revision/review', {
         name: z.string(),
         revision: z.string(),
     }),
-    permission: { kind: 'review', level: IUserRole.Default },
-    handler: async (req, res) => {
-        const user = await userUtils.transformUsernameIntoId(req, res);
-        if (!user) return;
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
 
         const { name, revision } = req.params;
 
@@ -87,10 +105,11 @@ registerRoute(router, '/:username/:name/:revision/review', {
 
         // Check that the publication isn't currently in draft mode...
         if (!publication || publication.draft) {
-            return res.status(404).json({
+            return {
                 status: 'error',
-                message: errors.NON_EXISTENT_PUBLICATION,
-            });
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
         }
 
         // Now attempt to create the new review
@@ -109,39 +128,28 @@ registerRoute(router, '/:username/:name/:revision/review', {
         // is returned instead of making a new review...
         if (doc) {
             Logger.info('Using pre-created review for user instead of creating a new one...');
-            return res.status(200).json({
+            return {
                 status: 'ok',
-                message: 'Successfully initialised review.',
-                review: await Review.project(doc),
-            });
+                code: 200,
+                data: {
+                    review: await Review.project(doc),
+                },
+            };
         }
 
-        try {
-            const newDoc = await new Review(docParams).save();
+        const newDoc = await new Review(docParams).save();
 
-            // @@HACK: We should be able to modify the returned doc and project it.
-            // populate the fields in the new document so that it can be projected...
-            const projected = await Review.findById(newDoc._id)
-                .populate<{ publication: IPublication }>('publication')
-                .populate<{ owner: IUser }>('owner')
-                .exec();
+        const populated = await (
+            await newDoc.populate<{ publication: IPublication }>('publication')
+        ).populate<{ owner: IUser }>('owner');
 
-            // @@Cleanup!
-            assert(projected);
-
-            return res.status(200).json({
-                status: 'ok',
-                message: 'Successfully initialised review.',
-                review: await Review.project(projected),
-            });
-        } catch (e: unknown) {
-            Logger.error(e);
-
-            return res.status(500).json({
-                status: 'error',
-                message: errors.INTERNAL_SERVER_ERROR,
-            });
-        }
+        return {
+            status: 'ok',
+            code: 201,
+            data: {
+                review: await Review.project(populated),
+            },
+        };
     },
 });
 
