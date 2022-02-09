@@ -13,7 +13,7 @@ def validate_zipfile(ctx: click.core.Context, param: click.types.ParamType, valu
 @click.option("--file", prompt="File Path", help="Path of the file to be uploaded", type=str, callback=validate_zipfile)
 @click.option("--publication", prompt="Publication ID", help="Publication ID", type=str)
 @click.pass_obj
-def upload(obj: dict, file: str, publication: str) -> None:
+def upload(obj: dict[str, str], file: str, publication: str) -> None:
     base_url = obj["BASE_URL"]
     username, headers = obj["AUTH"]()
     if username is None or headers is None:

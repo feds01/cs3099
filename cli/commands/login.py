@@ -7,7 +7,7 @@ import requests
 @click.option("--username", prompt="Username", help="Username", type=str)
 @click.option("--password", prompt="Password", hide_input=True, help="Password", type=str)
 @click.pass_obj
-def login(obj: dict, username: str, password: str) -> None:
+def login(obj: dict[str, str], username: str, password: str) -> None:
     base_url = obj["BASE_URL"]
     login_body = {
         "username": username,

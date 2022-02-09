@@ -11,7 +11,7 @@ from commands import upload
 cli_path = Path(__file__).parent
 
 
-def get_auth() -> Tuple[str, dict]:
+def get_auth() -> Tuple[str, dict[str, str]]:
     username, headers = None, None
     auth_file = cli_path / "./config/auth.json"
     try:

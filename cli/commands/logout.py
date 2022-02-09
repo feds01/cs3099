@@ -4,7 +4,7 @@ import click
 
 @click.command()
 @click.pass_obj
-def logout(obj: dict) -> None:
+def logout(obj: dict[str, str]) -> None:
     try:
         auth_file = obj["CLI_PATH"] / "./config/auth.json"
         os.remove(auth_file)

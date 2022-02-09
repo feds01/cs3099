@@ -4,7 +4,7 @@ import requests
 
 @click.command()
 @click.pass_obj
-def show(obj: dict) -> None:
+def show(obj: dict[str, str]) -> None:
     base_url = obj["BASE_URL"]
     username, headers = obj["AUTH"]()
     if username is None or headers is None:
