@@ -4,6 +4,7 @@ import { ReactElement, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import { ContentState } from '../types/requests';
 import Stars from '../static/images/stars.svg';
+import ErrorBanner from '../components/ErrorBanner';
 
 interface Props {
     username: string;
@@ -40,7 +41,7 @@ export default function Activity({ title, username, limit = 20 }: Props): ReactE
                 </div>
             );
         case 'error':
-            return <>Something went wrong :(</>;
+            return <ErrorBanner message={activities.error.message} />;
         case 'ok':
             return (
                 <div>

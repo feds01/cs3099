@@ -636,13 +636,7 @@ paths:
                   description: Username.
             responses:
                 '200':
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                allOf:
-                                    - $ref: '#/components/schemas/SuccessStatusObject'
-                                    - $ref: '#/components/schemas/FollowerListData'
+                    $ref: '#/components/responses/FollowerList'
                 default:
                     $ref: '#/components/responses/ApiError'
     /user/{username}/following:
@@ -662,13 +656,7 @@ paths:
                   description: Username.
             responses:
                 '200':
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                allOf:
-                                    - $ref: '#/components/schemas/SuccessStatusObject'
-                                    - $ref: '#/components/schemas/FollowerListData'
+                    $ref: '#/components/responses/FollowerList'
                 default:
                     $ref: '#/components/responses/ApiError'
     /publication:
@@ -1533,6 +1521,14 @@ components:
                                 example: 'Message describing the error.'
                             errors:
                                 type: object
+        FollowerList:
+            description: OK
+            content:
+                application/json:
+                    schema:
+                        allOf:
+                            - $ref: '#/components/schemas/SuccessStatusObject'
+                            - $ref: '#/components/schemas/FollowerListData'
         UserAuthResponse:
             description: Authentication tokens with user information.
             content:

@@ -164,8 +164,7 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
             ...(!publication.current && typeof revision !== 'undefined' && { revision }),
         };
 
-        const transformedPath = path ?? '';
-        let entry = zip.getEntry(archive, transformedPath);
+        const entry = zip.getEntry(archive, path ?? '');
 
         if (!entry) {
             return {

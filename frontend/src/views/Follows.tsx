@@ -1,11 +1,12 @@
 import Grid from '@mui/material/Grid';
 import { useAuth } from '../hooks/auth';
-import { ApiErrorResponse, User } from '../lib/api/models';
-import { Container, Typography } from '@mui/material';
-import { ReactElement, useEffect, useState } from 'react';
 import { ContentState } from '../types/requests';
-import FollowerCard from '../components/FollowerCard';
+import ErrorBanner from '../components/ErrorBanner';
+import { Container, Typography } from '@mui/material';
 import Astronaut from '../static/images/spacewalk.svg';
+import { ApiErrorResponse, User } from '../lib/api/models';
+import { ReactElement, useEffect, useState } from 'react';
+import FollowerCard, { FollowerCardSkeleton } from '../components/FollowerCard';
 import { useGetUserUsernameFollowers, useGetUserUsernameFollowing } from '../lib/api/followers/followers';
 
 interface Props {
@@ -13,47 +14,49 @@ interface Props {
     username: string;
 }
 
+const getFollowerQuery = (queryType: 'followers' | 'following') => {
+    if (queryType === 'followers') {
+        return useGetUserUsernameFollowers;
+    } else {
+        return useGetUserUsernameFollowing;
+    }
+};
+
 export default function Follows({ type, username }: Props): ReactElement {
     const { session } = useAuth();
     const [followers, setFollowers] = useState<ContentState<User[], ApiErrorResponse>>({ state: 'loading' });
 
-    // TODO(alex): Creating both queries is very unclean but because you can't call hooks
-    //             in react conditionally, we have to create two instances of the hooks (lazy version)
-    //             and call it on demand using the refetch...
-    const followerQuery = useGetUserUsernameFollowers(username);
-    const followingQuery = useGetUserUsernameFollowing(username);
+    const followerQuery = getFollowerQuery(type)(username);
 
     useEffect(() => {
         async function loadData() {
-            if (type === 'followers') {
-                await followerQuery.refetch();
-            } else {
-                await followingQuery.refetch();
-            }
+            await followerQuery.refetch();
         }
 
         loadData();
     }, [username]);
 
     useEffect(() => {
-        if (type === 'followers') {
-            if (followerQuery.isError) {
-                setFollowers({ state: 'error', error: followerQuery.error });
-            } else if (followerQuery.data) {
-                setFollowers({ state: 'ok', data: followerQuery.data.followers });
-            }
-        } else if (followingQuery.data) {
-            setFollowers({ state: 'ok', data: followingQuery.data.followers });
-        } else if (followingQuery.isError) {
-            setFollowers({ state: 'error', error: followingQuery.error });
+        if (followerQuery.isError) {
+            setFollowers({ state: 'error', error: followerQuery.error });
+        } else if (followerQuery.data) {
+            setFollowers({ state: 'ok', data: followerQuery.data.followers });
         }
-    }, [followingQuery.data, followerQuery.data]);
+    }, [followerQuery.data]);
 
     switch (followers.state) {
         case 'loading':
-            return <>Loading</>;
+            return (
+                <Grid container spacing={1} columns={{ xs: 4, sm: 9, md: 12 }}>
+                    {Array.apply(null, Array(4)).map((_, index) => (
+                        <Grid key={index} item xs={2} sm={3} md={4} lg={3}>
+                            <FollowerCardSkeleton />
+                        </Grid>
+                    ))}
+                </Grid>
+            );
         case 'error':
-            return <>Something went wrong :(</>;
+            return <ErrorBanner message={followers.error.message} />;
         case 'ok':
             if (followers.data.length === 0) {
                 return (

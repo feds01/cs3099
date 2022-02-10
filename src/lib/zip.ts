@@ -7,6 +7,9 @@ import {
     joinPathsRaw,
     stripEndingSlash,
 } from '../utils/resources';
+import { ApiError } from '../common/errors';
+import Logger from '../common/logger';
+import { expr } from '../utils/expr';
 
 // Interface representing either a file entry or a directory entry
 interface DirectoryEntry {
@@ -89,27 +92,42 @@ export function resourceIndexToPath(resource: ResourceIndex): string {
  * @param archive - The entry describing the archives location in the file system.
  */
 export function loadArchive(archive: ArchiveIndex): AdmZip | null {
+    return loadArchiveFromPath(archiveIndexToPath(archive));
+}
+
+/**
+ * Attempt to load a ZIP archive from a raw file path. This is primarily done
+ * when zip files are being verified/loaded pre-resource stage.
+ *
+ * @param filePath - The path of the archive.
+ *
+ */
+export function loadArchiveFromPath(filePath: string): AdmZip | null {
     try {
-        return new AdmZip(archiveIndexToPath(archive));
+        return new AdmZip(filePath);
     } catch (e: unknown) {
         return null;
     }
 }
 
 /**
+ * Function to create an archive and save it to a particular location. The provided
+ * archive index is the location that the location will use as the save the archive
+ * to.
  *
- * @param archive
- * @param filePath
+ * @param archive - The index of the archive or a raw file path to the location
+ *                of the zip file.
+ * @param file -  The location of the file to use when adding to the archive.
  */
-export function countLines(contents: String) {
-    return contents.split(/\r\n|\r|\n/).length;
-}
+export async function createArchive(archive: ArchiveIndex | string, filePath: string) {
+    const zip = expr(() => {
+        if (typeof archive === 'string') {
+            return loadArchiveFromPath(archive);
+        } else {
+            return loadArchive(archive);
+        }
+    });
 
-/**
- * Function to create an archive from
- */
-export async function createArchive(archive: ArchiveIndex, filePath: string) {
-    const zip = loadArchive(archive);
     if (!zip) throw new Error("Couldn't load archive");
 
     const base = getPathBase(filePath);
@@ -117,7 +135,7 @@ export async function createArchive(archive: ArchiveIndex, filePath: string) {
     // TODO: assert here that the path to the resource is an actual file and has an acceptable
     // mime-type to be zipped.
     const buf = await fs.readFile(filePath);
-    const savePath = archiveIndexToPath(archive);
+    const savePath = typeof archive === 'string' ? archive : archiveIndexToPath(archive);
 
     zip.addFile(base, buf);
     zip.writeZip(savePath);
@@ -168,44 +186,59 @@ function findEntry(zip: AdmZip, path: string) {
  * @param path - Path in the archive to the actual folder
  * @returns The transformed entry or null if the entry doesn't exist.
  */
-export function getEntry(archive: ArchiveIndex, path: string): PublicationPathContent | null {
-    const zip = loadArchive(archive);
+export function getEntry(
+    archive: ArchiveIndex | string,
+    path: string,
+): PublicationPathContent | null {
+    const zip = expr(() => {
+        if (typeof archive === 'string') {
+            return loadArchiveFromPath(archive);
+        } else {
+            return loadArchive(archive);
+        }
+    });
+
     if (!zip) return null;
 
-    // We have to handle a special case here where the actual path provided is '/'.
-    // In this situation, we essentially have to find all the top level (probably only)
-    // a single entry name.
-    if (path === '') {
-        const entries = filterEntries(
-            zip.getEntries().filter((x) => getPathComponents(x.entryName).length === 1),
-            '',
-        );
+    try {
+        // We have to handle a special case here where the actual path provided is '/'.
+        // In this situation, we essentially have to find all the top level (probably only)
+        // a single entry name.
+        if (path === '') {
+            const entries = filterEntries(
+                zip.getEntries().filter((x) => getPathComponents(x.entryName).length === 1),
+                '',
+            );
+
+            return {
+                type: 'directory',
+                entries,
+            };
+        }
+
+        const entry = findEntry(zip, path);
+        if (!entry) return null;
+
+        // check if the entry is a directory or a string
+        if (entry.isDirectory) {
+            // get all the paths and filter out all the entries that don't begin with that name...
+            const entries: DirectoryEntry[] = filterEntries(zip.getEntries(), entry.entryName);
+
+            return {
+                type: 'directory',
+                entries,
+            };
+        }
+
+        // Extract the contents of the file and return it...
+        const contents = entry.getData().toString();
 
         return {
-            type: 'directory',
-            entries,
+            type: 'file',
+            contents,
         };
+    } catch (e: unknown) {
+        Logger.error(`Encountered invalid zip file:\n${e}`);
+        throw new ApiError(400, 'Invalid ZIP Archive');
     }
-
-    const entry = findEntry(zip, path);
-    if (!entry) return null;
-
-    // check if the entry is a directory or a string
-    if (entry.isDirectory) {
-        // get all the paths and filter out all the entries that don't begin with that name...
-        const entries: DirectoryEntry[] = filterEntries(zip.getEntries(), entry.entryName);
-
-        return {
-            type: 'directory',
-            entries,
-        };
-    }
-
-    // Extract the contents of the file and return it...
-    const contents = entry.getData().toString();
-
-    return {
-        type: 'file',
-        contents,
-    };
 }

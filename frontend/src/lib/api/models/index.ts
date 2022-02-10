@@ -82,3 +82,5 @@ export * from './getReviewIdComments200';
 export * from './patchCommentId200';
 export * from './postAuthEmailvalidity200';
 export * from './postAuthUsernamevalidity200';
+export * from './followerListResponseResponse';
+export * from './followerListResponse';

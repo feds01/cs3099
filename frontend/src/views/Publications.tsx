@@ -42,7 +42,7 @@ export default function Publications({ user, limit, withTitle = true }: Props): 
             case 'loading':
                 return <SkeletonList rows={3} />;
             case 'error':
-                return <ErrorBanner message={publications.error?.message || 'unknown error occurred.'} />;
+                return <ErrorBanner message={publications.error.message} />;
             case 'ok':
                 return (
                     <div>

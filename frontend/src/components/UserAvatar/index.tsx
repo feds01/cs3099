@@ -22,17 +22,7 @@ type Props = User & CommonProps & NameDisplayProps;
  * @returns The initials, based on the first and last name provided.
  */
 export function getUserInitials(firstName?: string, lastName?: string): string {
-    let initials = '';
-
-    if (firstName) {
-        initials += firstName.substring(0, 1).toUpperCase();
-    }
-
-    if (lastName) {
-        initials += lastName.substring(0, 1).toUpperCase();
-    }
-
-    return initials;
+    return `${firstName?.charAt(0).toUpperCase()}${lastName?.charAt(0).toUpperCase()}`;
 }
 
 export default function UserAvatar({

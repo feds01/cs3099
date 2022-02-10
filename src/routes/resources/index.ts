@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import * as errors from '../../common/errors';
 import express from 'express';
+import * as zip from '../../lib/zip';
 import Logger from '../../common/logger';
 import { IUserRole } from '../../models/User';
 import * as userUtils from '../../utils/users';
@@ -106,6 +107,11 @@ registerRoute(router, '/upload/publication/:id', {
             };
         }
 
+        // Verify that the zip file isn't corrupted by loading it using the zip file
+        // library. We will try to list the root entries of the archive to see if there
+        // are any problems with the arhive
+        zip.getEntry(file.tempFilePath, '');
+
         const publication = await Publication.findById(id).exec();
 
         if (!publication) {
@@ -137,7 +143,7 @@ registerRoute(router, '/upload/publication/:id', {
         await file.mv(uploadPath);
 
         // Update the publication to become live instead of draft
-        await publication.update({ $set: { draft: false } }).exec();
+        await publication.updateOne({ $set: { draft: false } }).exec();
 
         Logger.info(`Successfully saved uploaded file to filesystem at: ${uploadPath}`);
         return { status: 'ok', code: 200 };

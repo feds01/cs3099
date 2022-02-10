@@ -34,7 +34,7 @@ export default function PublicationReviews({ publication }: Props): ReactElement
         case 'loading':
             return <SkeletonList rows={6} />;
         case 'error':
-            return <ErrorBanner message={reviews.error?.message || 'unknown error occurred.'} />;
+            return <ErrorBanner message={reviews.error.message} />;
         case 'ok':
             return (
                 <Box
