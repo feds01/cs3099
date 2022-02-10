@@ -1,19 +1,20 @@
-import { z } from 'zod';
-import express from 'express';
-import assert from 'assert';
-import reviewRouter from './reviews';
-import followerRouter from './followers';
 import * as error from '../../common/errors';
-import Follower from '../../models/Follower';
 import * as userUtils from './../../utils/users';
-import User, { IUserRole } from '../../models/User';
-import registerRoute from '../../lib/requests';
-import { ModeSchema } from '../../validators/requests';
+import { deleteFileResource } from '../../lib/fs';
 import { verifyUserPermission } from '../../lib/permissions';
-import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
+import registerRoute from '../../lib/requests';
+import Follower from '../../models/Follower';
+import User, { IUserRole } from '../../models/User';
 import { ResponseErrorSummary } from '../../transformers/error';
 import { joinPathsForResource } from '../../utils/resources';
-import { deleteFileResource } from '../../lib/fs';
+import { ModeSchema } from '../../validators/requests';
+import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
+import followerRouter from './followers';
+import reviewRouter from './reviews';
+
+import assert from 'assert';
+import express from 'express';
+import { z } from 'zod';
 
 const router = express.Router();
 
@@ -98,13 +99,13 @@ registerRoute(router, '/:username/avatar', {
             return {
                 status: 'file',
                 code: 200,
-                file: joinPathsForResource('avatar', user.id, 'avatar')
+                file: joinPathsForResource('avatar', user.id, 'avatar'),
             };
         } else {
             return {
                 status: 'error',
                 code: 404,
-                message: error.RESOURCE_NOT_FOUND
+                message: error.RESOURCE_NOT_FOUND,
             };
         }
     },
@@ -146,8 +147,6 @@ registerRoute(router, '/:username/avatar', {
         };
     },
 });
-
-
 
 /**
  * @version v1.0.0

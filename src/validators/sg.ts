@@ -1,6 +1,7 @@
+import { ICommentAnchor } from './comments';
+
 import assert from 'assert';
 import { z } from 'zod';
-import { ICommentAnchor } from './comments';
 
 const SG_ID_REGEX = /(.+?(?=:)):(t\d{2})$/;
 

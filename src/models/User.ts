@@ -1,6 +1,7 @@
+import { config } from '../server';
+
 import { strict } from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
-import { config } from '../server';
 
 export enum IUserRole {
     Default = 'default',
@@ -24,7 +25,7 @@ export interface IUser {
     updatedAt: Date;
 }
 
-export interface IUserDocument extends IUser, Document<string> { }
+export interface IUserDocument extends IUser, Document<string> {}
 
 export interface IUserModel extends Model<IUserDocument> {
     project: (user: IUser, omitId?: boolean) => Partial<IUser>;

@@ -1,5 +1,6 @@
-import request from 'supertest';
 import app from '../../src/app';
+
+import request from 'supertest';
 
 describe('Server Litmus test', () => {
     it('check that /version returns a status code of 200.', async () => {

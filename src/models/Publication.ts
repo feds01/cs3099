@@ -1,7 +1,8 @@
-import assert from 'assert';
-import User, { IUserDocument } from './User';
-import mongoose, { Document, Model, Schema } from 'mongoose';
 import { ExportSgPublication } from '../validators/sg';
+import User, { IUserDocument } from './User';
+
+import assert from 'assert';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IPublication {
     revision?: string;

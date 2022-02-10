@@ -1,6 +1,7 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
 import { ExportSgComment, SgComment } from '../validators/sg';
 import User, { IUser } from './User';
+
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IComment {
     publication: mongoose.ObjectId;

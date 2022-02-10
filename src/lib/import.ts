@@ -1,9 +1,9 @@
-import { makeRequest } from './fetch';
 import Logger from '../common/logger';
-import { GROUP_URI_MAP } from './requests';
 import User, { IUserDocument } from '../models/User';
-import { SgUserId, SgUserSchema } from '../validators/sg';
 import { convertSgId, transformSgUserToInternal } from '../transformers/sg';
+import { SgUserId, SgUserSchema } from '../validators/sg';
+import { makeRequest } from './fetch';
+import { GROUP_URI_MAP } from './requests';
 
 type ExportStatus<O> =
     | {

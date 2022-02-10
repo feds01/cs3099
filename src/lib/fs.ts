@@ -1,5 +1,6 @@
-import { promises as fs } from 'fs';
 import Logger from '../common/logger';
+
+import { promises as fs } from 'fs';
 
 /**
  * Wrapper function for fs.rename. Moves a file from a source to a
@@ -30,7 +31,7 @@ export async function deleteResource(resource: string): Promise<void> {
  *
  * @param resource - The current location of the file.
  */
- export async function deleteFileResource(resource: string): Promise<void> {
+export async function deleteFileResource(resource: string): Promise<void> {
     Logger.warn(`Attempting to remove file: ${resource}`);
     await fs.rm(resource);
 }

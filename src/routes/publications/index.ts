@@ -1,28 +1,29 @@
-import { z } from 'zod';
-import express from 'express';
-import Logger from '../../common/logger';
 import * as zip from '../../lib/zip';
-import searchRouter from './search';
-import reviewRouter from './reviews';
-import { config } from '../../server';
-import { createTokens } from '../../lib/auth';
-import { deleteResource } from '../../lib/fs';
-import { makeRequest } from '../../lib/fetch';
 import * as errors from './../../common/errors';
 import * as userUtils from './../../utils/users';
-import registerRoute from '../../lib/requests';
-import User, { IUserRole } from '../../models/User';
-import Publication from '../../models/Publication';
-import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../validators/requests';
+import Logger from '../../common/logger';
+import { createTokens } from '../../lib/auth';
+import { makeRequest } from '../../lib/fetch';
+import { deleteResource } from '../../lib/fs';
 import {
     compareUserRoles,
     verifyPublicationPermission,
     verifyUserPermission,
 } from '../../lib/permissions';
+import registerRoute from '../../lib/requests';
+import Publication from '../../models/Publication';
+import User, { IUserRole } from '../../models/User';
+import { config } from '../../server';
 import {
     IPublicationCreationSchema,
     IPublicationPatchRequestSchema,
 } from '../../validators/publications';
+import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../validators/requests';
+import reviewRouter from './reviews';
+import searchRouter from './search';
+
+import express from 'express';
+import { z } from 'zod';
 
 const router = express.Router();
 router.use('/', searchRouter);

@@ -1,12 +1,13 @@
-import { z } from 'zod';
+import * as errors from '../../common/errors';
+import { verifyCommentThreadPermission } from '../../lib/permissions';
+import registerRoute from '../../lib/requests';
+import Comment from '../../models/Comment';
+import { IUserRole } from '../../models/User';
+import { ObjectIdSchema } from '../../validators/requests';
+
 import express from 'express';
 import { Schema } from 'mongoose';
-import Comment from '../../models/Comment';
-import * as errors from '../../common/errors';
-import { IUserRole } from '../../models/User';
-import registerRoute from '../../lib/requests';
-import { ObjectIdSchema } from '../../validators/requests';
-import { verifyCommentThreadPermission } from '../../lib/permissions';
+import { z } from 'zod';
 
 const router = express.Router();
 
