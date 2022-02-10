@@ -228,7 +228,7 @@ registerRoute(router, '/:username/following', {
             status: 'ok',
             code: 200,
             data: {
-                following: result.map((item) => User.project(item.following)),
+                followers: result.map((item) => User.project(item.following)),
             },
         };
     },

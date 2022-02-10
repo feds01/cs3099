@@ -53,7 +53,7 @@ registerRoute(router, '/username_validity', {
             status: 'ok',
             code: 200,
             reserved: !!result,
-        }
+        };
     },
 });
 

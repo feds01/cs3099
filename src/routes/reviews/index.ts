@@ -2,6 +2,7 @@ import { z } from 'zod';
 import express from 'express';
 import mongoose from 'mongoose';
 import * as zip from '../../lib/zip';
+import * as file from '../../lib/file';
 import Logger from '../../common/logger';
 import * as errors from '../../common/errors';
 import Comment from '../../models/Comment';
@@ -134,7 +135,7 @@ registerRoute(router, '/:id/comment', {
             // validate that both of the line numbers are semantically correct, but we do need to
             // check that both values exist in the file.
             if (typeof anchor !== 'undefined') {
-                const lines = zip.countLines(entry.getData().toString());
+                const lines = file.countLines(entry.getData().toString());
 
                 if (anchor.start > lines || anchor.end > lines) {
                     return {

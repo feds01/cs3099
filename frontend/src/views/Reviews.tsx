@@ -33,7 +33,7 @@ export default function Reviews({ user, withTitle = true }: Props): ReactElement
                     </>
                 );
             case 'error':
-                return <ErrorBanner message={reviews.error?.message || 'unknown error occurred.'} />;
+                return <ErrorBanner message={reviews.error.message} />;
             case 'ok':
                 return (
                     <div>

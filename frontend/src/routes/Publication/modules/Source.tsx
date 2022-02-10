@@ -1,17 +1,16 @@
 import Box from '@mui/material/Box';
+import { useAuth } from '../../../hooks/auth';
 import { useLocation } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
-import UploadAttachment from '../../../views/UploadAttachment';
-import { ReactElement, useEffect, useState } from 'react';
-import PublicationViewSource from '../../../components/PublicationSourceView';
-import { ResourceResponseResponse } from '../../../lib/api/models';
-import { transformQueryIntoContentState } from '../../../wrappers/react-query';
-
-import { useGetPublicationUsernameNameTreePath as useGetPublicationSource } from '../../../lib/api/publications/publications';
-import { useAuth } from '../../../hooks/auth';
-import { ContentState } from '../../../types/requests';
 import Void from './../../../static/images/void.svg';
-import { usePublicationDispatch, usePublicationState } from '../../../hooks/publication';
+import { ContentState } from '../../../types/requests';
+import { ReactElement, useEffect, useState } from 'react';
+import UploadAttachment from '../../../views/UploadAttachment';
+import { ResourceResponseResponse } from '../../../lib/api/models';
+import PublicationViewSource from '../../../components/PublicationSourceView';
+import { transformQueryIntoContentState } from '../../../wrappers/react-query';
+import { usePublicationState, usePublicationDispatch } from '../../../hooks/publication';
+import { useGetPublicationUsernameNameTreePath as useGetPublicationSource } from '../../../lib/api/publications/publications';
 
 export default function Source(): ReactElement {
     const { session } = useAuth();
@@ -47,7 +46,7 @@ export default function Source(): ReactElement {
 
     useEffect(() => {
         setPublicationSource(transformQueryIntoContentState(getPublicationSourceQuery));
-    }, [getPublicationSourceQuery.data]);
+    }, [getPublicationSourceQuery.data, getPublicationSourceQuery.error]);
 
     return (
         <Box>
@@ -61,8 +60,6 @@ export default function Source(): ReactElement {
                 <UploadAttachment
                     refetchData={() => {
                         refetch();
-
-                        if (!publication.attachment) return;
                         getPublicationSourceQuery.refetch();
                     }}
                     publication={publication}

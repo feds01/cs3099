@@ -5,10 +5,7 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import type { SuccessStatus } from './successStatus';
-import type { Review } from './review';
+import type { SuccessStatusObject } from './successStatusObject';
+import type { FollowerListData } from './followerListData';
 
-export type GetUserUsernameReviews200 = {
-  status: SuccessStatus;
-  reviews: Review[];
-};
+export type FollowerListResponseResponse = SuccessStatusObject & FollowerListData;

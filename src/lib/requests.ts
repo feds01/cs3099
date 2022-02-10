@@ -157,7 +157,7 @@ export default function registerRoute<
 
             if (e instanceof errors.ApiError) {
                 res.status(e.code).json({
-                    status: false,
+                    status: 'error',
                     message: e.message,
                     ...(e.errors && { errors: e.errors }),
                 });
@@ -167,6 +167,10 @@ export default function registerRoute<
             // If something else went wrong that we don't quite understand, then we return an
             // internal server error as this was unexpected
             Logger.error(`Server encountered an unexpected error:\n${e}`);
+
+            if (e instanceof Error) {
+                Logger.error(`Error stack:\n${e.stack}`);
+            }
 
             res.status(500).json({
                 status: 'error',
