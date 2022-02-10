@@ -89,7 +89,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                     </Box>
                     <UserAvatar {...profileData.user} size={80}>
                         <Typography sx={{ fontWeight: 'bold', fontSize: 28 }} color="text" component="h1">
-                            {profileData.user.username}
+                            {profileData.user.firstName} {profileData.user.lastName}
                         </Typography>
                         {profileData.user.status && (
                             <Typography color="text" component="p">
@@ -103,7 +103,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                             }}
                         >
                             <Typography>@{profileData.user.username}</Typography>
-                            <Divider orientation="vertical" sx={{ margin: '0 4px' }} />
+                            <span style={{margin: '0 4px'}}>&bull;</span>
                             <Typography>Member since {format(profileData.user.createdAt, 'dd MMM yyyy')}</Typography>
                         </Box>
                         <Box
@@ -119,7 +119,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                                     {profileData.follows.followers === 1 ? 'Follower' : 'Followers'}
                                 </Link>
                             </Typography>
-                            <Divider orientation="vertical" sx={{ margin: '0 4px' }} />
+                            <Divider orientation="vertical" flexItem sx={{m: '0 4px'}}/>
                             <Typography>
                                 <Link to={`/profile/${profileData.user.username}/following`}>
                                     Following {profileData.follows.following}

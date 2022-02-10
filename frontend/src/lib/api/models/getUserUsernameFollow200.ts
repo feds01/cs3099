@@ -8,6 +8,6 @@
 import type { SuccessStatus } from './successStatus';
 
 export type GetUserUsernameFollow200 = {
-    status: SuccessStatus;
-    following: boolean;
+  status: SuccessStatus;
+  following: boolean;
 };

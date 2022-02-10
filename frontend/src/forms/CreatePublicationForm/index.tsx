@@ -14,6 +14,7 @@ import ControlledTextField from '../../components/ControlledTextField';
 import ControlledAutocomplete from '../../components/ControlledAutocomplete';
 import { usePostPublication } from '../../lib/api/publications/publications';
 import { ICreatePublication, CreatePublicationSchema } from '../../validators/publication';
+import FieldLabel from '../../components/FieldLabel';
 
 export default function CreatePublicationForm(): ReactElement {
     const auth = useAuth();
@@ -56,24 +57,18 @@ export default function CreatePublicationForm(): ReactElement {
     return (
         <form style={{ width: '100%', marginTop: '8px' }} onSubmit={handleSubmit(onSubmit)}>
             <Grid container maxWidth={'lg'}>
-                <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Publication Name
-                    </Typography>
+                <Grid item xs={12} sx={{pt: 1}}>
+                    <FieldLabel label="Publication name" />
                     <Typography variant={'body2'}>This will be used to publicly identify the publication.</Typography>
                     <ControlledTextField name="name" control={control} />
                 </Grid>
-                <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Publication Title
-                    </Typography>
+                <Grid item xs={12} sx={{pt: 1}}>
+                    <FieldLabel label="Publication title" />
                     <Typography variant={'body2'}>This is the title of the publication.</Typography>
                     <ControlledTextField name="title" control={control} />
                 </Grid>
-                <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Introduction
-                    </Typography>
+                <Grid item xs={12} sx={{pt: 1}}>
+                    <FieldLabel label="Introduction" required={false} />
                     <Typography variant={'body2'}>Write a small introduction for the publication</Typography>
                     <ControlledTextField
                         name="introduction"
@@ -84,32 +79,28 @@ export default function CreatePublicationForm(): ReactElement {
                         }}
                     />
                 </Grid>
-                <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Revision
-                    </Typography>
+                <Grid item xs={12} sx={{pt: 1}}>
+                    <FieldLabel label="Revision" />
                     <Typography variant={'body2'}>Add a revision tag to the publication</Typography>
                     <ControlledTextField name="revision" control={control} />
                 </Grid>
                 <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Collaborators
-                    </Typography>
+                    <FieldLabel label="Collaborators" required={false} />
                     <Typography variant={'body2'}>Add collaborators to publication</Typography>
                     <ControlledAutocomplete name="collaborators" control={control} />
                 </Grid>
                 <Grid item xs={12}>
-                    <Box>
+                    <Box sx={{pt: 1}}>
                         <LoadingButton
                             loading={isLoading || isSubmitting}
                             disabled={!isValid}
-                            sx={{ mt: 1, mr: 1 }}
+                            sx={{ mr: 1 }}
                             variant="contained"
                             type={'submit'}
                         >
                             Create
                         </LoadingButton>
-                        <Button sx={{ mt: 1 }} variant="outlined" href="/">
+                        <Button variant="outlined" href="/">
                             Cancel
                         </Button>
                     </Box>

@@ -8,8 +8,9 @@
 
 export type GetPublicationUsernamePinned = 'true' | 'false';
 
+
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GetPublicationUsernamePinned = {
-    true: 'true' as GetPublicationUsernamePinned,
-    false: 'false' as GetPublicationUsernamePinned,
+  true: 'true' as GetPublicationUsernamePinned,
+  false: 'false' as GetPublicationUsernamePinned,
 };

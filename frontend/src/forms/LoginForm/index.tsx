@@ -3,7 +3,6 @@ import { ReactElement, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Checkbox from '@mui/material/Checkbox';
-import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -15,6 +14,7 @@ import { ILoginForm, LoginSchema } from '../../validators/login';
 import ControlledTextField from '../../components/ControlledTextField';
 import ControlledPasswordField from '../../components/ControlledPasswordField';
 import ErrorBanner from '../../components/ErrorBanner';
+import FieldLabel from '../../components/FieldLabel';
 
 interface LoginFormProps {
     onSuccess: (session: User, token: string, refreshToken: string, rememberUser: boolean) => void;
@@ -28,6 +28,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
         formState: { isSubmitting, isValid },
     } = useForm<ILoginForm>({
         resolver: zodResolver(LoginSchema),
+        mode: 'onChange',
         defaultValues: {
             username: '',
             password: '',
@@ -59,15 +60,11 @@ export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
             >
                 <Grid container spacing={1}>
                     <Grid item xs={12}>
-                        <Typography variant={'body2'} sx={{ fontWeight: 'bold' }}>
-                            Username
-                        </Typography>
+                        <FieldLabel label="Username" />
                         <ControlledTextField name="username" control={control} />
                     </Grid>
                     <Grid item xs={12}>
-                        <Typography variant={'body2'} sx={{ fontWeight: 'bold' }}>
-                            Password
-                        </Typography>
+                        <FieldLabel label="Password" />
                         <ControlledPasswordField name="password" control={control} />
                     </Grid>
                 </Grid>
@@ -85,7 +82,6 @@ export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
                             <Controller
                                 name="rememberLogin"
                                 control={control}
-                                defaultValue={false}
                                 render={({ field }) => (
                                     <Checkbox
                                         {...field}
@@ -105,8 +101,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
                     variant="contained"
                     color="primary"
                     fullWidth
-                    loading={isLoading || isSubmitting}
                     disabled={!isValid}
+                    loading={isLoading || isSubmitting}
                 >
                     Sign In
                 </LoadingButton>

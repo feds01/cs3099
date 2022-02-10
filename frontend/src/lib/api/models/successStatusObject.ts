@@ -8,5 +8,5 @@
 import type { SuccessStatus } from './successStatus';
 
 export interface SuccessStatusObject {
-    status: SuccessStatus;
+  status: SuccessStatus;
 }

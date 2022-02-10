@@ -111,7 +111,6 @@ registerRoute(router, '/:username', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-
         // Verify that email and username aren't taken...
         const { username, email } = req.body;
 
@@ -119,7 +118,9 @@ registerRoute(router, '/:username', {
             _id: { $ne: user._id },
             $or: [
                 ...(typeof username !== 'undefined' ? [{ username }] : []),
-                ...(typeof email !== 'undefined' ? [{ email, externalId: { $exists: false } }] : []),
+                ...(typeof email !== 'undefined'
+                    ? [{ email, externalId: { $exists: false } }]
+                    : []),
             ],
         };
 
@@ -131,30 +132,33 @@ registerRoute(router, '/:username', {
                 code: 400,
                 message: error.BAD_REQUEST,
                 errors: {
-                    'username': {
-                        message: 'Username already taken'
-                    }
-                } as ResponseErrorSummary
-            }
+                    username: {
+                        message: 'Username already taken',
+                    },
+                } as ResponseErrorSummary,
+            };
         } else if (search?.email === email) {
             return {
                 status: 'error',
                 code: 400,
                 message: error.BAD_REQUEST,
                 errors: {
-                    'email': {
-                        message: 'Email already taken'
-                    }
-                } as ResponseErrorSummary
-            }
+                    email: {
+                        message: 'Email already taken',
+                    },
+                } as ResponseErrorSummary,
+            };
         }
-
 
         // So take the fields that are to be updated into the set request, it's okay to this because
         // we validated the request previously and we should be able to add all of the fields into the
         // database. If the user tries to update the username or an email that's already in use, mongo
         // will return an error because these fields have to be unique.
-        const newUser = await User.findByIdAndUpdate(user.id, { $set: { ...req.body } }, { new: true }).exec();
+        const newUser = await User.findByIdAndUpdate(
+            user.id,
+            { $set: { ...req.body } },
+            { new: true },
+        ).exec();
 
         // If we couldn't find the user.
         if (!newUser) {

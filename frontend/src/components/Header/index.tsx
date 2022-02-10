@@ -39,7 +39,7 @@ export default function Header({ title }: Props): ReactElement {
                         mr: 1,
                     }}
                 >
-                    <img src={LogoImage} height={48} alt="Iamus" />
+                    <img src={LogoImage} height={48} alt="Avatar" />
                 </Link>
                 {title && (
                     <Typography variant="h6" component="div" sx={{ color: 'text.primary', flexGrow: 1 }}>
@@ -53,6 +53,10 @@ export default function Header({ title }: Props): ReactElement {
                         variant="text"
                         color={'secondary'}
                         aria-label="open menu"
+                        sx={{
+                            textDecoration: 'none',
+                            color: (t) => t.palette.text.primary
+                        }}
                     >
                         <UserAvatar {...auth.session} displayName position="right" />
                     </Button>

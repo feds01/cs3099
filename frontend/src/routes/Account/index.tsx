@@ -17,8 +17,8 @@ export default function Account() {
             <Box sx={{ p: 3, wordBreak: 'break-word' }}>
                 <Typography variant={'h4'}>User Settings</Typography>
                 <Divider />
-                <Grid container spacing={3} sx={{ paddingTop: 2 }}>
-                    <Grid item xs={12} sm={5}>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={5}>
                         <Typography variant={'h5'} sx={{ fontWeight: 'bold' }}>
                             User Avatar
                         </Typography>
@@ -26,7 +26,7 @@ export default function Account() {
                             You can change your avatar here or remove the current avatar.
                         </Typography>
                     </Grid>
-                    <Grid item xs={12} sm={7}>
+                    <Grid item xs={12} md={7}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                             <UserAvatar {...session} size={80} displayName={false} />
                             <Box sx={{ marginLeft: 2, flex: 1 }}>
@@ -46,7 +46,7 @@ export default function Account() {
                                     </Typography>
                                 </Box>
                                 <Button variant="outlined" size="small" color="error">
-                                    Delete avatar
+                                    Remove avatar
                                 </Button>
                             </Box>
                         </Box>

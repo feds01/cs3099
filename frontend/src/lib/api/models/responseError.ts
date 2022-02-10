@@ -7,5 +7,5 @@
  */
 
 export interface ResponseError {
-    message: string;
+  message: string;
 }

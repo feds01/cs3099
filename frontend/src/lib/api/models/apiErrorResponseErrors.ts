@@ -7,4 +7,4 @@
  */
 import type { ResponseError } from './responseError';
 
-export type ApiErrorResponseErrors = { [key: string]: ResponseError };
+export type ApiErrorResponseErrors = {[key: string]: ResponseError};

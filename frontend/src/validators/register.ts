@@ -3,9 +3,13 @@ import { z } from 'zod';
 export const RegisterSchema = z
     .object({
         firstName: z.string().nonempty().max(32),
-        lastName: z.string().nonempty().max(32),
+        lastName: z.string().max(32).optional(),
         email: z.string().email(),
-        username: z.string().nonempty().max(50),
+        username: z
+            .string()
+            .nonempty()
+            .max(50)
+            .regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric'),
         password: z.string().min(1),
         confirm: z.string().min(1),
     })
