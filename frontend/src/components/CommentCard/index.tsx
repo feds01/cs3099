@@ -56,14 +56,21 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
 
     return (
         <>
-            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', pb: 2, fontFamily: 'Noto Sans !important' }}>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    pb: 2,
+                    fontFamily: 'Noto Sans !important',
+                }}
+            >
                 <UserAvatar {...comment.author} displayName={false} size={32} />
                 <Box sx={{ pl: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Box sx={{ height: 32, display: 'flex', alignItems: 'center' }}>
                             <UserLink username={comment.author.username} />
-                            on{' '}
-                            {format(comment.updatedAt, 'do MMM')}
+                            on {format(comment.updatedAt, 'do MMM')}
                             {comment.edited && (
                                 <>
                                     <span

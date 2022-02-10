@@ -8,8 +8,7 @@
 
 export type FileResponseType = 'file';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const FileResponseType = {
-  file: 'file' as FileResponseType,
+    file: 'file' as FileResponseType,
 };

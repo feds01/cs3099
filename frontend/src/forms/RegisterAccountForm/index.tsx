@@ -18,7 +18,12 @@ interface RegisterAccountFormProps {
 }
 
 export default function RegisterForm({ onSuccess }: RegisterAccountFormProps): ReactElement {
-    const { control, handleSubmit } = useForm<IRegisterForm>({
+    const {
+        control,
+        handleSubmit,
+        setError,
+        formState: { isSubmitting, isValid },
+    } = useForm<IRegisterForm>({
         resolver: zodResolver(RegisterSchema),
     });
 
@@ -26,9 +31,12 @@ export default function RegisterForm({ onSuccess }: RegisterAccountFormProps): R
 
     useEffect(() => {
         // Check here if an error occurred, otherwise call the onSuccess function...
-        if (isError) {
-            // TODO: transform the errors into appropriate values
-            console.log(error);
+        if (isError && error) {
+            if (typeof error.errors !== 'undefined') {
+                for (const [errorField, errorObject] of Object.entries(error.errors)) {
+                    setError(errorField as keyof IRegisterForm, { type: 'manual', message: errorObject.message });
+                }
+            }
         } else if (!isLoading && response) {
             onSuccess(response.user, response.token, response.refreshToken);
         }
@@ -79,7 +87,8 @@ export default function RegisterForm({ onSuccess }: RegisterAccountFormProps): R
                 <Box sx={{ pt: 2 }}>
                     <LoadingButton
                         type={'submit'}
-                        loading={isLoading}
+                        loading={isLoading || isSubmitting}
+                        disabled={!isValid}
                         variant="contained"
                         color="primary"
                         fullWidth={false}

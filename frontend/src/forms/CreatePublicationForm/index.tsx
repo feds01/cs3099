@@ -22,7 +22,8 @@ export default function CreatePublicationForm(): ReactElement {
     const {
         control,
         handleSubmit,
-        formState: { isSubmitting },
+        setError,
+        formState: { isSubmitting, isValid },
     } = useForm<ICreatePublication>({
         resolver: zodResolver(CreatePublicationSchema),
         reValidateMode: 'onBlur',
@@ -41,10 +42,16 @@ export default function CreatePublicationForm(): ReactElement {
 
     // When the request completes, we want to re-direct the user to the publication page
     useEffect(() => {
-        if (!isError && typeof data !== 'undefined') {
+        if (isError && error) {
+            if (typeof error.errors !== 'undefined') {
+                for (const [errorField, errorObject] of Object.entries(error.errors)) {
+                    setError(errorField as keyof ICreatePublication, { type: 'manual', message: errorObject.message });
+                }
+            }
+        } else if (data) {
             history.push({ pathname: `/${auth.session.username}/${data.publication.name}` });
         }
-    }, [data]);
+    }, [data, isError]);
 
     return (
         <form style={{ width: '100%', marginTop: '8px' }} onSubmit={handleSubmit(onSubmit)}>
@@ -95,17 +102,18 @@ export default function CreatePublicationForm(): ReactElement {
                     <Box>
                         <LoadingButton
                             loading={isLoading || isSubmitting}
+                            disabled={!isValid}
                             sx={{ mt: 1, mr: 1 }}
                             variant="contained"
                             type={'submit'}
                         >
                             Create
                         </LoadingButton>
-                        <Button disabled={isLoading} sx={{ mt: 1 }} variant="outlined" href="/">
+                        <Button sx={{ mt: 1 }} variant="outlined" href="/">
                             Cancel
                         </Button>
                     </Box>
-                    {isError && <ErrorBanner message={error?.message || 'Something went wrong.'} />}
+                    {isError && error && <ErrorBanner message={error.message} />}
                 </Grid>
             </Grid>
         </form>

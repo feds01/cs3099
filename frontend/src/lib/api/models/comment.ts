@@ -9,14 +9,14 @@ import type { CommentAnchor } from './commentAnchor';
 import type { User } from './user';
 
 export interface Comment {
-  id: string;
-  edited: boolean;
-  filename?: string;
-  anchor?: CommentAnchor;
-  contents: string;
-  thread: string;
-  replying?: string;
-  author: User;
-  createdAt: number;
-  updatedAt: number;
+    id: string;
+    edited: boolean;
+    filename?: string;
+    anchor?: CommentAnchor;
+    contents: string;
+    thread: string;
+    replying?: string;
+    author: User;
+    createdAt: number;
+    updatedAt: number;
 }

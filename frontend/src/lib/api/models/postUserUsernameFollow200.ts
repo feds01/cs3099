@@ -8,5 +8,5 @@
 import type { SuccessStatus } from './successStatus';
 
 export type PostUserUsernameFollow200 = {
-  status: SuccessStatus;
+    status: SuccessStatus;
 };

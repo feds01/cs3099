@@ -25,7 +25,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
         control,
         handleSubmit,
         getValues,
-        formState: { isSubmitting },
+        formState: { isSubmitting, isValid },
     } = useForm<ILoginForm>({
         resolver: zodResolver(LoginSchema),
         defaultValues: {
@@ -106,6 +106,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
                     color="primary"
                     fullWidth
                     loading={isLoading || isSubmitting}
+                    disabled={!isValid}
                 >
                     Sign In
                 </LoadingButton>

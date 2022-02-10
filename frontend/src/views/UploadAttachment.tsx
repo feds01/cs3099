@@ -3,7 +3,7 @@ import Upload from '../static/images/upload.svg';
 import ErrorBanner from '../components/ErrorBanner';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { Box, Button, LinearProgress, Typography } from '@mui/material';
-import { transformMutationIntoContentState} from '../wrappers/react-query';
+import { transformMutationIntoContentState } from '../wrappers/react-query';
 import { usePostResourceUploadPublicationId } from '../lib/api/resources/resources';
 import { ApiErrorResponse, ApiSuccessResponse, Publication } from '../lib/api/models';
 interface Props {
@@ -30,7 +30,7 @@ export default function UploadAttachment({ publication, refetchData }: Props): R
             setShowLoader(false);
         } catch (e: unknown) {
             console.log(e);
-            setUpload({ state: 'error', error: {status: 'error', message: "Couldn't read file."} });
+            setUpload({ state: 'error', error: { status: 'error', message: "Couldn't read file." } });
             setShowLoader(false);
         }
     };

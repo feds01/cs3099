@@ -8,5 +8,5 @@
 import type { SuccessStatus } from './successStatus';
 
 export type ApiSuccessResponse = {
-  status: SuccessStatus;
+    status: SuccessStatus;
 };

@@ -8,8 +8,7 @@
 
 export type ApiErrorResponseStatus = 'error';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ApiErrorResponseStatus = {
-  error: 'error' as ApiErrorResponseStatus,
+    error: 'error' as ApiErrorResponseStatus,
 };

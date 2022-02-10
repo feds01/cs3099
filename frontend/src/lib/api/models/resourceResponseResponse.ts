@@ -9,6 +9,6 @@ import type { SuccessStatus } from './successStatus';
 import type { ResourceResponseResponseEntry } from './resourceResponseResponseEntry';
 
 export type ResourceResponseResponse = {
-  status: SuccessStatus;
-  entry: ResourceResponseResponseEntry;
+    status: SuccessStatus;
+    entry: ResourceResponseResponseEntry;
 };

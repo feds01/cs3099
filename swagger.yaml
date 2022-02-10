@@ -1521,6 +1521,8 @@ components:
                                 example: 'Message describing the error.'
                             errors:
                                 type: object
+                                additionalProperties:
+                                    $ref: '#/components/schemas/ResponseError'
         FollowerList:
             description: OK
             content:
@@ -1679,6 +1681,14 @@ components:
             properties:
                 status:
                     $ref: '#/components/schemas/SuccessStatus'
+        ResponseError:
+            type: object
+            required:
+                - message
+            properties:
+                message:
+                    type: string
+                    example: "This field is invalid"
         TokenRequest:
             type: object
             properties:

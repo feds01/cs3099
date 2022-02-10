@@ -9,6 +9,6 @@ import type { SuccessStatus } from './successStatus';
 import type { Review } from './review';
 
 export type PostPublicationUsernameNameRevisionReview200 = {
-  status: SuccessStatus;
-  review: Review;
+    status: SuccessStatus;
+    review: Review;
 };

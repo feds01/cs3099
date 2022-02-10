@@ -7,14 +7,12 @@ import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { User } from '../../lib/api/models';
 import { useDispatchAuth } from '../../hooks/auth';
-import ErrorBanner from '../../components/ErrorBanner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { usePatchUserUsername } from '../../lib/api/users/users';
 import { useNotificationDispatch } from '../../hooks/notification';
 import ControlledTextField from '../../components/ControlledTextField';
 import { AccountUpdate, AccountUpdateSchema } from '../../validators/updateAccount';
-
 interface AccountUpdateFormProps {
     session: User;
 }
@@ -25,6 +23,7 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
     const {
         control,
         handleSubmit,
+        setError,
         formState: { isValid, isSubmitting },
     } = useForm<AccountUpdate>({
         resolver: zodResolver(AccountUpdateSchema),
@@ -39,7 +38,13 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
         await mutateAsync({ username: session.username, data });
 
     useEffect(() => {
-        if (isError) {
+        if (isError && error) {
+            if (typeof error.errors !== 'undefined') {
+                for (const [errorField, errorObject] of Object.entries(error.errors)) {
+                    setError(errorField as keyof AccountUpdate, { type: 'manual', message: errorObject.message });
+                }
+            }
+
             notificationDispatcher({
                 type: 'add',
                 item: { severity: 'error', message: "Couldn't update profile" },
@@ -147,7 +152,8 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
                     <Box>
                         <LoadingButton
                             sx={{ marginRight: 1 }}
-                            loading={!isValid || isSubmitting}
+                            disabled={!isValid}
+                            loading={isSubmitting}
                             type="submit"
                             variant="contained"
                         >
@@ -157,7 +163,6 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
                             Cancel
                         </Button>
                     </Box>
-                    {error && <ErrorBanner message={error.message} />}
                 </Grid>
             </Grid>
         </form>

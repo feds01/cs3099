@@ -9,7 +9,7 @@ import type { ApiErrorResponseStatus } from './apiErrorResponseStatus';
 import type { ApiErrorResponseErrors } from './apiErrorResponseErrors';
 
 export type ApiErrorResponse = {
-  status: ApiErrorResponseStatus;
-  message: string;
-  errors?: ApiErrorResponseErrors;
+    status: ApiErrorResponseStatus;
+    message: string;
+    errors?: ApiErrorResponseErrors;
 };

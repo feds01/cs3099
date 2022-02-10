@@ -8,9 +8,8 @@
 
 export type ReviewStatus = 'started' | 'completed';
 
-
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ReviewStatus = {
-  started: 'started' as ReviewStatus,
-  completed: 'completed' as ReviewStatus,
+    started: 'started' as ReviewStatus,
+    completed: 'completed' as ReviewStatus,
 };

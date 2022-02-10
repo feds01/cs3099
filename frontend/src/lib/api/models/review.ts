@@ -10,10 +10,10 @@ import type { User } from './user';
 import type { ReviewStatus } from './reviewStatus';
 
 export interface Review {
-  publication: Publication;
-  owner: User;
-  createdAt: number;
-  updatedAt: number;
-  status: ReviewStatus;
-  id: string;
+    publication: Publication;
+    owner: User;
+    createdAt: number;
+    updatedAt: number;
+    status: ReviewStatus;
+    id: string;
 }

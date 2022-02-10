@@ -32,7 +32,8 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
     const {
         control,
         handleSubmit,
-        formState: { isSubmitting },
+        setError,
+        formState: { isValid, isSubmitting },
     } = useForm<IEditPublication>({
         resolver: zodResolver(EditPublicationSchema),
         reValidateMode: 'onBlur',
@@ -44,8 +45,12 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
     const { isLoading, isError, data, error, mutateAsync } = usePatchPublicationUsernameName();
 
     useEffect(() => {
-        if (isError) {
-            console.log(error);
+        if (isError && error) {
+            if (typeof error.errors !== 'undefined') {
+                for (const [errorField, errorObject] of Object.entries(error.errors)) {
+                    setError(errorField as keyof IEditPublication, { type: 'manual', message: errorObject.message });
+                }
+            }
 
             notificationDispatcher({
                 type: 'add',
@@ -100,6 +105,7 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
                     <Box>
                         <LoadingButton
                             loading={isLoading || isSubmitting}
+                            disabled={!isValid}
                             sx={{ mt: 1, mr: 1 }}
                             variant="contained"
                             type={'submit'}

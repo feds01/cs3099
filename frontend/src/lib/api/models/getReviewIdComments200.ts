@@ -9,6 +9,6 @@ import type { SuccessStatus } from './successStatus';
 import type { Comment } from './comment';
 
 export type GetReviewIdComments200 = {
-  status: SuccessStatus;
-  comments: Comment[];
+    status: SuccessStatus;
+    comments: Comment[];
 };

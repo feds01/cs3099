@@ -9,6 +9,6 @@ import type { SuccessStatus } from './successStatus';
 import type { Comment } from './comment';
 
 export type GetCommentId200 = {
-  status: SuccessStatus;
-  comment?: Comment;
+    status: SuccessStatus;
+    comment?: Comment;
 };

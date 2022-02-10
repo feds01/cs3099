@@ -8,6 +8,6 @@
 import type { SuccessStatus } from './successStatus';
 
 export type PostAuthUsernamevalidity200 = {
-  status: SuccessStatus;
-  follow?: boolean;
+    status: SuccessStatus;
+    follow?: boolean;
 };

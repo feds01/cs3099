@@ -8,6 +8,6 @@
 import type { SuccessStatus } from './successStatus';
 
 export type GetUserUsernameRole200 = {
-  status: SuccessStatus;
-  role: string;
+    status: SuccessStatus;
+    role: string;
 };
