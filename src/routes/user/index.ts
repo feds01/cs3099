@@ -113,14 +113,12 @@ registerRoute(router, '/:username/avatar', {
 
 /**
  * @version v1.0.0
- * @method GET
+ * @method DELETE
  * @url /api/user/:username/avatar
  * @example
  * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/feds01/avatar
  *
- * @description This route is used to get a user's avatar if they have one set.
- *
- * @error {NOT_FOUND} if the requested user does not have a avatar
+ * @description This route is used to delete a user's avatar if they have one set.
  *
  * */
 registerRoute(router, '/:username/avatar', {
@@ -137,7 +135,7 @@ registerRoute(router, '/:username/avatar', {
 
             // First, we want to update the database to state that the user has no avatar
             // and then we can remove the file from the disk.
-            await user.updateOne({ $set: { profilePictureUrl: false } });
+            await user.updateOne({ $set: { profilePictureUrl: undefined } });
             await deleteFileResource(resourcePath);
         }
 
