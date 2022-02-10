@@ -1,15 +1,17 @@
 import { z } from 'zod';
-import * as errors from '../../common/errors';
+import assert from 'assert';
 import express from 'express';
 import * as zip from '../../lib/zip';
 import Logger from '../../common/logger';
-import { IUserRole } from '../../models/User';
+import * as errors from '../../common/errors';
+import User, { IUserRole } from '../../models/User';
 import * as userUtils from '../../utils/users';
 import Publication from '../../models/Publication';
 import registerRoute from '../../lib/requests';
 import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
 import { joinPathsForResource, extractFile, joinPathsRaw } from '../../utils/resources';
 import { verifyPublicationIdPermission, verifyReviewPermission } from '../../lib/permissions';
+import { config } from '../../server';
 
 const router = express.Router();
 
@@ -31,8 +33,6 @@ registerRoute(router, '/upload/:username', {
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
-
-        // @@TODO: CLEANUP
         const file = extractFile(req.raw);
 
         if (!file) {
@@ -53,13 +53,21 @@ registerRoute(router, '/upload/:username', {
             };
         }
 
-        const uploadPath = joinPathsForResource('avatar', user.username, 'avatar');
+        const uploadPath = joinPathsForResource('avatar', user.id, 'avatar');
 
         // Move the file into it's appropriate storage location
         await file.mv(uploadPath);
 
+        // Set the profile pictureUrl of the user with the current endpoint
+        const updatedUser = await User.findByIdAndUpdate(user.id, { $set: { profilePictureUrl: `${config.serviceEndpoint}/user/${user.id}/avatar?mode=id` } }, { new: true }).exec();
+        assert(updatedUser !== null);
+
         Logger.info('Successfully saved uploaded file to filesystem');
-        return { status: 'ok', code: 200 };
+        return {
+            status: 'ok', code: 200, data: {
+                user: User.project(updatedUser)
+            },
+        };
     },
 });
 

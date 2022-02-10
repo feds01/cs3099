@@ -85,3 +85,4 @@ export * from './postAuthUsernamevalidity200';
 export * from './followerListResponseResponse';
 export * from './followerListResponse';
 export * from './responseError';
+export * from './postResourceUploadUsername200';

@@ -201,15 +201,15 @@ paths:
                         application/json:
                             schema:
                                 type: object
-                                required: 
+                                required:
                                     - status
                                     - reserved
                                 properties:
-                                        status:
-                                            $ref: '#/components/schemas/SuccessStatus'
-                                        follow:
-                                            type: boolean
-                                            example: false
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    follow:
+                                        type: boolean
+                                        example: false
                 default:
                     $ref: '#/components/responses/ApiError'
     /auth/username_validity:
@@ -232,15 +232,15 @@ paths:
                         application/json:
                             schema:
                                 type: object
-                                required: 
+                                required:
                                     - status
                                     - reserved
                                 properties:
-                                        status:
-                                            $ref: '#/components/schemas/SuccessStatus'
-                                        follow:
-                                            type: boolean
-                                            example: false
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    follow:
+                                        type: boolean
+                                        example: false
 
                 default:
                     $ref: '#/components/responses/ApiError'
@@ -355,17 +355,7 @@ paths:
                   description: Username.
             responses:
                 '200':
-                    description: User was successfully deleted.
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    status:
-                                        $ref: '#/components/schemas/SuccessStatus'
-                                    description:
-                                        type: string
-                                        example: 'User deleted'
+                    $ref: '#/components/responses/ApiSuccess'
                 default:
                     $ref: '#/components/responses/ApiError'
         get:
@@ -438,6 +428,51 @@ paths:
                                         $ref: '#/components/schemas/SuccessStatus'
                                     user:
                                         $ref: '#/components/schemas/User'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /user/{username}/avatar:
+        delete:
+            summary: Account avatar deletion
+            description: Remove an avatar that's on a user account.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    $ref: '#/components/responses/ApiSuccess'
+                default:
+                    $ref: '#/components/responses/ApiError'
+        get:
+            summary: Get user avatar
+            description: Get an avatar that's on a user account.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/octet-stream:
+                            schema:
+                                type: string
+                                format: binary
+                                example: 56 50 26 50 80 57 4e 4a 12 04
                 default:
                     $ref: '#/components/responses/ApiError'
     /user/{username}/reviews:
@@ -910,7 +945,6 @@ paths:
                     description: Returns the requested publications.
                     content:
                         application/json:
-
                             schema:
                                 type: object
                                 required:
@@ -918,7 +952,7 @@ paths:
                                     - revisions
                                 properties:
                                     status:
-                                      $ref: '#/components/schemas/SuccessStatus'
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     revisions:
                                         type: array
                                         items:
@@ -1121,8 +1155,20 @@ paths:
                   required: true
                   description: Username.
             responses:
-                '201':
-                    $ref: '#/components/responses/ApiSuccess'
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - user
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    user:
+                                        $ref: '#/components/schemas/User'
                 default:
                     $ref: '#/components/responses/ApiError'
     /resource/upload/publication/{id}:
@@ -1205,7 +1251,7 @@ paths:
                                     - comments
                                 properties:
                                     status:
-                                       $ref: '#/components/schemas/SuccessStatus'
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     comments:
                                         type: array
                                         items:
@@ -1330,7 +1376,7 @@ paths:
                                     - comment
                                 properties:
                                     status:
-                                       $ref: '#/components/schemas/SuccessStatus'
+                                        $ref: '#/components/schemas/SuccessStatus'
                                     comment:
                                         $ref: '#/components/schemas/Comment'
                 default:
@@ -1688,7 +1734,7 @@ components:
             properties:
                 message:
                     type: string
-                    example: "This field is invalid"
+                    example: 'This field is invalid'
         TokenRequest:
             type: object
             properties:

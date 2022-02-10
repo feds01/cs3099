@@ -14,6 +14,7 @@ export interface IUser {
     password: string;
     firstName: string;
     lastName?: string;
+    /** A String determining the location of where the uploaded avatar is. */
     profilePictureUrl?: string;
     role: IUserRole;
     about?: string;
@@ -23,7 +24,7 @@ export interface IUser {
     updatedAt: Date;
 }
 
-export interface IUserDocument extends IUser, Document<string> {}
+export interface IUserDocument extends IUser, Document<string> { }
 
 export interface IUserModel extends Model<IUserDocument> {
     project: (user: IUser, omitId?: boolean) => Partial<IUser>;
@@ -38,7 +39,7 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
         firstName: { type: String, required: true, minLength: 1 },
         lastName: { type: String, required: false },
         password: { type: String, default: '' },
-        profilePictureUrl: { type: String },
+        profilePictureUrl: { type: String, required: false },
         about: { type: String },
         status: { type: String },
         externalId: { type: String },
@@ -67,7 +68,7 @@ UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
         username: user.username,
         firstName: user.firstName,
         createdAt: user.createdAt.getTime(),
-        ...(typeof profilePictureUrl !== 'undefined' && { profilePictureUrl }),
+        ...(profilePictureUrl && { profilePictureUrl }),
         ...(typeof about !== 'undefined' && { about }),
         ...(typeof status !== 'undefined' && { status }),
         ...(typeof lastName !== 'undefined' && { lastName }),
@@ -93,9 +94,9 @@ UserSchema.statics.projectAsSg = (user: IUserDocument) => {
     const { firstName, lastName, email, profilePictureUrl } = user;
 
     return {
-        name: `${firstName} ${lastName}`,
+        name: firstName + (typeof lastName !== 'undefined' ? ` ${lastName}` : ''),
         email,
-        ...(typeof profilePictureUrl !== 'undefined' && { profilePictureUrl }),
+        ...(profilePictureUrl && { profilePictureUrl }),
     };
 };
 

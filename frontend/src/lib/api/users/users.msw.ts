@@ -13,11 +13,15 @@ import {
   SuccessStatus
 } from '.././models'
 
-export const getDeleteUserUsernameMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(Object.values(SuccessStatus)), undefined]), description: faker.helpers.randomize([faker.random.word(), undefined])})
+export const getDeleteUserUsernameMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus))})
 
 export const getGetUserUsernameMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.helpers.randomize([faker.random.word(), undefined]), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, follows: {followers: faker.datatype.number(), following: faker.datatype.number()}})
 
 export const getPatchUserUsernameMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.helpers.randomize([faker.random.word(), undefined]), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
+
+export const getDeleteUserUsernameAvatarMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus))})
+
+export const getGetUserUsernameAvatarMock = () => (faker.random.word())
 
 export const getGetUserUsernameReviewsMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), reviews: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => ({publication: {id: faker.random.word(), name: faker.random.word(), title: faker.random.word(), introduction: faker.helpers.randomize([faker.random.word(), undefined]), revision: faker.random.word(), pinned: faker.datatype.boolean(), draft: faker.datatype.boolean(), owner: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.helpers.randomize([faker.random.word(), undefined]), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]), collaborators: [...Array(faker.datatype.number({min: 1, max: 10}))].map(() => (faker.random.word())), createdAt: faker.datatype.number(), updatedAt: faker.datatype.number()}, owner: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.helpers.randomize([faker.random.word(), undefined]), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}, createdAt: faker.datatype.number(), updatedAt: faker.datatype.number(), status: faker.helpers.randomize(['started','completed']), id: faker.random.word()}))})
 
@@ -47,6 +51,18 @@ ctx.json(getGetUserUsernameMock()),
           ctx.delay(1000),
           ctx.status(200, 'Mocked status'),
 ctx.json(getPatchUserUsernameMock()),
+        )
+      }),rest.delete('*/user/:username/avatar', (_req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getDeleteUserUsernameAvatarMock()),
+        )
+      }),rest.get('*/user/:username/avatar', (_req, res, ctx) => {
+        return res(
+          ctx.delay(1000),
+          ctx.status(200, 'Mocked status'),
+ctx.json(getGetUserUsernameAvatarMock()),
         )
       }),rest.get('*/user/:username/reviews', (_req, res, ctx) => {
         return res(

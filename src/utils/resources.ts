@@ -10,7 +10,7 @@ import { config } from '../server';
  * @returns The concatenated path.
  */
 export function joinPathsForResource(...paths: string[]): string {
-    return path.join(config.resourcesFolder, ...paths);
+    return path.resolve(path.join(config.resourcesFolder, ...paths));
 }
 
 /**

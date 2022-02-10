@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import express from 'express';
-import followerRouter from './followers';
+import assert from 'assert';
 import reviewRouter from './reviews';
+import followerRouter from './followers';
 import * as error from '../../common/errors';
 import Follower from '../../models/Follower';
 import * as userUtils from './../../utils/users';
@@ -10,22 +11,21 @@ import registerRoute from '../../lib/requests';
 import { ModeSchema } from '../../validators/requests';
 import { verifyUserPermission } from '../../lib/permissions';
 import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
-import assert from 'assert';
 import { ResponseErrorSummary } from '../../transformers/error';
+import { joinPathsForResource } from '../../utils/resources';
+import { deleteFileResource } from '../../lib/fs';
 
 const router = express.Router();
 
-// Register the follower routes
 router.use('/', followerRouter);
-// Register the review routes
 router.use('/', reviewRouter);
 
 /**
  * @version v1.0.0
  * @method GET
- * @url /api/user
+ * @url /api/user/:username
  * @example
- * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/feds01
  *
  * >>> response:
  * {
@@ -72,6 +72,82 @@ registerRoute(router, '/:username', {
         };
     },
 });
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/:username/avatar
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/feds01/avatar
+ *
+ * @description This route is used to get a user's avatar if they have one set.
+ *
+ * @error {NOT_FOUND} if the requested user does not have a avatar
+ *
+ * */
+registerRoute(router, '/:username/avatar', {
+    method: 'get',
+    params: z.object({ username: z.string() }),
+    query: z.object({ mode: ModeSchema }),
+    permissionVerification: verifyUserPermission,
+    permission: null,
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
+
+        if (user.profilePictureUrl) {
+            return {
+                status: 'file',
+                code: 200,
+                file: joinPathsForResource('avatar', user.id, 'avatar')
+            };
+        } else {
+            return {
+                status: 'error',
+                code: 404,
+                message: error.RESOURCE_NOT_FOUND
+            };
+        }
+    },
+});
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user/:username/avatar
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/feds01/avatar
+ *
+ * @description This route is used to get a user's avatar if they have one set.
+ *
+ * @error {NOT_FOUND} if the requested user does not have a avatar
+ *
+ * */
+registerRoute(router, '/:username/avatar', {
+    method: 'delete',
+    params: z.object({ username: z.string() }),
+    query: z.object({ mode: ModeSchema }),
+    permissionVerification: verifyUserPermission,
+    permission: null,
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
+
+        if (user.profilePictureUrl) {
+            const resourcePath = joinPathsForResource('avatar', user.id, 'avatar');
+
+            // First, we want to update the database to state that the user has no avatar
+            // and then we can remove the file from the disk.
+            await user.updateOne({ $set: { profilePictureUrl: false } });
+            await deleteFileResource(resourcePath);
+        }
+
+        return {
+            status: 'ok',
+            code: 200,
+        };
+    },
+});
+
+
 
 /**
  * @version v1.0.0
