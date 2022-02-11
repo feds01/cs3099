@@ -117,7 +117,7 @@ export const defaultPermissionVerifier = async <P, Q>(
  * This is a generic implementation of a function that returns
  */
 interface IdRequest {
-    id: mongoose.Schema.Types.ObjectId;
+    id: mongoose.Types.ObjectId;
 }
 
 /**

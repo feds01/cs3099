@@ -337,7 +337,7 @@ registerRoute(router, '/:id', {
         const { id } = req.params;
 
         // Delete the entire review and delete all the comments on the review...
-        const review = await Review.findByIdAndUpdate(id, { $set: { isDeleted: true } }).exec();
+        const review = await Review.findByIdAndDelete(id).exec();
 
         if (!review) {
             return {
@@ -346,8 +346,6 @@ registerRoute(router, '/:id', {
                 message: errors.RESOURCE_NOT_FOUND,
             };
         }
-
-        await Comment.updateMany({ review: review.id }, { $set: { isDeleted: true } }).exec();
 
         return {
             status: 'ok',

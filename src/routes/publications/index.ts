@@ -469,6 +469,7 @@ registerRoute(router, '/:username/:name/all', {
         const user = await userUtils.transformUsernameIntoId(req);
         const name = req.params.name.toLowerCase();
 
+        // Since we have cascading deletes, all reviews and comments are deleted.
         await Publication.deleteMany({ owner: user.id, name }).exec();
 
         const publicationPath = zip.resourceIndexToPath({
@@ -515,6 +516,7 @@ registerRoute(router, '/:username/:name', {
         const { revision, draft } = req.query;
         const name = req.params.name.toLowerCase();
 
+        // Since we have cascading deletes, all the reviews on the publication are deleted as well.
         const publication = await Publication.findOneAndDelete({
             owner: user.id,
             name,

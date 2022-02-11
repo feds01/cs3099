@@ -18,8 +18,6 @@ const setDocumentIsDeleted = async (doc: TDocument) => {
     doc.isDeleted = true;
     doc.$isDeleted(true);
 
-    console.log('setting to delete');
-
     await doc.save();
 };
 

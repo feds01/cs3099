@@ -172,9 +172,6 @@ registerRoute(router, '/:username', {
             };
         }
 
-        // Now we need to delete any follower entries that contain the current user's id
-        await Follower.deleteMany({ $or: [{ following: user.id }, { follower: user.id }] }).exec();
-
         return { status: 'ok', code: 200 };
     },
 });

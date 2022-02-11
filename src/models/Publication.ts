@@ -1,4 +1,5 @@
 import { ExportSgPublication } from '../validators/sg';
+import Review from './Review';
 import User, { IUserDocument } from './User';
 import softDeleteMiddleware from './middlewares/softDelete';
 import assert from 'assert';
@@ -58,6 +59,16 @@ const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublicati
 
 // Register soft-deletion middleware
 PublicationSchema.plugin(softDeleteMiddleware);
+
+/**
+ * This function is a hook to remove any reviews that are on a publication
+ * if the publication is marked for deletion.
+ */
+PublicationSchema.post('remove', async (item: IPublicationDocument, next) => {
+    await Review.deleteMany({ publication: item.id });
+
+    next();
+});
 
 PublicationSchema.statics.project = async (
     publication: IPublicationDocument,

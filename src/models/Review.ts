@@ -66,6 +66,16 @@ const ReviewSchema = new Schema<IReview, IReviewModel, IReview>(
 ReviewSchema.plugin(softDeleteMiddleware);
 
 /**
+ * This function is a hook to remove any comments that are on a review
+ * if the publication is marked for deletion.
+ */
+ReviewSchema.post('remove', async (item: IReviewDocument, next) => {
+    await Comment.deleteMany({ review: item.id });
+
+    next();
+});
+
+/**
  * Function to project a user comment so that it can be returned as a
  * response in the API.
  *
