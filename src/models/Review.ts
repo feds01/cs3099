@@ -75,8 +75,6 @@ ReviewSchema.plugin(softDeleteMiddleware);
 ReviewSchema.statics.project = async (review: PopulatedReview) => {
     const { publication, owner, status } = review;
 
-    // If the comment is deleted, we need to do some special projection.
-
     return {
         id: review._id,
         publication: await Publication.project(publication),

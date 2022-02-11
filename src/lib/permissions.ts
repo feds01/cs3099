@@ -1,3 +1,4 @@
+import * as errors from '../common/errors';
 import Comment from '../models/Comment';
 import Publication from '../models/Publication';
 import Review, { IReviewStatus } from '../models/Review';
@@ -28,6 +29,8 @@ type BodylessBasicRequest<P, Q> = Omit<BasicRequest<P, Q, unknown>, 'body'>;
 export type ResolvedPermission =
     | {
           valid: false;
+          code?: 401 | 400 | 404;
+          message?: string;
       }
     | {
           valid: true;
@@ -168,7 +171,9 @@ export const verifyCommentPermission = async <P extends IdRequest, Q>(
 ): Promise<ResolvedPermission> => {
     const comment = await Comment.findById(req.params.id).exec();
 
-    if (!comment || comment.owner.toString() !== user.id) {
+    if (!comment) {
+        return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
+    } else if (comment.owner.toString() !== user.id) {
         return { valid: false };
     }
 
@@ -186,7 +191,9 @@ export const verifyCommentThreadPermission = async <P extends IdRequest, Q>(
 ): Promise<ResolvedPermission> => {
     const commentThread = await Comment.findOne({ thread: req.params.id, replying: null }).exec();
 
-    if (!commentThread || commentThread.owner.toString() !== user.id) {
+    if (!commentThread) {
+        return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
+    } else if (commentThread.owner.toString() !== user.id) {
         return { valid: false };
     }
 
@@ -210,7 +217,9 @@ export const verifyReviewPermission = async <P extends IdRequest, Q>(
     //
     // @@TODO: in the future, it should be possible to make a review private and specify
     //         who can view the review.
-    if (
+    if (!review) {
+        return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
+    } else if (
         !review ||
         (review.status !== IReviewStatus.Completed && review.owner.toString() !== user.id)
     ) {
@@ -231,7 +240,11 @@ export const verifyPublicationPermission = async <P extends PublicationRequest, 
 ): Promise<ResolvedPermission> => {
     const publication = await Publication.findOne({ owner: user.id, name: req.params.name }).exec();
 
-    if (!publication || publication.owner.toString() !== user.id) {
+    if (!publication) {
+        return { valid: false, message: errors.RESOURCE_NOT_FOUND, code: 404 };
+    }
+
+    if (publication.owner.toString() !== user.id) {
         return { valid: false };
     }
 
@@ -249,7 +262,9 @@ export const verifyPublicationIdPermission = async <P extends IdRequest, Q>(
 ): Promise<ResolvedPermission> => {
     const publication = await Publication.findById(req.params.id).exec();
 
-    if (!publication || publication.owner.toString() !== user.id) {
+    if (!publication) {
+        return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
+    } else if (publication.owner.toString() !== user.id) {
         return { valid: false };
     }
 

@@ -216,7 +216,6 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
  *   "title": "Test",
  *   "introduction": "Introduction here",
  *   "collaborators": ["user1", "user2"],
- *   "draft": true
  * }
  *
  * @description Route to create a new publication entry in the database. The route
@@ -392,11 +391,12 @@ registerRoute(router, '/:username/:name', {
         const user = await userUtils.transformUsernameIntoId(req);
 
         const name = req.params.name.toLowerCase();
-        const { revision } = req.query;
+        const { revision, draft } = req.query;
 
         const publication = await Publication.findOne({
             owner: user.id,
             name,
+            ...(typeof draft !== 'undefined' && { draft }),
             ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
         }).exec();
 
@@ -426,15 +426,6 @@ registerRoute(router, '/:username/:name', {
                 code: 404,
                 message: errors.RESOURCE_NOT_FOUND,
             };
-        } else if (typeof req.query.draft !== 'undefined') {
-            // So now here we can allow explicit filtering by draft or not...
-            if (publication.draft !== req.query.draft) {
-                return {
-                    status: 'error',
-                    code: 404,
-                    message: errors.RESOURCE_NOT_FOUND,
-                };
-            }
         }
 
         // Check if the publication has an uploaded source file...
@@ -513,7 +504,7 @@ registerRoute(router, '/:username/:name', {
     }),
     query: z.object({
         mode: ModeSchema,
-        draft: FlagSchema.default('false'),
+        draft: FlagSchema.optional(),
         revision: z.string().optional(),
     }),
     permissionVerification: verifyPublicationPermission,
@@ -527,7 +518,7 @@ registerRoute(router, '/:username/:name', {
         const publication = await Publication.findOneAndDelete({
             owner: user.id,
             name,
-            draft,
+            ...(typeof draft !== 'undefined' && { draft }),
             ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
         }).exec();
 

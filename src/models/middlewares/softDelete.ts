@@ -18,6 +18,8 @@ const setDocumentIsDeleted = async (doc: TDocument) => {
     doc.isDeleted = true;
     doc.$isDeleted(true);
 
+    console.log('setting to delete');
+
     await doc.save();
 };
 
@@ -29,7 +31,9 @@ const excludeInFindQueriesIsDeleted = async function (
     this: mongoose.Query<TDocument, TDocument>,
     next: () => void,
 ) {
-    this.where({ isDeleted: false });
+    this.where({
+        $or: [{ isDeleted: { $exists: true, $eq: false } }, { isDeleted: { $exists: false } }],
+    });
     next();
 };
 
@@ -41,7 +45,11 @@ const excludeInDeletedInAggregateMiddleware = async function (
     this: mongoose.Aggregate<any>,
     next: () => void,
 ) {
-    this.pipeline().unshift({ $match: { isDeleted: false } });
+    this.pipeline().unshift({
+        $match: {
+            $or: [{ isDeleted: { $exists: true, $eq: false } }, { isDeleted: { $exists: false } }],
+        },
+    });
     next();
 };
 
