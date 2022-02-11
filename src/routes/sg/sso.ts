@@ -1,17 +1,18 @@
-import { z } from 'zod';
-import assert from 'assert';
-import qs from 'query-string';
-import express from 'express';
+import Logger from '../../common/logger';
+import { JwtError, createTokens, verifyToken } from '../../lib/auth';
+import { makeRequest } from '../../lib/fetch';
+import registerRoute from '../../lib/requests';
+import State from '../../models/State';
 import User from '../../models/User';
 import { config } from '../../server';
-import Logger from '../../common/logger';
-import State from '../../models/State';
-import registerRoute from '../../lib/requests';
-import { IJwtSchema } from '../../validators/auth';
-import { makeRequest } from '../../lib/fetch';
-import { SgUserSchema } from '../../validators/sg';
-import { createTokens, JwtError, verifyToken } from '../../lib/auth';
 import { convertSgId, transformSgUserToInternal } from '../../transformers/sg';
+import { IJwtSchema } from '../../validators/auth';
+import { SgUserSchema } from '../../validators/sg';
+
+import assert from 'assert';
+import express from 'express';
+import qs from 'query-string';
+import { z } from 'zod';
 
 const router = express.Router();
 

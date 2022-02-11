@@ -1,7 +1,7 @@
-import Link from '@mui/material/Link';
-import React, { ReactElement } from 'react';
 import { Theme } from '@mui/material';
+import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
+import React, { ReactElement } from 'react';
 
 interface Props {
     username: string;
@@ -9,10 +9,11 @@ interface Props {
     revision?: string;
 }
 
-const useStyles = makeStyles<Theme>(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
     wrapper: {
         textDecoration: 'none',
         cursor: 'pointer',
+        color: theme.palette.primary.main
     },
 }));
 
@@ -21,7 +22,7 @@ export default function PublicationLink({ username, name, revision }: Props): Re
     const basename = `/${username}/${name}` + (revision ? `/${revision}` : '');
 
     return (
-        <Link className={classes.wrapper} href={basename}>
+        <Link className={classes.wrapper} to={basename}>
             {username}/{name}
         </Link>
     );

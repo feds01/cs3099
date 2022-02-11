@@ -1,11 +1,11 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import LoadingButton from '@mui/lab/LoadingButton';
-import Typography from '@mui/material/Typography';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { User } from '../../lib/api/models';
 import { ReactElement, useEffect } from 'react';
+import FieldLabel from '../../components/FieldLabel';
 import ErrorBanner from '../../components/ErrorBanner';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { usePostAuthRegister } from '../../lib/api/auth/auth';
@@ -18,17 +18,33 @@ interface RegisterAccountFormProps {
 }
 
 export default function RegisterForm({ onSuccess }: RegisterAccountFormProps): ReactElement {
-    const { control, handleSubmit } = useForm<IRegisterForm>({
+    const {
+        control,
+        handleSubmit,
+        setError,
+        formState: { isSubmitting, isValid },
+    } = useForm<IRegisterForm>({
         resolver: zodResolver(RegisterSchema),
+        mode: 'onBlur',
+        defaultValues: {
+            username: '',
+            email: '',
+            firstName: '',
+            lastName: '',
+            password: '',
+            confirm: ''
+        }
     });
-
     const { isLoading, isError, data: response, error, mutateAsync } = usePostAuthRegister();
 
     useEffect(() => {
         // Check here if an error occurred, otherwise call the onSuccess function...
-        if (isError) {
-            // TODO: transform the errors into appropriate values
-            console.log(error);
+        if (isError && error) {
+            if (typeof error.errors !== 'undefined') {
+                for (const [errorField, errorObject] of Object.entries(error.errors)) {
+                    setError(errorField as keyof IRegisterForm, { type: 'manual', message: errorObject.message });
+                }
+            }
         } else if (!isLoading && response) {
             onSuccess(response.user, response.token, response.refreshToken);
         }
@@ -48,38 +64,39 @@ export default function RegisterForm({ onSuccess }: RegisterAccountFormProps): R
             >
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
-                        <Typography variant={'body2'}>First name</Typography>
+                        <FieldLabel label={'First Name'} />
                         <ControlledTextField name="firstName" control={control} />
                     </Grid>
                     <Grid item xs={12} md={6}>
-                        <Typography variant={'body2'}>Last name</Typography>
-                        <ControlledTextField name="lastName" control={control} />
+                        <FieldLabel label={'Last name'} required={false} />
+                        <ControlledTextField name="lastName" control={control} textFieldProps={{ required: false }} />
                     </Grid>
                 </Grid>
                 <Grid container spacing={1}>
                     <Grid item xs={12} md={6}>
-                        <Typography variant={'body2'}>Username</Typography>
+                        <FieldLabel label={'Username'} />
                         <ControlledTextField name="username" control={control} />
                     </Grid>
                     <Grid item xs={12} md={6}>
-                        <Typography variant={'body2'}>Email</Typography>
+                        <FieldLabel label={'Email'} />
                         <ControlledTextField name="email" control={control} />
                     </Grid>
                 </Grid>
                 <Grid container spacing={1}>
                     <Grid item xs={12} md={6}>
-                        <Typography variant={'body2'}>Password</Typography>
+                        <FieldLabel label={'Password'} />
                         <ControlledPasswordField name="password" control={control} />
                     </Grid>
                     <Grid item xs={12} md={6}>
-                        <Typography variant={'body2'}>Confirm password</Typography>
+                        <FieldLabel label={'Confirm password'} />
                         <ControlledPasswordField name="confirm" control={control} />
                     </Grid>
                 </Grid>
                 <Box sx={{ pt: 2 }}>
                     <LoadingButton
                         type={'submit'}
-                        loading={isLoading}
+                        loading={isLoading || isSubmitting}
+                        disabled={!isValid}
                         variant="contained"
                         color="primary"
                         fullWidth={false}

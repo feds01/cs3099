@@ -1,30 +1,32 @@
-import { z } from 'zod';
-import express from 'express';
+import * as error from '../../common/errors';
+import * as userUtils from './../../utils/users';
+import { deleteFileResource } from '../../lib/fs';
+import { verifyUserPermission } from '../../lib/permissions';
+import registerRoute from '../../lib/requests';
+import Follower from '../../models/Follower';
+import User, { IUserRole } from '../../models/User';
+import { ResponseErrorSummary } from '../../transformers/error';
+import { joinPathsForResource } from '../../utils/resources';
+import { ModeSchema } from '../../validators/requests';
+import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
 import followerRouter from './followers';
 import reviewRouter from './reviews';
-import * as error from '../../common/errors';
-import Follower from '../../models/Follower';
-import * as userUtils from './../../utils/users';
-import User, { IUserRole } from '../../models/User';
-import registerRoute from '../../lib/requests';
-import { ModeSchema } from '../../validators/requests';
-import { verifyUserPermission } from '../../lib/permissions';
-import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
+
 import assert from 'assert';
+import express from 'express';
+import { z } from 'zod';
 
 const router = express.Router();
 
-// Register the follower routes
 router.use('/', followerRouter);
-// Register the review routes
 router.use('/', reviewRouter);
 
 /**
  * @version v1.0.0
  * @method GET
- * @url /api/user
+ * @url /api/user/:username
  * @example
- * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/feds01
  *
  * >>> response:
  * {
@@ -74,6 +76,78 @@ registerRoute(router, '/:username', {
 
 /**
  * @version v1.0.0
+ * @method GET
+ * @url /api/user/:username/avatar
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/feds01/avatar
+ *
+ * @description This route is used to get a user's avatar if they have one set.
+ *
+ * @error {NOT_FOUND} if the requested user does not have a avatar
+ *
+ * */
+registerRoute(router, '/:username/avatar', {
+    method: 'get',
+    params: z.object({ username: z.string() }),
+    query: z.object({ mode: ModeSchema }),
+    permissionVerification: verifyUserPermission,
+    permission: null,
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
+
+        if (user.profilePictureUrl) {
+            return {
+                status: 'file',
+                code: 200,
+                file: joinPathsForResource('avatar', user.id, 'avatar'),
+            };
+        } else {
+            return {
+                status: 'error',
+                code: 404,
+                message: error.RESOURCE_NOT_FOUND,
+            };
+        }
+    },
+});
+
+/**
+ * @version v1.0.0
+ * @method DELETE
+ * @url /api/user/:username/avatar
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/feds01/avatar
+ *
+ * @description This route is used to delete a user's avatar if they have one set.
+ *
+ * */
+registerRoute(router, '/:username/avatar', {
+    method: 'delete',
+    params: z.object({ username: z.string() }),
+    query: z.object({ mode: ModeSchema }),
+    permissionVerification: verifyUserPermission,
+    permission: null,
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
+
+        if (user.profilePictureUrl) {
+            const resourcePath = joinPathsForResource('avatar', user.id, 'avatar');
+
+            // First, we want to update the database to state that the user has no avatar
+            // and then we can remove the file from the disk.
+            await user.updateOne({ $set: { profilePictureUrl: undefined } });
+            await deleteFileResource(resourcePath);
+        }
+
+        return {
+            status: 'ok',
+            code: 200,
+        };
+    },
+});
+
+/**
+ * @version v1.0.0
  * @method PATCH
  * @url /api/user
  * @example
@@ -110,15 +184,54 @@ registerRoute(router, '/:username', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const response = req.body;
-        const update = { $set: { ...response } };
-        const queryOptions = { new: true }; // new as in return the updated document
+        // Verify that email and username aren't taken...
+        const { username, email } = req.body;
+
+        const searchQueryUser = {
+            _id: { $ne: user._id },
+            $or: [
+                ...(typeof username !== 'undefined' ? [{ username }] : []),
+                ...(typeof email !== 'undefined'
+                    ? [{ email, externalId: { $exists: false } }]
+                    : []),
+            ],
+        };
+
+        const search = await User.findOne(searchQueryUser).exec();
+
+        if (search?.username === username) {
+            return {
+                status: 'error',
+                code: 400,
+                message: error.BAD_REQUEST,
+                errors: {
+                    username: {
+                        message: 'Username already taken',
+                    },
+                } as ResponseErrorSummary,
+            };
+        } else if (search?.email === email) {
+            return {
+                status: 'error',
+                code: 400,
+                message: error.BAD_REQUEST,
+                errors: {
+                    email: {
+                        message: 'Email already taken',
+                    },
+                } as ResponseErrorSummary,
+            };
+        }
 
         // So take the fields that are to be updated into the set request, it's okay to this because
         // we validated the request previously and we should be able to add all of the fields into the
         // database. If the user tries to update the username or an email that's already in use, mongo
         // will return an error because these fields have to be unique.
-        const newUser = await User.findByIdAndUpdate(user.id, update, queryOptions).exec();
+        const newUser = await User.findByIdAndUpdate(
+            user.id,
+            { $set: { ...req.body } },
+            { new: true },
+        ).exec();
 
         // If we couldn't find the user.
         if (!newUser) {

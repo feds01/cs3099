@@ -11,9 +11,10 @@ import {
   MutationFunction
 } from 'react-query'
 import type {
-  ApiSuccessResponse,
+  PostResourceUploadUsername200,
   ApiErrorResponse,
-  UploadResource
+  UploadResource,
+  ApiSuccessResponse
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
 
@@ -33,7 +34,7 @@ export const postResourceUploadUsername = (
  ) => {const formData = new FormData();
 formData.append('file', uploadResource.file)
 
-      return customInstance<ApiSuccessResponse>(
+      return customInstance<PostResourceUploadUsername200>(
       {url: `/resource/upload/${username}`, method: 'post',
        data: formData
     },

@@ -7,7 +7,6 @@
  * It contains generic error messages for bad requests, failed authentication, etc and API
  * specific error messages.
  */
-
 import { ResponseErrorSummary } from '../transformers/error';
 
 interface ExpressError extends Error {

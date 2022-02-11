@@ -23,6 +23,7 @@
     "author": "",
     "license": "MIT",
     "devDependencies": {
+        "@trivago/prettier-plugin-sort-imports": "^3.2.0",
         "@types/adm-zip": "^0.4.34",
         "@types/bcryptjs": "^2.4.2",
         "@types/cors": "^2.8.12",

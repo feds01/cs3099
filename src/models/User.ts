@@ -1,6 +1,7 @@
+import { config } from '../server';
+
 import { strict } from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
-import { config } from '../server';
 
 export enum IUserRole {
     Default = 'default',
@@ -13,7 +14,8 @@ export interface IUser {
     username: string;
     password: string;
     firstName: string;
-    lastName: string;
+    lastName?: string;
+    /** A String determining the location of where the uploaded avatar is. */
     profilePictureUrl?: string;
     role: IUserRole;
     about?: string;
@@ -36,9 +38,9 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
         email: { type: String, required: true, unique: true },
         username: { type: String, required: true, unique: true },
         firstName: { type: String, required: true, minLength: 1 },
-        lastName: { type: String, required: true, minLength: 1 },
+        lastName: { type: String, required: false },
         password: { type: String, default: '' },
-        profilePictureUrl: { type: String },
+        profilePictureUrl: { type: String, required: false },
         about: { type: String },
         status: { type: String },
         externalId: { type: String },
@@ -57,7 +59,7 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
  * @returns A partial user object with selected fields that are to be projected.
  */
 UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
-    const { profilePictureUrl, about, status } = user;
+    const { profilePictureUrl, about, status, lastName } = user;
 
     strict.strict(typeof user.id === 'string');
 
@@ -66,11 +68,11 @@ UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
         email: user.email,
         username: user.username,
         firstName: user.firstName,
-        lastName: user.lastName,
         createdAt: user.createdAt.getTime(),
-        ...(typeof profilePictureUrl !== 'undefined' && { profilePictureUrl }),
+        ...(profilePictureUrl && { profilePictureUrl }),
         ...(typeof about !== 'undefined' && { about }),
         ...(typeof status !== 'undefined' && { status }),
+        ...(typeof lastName !== 'undefined' && { lastName }),
     };
 };
 
@@ -93,9 +95,9 @@ UserSchema.statics.projectAsSg = (user: IUserDocument) => {
     const { firstName, lastName, email, profilePictureUrl } = user;
 
     return {
-        name: `${firstName} ${lastName}`,
+        name: firstName + (typeof lastName !== 'undefined' ? ` ${lastName}` : ''),
         email,
-        ...(typeof profilePictureUrl !== 'undefined' && { profilePictureUrl }),
+        ...(profilePictureUrl && { profilePictureUrl }),
     };
 };
 

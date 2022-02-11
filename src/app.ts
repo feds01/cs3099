@@ -1,4 +1,5 @@
 import cors from 'cors';
+import path from 'path';
 import helmet from 'helmet';
 import express from 'express';
 import fileUpload from 'express-fileupload';
@@ -24,7 +25,6 @@ import resourcesRouter from './routes/resources';
 import sgResourcesRouter from './routes/sg/resources';
 import publicationsRouter from './routes/publications';
 import morganMiddleware from './config/morganMiddleware';
-import path from 'path';
 
 
 // Create the express application

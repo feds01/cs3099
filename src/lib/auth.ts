@@ -7,14 +7,14 @@
  * User Accounts API requests and Documents API requests.
  *
  */
-
-import assert from 'assert';
-import express from 'express';
-import { ZodError } from 'zod';
-import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 import Logger from '../common/logger';
 import { config } from '../server';
 import { IAuthHeaderSchema } from '../validators/auth';
+
+import assert from 'assert';
+import express from 'express';
+import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
+import { ZodError } from 'zod';
 
 export interface TokenPayload {
     token: string;

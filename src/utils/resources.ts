@@ -1,7 +1,8 @@
-import path from 'path';
+import { config } from '../server';
+
 import express from 'express';
 import { UploadedFile } from 'express-fileupload';
-import { config } from '../server';
+import path from 'path';
 
 /**
  * Function to concatenate paths with the specified project resource folder.
@@ -10,7 +11,7 @@ import { config } from '../server';
  * @returns The concatenated path.
  */
 export function joinPathsForResource(...paths: string[]): string {
-    return path.join(config.resourcesFolder, ...paths);
+    return path.resolve(path.join(config.resourcesFolder, ...paths));
 }
 
 /**

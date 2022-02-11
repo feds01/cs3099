@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import React, { useState, ReactElement } from 'react';
 import Close from '@mui/icons-material/Close';
 import Box from '@mui/material/Box/Box';
@@ -17,11 +18,11 @@ import {
 function NotificationIcon({ type }: { type: NotificationSeverity }): ReactElement {
     switch (type) {
         case 'warn':
-            return <WarningIcon />;
+            return <WarningIcon color="warning" />;
         case 'success':
-            return <SuccessIcon />;
+            return <SuccessIcon color="success" />;
         case 'error':
-            return <ErrorIcon />;
+            return <ErrorIcon color="error" />;
     }
 }
 
@@ -54,7 +55,7 @@ function NotificationContainer({ message, severity }: NotificationContainerProps
                     }}
                 >
                     <NotificationIcon type={severity} />
-                    <Typography>{message}</Typography>
+                    <Typography sx={{ pl: 1 }}>{message}</Typography>
                 </Box>
             }
             action={
@@ -77,8 +78,8 @@ export function NotificationDisplay({ children }: { children: React.ReactNode })
     return (
         <>
             {children}
-            {notifications.map((notification, index) => {
-                return <NotificationContainer {...notification} key={index} />;
+            {notifications.map((notification) => {
+                return <NotificationContainer {...notification} key={nanoid()} />;
             })}
         </>
     );

@@ -1,8 +1,9 @@
-import { agent as supertest, Response } from 'supertest';
-import app from '../../../src/app';
-import User, { IUserDocument } from '../../../src/models/User';
-import Follower from '../../../src/models/Follower';
 import * as errors from '../../../src/common/errors';
+import app from '../../../src/app';
+import Follower from '../../../src/models/Follower';
+import User, { IUserDocument } from '../../../src/models/User';
+
+import { Response, agent as supertest } from 'supertest';
 
 const request = supertest(app);
 

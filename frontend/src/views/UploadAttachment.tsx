@@ -3,7 +3,7 @@ import Upload from '../static/images/upload.svg';
 import ErrorBanner from '../components/ErrorBanner';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { Box, Button, LinearProgress, Typography } from '@mui/material';
-import { transformMutationIntoContentState} from '../wrappers/react-query';
+import { transformMutationIntoContentState } from '../wrappers/react-query';
 import { usePostResourceUploadPublicationId } from '../lib/api/resources/resources';
 import { ApiErrorResponse, ApiSuccessResponse, Publication } from '../lib/api/models';
 interface Props {
@@ -12,7 +12,6 @@ interface Props {
 }
 
 export default function UploadAttachment({ publication, refetchData }: Props): ReactElement {
-    const [showLoader, setShowLoader] = useState<boolean>(false);
     const [upload, setUpload] = useState<ContentState<ApiSuccessResponse, ApiErrorResponse>>({ state: 'loading' });
     const uploadFileQuery = usePostResourceUploadPublicationId();
 
@@ -21,17 +20,12 @@ export default function UploadAttachment({ publication, refetchData }: Props): R
             return;
         }
 
-        setShowLoader(true);
-
         try {
             const file = event.target.files[0];
             await uploadFileQuery.mutateAsync({ id: publication.id, data: { file } });
 
-            setShowLoader(false);
         } catch (e: unknown) {
-            console.log(e);
-            setUpload({ state: 'error', error: {status: 'error', message: "Couldn't read file."} });
-            setShowLoader(false);
+            setUpload({ state: 'error', error: { status: 'error', message: "Couldn't read file." } });
         }
     };
 
@@ -45,7 +39,7 @@ export default function UploadAttachment({ publication, refetchData }: Props): R
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-            {showLoader ? (
+            {uploadFileQuery.isLoading ? (
                 <LinearProgress />
             ) : (
                 <>
@@ -69,7 +63,7 @@ export default function UploadAttachment({ publication, refetchData }: Props): R
                             color="primary"
                             component="span"
                         >
-                            Choose file
+                            Choose file...
                         </Button>
                     </Box>
                     {upload.state === 'error' && <ErrorBanner message={upload.error.message} />}

@@ -1,15 +1,16 @@
-import { z } from 'zod';
-import express from 'express';
-import Logger from '../../common/logger';
 import * as errors from '../../common/errors';
 import * as userUtils from '../../utils/users';
+import Logger from '../../common/logger';
+import { verifyPublicationPermission } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
+import Publication, { IPublication } from '../../models/Publication';
+import Review, { IReviewStatus } from '../../models/Review';
 import { IUser, IUserRole } from '../../models/User';
 import { ModeSchema } from '../../validators/requests';
-import Review, { IReviewStatus } from '../../models/Review';
-import Publication, { IPublication } from '../../models/Publication';
 import { IReviewCreationSchema } from '../../validators/reviews';
-import { verifyPublicationPermission } from '../../lib/permissions';
+
+import express from 'express';
+import { z } from 'zod';
 
 const router = express.Router();
 

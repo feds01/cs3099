@@ -16,7 +16,7 @@ import {
   QueryKey
 } from 'react-query'
 import type {
-  DeleteUserUsername200,
+  ApiSuccessResponse,
   ApiErrorResponse,
   GetUserUsername200,
   PatchUserUsername200,
@@ -24,8 +24,7 @@ import type {
   GetUserUsernameReviews200,
   GetUserUsernameRole200,
   PatchUserUsernameRole200,
-  PostUserUsernameFollow200,
-  ApiSuccessResponse
+  PostUserUsernameFollow200
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
 
@@ -42,7 +41,7 @@ T extends (...args: any) => Promise<any>
 export const deleteUserUsername = (
     username: string,
  ) => {
-      return customInstance<DeleteUserUsername200>(
+      return customInstance<ApiSuccessResponse>(
       {url: `/user/${username}`, method: 'delete'
     },
       );
@@ -140,6 +139,77 @@ export const patchUserUsername = (
       return useMutation<AsyncReturnType<typeof patchUserUsername>, TError, {username: string;data: UserPatchRequest}, TContext>(mutationFn, mutationOptions)
     }
     /**
+ * Remove an avatar that's on a user account.
+ * @summary Account avatar deletion
+ */
+export const deleteUserUsernameAvatar = (
+    username: string,
+ ) => {
+      return customInstance<ApiSuccessResponse>(
+      {url: `/user/${username}/avatar`, method: 'delete'
+    },
+      );
+    }
+  
+
+
+    export const useDeleteUserUsernameAvatar = <TError = ApiErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof deleteUserUsernameAvatar>, TError,{username: string}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      
+
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof deleteUserUsernameAvatar>, {username: string}> = (props) => {
+          const {username} = props || {};
+
+          return  deleteUserUsernameAvatar(username,)
+        }
+
+      return useMutation<AsyncReturnType<typeof deleteUserUsernameAvatar>, TError, {username: string}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
+ * Get an avatar that's on a user account.
+ * @summary Get user avatar
+ */
+export const getUserUsernameAvatar = (
+    username: string,
+ ) => {
+      return customInstance<Blob>(
+      {url: `/user/${username}/avatar`, method: 'get',
+        responseType: 'blob',
+    },
+      );
+    }
+  
+
+export const getGetUserUsernameAvatarQueryKey = (username: string,) => [`/user/${username}/avatar`];
+
+    
+export const useGetUserUsernameAvatar = <TData = AsyncReturnType<typeof getUserUsernameAvatar>, TError = ApiErrorResponse>(
+ username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameAvatar>, TError, TData>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+
+  const {query: queryOptions} = options || {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameAvatarQueryKey(username);
+
+  
+
+  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameAvatar>> = () => getUserUsernameAvatar(username, );
+
+  const query = useQuery<AsyncReturnType<typeof getUserUsernameAvatar>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
+
+  return {
+    queryKey,
+    ...query
+  }
+}
+
+/**
  * Return a paginated list of the user's reviews.
  * @summary Get a user's reviews.
  */

@@ -37,7 +37,7 @@ export default function CommentThreadRenderer({ thread, review }: CommentThreadP
                     <CommentEditor
                         type={'reply'}
                         sx={{
-                            p: 1
+                            p: 1,
                         }}
                         reviewId={review.id}
                         commentId={thread.comments[thread.comments.length - 1].id}
