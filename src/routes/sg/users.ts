@@ -48,7 +48,6 @@ registerRoute(router, '/export/:id/metadata', {
             };
         }
 
-        // @@COWBUNGA
         const user = await User.findById(id).exec();
 
         if (!user) {

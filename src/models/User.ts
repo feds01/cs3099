@@ -1,11 +1,12 @@
 import { config } from '../server';
+import softDeleteMiddleware from './middlewares/softDelete';
 import { strict } from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 /**
  * A role represents what level of permissions a user has in the system.
  * All users are assigned a default role which means they can perform actions
- * on resources that they own. The 'moderator' role denotes that a user may 
+ * on resources that they own. The 'moderator' role denotes that a user may
  * modify documents that might not belong to them, but they cannot delete them.
  * An administrator has global access and can perform all actions on the platform.
  */
@@ -16,7 +17,7 @@ export enum IUserRole {
 }
 
 /**
- * The IUser document represents a user object in the system. 
+ * The IUser document represents a user object in the system.
  */
 export interface IUser {
     /** User unique email */
@@ -47,7 +48,7 @@ export interface IUser {
     isDeleted: boolean;
 }
 
-export interface IUserDocument extends IUser, Document<string> { }
+export interface IUserDocument extends IUser, Document<string> {}
 
 export interface IUserModel extends Model<IUserDocument> {
     project: (user: IUser, omitId?: boolean) => Partial<IUser>;
@@ -67,12 +68,15 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
         status: { type: String },
         externalId: { type: String },
         role: { type: String, enum: IUserRole, default: IUserRole.Default },
-        isDeleted: { type: Boolean, default: false }
+        isDeleted: { type: Boolean, default: false },
     },
     {
         timestamps: { createdAt: true, updatedAt: false },
     },
 );
+
+// Register soft-deletion middleware
+UserSchema.plugin(softDeleteMiddleware);
 
 /**
  * Function to project a user document so that it can be returned as a

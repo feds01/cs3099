@@ -81,9 +81,6 @@ registerRoute(router, '/upload/publication/:id', {
     permissionVerification: verifyPublicationIdPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const { id } = req.params;
-        const { revision } = req.query;
-        const { id: userId } = req.requester;
         const file = extractFile(req.raw);
 
         if (!file) {
@@ -112,8 +109,7 @@ registerRoute(router, '/upload/publication/:id', {
         // are any problems with the arhive
         zip.getEntry(file.tempFilePath, '');
 
-        // @@COWBUNGA
-        const publication = await Publication.findById(id).exec();
+        const publication = await Publication.findById(req.params.id).exec();
 
         if (!publication) {
             return {
@@ -131,11 +127,11 @@ registerRoute(router, '/upload/publication/:id', {
             };
         }
 
-        let uploadPath = joinPathsForResource('publication', userId, publication.name);
+        let uploadPath = joinPathsForResource('publication', req.requester.id, publication.name);
 
         // now we need to append the revision number if it actually exists...
-        if (revision) {
-            uploadPath = joinPathsRaw(uploadPath, revision, 'publication.zip');
+        if (req.query.revision) {
+            uploadPath = joinPathsRaw(uploadPath, req.query.revision, 'publication.zip');
         } else {
             uploadPath = joinPathsRaw(uploadPath, 'publication.zip');
         }

@@ -54,7 +54,6 @@ registerRoute(router, '/:username/:name/all', {
         const { name } = req.params;
         const { revision } = req.query;
 
-        // @@COWBUNGA
         const publication = await Publication.findOne({
             owner: user.id,
             name,
@@ -143,7 +142,6 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
         const { name, path } = req.params;
         const { revision } = req.query;
 
-        // @@COWBUNGA
         const publication = await Publication.findOne({
             owner: user.id,
             name,
@@ -311,7 +309,6 @@ registerRoute(router, '/:username', {
 
         const { pinned } = req.query;
 
-        // @@COWBUNGA
         // @@TODO: we might want to include revisions in the future with some options.
         const result = await Publication.find({
             owner: user.id,
@@ -351,7 +348,6 @@ registerRoute(router, '/:username/:name/revisions', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        // @@COWBUNGA
         const result = await Publication.find({
             owner: user.id,
             current: true,
@@ -395,20 +391,14 @@ registerRoute(router, '/:username/:name', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name } = req.params;
+        const name = req.params.name.toLowerCase();
         const { revision } = req.query;
 
-        // @@COWBUNGA
-
-        // sort by id in descending order since this is actually faster than using a 'createdAt' field because
-        // ObjectID's in MongoDB have a natural ascending order of time. More information about the details
-        // are here: https://stackoverflow.com/a/54741405
         const publication = await Publication.findOne({
             owner: user.id,
-            name: name.toLowerCase(),
+            name,
             ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
-        })
-            .exec();
+        }).exec();
 
         if (!publication) {
             return {
@@ -420,7 +410,7 @@ registerRoute(router, '/:username/:name', {
 
         // So we don't need to actually specify the draft flag to the query
         // if the owner of the publication is a draft. However, if the callee
-        // not the owner of the current publication and doesn't have moderator
+        // is not the owner of the current publication and doesn't have moderator
         // privileges, they can't get the publication. Only the owner should be able
         // to retrieve their draft. This behaviour is entirely overridden if the query
         // flag 'draft' is specified.
@@ -486,20 +476,14 @@ registerRoute(router, '/:username/:name/all', {
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
+        const name = req.params.name.toLowerCase();
 
-        const { name } = req.params;
-
-        // @@COWBUNGA ( mark all of the reviews & comments too... )
-
-        await Publication.updateMany(
-            { owner: user.id, name: name.toLowerCase() },
-            { $set: { isDeleted: true } },
-        ).exec();
+        await Publication.deleteMany({ owner: user.id, name }).exec();
 
         const publicationPath = zip.resourceIndexToPath({
             type: 'publication',
             owner: user.id,
-            name: name,
+            name,
         });
 
         // we need to try to remove the folder that stores the publications...
@@ -538,17 +522,14 @@ registerRoute(router, '/:username/:name', {
         const user = await userUtils.transformUsernameIntoId(req);
 
         const { revision, draft } = req.query;
-        const { name } = req.params;
+        const name = req.params.name.toLowerCase();
 
-        // @@COWBUNGA ( mark all of the reviews & comments too... )
-
-        const publication = await Publication.findOneAndUpdate({
+        const publication = await Publication.findOneAndDelete({
             owner: user.id,
-            name: name.toLowerCase(),
+            name,
             draft,
             ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
-        }, { $set: { isDeleted: true } })
-            .exec(); // get the most recent document
+        }).exec();
 
         if (!publication) {
             return {
@@ -594,10 +575,8 @@ registerRoute(router, '/:username/:name', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name } = req.params;
+        const name = req.params.name.toLowerCase();
         const { revision } = req.query;
-
-        // @@COWBUNGA
 
         // So take the fields that are to be updated into the set request, it's okay to this because
         // we validated the request previously and we should be able to add all of the fields into the
@@ -606,7 +585,7 @@ registerRoute(router, '/:username/:name', {
         let newPublication = await Publication.findOneAndUpdate(
             {
                 owner: user.id,
-                name: name.toLowerCase(),
+                name,
                 ...(typeof revision !== 'undefined' && { revision }),
             },
             { $set: { ...req.body } },
@@ -664,18 +643,15 @@ registerRoute(router, '/:username/:name/export', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        // @@COWBUNGA
-
         // Get the publication
-        const { name } = req.params;
+        const name = req.params.name.toLowerCase();
         const { revision } = req.query;
 
         const publication = await Publication.findOne({
             owner: user.id,
-            name: name.toLowerCase(),
+            name,
             ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
-        })
-            .exec();
+        }).exec();
 
         if (!publication) {
             return {

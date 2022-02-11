@@ -86,8 +86,6 @@ registerRoute(router, '/email_validity', {
     query: z.object({}),
     permission: null,
     handler: async (req) => {
-        
-        // @@COWBUNGA
         const result = await User.findOne({
             email: req.body.email,
             externalId: { $exists: false },
@@ -124,8 +122,6 @@ registerRoute(router, '/session', {
             try {
                 const { id } = await verifyToken(token, config.jwtRefreshSecret);
                 const refreshedTokensOrError = refreshTokens(token);
-
-                // @@COWBUNGA
 
                 // find the user with this token information
                 const user = await User.findById(id);
@@ -369,10 +365,8 @@ registerRoute(router, '/login', {
     handler: async (req) => {
         const { username, password, isEmail } = req.body;
 
-        // @@COWBUNGA
-        const searchQuery = isEmail ? { email: username } : { username };
         const result = await User.findOne({
-            ...searchQuery,
+            ...(isEmail ? { email: username } : { username }),
             externalId: { $exists: false },
         }).exec();
 

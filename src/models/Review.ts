@@ -2,9 +2,10 @@ import { ExportSgReview } from '../validators/sg';
 import Comment from './Comment';
 import Publication, { IPublication } from './Publication';
 import User, { IUser } from './User';
+import softDeleteMiddleware from './middlewares/softDelete';
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
-/** 
+/**
  * Representation of whether a publication is in either 'started' mode
  * which means that the owner of the review hasn't yet submitted it. The
  * 'completed' mode means that the owner has submitted it and external viewers
@@ -39,7 +40,7 @@ type PopulatedReview = (IReview & {
     publication: IPublication;
 };
 
-interface IReviewDocument extends IReview, Document { }
+interface IReviewDocument extends IReview, Document {}
 
 interface IReviewModel extends Model<IReviewDocument> {
     project: (review: IReview) => Promise<Partial<IReview>>;
@@ -56,10 +57,13 @@ const ReviewSchema = new Schema<IReview, IReviewModel, IReview>(
             default: IReviewStatus.Started,
             required: true,
         },
-        isDeleted: { type: Boolean, default: false }
+        isDeleted: { type: Boolean, default: false },
     },
     { timestamps: true },
 );
+
+// Register soft-deletion middleware
+ReviewSchema.plugin(softDeleteMiddleware);
 
 /**
  * Function to project a user comment so that it can be returned as a

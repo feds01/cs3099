@@ -38,13 +38,9 @@ registerRoute(router, '/:id/comment', {
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const { id } = req.params;
-        const { id: owner } = req.requester;
         const { replying, filename, anchor, contents } = req.body;
 
-        // @@COWBUNGA
-
-        const review = await Review.findById(id)
+        const review = await Review.findById(req.params.id)
             .populate<{ owner: IUserDocument }>('owner')
             .populate<{ publication: IPublicationDocument }>('publication')
             .exec();
@@ -52,7 +48,7 @@ registerRoute(router, '/:id/comment', {
         // Check that the review exists and that the current commenter isn't trying
         // to publish comments on a non-public review. Only a review owner can comment
         // on a review whilst creating it.
-        if (!review || (review.status === 'started' && review.owner.id !== owner)) {
+        if (!review || (review.status === 'started' && review.owner.id !== req.requester.id)) {
             return {
                 status: 'error',
                 code: 404,
@@ -156,9 +152,9 @@ registerRoute(router, '/:id/comment', {
             anchor,
             contents,
             replying,
-            review: id,
+            review: req.params.id,
             thread,
-            owner,
+            owner: req.requester.id,
             publication: review.publication.id as mongoose.Schema.Types.ObjectId,
         }).save();
 
@@ -259,11 +255,9 @@ registerRoute(router, '/:id/complete', {
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const { id } = req.params;
-
-        // @@COWBUNGA
-
-        const review = await Review.findByIdAndUpdate(id, { $set: { status: IReviewStatus.Completed } }).exec();
+        const review = await Review.findByIdAndUpdate(req.params.id, {
+            $set: { status: IReviewStatus.Completed },
+        }).exec();
 
         // verify that the review exists and the owner is trying to publish it...
         if (!review) {
@@ -343,7 +337,7 @@ registerRoute(router, '/:id', {
         const { id } = req.params;
 
         // Delete the entire review and delete all the comments on the review...
-        const review = await Review.findByIdAndUpdate(id, { $set: { isDeleted: true }}).exec();
+        const review = await Review.findByIdAndUpdate(id, { $set: { isDeleted: true } }).exec();
 
         if (!review) {
             return {
@@ -353,7 +347,7 @@ registerRoute(router, '/:id', {
             };
         }
 
-        await Comment.updateMany({ review: review.id }, { $set: { isDeleted: true }}).exec();
+        await Comment.updateMany({ review: review.id }, { $set: { isDeleted: true } }).exec();
 
         return {
             status: 'ok',

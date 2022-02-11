@@ -33,14 +33,10 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name, revision } = req.params;
-
-        // @@COWBUNGA
-
         const publication = await Publication.findOne({
             owner: user.id,
-            name: name,
-            revision: revision,
+            name: req.params.name,
+            revision: req.params.revision,
         });
 
         if (!publication) {
@@ -94,15 +90,14 @@ registerRoute(router, '/:username/:name/:revision/review', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name, revision } = req.params;
+        const name = req.params.name.toLowerCase();
 
         // Verify that the publication exists...
         const publication = await Publication.findOne({
             owner: user.id,
-            name: name.toLowerCase(),
-            revision,
-        })
-            .exec();
+            name,
+            revision: req.params.revision,
+        }).exec();
 
         // Check that the publication isn't currently in draft mode...
         if (!publication || publication.draft) {

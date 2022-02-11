@@ -195,9 +195,6 @@ registerRoute(router, '/export/:id', {
     query: z.object({ from: z.string().url(), state: z.string() }),
     permission: null,
     handler: async (req) => {
-
-
-        // @@COWBUNGA
         const publication = await Publication.findById(req.params.id);
 
         if (!publication) {

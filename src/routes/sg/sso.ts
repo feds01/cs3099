@@ -100,13 +100,14 @@ registerRoute(router, '/callback', {
         const transformedUser = transformSgUserToInternal(userData.response);
 
         // try to find the user, if the user is marked as deleted, we essentially
-        // have to revert this because we can't create a new document for them  // @@COWBUNGA
+        // have to revert this because we can't create a new document for them.
+        // If, we can't find them, then we create a new document with the specified values.
         const importedUser = await User.findOneAndUpdate(
             {
                 email,
                 externalId: convertSgId(id),
             },
-            { $set: { ...transformedUser, isDeleted: false } },
+            { $set: { ...transformedUser } },
             { upsert: true },
         ).exec();
 
@@ -159,8 +160,6 @@ registerRoute(router, '/verify', {
 
         try {
             const verifiedToken = await verifyToken(token, config.jwtSecret);
-
-            // @@COWBUNGA
 
             // now look up the user that's specified in the token.
             const user = await User.findById(verifiedToken.id).exec();

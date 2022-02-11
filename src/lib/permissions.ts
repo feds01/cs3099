@@ -3,6 +3,7 @@ import Publication from '../models/Publication';
 import Review, { IReviewStatus } from '../models/Review';
 import User, { IUserDocument, IUserRole } from '../models/User';
 import { BasicRequest } from './requests';
+import mongoose from 'mongoose';
 
 export interface Permission {
     level: IUserRole;
@@ -113,7 +114,7 @@ export const defaultPermissionVerifier = async <P, Q>(
  * This is a generic implementation of a function that returns
  */
 interface IdRequest {
-    id: string;
+    id: mongoose.Schema.Types.ObjectId;
 }
 
 /**
@@ -246,7 +247,7 @@ export const verifyPublicationIdPermission = async <P extends IdRequest, Q>(
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
 ): Promise<ResolvedPermission> => {
-    const publication = await Publication.findOne({ id: req.params.id }).exec();
+    const publication = await Publication.findById(req.params.id).exec();
 
     if (!publication || publication.owner.toString() !== user.id) {
         return { valid: false };

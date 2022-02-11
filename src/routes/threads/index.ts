@@ -5,7 +5,6 @@ import Comment from '../../models/Comment';
 import { IUserRole } from '../../models/User';
 import { ObjectIdSchema } from '../../validators/requests';
 import express from 'express';
-import { Schema } from 'mongoose';
 import { z } from 'zod';
 
 const router = express.Router();
@@ -27,10 +26,7 @@ registerRoute(router, '/:id', {
     permissionVerification: verifyCommentThreadPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const { id } = req.params;
-
-        // @@COWBUNGA
-        const comments = Comment.find({ thread: new Schema.Types.ObjectId(id) });
+        const comments = Comment.find({ thread: req.params.id });
 
         if (!comments) {
             return {
@@ -67,9 +63,7 @@ registerRoute(router, '/:id', {
     permissionVerification: verifyCommentThreadPermission,
     permission: { level: IUserRole.Moderator },
     handler: async (req) => {
-        const { id } = req.params;
-
-        const thread = await Comment.updateMany({ thread: new Schema.Types.ObjectId(id) }, { $set: { isDeleted: true } }).exec();
+        const thread = await Comment.deleteMany({ thread: req.params.id }).exec();
 
         if (!thread) {
             return {

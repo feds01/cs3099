@@ -1,5 +1,6 @@
 import { ExportSgPublication } from '../validators/sg';
 import User, { IUserDocument } from './User';
+import softDeleteMiddleware from './middlewares/softDelete';
 import assert from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
@@ -31,7 +32,7 @@ export interface IPublication {
     isDeleted: boolean;
 }
 
-export interface IPublicationDocument extends IPublication, Document { }
+export interface IPublicationDocument extends IPublication, Document {}
 
 interface IPublicationModel extends Model<IPublicationDocument> {
     project: (publication: IPublication, attachment?: boolean) => Promise<Partial<IPublication>>;
@@ -50,10 +51,13 @@ const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublicati
         current: { type: Boolean, required: true },
         pinned: { type: Boolean, default: false },
         collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
-        isDeleted: { type: Boolean, default: false }
+        isDeleted: { type: Boolean, default: false },
     },
     { timestamps: true },
 );
+
+// Register soft-deletion middleware
+PublicationSchema.plugin(softDeleteMiddleware);
 
 PublicationSchema.statics.project = async (
     publication: IPublicationDocument,
