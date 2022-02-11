@@ -1,12 +1,11 @@
-import { z } from 'zod';
-import express from 'express';
-import User from '../../models/User';
-import registerRoute from '../../lib/requests';
-
 import * as errors from '../../common/errors';
+import registerRoute from '../../lib/requests';
+import User from '../../models/User';
+import { config } from '../../server';
 import { convertSgId } from '../../transformers/sg';
 import { SgUserIdSchema } from '../../validators/sg';
-import { config } from '../../server';
+import express from 'express';
+import { z } from 'zod';
 
 const router = express.Router();
 
@@ -49,6 +48,7 @@ registerRoute(router, '/export/:id/metadata', {
             };
         }
 
+        // @@COWBUNGA
         const user = await User.findById(id).exec();
 
         if (!user) {

@@ -1,28 +1,28 @@
-import { z } from 'zod';
-import express from 'express';
 import Logger from '../../common/logger';
-import * as zip from '../../lib/zip';
-import searchRouter from './search';
-import reviewRouter from './reviews';
-import { config } from '../../server';
 import { createTokens } from '../../lib/auth';
-import { deleteResource } from '../../lib/fs';
 import { makeRequest } from '../../lib/fetch';
-import * as errors from './../../common/errors';
-import * as userUtils from './../../utils/users';
-import registerRoute from '../../lib/requests';
-import User, { IUserRole } from '../../models/User';
-import Publication from '../../models/Publication';
-import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../validators/requests';
+import { deleteResource } from '../../lib/fs';
 import {
     compareUserRoles,
     verifyPublicationPermission,
     verifyUserPermission,
 } from '../../lib/permissions';
+import registerRoute from '../../lib/requests';
+import * as zip from '../../lib/zip';
+import Publication from '../../models/Publication';
+import User, { IUserRole } from '../../models/User';
+import { config } from '../../server';
 import {
     IPublicationCreationSchema,
     IPublicationPatchRequestSchema,
 } from '../../validators/publications';
+import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../validators/requests';
+import * as errors from './../../common/errors';
+import * as userUtils from './../../utils/users';
+import reviewRouter from './reviews';
+import searchRouter from './search';
+import express from 'express';
+import { z } from 'zod';
 
 const router = express.Router();
 router.use('/', searchRouter);
@@ -54,6 +54,7 @@ registerRoute(router, '/:username/:name/all', {
         const { name } = req.params;
         const { revision } = req.query;
 
+        // @@COWBUNGA
         const publication = await Publication.findOne({
             owner: user.id,
             name,
@@ -142,6 +143,7 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
         const { name, path } = req.params;
         const { revision } = req.query;
 
+        // @@COWBUNGA
         const publication = await Publication.findOne({
             owner: user.id,
             name,
@@ -309,6 +311,7 @@ registerRoute(router, '/:username', {
 
         const { pinned } = req.query;
 
+        // @@COWBUNGA
         // @@TODO: we might want to include revisions in the future with some options.
         const result = await Publication.find({
             owner: user.id,
@@ -348,6 +351,7 @@ registerRoute(router, '/:username/:name/revisions', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
+        // @@COWBUNGA
         const result = await Publication.find({
             owner: user.id,
             current: true,
@@ -394,15 +398,16 @@ registerRoute(router, '/:username/:name', {
         const { name } = req.params;
         const { revision } = req.query;
 
+        // @@COWBUNGA
+
         // sort by id in descending order since this is actually faster than using a 'createdAt' field because
         // ObjectID's in MongoDB have a natural ascending order of time. More information about the details
         // are here: https://stackoverflow.com/a/54741405
         const publication = await Publication.findOne({
             owner: user.id,
             name: name.toLowerCase(),
-            ...(typeof revision !== 'undefined' && { revision }),
+            ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
         })
-            .sort({ _id: -1 })
             .exec();
 
         if (!publication) {
@@ -484,7 +489,12 @@ registerRoute(router, '/:username/:name/all', {
 
         const { name } = req.params;
 
-        await Publication.deleteMany({ owner: user.id, name: name.toLowerCase() }).exec();
+        // @@COWBUNGA ( mark all of the reviews & comments too... )
+
+        await Publication.updateMany(
+            { owner: user.id, name: name.toLowerCase() },
+            { $set: { isDeleted: true } },
+        ).exec();
 
         const publicationPath = zip.resourceIndexToPath({
             type: 'publication',
@@ -530,13 +540,14 @@ registerRoute(router, '/:username/:name', {
         const { revision, draft } = req.query;
         const { name } = req.params;
 
-        const publication = await Publication.findOneAndDelete({
+        // @@COWBUNGA ( mark all of the reviews & comments too... )
+
+        const publication = await Publication.findOneAndUpdate({
             owner: user.id,
             name: name.toLowerCase(),
             draft,
-            ...(typeof revision !== 'undefined' && { revision }),
-        })
-            .sort({ _id: -1 })
+            ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
+        }, { $set: { isDeleted: true } })
             .exec(); // get the most recent document
 
         if (!publication) {
@@ -585,6 +596,8 @@ registerRoute(router, '/:username/:name', {
 
         const { name } = req.params;
         const { revision } = req.query;
+
+        // @@COWBUNGA
 
         // So take the fields that are to be updated into the set request, it's okay to this because
         // we validated the request previously and we should be able to add all of the fields into the
@@ -651,6 +664,8 @@ registerRoute(router, '/:username/:name/export', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
+        // @@COWBUNGA
+
         // Get the publication
         const { name } = req.params;
         const { revision } = req.query;
@@ -658,10 +673,9 @@ registerRoute(router, '/:username/:name/export', {
         const publication = await Publication.findOne({
             owner: user.id,
             name: name.toLowerCase(),
-            ...(typeof revision !== 'undefined' && { revision }),
+            ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
         })
-            .sort({ _id: -1 })
-            .exec(); // get the most recent document
+            .exec();
 
         if (!publication) {
             return {

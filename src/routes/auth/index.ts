@@ -1,17 +1,17 @@
-import { z } from 'zod';
-import { nanoid } from 'nanoid';
+import * as error from '../../common/errors';
+import Logger from '../../common/logger';
+import { createTokens, JwtError, refreshTokens, verifyToken } from '../../lib/auth';
+import registerRoute from '../../lib/requests';
+import { ApiResponse } from '../../lib/response';
+import State from '../../models/State';
+import User from '../../models/User';
+import { IEmailValiditySchema, IUsernameValiditySchema } from '../../validators/auth';
+import { IUserLoginRequestSchema, IUserRegisterRequestSchema } from '../../validators/user';
+import { config } from './../../server';
 import bcrypt from 'bcryptjs';
 import express from 'express';
-import User from '../../models/User';
-import Logger from '../../common/logger';
-import { config } from './../../server';
-import * as error from '../../common/errors';
-import registerRoute from '../../lib/requests';
-import State from '../../models/State';
-import { ApiResponse } from '../../lib/response';
-import { IEmailValiditySchema, IUsernameValiditySchema } from '../../validators/auth';
-import { createTokens, JwtError, refreshTokens, verifyToken } from '../../lib/auth';
-import { IUserLoginRequestSchema, IUserRegisterRequestSchema } from '../../validators/user';
+import { nanoid } from 'nanoid';
+import { z } from 'zod';
 
 const router = express.Router();
 
@@ -86,6 +86,8 @@ registerRoute(router, '/email_validity', {
     query: z.object({}),
     permission: null,
     handler: async (req) => {
+        
+        // @@COWBUNGA
         const result = await User.findOne({
             email: req.body.email,
             externalId: { $exists: false },
@@ -122,6 +124,8 @@ registerRoute(router, '/session', {
             try {
                 const { id } = await verifyToken(token, config.jwtRefreshSecret);
                 const refreshedTokensOrError = refreshTokens(token);
+
+                // @@COWBUNGA
 
                 // find the user with this token information
                 const user = await User.findById(id);
@@ -365,6 +369,7 @@ registerRoute(router, '/login', {
     handler: async (req) => {
         const { username, password, isEmail } = req.body;
 
+        // @@COWBUNGA
         const searchQuery = isEmail ? { email: username } : { username };
         const result = await User.findOne({
             ...searchQuery,

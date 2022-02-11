@@ -1,20 +1,34 @@
-import Comment from './Comment';
-import User, { IUser } from './User';
 import { ExportSgReview } from '../validators/sg';
+import Comment from './Comment';
 import Publication, { IPublication } from './Publication';
+import User, { IUser } from './User';
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
+/** 
+ * Representation of whether a publication is in either 'started' mode
+ * which means that the owner of the review hasn't yet submitted it. The
+ * 'completed' mode means that the owner has submitted it and external viewers
+ * can now see the publication.
+ */
 export enum IReviewStatus {
     Completed = 'completed',
     Started = 'started',
 }
 
+/** The Review document represents a review on a particular publication */
 export interface IReview {
+    /** The ID of the review publication */
     publication: mongoose.ObjectId;
+    /** The ID of the review owner */
     owner: mongoose.ObjectId;
+    /** If the review is completed or not. */
     status: IReviewStatus;
+    /** When the initial document was created */
     createdAt: Date;
+    /** When the document was last updated */
     updatedAt: Date;
+    /** If the document is 'deleted' */
+    isDeleted: boolean;
 }
 
 type PopulatedReview = (IReview & {
@@ -25,7 +39,7 @@ type PopulatedReview = (IReview & {
     publication: IPublication;
 };
 
-interface IReviewDocument extends IReview, Document {}
+interface IReviewDocument extends IReview, Document { }
 
 interface IReviewModel extends Model<IReviewDocument> {
     project: (review: IReview) => Promise<Partial<IReview>>;
@@ -40,8 +54,9 @@ const ReviewSchema = new Schema<IReview, IReviewModel, IReview>(
             type: String,
             enum: IReviewStatus,
             default: IReviewStatus.Started,
-            requred: true,
+            required: true,
         },
+        isDeleted: { type: Boolean, default: false }
     },
     { timestamps: true },
 );
@@ -55,6 +70,8 @@ const ReviewSchema = new Schema<IReview, IReviewModel, IReview>(
  */
 ReviewSchema.statics.project = async (review: PopulatedReview) => {
     const { publication, owner, status } = review;
+
+    // If the comment is deleted, we need to do some special projection.
 
     return {
         id: review._id,

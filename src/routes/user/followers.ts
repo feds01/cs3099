@@ -1,11 +1,11 @@
-import { z } from 'zod';
-import express from 'express';
 import * as error from '../../common/errors';
-import Follower from '../../models/Follower';
-import * as userUtils from '../../utils/users';
 import registerRoute from '../../lib/requests';
+import Follower from '../../models/Follower';
 import User, { IUser, IUserRole } from '../../models/User';
+import * as userUtils from '../../utils/users';
 import { ModeSchema } from '../../validators/requests';
+import express from 'express';
+import { z } from 'zod';
 
 const router = express.Router({ mergeParams: true });
 
@@ -36,6 +36,8 @@ registerRoute(router, '/:username/follow', {
         const user = await userUtils.transformUsernameIntoId(req);
 
         const { id: followerId } = req.requester;
+
+        // @@COWBUNGA
 
         // check if the user is already following the other user, if so
         // then exit early and don't create the new follower link.
@@ -96,6 +98,8 @@ registerRoute(router, '/:username/follow', {
         const user = await userUtils.transformUsernameIntoId(req);
 
         const { id: followerId } = req.requester;
+
+        // @@COWBUNGA
 
         // check if the user is already following the other user, if so
         // then exit early and don't create the new follower link.

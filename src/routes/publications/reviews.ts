@@ -1,15 +1,15 @@
-import { z } from 'zod';
-import express from 'express';
-import Logger from '../../common/logger';
 import * as errors from '../../common/errors';
-import * as userUtils from '../../utils/users';
-import registerRoute from '../../lib/requests';
-import { IUser, IUserRole } from '../../models/User';
-import { ModeSchema } from '../../validators/requests';
-import Review, { IReviewStatus } from '../../models/Review';
-import Publication, { IPublication } from '../../models/Publication';
-import { IReviewCreationSchema } from '../../validators/reviews';
+import Logger from '../../common/logger';
 import { verifyPublicationPermission } from '../../lib/permissions';
+import registerRoute from '../../lib/requests';
+import Publication, { IPublication } from '../../models/Publication';
+import Review, { IReviewStatus } from '../../models/Review';
+import { IUser, IUserRole } from '../../models/User';
+import * as userUtils from '../../utils/users';
+import { ModeSchema } from '../../validators/requests';
+import { IReviewCreationSchema } from '../../validators/reviews';
+import express from 'express';
+import { z } from 'zod';
 
 const router = express.Router();
 
@@ -34,6 +34,8 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
         const user = await userUtils.transformUsernameIntoId(req);
 
         const { name, revision } = req.params;
+
+        // @@COWBUNGA
 
         const publication = await Publication.findOne({
             owner: user.id,
@@ -100,7 +102,6 @@ registerRoute(router, '/:username/:name/:revision/review', {
             name: name.toLowerCase(),
             revision,
         })
-            .sort({ _id: -1 })
             .exec();
 
         // Check that the publication isn't currently in draft mode...

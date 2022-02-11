@@ -1,5 +1,5 @@
-import { promises as fs } from 'fs';
 import Logger from '../common/logger';
+import { promises as fs } from 'fs';
 
 /**
  * Wrapper function for fs.rename. Moves a file from a source to a

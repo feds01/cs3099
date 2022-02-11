@@ -1,20 +1,17 @@
-import { z } from 'zod';
-import express from 'express';
-import { IUser } from '../../models/User';
-import Review, { IReviewStatus } from '../../models/Review';
-import Publication, { IPublication } from '../../models/Publication';
-
+import * as errors from '../../common/errors';
+import Logger from '../../common/logger';
+import { downloadOctetStream, makeRequest } from '../../lib/fetch';
 import { moveResource } from '../../lib/fs';
 import { importUser } from '../../lib/import';
 import registerRoute from '../../lib/requests';
 import { archiveIndexToPath } from '../../lib/zip';
-import { downloadOctetStream, makeRequest } from '../../lib/fetch';
-
-import Logger from '../../common/logger';
-import * as errors from '../../common/errors';
-
-import { SgMetadataSchema } from '../../validators/sg';
+import Publication, { IPublication } from '../../models/Publication';
+import Review, { IReviewStatus } from '../../models/Review';
+import { IUser } from '../../models/User';
 import { ObjectIdSchema } from '../../validators/requests';
+import { SgMetadataSchema } from '../../validators/sg';
+import express from 'express';
+import { z } from 'zod';
 
 const router = express.Router();
 
@@ -198,6 +195,9 @@ registerRoute(router, '/export/:id', {
     query: z.object({ from: z.string().url(), state: z.string() }),
     permission: null,
     handler: async (req) => {
+
+
+        // @@COWBUNGA
         const publication = await Publication.findById(req.params.id);
 
         if (!publication) {

@@ -1,18 +1,18 @@
-import { z, ZodError } from 'zod';
-import express from 'express';
 import * as errors from '../common/errors';
-import { getTokensFromHeader } from './auth';
+import Logger from '../common/logger';
 import { IUserDocument } from '../models/User';
+import { transformZodErrorIntoResponseError } from '../transformers/error';
+import { expr } from '../utils/expr';
+import { getTokensFromHeader } from './auth';
 import {
     ensureValidPermissions,
     Permission,
     PermissionVerificationFn,
     defaultPermissionVerifier,
 } from './permissions';
-import { expr } from '../utils/expr';
-import { transformZodErrorIntoResponseError } from '../transformers/error';
-import Logger from '../common/logger';
 import { ApiResponse, handleResponse } from './response';
+import express from 'express';
+import { z, ZodError } from 'zod';
 
 type RequestMethodWithBody = 'post' | 'put' | 'patch';
 type RequestMethodWithoutBody = 'delete' | 'get';

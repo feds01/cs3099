@@ -1,7 +1,6 @@
-import { z } from 'zod';
-
 import * as error from '../common/errors';
 import User, { IUserRole } from '../models/User';
+import { z } from 'zod';
 
 /**
  * Schema for validating login requests.

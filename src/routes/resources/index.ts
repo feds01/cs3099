@@ -1,15 +1,15 @@
-import { z } from 'zod';
 import * as errors from '../../common/errors';
-import express from 'express';
-import * as zip from '../../lib/zip';
 import Logger from '../../common/logger';
-import { IUserRole } from '../../models/User';
-import * as userUtils from '../../utils/users';
-import Publication from '../../models/Publication';
-import registerRoute from '../../lib/requests';
-import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
-import { joinPathsForResource, extractFile, joinPathsRaw } from '../../utils/resources';
 import { verifyPublicationIdPermission, verifyReviewPermission } from '../../lib/permissions';
+import registerRoute from '../../lib/requests';
+import * as zip from '../../lib/zip';
+import Publication from '../../models/Publication';
+import { IUserRole } from '../../models/User';
+import { joinPathsForResource, extractFile, joinPathsRaw } from '../../utils/resources';
+import * as userUtils from '../../utils/users';
+import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
+import express from 'express';
+import { z } from 'zod';
 
 const router = express.Router();
 
@@ -112,6 +112,7 @@ registerRoute(router, '/upload/publication/:id', {
         // are any problems with the arhive
         zip.getEntry(file.tempFilePath, '');
 
+        // @@COWBUNGA
         const publication = await Publication.findById(id).exec();
 
         if (!publication) {

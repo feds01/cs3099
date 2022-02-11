@@ -1,17 +1,17 @@
-import { z } from 'zod';
-import assert from 'assert';
-import qs from 'query-string';
-import express from 'express';
+import Logger from '../../common/logger';
+import { createTokens, JwtError, verifyToken } from '../../lib/auth';
+import { makeRequest } from '../../lib/fetch';
+import registerRoute from '../../lib/requests';
+import State from '../../models/State';
 import User from '../../models/User';
 import { config } from '../../server';
-import Logger from '../../common/logger';
-import State from '../../models/State';
-import registerRoute from '../../lib/requests';
-import { IJwtSchema } from '../../validators/auth';
-import { makeRequest } from '../../lib/fetch';
-import { SgUserSchema } from '../../validators/sg';
-import { createTokens, JwtError, verifyToken } from '../../lib/auth';
 import { convertSgId, transformSgUserToInternal } from '../../transformers/sg';
+import { IJwtSchema } from '../../validators/auth';
+import { SgUserSchema } from '../../validators/sg';
+import assert from 'assert';
+import express from 'express';
+import qs from 'query-string';
+import { z } from 'zod';
 
 const router = express.Router();
 
@@ -99,13 +99,14 @@ registerRoute(router, '/callback', {
         const { email, id } = userData.response;
         const transformedUser = transformSgUserToInternal(userData.response);
 
-        // try to find the user
+        // try to find the user, if the user is marked as deleted, we essentially
+        // have to revert this because we can't create a new document for them  // @@COWBUNGA
         const importedUser = await User.findOneAndUpdate(
             {
                 email,
                 externalId: convertSgId(id),
             },
-            { $set: { ...transformedUser } },
+            { $set: { ...transformedUser, isDeleted: false } },
             { upsert: true },
         ).exec();
 
@@ -158,6 +159,8 @@ registerRoute(router, '/verify', {
 
         try {
             const verifiedToken = await verifyToken(token, config.jwtSecret);
+
+            // @@COWBUNGA
 
             // now look up the user that's specified in the token.
             const user = await User.findById(verifiedToken.id).exec();

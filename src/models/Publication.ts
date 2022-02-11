@@ -1,23 +1,37 @@
-import assert from 'assert';
-import User, { IUserDocument } from './User';
-import mongoose, { Document, Model, Schema } from 'mongoose';
 import { ExportSgPublication } from '../validators/sg';
+import User, { IUserDocument } from './User';
+import assert from 'assert';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
+/** The publication document represents a publication object */
 export interface IPublication {
+    /** Revision string of the publication */
     revision?: string;
+    /** Owner ID of the publication */
     owner: mongoose.Types.ObjectId;
+    /** Publication title */
     title: string;
+    /** User unique publication name */
     name: string;
+    /** Introduction of the publication */
     introduction?: string;
+    /** If the publication is still in draft mode */
     draft: boolean;
+    /** If the current revision of the publication is the most current revision */
     current: boolean;
+    /** If the publication is pinned on the user's profile page */
     pinned: boolean;
+    /** An array of collaborators that are set on the publication */
     collaborators: mongoose.Types.ObjectId[];
+    /** When the initial document was created */
     createdAt: Date;
+    /** When the document was last updated */
     updatedAt: Date;
+    /** If the document is 'deleted' */
+    isDeleted: boolean;
 }
 
-export interface IPublicationDocument extends IPublication, Document {}
+export interface IPublicationDocument extends IPublication, Document { }
 
 interface IPublicationModel extends Model<IPublicationDocument> {
     project: (publication: IPublication, attachment?: boolean) => Promise<Partial<IPublication>>;
@@ -36,6 +50,7 @@ const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublicati
         current: { type: Boolean, required: true },
         pinned: { type: Boolean, default: false },
         collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
+        isDeleted: { type: Boolean, default: false }
     },
     { timestamps: true },
 );
@@ -45,6 +60,8 @@ PublicationSchema.statics.project = async (
     attachment?: boolean,
 ) => {
     const { name, title, introduction, draft, owner: ownerId, collaborators } = publication;
+
+    // If the comment is deleted, we need to do some special projection.
 
     // Resolve the owner name...
     const owner = await User.findById(ownerId).exec();

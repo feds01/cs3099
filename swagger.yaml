@@ -2032,6 +2032,7 @@ components:
                 - contents
                 - thread
                 - author
+                - review
                 - createdAt
                 - updatedAt
             properties:
@@ -2050,6 +2051,9 @@ components:
                     type: string
                     example: 'This is a comment'
                 thread:
+                    type: string
+                    example: ABCDE921312DAB23AE
+                review:
                     type: string
                     example: ABCDE921312DAB23AE
                 replying:

@@ -1,29 +1,53 @@
+import { config } from '../server';
 import { strict } from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
-import { config } from '../server';
 
+/**
+ * A role represents what level of permissions a user has in the system.
+ * All users are assigned a default role which means they can perform actions
+ * on resources that they own. The 'moderator' role denotes that a user may 
+ * modify documents that might not belong to them, but they cannot delete them.
+ * An administrator has global access and can perform all actions on the platform.
+ */
 export enum IUserRole {
     Default = 'default',
     Moderator = 'moderator',
     Administrator = 'administrator',
 }
 
+/**
+ * The IUser document represents a user object in the system. 
+ */
 export interface IUser {
+    /** User unique email */
     email: string;
+    /** User unique name */
     username: string;
+    /** User password (hashed and salted) */
     password: string;
+    /** User first name */
     firstName: string;
+    /** User last name */
     lastName: string;
+    /** User profile picture url */
     profilePictureUrl?: string;
+    /** User permission level */
     role: IUserRole;
+    /** User about section */
     about?: string;
+    /** User status */
     status?: string;
+    /** If this user is external, they will have an associated external id */
     externalId?: string;
+    /** When the initial document was created */
     createdAt: Date;
+    /** When the document was last updated */
     updatedAt: Date;
+    /** If the document is 'deleted' */
+    isDeleted: boolean;
 }
 
-export interface IUserDocument extends IUser, Document<string> {}
+export interface IUserDocument extends IUser, Document<string> { }
 
 export interface IUserModel extends Model<IUserDocument> {
     project: (user: IUser, omitId?: boolean) => Partial<IUser>;
@@ -43,6 +67,7 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
         status: { type: String },
         externalId: { type: String },
         role: { type: String, enum: IUserRole, default: IUserRole.Default },
+        isDeleted: { type: Boolean, default: false }
     },
     {
         timestamps: { createdAt: true, updatedAt: false },

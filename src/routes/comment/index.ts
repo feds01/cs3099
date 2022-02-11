@@ -1,11 +1,11 @@
-import { z } from 'zod';
-import express from 'express';
 import * as error from '../../common/errors';
+import { verifyCommentPermission } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
 import Comment from '../../models/Comment';
 import { IUserDocument, IUserRole } from '../../models/User';
 import { ObjectIdSchema } from '../../validators/requests';
-import { verifyCommentPermission } from '../../lib/permissions';
+import express from 'express';
+import { z } from 'zod';
 
 const router = express.Router();
 
@@ -27,6 +27,8 @@ registerRoute(router, '/:id', {
     handler: async (req) => {
         const { id } = req.params;
 
+
+        // @@COWBUNGA
         const comment = await Comment.findById(id)
             .populate<{ owner: IUserDocument }>('owner')
             .exec();
@@ -84,6 +86,8 @@ registerRoute(router, '/:id', {
         const { id } = req.params;
         const { contents } = req.body;
 
+        // @@COWBUNGA
+
         // Patch the comment here and set the state of the comment as 'edited'
         const updatedComment = await Comment.findByIdAndUpdate(
             id,
@@ -132,10 +136,8 @@ registerRoute(router, '/:id', {
     handler: async (req) => {
         const { id } = req.params;
 
-        // @@Future: We shouldn't actually delete the comment, what we should do is remove
-        //           the content from the comment and mark it as deleted.
-        //           It cannot be further edited, and should be rendered as *deleted* on the frontend.
-        const comment = await Comment.findByIdAndDelete(id).exec();
+        // @@COWBUNGA
+        const comment = await Comment.findByIdAndUpdate(id, { $set: { isDeleted: true }}).exec();
 
         if (!comment) {
             return {

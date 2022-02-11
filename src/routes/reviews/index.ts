@@ -1,19 +1,19 @@
-import { z } from 'zod';
-import express from 'express';
-import mongoose from 'mongoose';
-import * as zip from '../../lib/zip';
-import * as file from '../../lib/file';
-import Logger from '../../common/logger';
 import * as errors from '../../common/errors';
-import Comment from '../../models/Comment';
-import registerRoute from '../../lib/requests';
-import Review, { IReviewStatus } from '../../models/Review';
-import { ObjectIdSchema } from '../../validators/requests';
+import Logger from '../../common/logger';
+import * as file from '../../lib/file';
 import { verifyReviewPermission } from '../../lib/permissions';
+import registerRoute from '../../lib/requests';
+import * as zip from '../../lib/zip';
+import Comment from '../../models/Comment';
+import { IPublication, IPublicationDocument } from '../../models/Publication';
+import Review, { IReviewStatus } from '../../models/Review';
+import { IUser, IUserDocument, IUserRole } from '../../models/User';
 import { ResponseErrorSummary } from '../../transformers/error';
 import { ICommentCreationSchema } from '../../validators/comments';
-import { IUser, IUserDocument, IUserRole } from '../../models/User';
-import { IPublication, IPublicationDocument } from '../../models/Publication';
+import { ObjectIdSchema } from '../../validators/requests';
+import express from 'express';
+import mongoose from 'mongoose';
+import { z } from 'zod';
 
 const router = express.Router();
 
@@ -42,6 +42,8 @@ registerRoute(router, '/:id/comment', {
         const { id: owner } = req.requester;
         const { replying, filename, anchor, contents } = req.body;
 
+        // @@COWBUNGA
+
         const review = await Review.findById(id)
             .populate<{ owner: IUserDocument }>('owner')
             .populate<{ publication: IPublicationDocument }>('publication')
@@ -59,7 +61,6 @@ registerRoute(router, '/:id/comment', {
         }
 
         // check that the publication isn't in draft mode...
-        // @@Verify: It is impossible to begin publications that are in 'draft' mode.
         if (review.publication.draft) {
             return {
                 status: 'error',
@@ -260,8 +261,9 @@ registerRoute(router, '/:id/complete', {
     handler: async (req) => {
         const { id } = req.params;
 
-        // @@TODO: Use findByIdAndUpdate
-        const review = await Review.findById(id).exec();
+        // @@COWBUNGA
+
+        const review = await Review.findByIdAndUpdate(id, { $set: { status: IReviewStatus.Completed } }).exec();
 
         // verify that the review exists and the owner is trying to publish it...
         if (!review) {
@@ -271,8 +273,6 @@ registerRoute(router, '/:id/complete', {
                 message: errors.RESOURCE_NOT_FOUND,
             };
         }
-
-        await review.updateOne({ $set: { status: IReviewStatus.Completed } }).exec();
 
         return {
             status: 'ok',
@@ -343,7 +343,7 @@ registerRoute(router, '/:id', {
         const { id } = req.params;
 
         // Delete the entire review and delete all the comments on the review...
-        const review = await Review.findByIdAndDelete(id).exec();
+        const review = await Review.findByIdAndUpdate(id, { $set: { isDeleted: true }}).exec();
 
         if (!review) {
             return {
@@ -353,7 +353,7 @@ registerRoute(router, '/:id', {
             };
         }
 
-        await Comment.deleteMany({ review: review.id }).exec();
+        await Comment.updateMany({ review: review.id }, { $set: { isDeleted: true }}).exec();
 
         return {
             status: 'ok',

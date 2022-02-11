@@ -1,8 +1,9 @@
-import { BasicRequest } from './requests';
 import Comment from '../models/Comment';
 import Publication from '../models/Publication';
-import User, { IUserDocument, IUserRole } from '../models/User';
 import Review, { IReviewStatus } from '../models/Review';
+import User, { IUserDocument, IUserRole } from '../models/User';
+import { BasicRequest } from './requests';
+
 export interface Permission {
     level: IUserRole;
 }

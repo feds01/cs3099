@@ -1,16 +1,16 @@
-import { z } from 'zod';
-import express from 'express';
+import * as error from '../../common/errors';
+import { verifyUserPermission } from '../../lib/permissions';
+import registerRoute from '../../lib/requests';
+import Follower from '../../models/Follower';
+import User, { IUserRole } from '../../models/User';
+import { ModeSchema } from '../../validators/requests';
+import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
+import * as userUtils from './../../utils/users';
 import followerRouter from './followers';
 import reviewRouter from './reviews';
-import * as error from '../../common/errors';
-import Follower from '../../models/Follower';
-import * as userUtils from './../../utils/users';
-import User, { IUserRole } from '../../models/User';
-import registerRoute from '../../lib/requests';
-import { ModeSchema } from '../../validators/requests';
-import { verifyUserPermission } from '../../lib/permissions';
-import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
 import assert from 'assert';
+import express from 'express';
+import { z } from 'zod';
 
 const router = express.Router();
 
