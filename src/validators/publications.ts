@@ -1,6 +1,7 @@
 import { ExistUsernameSchema } from './user';
 import { z } from 'zod';
 
+
 const CollaboratorArraySchema = ExistUsernameSchema.array().refine(
     (arr) => arr.length === new Set(arr).size,
     { message: 'No duplicated collaborators allowed' },

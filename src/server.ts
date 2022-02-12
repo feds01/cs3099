@@ -1,4 +1,5 @@
 import app from './app';
+import path from "path";
 import { createServer } from 'http';
 import { AddressInfo } from 'net';
 import mongoose from 'mongoose';
@@ -17,10 +18,11 @@ const rawConfig = {
     jwtSecret: process.env.JWT_SECRET_KEY,
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET_KEY,
     resourcesFolder: process.env.RESOURCES_FOLDER,
-    tempFolder: __dirname + "/../tmp",
+    tempFolder: path.resolve(__dirname + "/../tmp"),
     teamName: 't06',
     port: process.env.PORT,
     frontendURI: process.env.FRONT_END_URI,
+    serviceEndpoint: process.env.SERVICE_ENDPOINT,
 };
 
 function validateConfig() {

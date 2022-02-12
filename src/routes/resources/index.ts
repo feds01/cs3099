@@ -1,13 +1,16 @@
 import * as errors from '../../common/errors';
+import * as zip from '../../lib/zip';
+import * as userUtils from '../../utils/users';
 import Logger from '../../common/logger';
 import { verifyPublicationIdPermission, verifyReviewPermission } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
-import * as zip from '../../lib/zip';
 import Publication from '../../models/Publication';
-import { IUserRole } from '../../models/User';
-import { joinPathsForResource, extractFile, joinPathsRaw } from '../../utils/resources';
-import * as userUtils from '../../utils/users';
+import User, { IUserRole } from '../../models/User';
+import { config } from '../../server';
+import { extractFile, joinPathsForResource, joinPathsRaw } from '../../utils/resources';
 import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
+
+import assert from 'assert';
 import express from 'express';
 import { z } from 'zod';
 
@@ -31,8 +34,6 @@ registerRoute(router, '/upload/:username', {
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
-
-        // @@TODO: CLEANUP
         const file = extractFile(req.raw);
 
         if (!file) {
@@ -53,13 +54,31 @@ registerRoute(router, '/upload/:username', {
             };
         }
 
-        const uploadPath = joinPathsForResource('avatar', user.username, 'avatar');
+        const uploadPath = joinPathsForResource('avatar', user.id, 'avatar');
 
         // Move the file into it's appropriate storage location
         await file.mv(uploadPath);
 
+        // Set the profile pictureUrl of the user with the current endpoint
+        const updatedUser = await User.findByIdAndUpdate(
+            user.id,
+            {
+                $set: {
+                    profilePictureUrl: `${config.serviceEndpoint}/user/${user.id}/avatar?mode=id`,
+                },
+            },
+            { new: true },
+        ).exec();
+        assert(updatedUser !== null);
+
         Logger.info('Successfully saved uploaded file to filesystem');
-        return { status: 'ok', code: 200 };
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                user: User.project(updatedUser),
+            },
+        };
     },
 });
 

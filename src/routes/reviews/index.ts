@@ -1,9 +1,9 @@
 import * as errors from '../../common/errors';
-import Logger from '../../common/logger';
 import * as file from '../../lib/file';
+import * as zip from '../../lib/zip';
+import Logger from '../../common/logger';
 import { verifyReviewPermission } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
-import * as zip from '../../lib/zip';
 import Comment from '../../models/Comment';
 import { IPublication, IPublicationDocument } from '../../models/Publication';
 import Review, { IReviewStatus } from '../../models/Review';

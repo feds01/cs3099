@@ -5,10 +5,10 @@ import { transformZodErrorIntoResponseError } from '../transformers/error';
 import { expr } from '../utils/expr';
 import { getTokensFromHeader } from './auth';
 import {
-    ensureValidPermissions,
     Permission,
     PermissionVerificationFn,
     defaultPermissionVerifier,
+    ensureValidPermissions,
 } from './permissions';
 import { ApiResponse, handleResponse } from './response';
 import express from 'express';

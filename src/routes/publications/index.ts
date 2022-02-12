@@ -1,3 +1,6 @@
+import * as zip from '../../lib/zip';
+import * as errors from './../../common/errors';
+import * as userUtils from './../../utils/users';
 import Logger from '../../common/logger';
 import { createTokens } from '../../lib/auth';
 import { makeRequest } from '../../lib/fetch';
@@ -8,7 +11,6 @@ import {
     verifyUserPermission,
 } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
-import * as zip from '../../lib/zip';
 import Publication from '../../models/Publication';
 import User, { IUserRole } from '../../models/User';
 import { config } from '../../server';
@@ -17,10 +19,9 @@ import {
     IPublicationPatchRequestSchema,
 } from '../../validators/publications';
 import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../validators/requests';
-import * as errors from './../../common/errors';
-import * as userUtils from './../../utils/users';
 import reviewRouter from './reviews';
 import searchRouter from './search';
+
 import express from 'express';
 import { z } from 'zod';
 

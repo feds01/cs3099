@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import { ReactElement, useEffect } from 'react';
@@ -14,6 +13,7 @@ import ControlledAutocomplete from '../../components/ControlledAutocomplete';
 import { usePatchPublicationUsernameName } from '../../lib/api/publications/publications';
 import { IEditPublication, EditPublicationSchema } from '../../validators/publication';
 import { usePublicationDispatch } from '../../hooks/publication';
+import FieldLabel from '../../components/FieldLabel';
 
 interface EditPublicationFormProps {
     publication: Publication;
@@ -32,7 +32,8 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
     const {
         control,
         handleSubmit,
-        formState: { isSubmitting },
+        setError,
+        formState: { isValid, isSubmitting },
     } = useForm<IEditPublication>({
         resolver: zodResolver(EditPublicationSchema),
         reValidateMode: 'onBlur',
@@ -44,8 +45,12 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
     const { isLoading, isError, data, error, mutateAsync } = usePatchPublicationUsernameName();
 
     useEffect(() => {
-        if (isError) {
-            console.log(error);
+        if (isError && error) {
+            if (typeof error.errors !== 'undefined') {
+                for (const [errorField, errorObject] of Object.entries(error.errors)) {
+                    setError(errorField as keyof IEditPublication, { type: 'manual', message: errorObject.message });
+                }
+            }
 
             notificationDispatcher({
                 type: 'add',
@@ -66,15 +71,11 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
         <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%', marginTop: '8px' }}>
             <Grid container maxWidth={'lg'}>
                 <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Publication Title
-                    </Typography>
+                    <FieldLabel label="Publication title" />
                     <ControlledTextField name="title" control={control} />
                 </Grid>
                 <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Publication Description
-                    </Typography>
+                    <FieldLabel label="Publication description" required={false} />
                     <ControlledTextField
                         name="introduction"
                         control={control}
@@ -85,21 +86,18 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
                     />
                 </Grid>
                 <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Revision
-                    </Typography>
+                    <FieldLabel label="Revision" />
                     <ControlledTextField name="revision" control={control} />
                 </Grid>
                 <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Collaborators
-                    </Typography>
+                    <FieldLabel label="Collaborators" required={false} />
                     <ControlledAutocomplete name="collaborators" control={control} />
                 </Grid>
                 <Grid item xs={12}>
                     <Box>
                         <LoadingButton
                             loading={isLoading || isSubmitting}
+                            disabled={!isValid}
                             sx={{ mt: 1, mr: 1 }}
                             variant="contained"
                             type={'submit'}

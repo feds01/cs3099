@@ -2,6 +2,8 @@ import app from '../../../src/app';
 import User, { IUserRole } from '../../../src/models/User';
 import { agent as supertest } from 'supertest';
 
+import { agent as supertest } from 'supertest';
+
 const request = supertest(app);
 
 describe('User endpoint tests ', () => {

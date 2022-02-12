@@ -15,7 +15,7 @@ type CommentEditorProps = {
     filename?: string;
     onClose: () => void;
     contents?: string;
-    sx?: SxProps<Theme>
+    sx?: SxProps<Theme>;
 } & (CommentReply | CommentModify | CommentPost);
 
 type CommentReply = {
@@ -100,7 +100,7 @@ export default function CommentEditor({
     };
 
     return (
-        <Box sx={{width: '100%', ...sx}}>
+        <Box sx={{ width: '100%', ...sx }}>
             <CommentField contents={contents} onChange={setValue} />
             <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', pt: 1, pb: 1 }}>
                 <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>

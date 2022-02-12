@@ -31,7 +31,12 @@ function SourceViewer({ contents, filename, basePath }: SourceViewerProps): Reac
                 return <CodeRenderer contents={entry.contents} filename={filename} />;
             } else {
                 return (
-                    <DirectoryViewer type={entry.type} entries={entry.entries} basePath={basePath} filename={filename} />
+                    <DirectoryViewer
+                        type={entry.type}
+                        entries={entry.entries}
+                        basePath={basePath}
+                        filename={filename}
+                    />
                 );
             }
         }

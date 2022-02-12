@@ -1,6 +1,6 @@
 import * as error from '../../common/errors';
 import Logger from '../../common/logger';
-import { createTokens, JwtError, refreshTokens, verifyToken } from '../../lib/auth';
+import { JwtError, createTokens, refreshTokens, verifyToken } from '../../lib/auth';
 import registerRoute from '../../lib/requests';
 import { ApiResponse } from '../../lib/response';
 import State from '../../models/State';

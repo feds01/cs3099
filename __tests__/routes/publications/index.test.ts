@@ -1,8 +1,17 @@
+<<<<<<< HEAD
 import app from '../../../src/app';
+=======
+>>>>>>> origin/main
 import * as errors from '../../../src/common/errors';
+import app from '../../../src/app';
 import Publication from '../../../src/models/Publication';
 import User, { IUserDocument } from '../../../src/models/User';
+<<<<<<< HEAD
 import { agent as supertest, Response } from 'supertest';
+=======
+
+import { Response, agent as supertest } from 'supertest';
+>>>>>>> origin/main
 
 const request = supertest(app);
 

@@ -14,6 +14,7 @@ import ControlledTextField from '../../components/ControlledTextField';
 import ControlledAutocomplete from '../../components/ControlledAutocomplete';
 import { usePostPublication } from '../../lib/api/publications/publications';
 import { ICreatePublication, CreatePublicationSchema } from '../../validators/publication';
+import FieldLabel from '../../components/FieldLabel';
 
 export default function CreatePublicationForm(): ReactElement {
     const auth = useAuth();
@@ -22,7 +23,8 @@ export default function CreatePublicationForm(): ReactElement {
     const {
         control,
         handleSubmit,
-        formState: { isSubmitting },
+        setError,
+        formState: { isSubmitting, isValid },
     } = useForm<ICreatePublication>({
         resolver: zodResolver(CreatePublicationSchema),
         reValidateMode: 'onBlur',
@@ -41,32 +43,32 @@ export default function CreatePublicationForm(): ReactElement {
 
     // When the request completes, we want to re-direct the user to the publication page
     useEffect(() => {
-        if (!isError && typeof data !== 'undefined') {
+        if (isError && error) {
+            if (typeof error.errors !== 'undefined') {
+                for (const [errorField, errorObject] of Object.entries(error.errors)) {
+                    setError(errorField as keyof ICreatePublication, { type: 'manual', message: errorObject.message });
+                }
+            }
+        } else if (data) {
             history.push({ pathname: `/${auth.session.username}/${data.publication.name}` });
         }
-    }, [data]);
+    }, [data, isError]);
 
     return (
         <form style={{ width: '100%', marginTop: '8px' }} onSubmit={handleSubmit(onSubmit)}>
             <Grid container maxWidth={'lg'}>
-                <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Publication Name
-                    </Typography>
+                <Grid item xs={12} sx={{pt: 1}}>
+                    <FieldLabel label="Publication name" />
                     <Typography variant={'body2'}>This will be used to publicly identify the publication.</Typography>
                     <ControlledTextField name="name" control={control} />
                 </Grid>
-                <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Publication Title
-                    </Typography>
+                <Grid item xs={12} sx={{pt: 1}}>
+                    <FieldLabel label="Publication title" />
                     <Typography variant={'body2'}>This is the title of the publication.</Typography>
                     <ControlledTextField name="title" control={control} />
                 </Grid>
-                <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Introduction
-                    </Typography>
+                <Grid item xs={12} sx={{pt: 1}}>
+                    <FieldLabel label="Introduction" required={false} />
                     <Typography variant={'body2'}>Write a small introduction for the publication</Typography>
                     <ControlledTextField
                         name="introduction"
@@ -77,35 +79,32 @@ export default function CreatePublicationForm(): ReactElement {
                         }}
                     />
                 </Grid>
-                <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Revision
-                    </Typography>
+                <Grid item xs={12} sx={{pt: 1}}>
+                    <FieldLabel label="Revision" />
                     <Typography variant={'body2'}>Add a revision tag to the publication</Typography>
                     <ControlledTextField name="revision" control={control} />
                 </Grid>
                 <Grid item xs={12}>
-                    <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Collaborators
-                    </Typography>
+                    <FieldLabel label="Collaborators" required={false} />
                     <Typography variant={'body2'}>Add collaborators to publication</Typography>
                     <ControlledAutocomplete name="collaborators" control={control} />
                 </Grid>
                 <Grid item xs={12}>
-                    <Box>
+                    <Box sx={{pt: 1}}>
                         <LoadingButton
                             loading={isLoading || isSubmitting}
-                            sx={{ mt: 1, mr: 1 }}
+                            disabled={!isValid}
+                            sx={{ mr: 1 }}
                             variant="contained"
                             type={'submit'}
                         >
                             Create
                         </LoadingButton>
-                        <Button disabled={isLoading} sx={{ mt: 1 }} variant="outlined" href="/">
+                        <Button variant="outlined" href="/">
                             Cancel
                         </Button>
                     </Box>
-                    {isError && <ErrorBanner message={error?.message || 'Something went wrong.'} />}
+                    {isError && error && <ErrorBanner message={error.message} />}
                 </Grid>
             </Grid>
         </form>

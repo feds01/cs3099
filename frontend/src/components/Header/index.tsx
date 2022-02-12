@@ -1,15 +1,15 @@
-import React, { ReactElement } from 'react';
-import Button from '@mui/material/Button';
-import Toolbar from '@mui/material/Toolbar';
-import MuiAppBar from '@mui/material/AppBar';
-import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
-import { styled } from '@mui/material/styles';
+import { useAuth } from '../../hooks/auth';
 import ProfileMenu from '../ProfileMenu';
 import UserAvatar from '../UserAvatar';
-import { useAuth } from '../../hooks/auth';
-import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import LogoImage from './../../static/images/logos/logo.png';
+import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
+import MuiAppBar from '@mui/material/AppBar';
+import Button from '@mui/material/Button';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import { styled } from '@mui/material/styles';
+import React, { ReactElement } from 'react';
+import { Link } from 'react-router-dom';
 
 const AppBar = styled(MuiAppBar)(({ theme }) => ({
     zIndex: theme.zIndex.drawer + 1,
@@ -32,14 +32,8 @@ export default function Header({ title }: Props): ReactElement {
             }}
         >
             <Toolbar sx={{ ...(!title && { justifyContent: 'space-between' }) }}>
-                <Link
-                    href={'/'}
-                    aria-label="home"
-                    sx={{
-                        mr: 1,
-                    }}
-                >
-                    <img src={LogoImage} height={48} alt="Iamus" />
+                <Link to='/' aria-label="home">
+                    <img src={LogoImage} height={48} alt="Avatar" />
                 </Link>
                 {title && (
                     <Typography variant="h6" component="div" sx={{ color: 'text.primary', flexGrow: 1 }}>
@@ -53,6 +47,10 @@ export default function Header({ title }: Props): ReactElement {
                         variant="text"
                         color={'secondary'}
                         aria-label="open menu"
+                        sx={{
+                            textDecoration: 'none',
+                            color: (t) => t.palette.text.primary,
+                        }}
                     >
                         <UserAvatar {...auth.session} displayName position="right" />
                     </Button>
