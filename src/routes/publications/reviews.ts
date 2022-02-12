@@ -1,3 +1,6 @@
+import express from 'express';
+import { z } from 'zod';
+
 import * as errors from '../../common/errors';
 import * as userUtils from '../../utils/users';
 import Logger from '../../common/logger';
@@ -8,9 +11,6 @@ import Review, { IReviewStatus } from '../../models/Review';
 import { IUser, IUserRole } from '../../models/User';
 import { ModeSchema } from '../../validators/requests';
 import { IReviewCreationSchema } from '../../validators/reviews';
-
-import express from 'express';
-import { z } from 'zod';
 
 const router = express.Router();
 

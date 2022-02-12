@@ -1,3 +1,6 @@
+import express from 'express';
+import { z } from 'zod';
+
 import * as userUtils from '../../utils/users';
 import { verifyUserPermission } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
@@ -5,9 +8,6 @@ import { IPublication } from '../../models/Publication';
 import Review, { IReviewStatus } from '../../models/Review';
 import { IUser, IUserRole } from '../../models/User';
 import { ModeSchema } from '../../validators/requests';
-
-import express from 'express';
-import { z } from 'zod';
 
 const router = express.Router();
 

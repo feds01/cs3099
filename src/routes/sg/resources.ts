@@ -1,3 +1,6 @@
+import express from 'express';
+import { z } from 'zod';
+
 import * as errors from '../../common/errors';
 import Logger from '../../common/logger';
 import { downloadOctetStream, makeRequest } from '../../lib/fetch';
@@ -10,9 +13,6 @@ import Review, { IReviewStatus } from '../../models/Review';
 import { IUser } from '../../models/User';
 import { ObjectIdSchema } from '../../validators/requests';
 import { SgMetadataSchema } from '../../validators/sg';
-
-import express from 'express';
-import { z } from 'zod';
 
 const router = express.Router();
 

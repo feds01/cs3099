@@ -1,3 +1,7 @@
+import assert from 'assert';
+import express from 'express';
+import { z } from 'zod';
+
 import * as error from '../../common/errors';
 import * as userUtils from './../../utils/users';
 import { deleteFileResource } from '../../lib/fs';
@@ -11,10 +15,6 @@ import { ModeSchema } from '../../validators/requests';
 import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
 import followerRouter from './followers';
 import reviewRouter from './reviews';
-
-import assert from 'assert';
-import express from 'express';
-import { z } from 'zod';
 
 const router = express.Router();
 
