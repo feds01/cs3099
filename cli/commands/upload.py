@@ -15,8 +15,9 @@ def validate_zipfile(ctx: click.core.Context, param: click.types.ParamType, valu
 @click.pass_obj
 def upload(obj: dict[str, str], file: str, publication: str) -> None:
     base_url = obj["BASE_URL"]
-    username, headers = obj["AUTH"]()
+    username, headers = obj["AUTH"]
     if username is None or headers is None:
+        click.echo("Please login first")
         return
 
     upload_body = {"file": (file, open(file, "rb"), "application/zip")}

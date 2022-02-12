@@ -19,6 +19,6 @@ def login(obj: dict[str, str], username: str, password: str) -> None:
         auth_file = obj["CLI_PATH"] / "./config/auth.json"
         with open(auth_file, "w") as f:
             json.dump(data, f)
-        click.echo("Login successful")
+        click.echo("Login successfully")
     else:
         click.echo("Login failed")

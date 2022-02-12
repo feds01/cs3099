@@ -1,31 +1,16 @@
 import json
 import click
-from typing import Tuple
 from pathlib import Path
 
-from commands import show
-from commands import login
-from commands import logout
-from commands import upload
+from utils.auth import get_auth
+
+from commands.show import show
+from commands.login import login
+from commands.logout import logout
+from commands.upload import upload
+
 
 cli_path = Path(__file__).parent
-
-
-def get_auth() -> Tuple[str, dict[str, str]]:
-    username, headers = None, None
-    auth_file = cli_path / "./config/auth.json"
-    try:
-        with open(auth_file, "r") as f:
-            data = json.load(f)
-            token = data["token"]
-            # refresh_token = data["refreshToken"]
-            username = data["username"]
-            headers = {"Authorization": f"Bearer {token}"}
-    except FileNotFoundError:
-        click.echo("No token found. Please login first.")
-
-    return username, headers
-
 
 @click.group()
 @click.pass_context
@@ -34,7 +19,6 @@ def cli(ctx: click.core.Context) -> None:
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
 
-    ctx.obj["AUTH"] = get_auth
     ctx.obj["CLI_PATH"] = cli_path
     config_file = cli_path / "./config/config.json"
     try:
@@ -44,12 +28,13 @@ def cli(ctx: click.core.Context) -> None:
     except FileNotFoundError:
         click.echo("No config.json found. Please create one.")
         exit(1)
+    ctx.obj["AUTH"] = get_auth(cli_path, ctx.obj["BASE_URL"])
 
 
-cli.add_command(show.show)
-cli.add_command(login.login)
-cli.add_command(logout.logout)
-cli.add_command(upload.upload)
+cli.add_command(show)
+cli.add_command(login)
+cli.add_command(logout)
+cli.add_command(upload)
 
 if __name__ == "__main__":
     cli(obj={})
