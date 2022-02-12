@@ -66,9 +66,14 @@ app.use('(\/api)?/docs', SwaggerUI.serve, SwaggerUI.setup(specs));
 app.get('(\/api)?/version', (_req: express.Request, res: express.Response) => {
     res.status(200).json({
         status: "ok",
-        version: {
-            app: manifest.version,
-        },
+        version: manifest.version,
+    });
+});
+
+app.get('(\/api)?/openapi', (_req: express.Request, res: express.Response) => {
+    res.status(200).json({
+        status: "ok",
+        schema: SwaggerOptions
     });
 });
 
