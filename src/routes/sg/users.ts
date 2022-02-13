@@ -1,12 +1,12 @@
+import express from 'express';
+import { z } from 'zod';
+
 import * as errors from '../../common/errors';
 import registerRoute from '../../lib/requests';
 import User from '../../models/User';
 import { config } from '../../server';
 import { convertSgId } from '../../transformers/sg';
 import { SgUserIdSchema } from '../../validators/sg';
-
-import express from 'express';
-import { z } from 'zod';
 
 const router = express.Router();
 

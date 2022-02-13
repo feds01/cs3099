@@ -1,3 +1,6 @@
+import express from 'express';
+import { ZodError, z } from 'zod';
+
 import * as errors from '../common/errors';
 import Logger from '../common/logger';
 import { IUserDocument } from '../models/User';
@@ -11,9 +14,6 @@ import {
     ensureValidPermissions,
 } from './permissions';
 import { ApiResponse, handleResponse } from './response';
-
-import express from 'express';
-import { ZodError, z } from 'zod';
 
 type RequestMethodWithBody = 'post' | 'put' | 'patch';
 type RequestMethodWithoutBody = 'delete' | 'get';

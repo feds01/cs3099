@@ -1,9 +1,9 @@
+import mongoose, { Document, Model, Schema } from 'mongoose';
+
 import { ExportSgReview } from '../validators/sg';
 import Comment from './Comment';
 import Publication, { IPublication } from './Publication';
 import User, { IUser } from './User';
-
-import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export enum IReviewStatus {
     Completed = 'completed',

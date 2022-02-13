@@ -1,10 +1,14 @@
+import assert from 'assert';
+import express from 'express';
+import { z } from 'zod';
+
 import * as zip from '../../lib/zip';
 import * as errors from './../../common/errors';
 import * as userUtils from './../../utils/users';
 import Logger from '../../common/logger';
 import { createTokens } from '../../lib/auth';
 import { makeRequest } from '../../lib/fetch';
-import { deleteResource } from '../../lib/fs';
+import { deleteResource, moveResource } from '../../lib/fs';
 import {
     compareUserRoles,
     verifyPublicationPermission,
@@ -21,9 +25,6 @@ import {
 import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../validators/requests';
 import reviewRouter from './reviews';
 import searchRouter from './search';
-
-import express from 'express';
-import { z } from 'zod';
 
 const router = express.Router();
 router.use('/', searchRouter);
@@ -115,7 +116,7 @@ registerRoute(router, '/:username/:name/all', {
 /**
  * @version v1.0.0
  * @method GET
- * @url /publication/:username/:name/:revision/all/
+ * @url /publication/:username/:name/tree/:path*
  * @example
  * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap/tree/blahblah
  *
@@ -463,6 +464,96 @@ registerRoute(router, '/:username/:name', {
 
 /**
  * @version v1.0.0
+ * @method POST
+ * @url /api/publication/:username/:name/revise
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/trinity/revise
+ *
+ * @description This endpoint is used to create a revision of a publication from a previous
+ * publication. The endpoint accepts a new revision tag that should be unique from all of the
+ * publications in the current stream. This will copy the information from the most recent
+ * publication and then create a new one, set it to the current one and then perform some other
+ * administrative tasks when revising the publication.
+ */
+registerRoute(router, '/:username/:name/revise', {
+    method: 'post',
+    params: z.object({ username: z.string(), name: z.string() }),
+    query: z.object({ mode: ModeSchema }),
+    body: z.object({ revision: z.string() }),
+    permissionVerification: verifyPublicationPermission,
+    permission: { level: IUserRole.Administrator },
+    handler: async (req) => {
+        const user = await userUtils.transformUsernameIntoId(req);
+
+        // Fetch the current publication
+        const currentPublication = await Publication.findOne({
+            owner: user.id,
+            name: req.params.name,
+            current: true,
+        }).exec();
+
+        if (!currentPublication) {
+            return {
+                status: 'error',
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
+        }
+
+        // Verify that the provided revision number isn't attempting to use a 'revision' tag that's already used
+        // by the current publication tree.
+        const revisionCheck = await Publication.findOne({
+            owner: user.id,
+            name: req.params.name,
+            revision: req.body.revision,
+        });
+
+        // We found a publication with the same owner, name and revision, meaning that we can't use this
+        // revision tag because it's already in use.
+        if (revisionCheck !== null) {
+            return {
+                status: 'error',
+                code: 400,
+                message: errors.BAD_REQUEST,
+                errors: {
+                    revision: {
+                        message: 'Revision tag already in use',
+                    },
+                },
+            };
+        }
+
+        const newPublication = await new Publication({
+            ...currentPublication,
+            revision: req.body.revision,
+        }).save();
+
+        // Move the current publication file into it's corresponding revision folder within the
+        // resources folder. We have to do this in the event that when the user uploads a new
+        // version for the current revision, it's saved as 'publication.zip' because it becomes
+        // the current sources version.
+        let archiveIndex = {
+            userId: currentPublication.owner.toString(),
+            name: currentPublication.name,
+        };
+
+        await moveResource(
+            zip.archiveIndexToPath(archiveIndex),
+            zip.archiveIndexToPath({ ...archiveIndex, revision: currentPublication.revision }),
+        );
+
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                publication: await Publication.project(newPublication, false),
+            },
+        };
+    },
+});
+
+/**
+ * @version v1.0.0
  * @method DELETE
  * @url /api/publication/:username/:name/all
  * @example
@@ -587,22 +678,14 @@ registerRoute(router, '/:username/:name', {
         const { name } = req.params;
         const { revision } = req.query;
 
-        // So take the fields that are to be updated into the set request, it's okay to this because
-        // we validated the request previously and we should be able to add all of the fields into the
-        // database. If the user tries to update the username or an email that's already in use, mongo
-        // will return an error because these fields have to be unique.
-        let newPublication = await Publication.findOneAndUpdate(
-            {
-                owner: user.id,
-                name: name.toLowerCase(),
-                ...(typeof revision !== 'undefined' && { revision }),
-            },
-            { $set: { ...req.body } },
-            { new: true },
-        ).exec();
+        const publication = await Publication.findOne({
+            owner: user.id,
+            name: name.toLowerCase(),
+            ...(typeof revision !== 'undefined' && { revision }),
+        }).exec();
 
         // If we couldn't find the publication, return a not found.
-        if (!newPublication) {
+        if (!publication) {
             return {
                 status: 'error',
                 code: 404,
@@ -610,11 +693,47 @@ registerRoute(router, '/:username/:name', {
             };
         }
 
+        // Verify that the provided revision number isn't attempting to use a 'revision' tag that's already used
+        // by the current publication tree.
+        if (req.body.revision && publication.revision !== req.body.revision) {
+            const revisionCheck = await Publication.findOne({
+                owner: user.id,
+                name: req.params.name,
+                revision: req.body.revision,
+            });
+
+            // We found a publication with the same owner, name and revision, meaning that we can't use this
+            // revision tag because it's already in use.
+            if (revisionCheck !== null) {
+                return {
+                    status: 'error',
+                    code: 400,
+                    message: errors.BAD_REQUEST,
+                    errors: {
+                        revision: {
+                            message: 'Revision tag already in use',
+                        },
+                    },
+                };
+            }
+        }
+
+        // So take the fields that are to be updated into the set request, it's okay to this because
+        // we validated the request previously and we should be able to add all of the fields into the
+        // database. If the user tries to update the username or an email that's already in use, mongo
+        // will return an error because these fields have to be unique.
+        const patchedPublication = await Publication.findByIdAndUpdate(
+            publication.id,
+            { $set: { ...req.body } },
+            { new: true },
+        );
+        assert(patchedPublication !== null);
+
         return {
             status: 'ok',
             code: 200,
             data: {
-                publication: await Publication.project(newPublication, false),
+                publication: await Publication.project(patchedPublication, false),
             },
         };
     },

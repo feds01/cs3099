@@ -1,12 +1,12 @@
+import express from 'express';
+import { z } from 'zod';
+
 import * as error from '../../common/errors';
 import * as userUtils from '../../utils/users';
 import registerRoute from '../../lib/requests';
 import Follower from '../../models/Follower';
 import User, { IUser, IUserRole } from '../../models/User';
 import { ModeSchema } from '../../validators/requests';
-
-import express from 'express';
-import { z } from 'zod';
 
 const router = express.Router({ mergeParams: true });
 

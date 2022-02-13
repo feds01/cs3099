@@ -1,8 +1,8 @@
-import { config } from '../server';
-
 import express from 'express';
 import { UploadedFile } from 'express-fileupload';
 import path from 'path';
+
+import { config } from '../server';
 
 /**
  * Function to concatenate paths with the specified project resource folder.

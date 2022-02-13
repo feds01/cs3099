@@ -1,7 +1,7 @@
-import { config } from '../server';
-
 import { strict } from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
+
+import { config } from '../server';
 
 export enum IUserRole {
     Default = 'default',

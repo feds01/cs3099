@@ -36,7 +36,8 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
         formState: { isValid, isSubmitting },
     } = useForm<IEditPublication>({
         resolver: zodResolver(EditPublicationSchema),
-        reValidateMode: 'onBlur',
+        reValidateMode: 'onChange',
+        mode: 'onBlur',
         defaultValues: {
             ...publication,
         },

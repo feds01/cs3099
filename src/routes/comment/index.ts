@@ -1,12 +1,12 @@
+import express from 'express';
+import { z } from 'zod';
+
 import * as error from '../../common/errors';
 import { verifyCommentPermission } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
 import Comment from '../../models/Comment';
 import { IUserDocument, IUserRole } from '../../models/User';
 import { ObjectIdSchema } from '../../validators/requests';
-
-import express from 'express';
-import { z } from 'zod';
 
 const router = express.Router();
 

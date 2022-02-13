@@ -1,3 +1,8 @@
+import bcrypt from 'bcryptjs';
+import express from 'express';
+import { nanoid } from 'nanoid';
+import { z } from 'zod';
+
 import * as error from '../../common/errors';
 import Logger from '../../common/logger';
 import { JwtError, createTokens, refreshTokens, verifyToken } from '../../lib/auth';
@@ -8,11 +13,6 @@ import User from '../../models/User';
 import { IEmailValiditySchema, IUsernameValiditySchema } from '../../validators/auth';
 import { IUserLoginRequestSchema, IUserRegisterRequestSchema } from '../../validators/user';
 import { config } from './../../server';
-
-import bcrypt from 'bcryptjs';
-import express from 'express';
-import { nanoid } from 'nanoid';
-import { z } from 'zod';
 
 const router = express.Router();
 

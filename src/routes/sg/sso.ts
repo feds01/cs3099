@@ -1,3 +1,8 @@
+import assert from 'assert';
+import express from 'express';
+import qs from 'query-string';
+import { z } from 'zod';
+
 import Logger from '../../common/logger';
 import { JwtError, createTokens, verifyToken } from '../../lib/auth';
 import { makeRequest } from '../../lib/fetch';
@@ -8,11 +13,6 @@ import { config } from '../../server';
 import { convertSgId, transformSgUserToInternal } from '../../transformers/sg';
 import { IJwtSchema } from '../../validators/auth';
 import { SgUserSchema } from '../../validators/sg';
-
-import assert from 'assert';
-import express from 'express';
-import qs from 'query-string';
-import { z } from 'zod';
 
 const router = express.Router();
 
