@@ -1,7 +1,8 @@
+import mongoose, { Document, Model, Schema } from 'mongoose';
+
 import { ExportSgComment, SgComment } from '../validators/sg';
 import User, { IUser } from './User';
 import softDeleteMiddleware from './middlewares/softDelete';
-import mongoose, { Document, Model, Schema } from 'mongoose';
 
 /** A IComment document represents a comment object */
 export interface IComment {

@@ -1,39 +1,31 @@
-import TreeView from '../TreeView';
-import Box from '@mui/material/Box';
-import ErrorBanner from '../ErrorBanner';
-import LoadingButton from '@mui/lab/LoadingButton';
-import { ReviewProvider } from '../../hooks/review';
-import { ContentState } from '../../types/requests';
-import { ReactElement, useEffect, useState } from 'react';
-import LinearProgress from '@mui/material/LinearProgress';
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
-import { useNotificationDispatch } from '../../hooks/notification';
-import { transformQueryIntoContentState } from '../../wrappers/react-query';
-import { useGetReviewIdComments, usePostReviewIdComplete } from '../../lib/api/reviews/reviews';
-import { useGetPublicationUsernameNameAll } from '../../lib/api/publications/publications';
-import {
-    ApiErrorResponse,
-    GetPublicationUsernameNameAll200,
-    GetReviewIdComments200,
-    Review,
-} from '../../lib/api/models';
+import ErrorBanner from '../../../../components/ErrorBanner';
+import { useNotificationDispatch } from '../../../../hooks/notification';
+import { useReviewDispatch, useReviewState } from '../../../../hooks/review';
+import { ApiErrorResponse, GetPublicationUsernameNameAll200 } from '../../../../lib/api/models';
+import { useGetPublicationUsernameNameAll } from '../../../../lib/api/publications/publications';
+import { usePostReviewIdComplete } from '../../../../lib/api/reviews/reviews';
+import { ContentState } from '../../../../types/requests';
+import { transformQueryIntoContentState } from '../../../../wrappers/react-query';
 import SourceList from './SourceList';
 import SubmissionPopOver from './SubmissionPopOver';
+import TreeView from './TreeView';
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import LoadingButton from '@mui/lab/LoadingButton';
+import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress';
+import { ReactElement, useEffect, useState } from 'react';
 
-interface ReviewEditorProps {
-    review: Review;
-    refetchReview: () => void;
-}
-
-export default function ReviewEditor({ review, refetchReview }: ReviewEditorProps): ReactElement {
-    const { publication, owner } = review;
+export default function ReviewEditor(): ReactElement {
+    const {
+        review: { publication, status, id },
+    } = useReviewState();
+    const { refetch } = useReviewDispatch();
 
     const notificationDispatcher = useNotificationDispatch();
     const fileQuery = useGetPublicationUsernameNameAll(publication.owner.username, publication.name, {
         revision: publication.revision,
     });
 
-    const getCommentsQuery = useGetReviewIdComments(review.id);
     const completeReviewQuery = usePostReviewIdComplete();
 
     const [resourceResponse, setResourceResponse] = useState<
@@ -42,24 +34,9 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
         state: 'loading',
     });
 
-    const [commentResourceResponse, setCommentResourceResponse] = useState<
-        ContentState<GetReviewIdComments200, ApiErrorResponse>
-    >({
-        state: 'loading',
-    });
-
-    useEffect(() => {
-        fileQuery.refetch();
-        getCommentsQuery.refetch();
-    }, [publication.id, owner.id]);
-
     useEffect(() => {
         setResourceResponse(transformQueryIntoContentState(fileQuery));
     }, [fileQuery.data, fileQuery.isLoading]);
-
-    useEffect(() => {
-        setCommentResourceResponse(transformQueryIntoContentState(getCommentsQuery));
-    }, [getCommentsQuery.data, getCommentsQuery.isLoading]);
 
     useEffect(() => {
         if (!completeReviewQuery.isLoading && completeReviewQuery.data) {
@@ -67,7 +44,8 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                 type: 'add',
                 item: { severity: 'success', message: 'Successfully posted review' },
             });
-            refetchReview();
+
+            refetch();
         } else if (completeReviewQuery.isError && completeReviewQuery.error) {
             notificationDispatcher({
                 type: 'add',
@@ -76,25 +54,13 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
         }
     }, [completeReviewQuery.isLoading, completeReviewQuery.data]);
 
-    // For now we only want to refetch the comment as they're the only thing that can change.
-    const refetchData = () => {
-        getCommentsQuery.refetch();
-    };
-
-    // For the submit popover so a reviewer can leave a general comment on a review...
+    // For the submit pop-over so a reviewer can leave a general comment on a review...
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const open = Boolean(anchorEl);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
-
-    // @@Hack: This is a very hacky way of displaying the state for both queries, we should fix this!
-    if (commentResourceResponse.state === 'loading') {
-        return <LinearProgress />;
-    } else if (commentResourceResponse.state === 'error') {
-        return <ErrorBanner message={commentResourceResponse.error.message} />;
-    }
 
     switch (resourceResponse.state) {
         case 'loading': {
@@ -105,62 +71,63 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
         }
         case 'ok': {
             const { entries } = resourceResponse.data;
-            const { comments } = commentResourceResponse.data;
-
             return (
-                <ReviewProvider state={{ comments }} refetch={refetchData}>
+                <>
                     <Box
                         sx={{
                             display: 'flex',
-                            position: 'absolute',
-                            overflowX: 'hidden',
-                            overflowY: 'hidden',
-                            flex: 1,
                             minWidth: 800,
                             flexDirection: 'row',
-                            height: '100%',
-                            width: '100%',
+                            minHeight: '100%',
+                            overflowX: 'hidden',
+                            width: 'calc(100vw - 41px)',
                         }}
                     >
                         <Box
                             sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
-                                height: '100%',
                                 width: '30%',
                                 maxWidth: 300,
-                                position: 'relative',
+                                position: 'fixed',
+                                height: 'calc(100% - 180px)',
                                 borderRight: 1,
+                                flex: 1,
+                                zIndex: 80,
                                 borderColor: 'divider',
                                 overflowY: 'scroll',
                                 overflowX: 'scroll',
                             }}
                         >
-                            <TreeView comments={comments} paths={entries.map((entry) => entry.filename)} />
+                            <TreeView paths={entries.map((entry) => entry.filename)} />
                         </Box>
                         <Box
                             sx={{
                                 display: 'flex',
+                                pl: 'min(30%, 300px)',
+                                position: 'relative',
+                                width: 'calc(100% - min(30%, 300px))',
                                 flexDirection: 'column',
-                                height: '100%',
                                 flex: 1,
                                 overflowY: 'scroll',
-                                zIndex: 80,
+                                overflowX: 'hidden',
                                 mr: 1,
                                 ml: 1,
-                                pb: 4,
+                                ...(status === 'started' && { pb: '60px' })
                             }}
                         >
-                            <SourceList entries={entries} review={review} />
+                            <SourceList entries={entries} />
                         </Box>
                     </Box>
-                    {review.status === 'started' && (
+                    {status === 'started' && (
                         <Box
                             sx={{
                                 display: 'flex',
                                 position: 'fixed',
                                 flexDirection: 'row',
                                 border: 1,
+                                borderLeft: 0,
+                                height: 60,
                                 borderColor: 'divider',
                                 justifyContent: 'space-between',
                                 background: '#fff',
@@ -184,15 +151,14 @@ export default function ReviewEditor({ review, refetchReview }: ReviewEditorProp
                     )}
                     <SubmissionPopOver
                         open={open}
-                        review={review}
                         anchorEl={anchorEl}
                         onClose={() => setAnchorEl(null)}
                         onSubmission={() => {
                             setAnchorEl(null);
-                            completeReviewQuery.mutateAsync({ id: review.id });
+                            completeReviewQuery.mutateAsync({ id });
                         }}
                     />
-                </ReviewProvider>
+                </>
             );
         }
     }

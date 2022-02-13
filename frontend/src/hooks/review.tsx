@@ -1,7 +1,8 @@
+import { Comment, Review } from '../lib/api/models';
 import React from 'react';
-import { Comment } from '../lib/api/models';
 
 export interface ReviewState {
+    review: Review;
     comments: Comment[];
 }
 
@@ -15,7 +16,8 @@ export type ReviewContext = {
 };
 
 const ReviewStateContext = React.createContext<ReviewContext>({
-    state: { comments: [] },
+    // @ts-ignore
+    state: { comments: [], review: {} },
     dispatch: {
         refetch: () => undefined,
     },

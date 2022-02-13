@@ -1,7 +1,7 @@
-import app from '../../../src/app';
 import { Response, agent as supertest } from 'supertest';
 
 import * as errors from '../../../src/common/errors';
+import app from '../../../src/app';
 import Publication from '../../../src/models/Publication';
 import User, { IUserDocument } from '../../../src/models/User';
 

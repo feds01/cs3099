@@ -168,13 +168,13 @@ function PublicationView() {
             // @@Bug: The export button and the title of the publication aren't aligned properly.
             return (
                 <PublicationProvider state={{ publication }} refetch={getPublicationQuery.refetch}>
-                      {publication.draft && (
-                            <Alert severity="warning">
-                                <AlertTitle>Warning</AlertTitle>
-                                This publication isn't visible until you upload sources to it
-                            </Alert>
-                        )}
-                    <Box sx={{ mb: 1, pt: 1 }}> 
+                    {publication.draft && (
+                        <Alert severity="warning">
+                            <AlertTitle>Warning</AlertTitle>
+                            This publication isn't visible until you upload sources to it
+                        </Alert>
+                    )}
+                    <Box sx={{ mb: 1, pt: 1 }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                                 <MarkdownRenderer fontSize={24} contents={publication.title} />

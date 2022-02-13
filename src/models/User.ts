@@ -1,9 +1,10 @@
+import { strict } from 'assert';
+import mongoose, { Document, Model, Schema } from 'mongoose';
+
 import { config } from '../server';
 import Follower from './Follower';
 import Publication from './Publication';
 import softDeleteMiddleware from './middlewares/softDelete';
-import { strict } from 'assert';
-import mongoose, { Document, Model, Schema } from 'mongoose';
 
 /**
  * A role represents what level of permissions a user has in the system.

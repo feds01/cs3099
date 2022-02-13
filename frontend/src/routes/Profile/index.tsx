@@ -1,26 +1,22 @@
-import Box from '@mui/material/Box';
-import { Link } from 'react-router-dom';
-import Typography from '@mui/material/Typography';
-import { User } from '../../lib/api/models';
-import { ContentState } from '../../types/requests';
 import FollowerButton from '../../components/FollowerButton';
-import { useGetUserUsername } from '../../lib/api/users/users';
 import PageLayout from '../../components/PageLayout';
 import UserAvatar from '../../components/UserAvatar';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import { ReactElement, useEffect, useState } from 'react';
-import { Route, Switch, useLocation, useParams } from 'react-router';
-import { Divider, Skeleton, Tab, Tabs } from '@mui/material';
-
-// Views
-import Overview from '../../views/Overview';
+import { User } from '../../lib/api/models';
+import { useGetUserUsername } from '../../lib/api/users/users';
+import { ContentState } from '../../types/requests';
 import Activity from '../../views/Activity';
 import Follows from '../../views/Follows';
-import Reviews from '../../views/Reviews';
+import Overview from '../../views/Overview';
 import Publications from '../../views/Publications';
+import Reviews from '../../views/Reviews';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import { Divider, Skeleton, Tab, Tabs } from '@mui/material';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { format } from 'date-fns';
-
-interface Props {}
+import { ReactElement, useEffect, useState } from 'react';
+import { Route, Switch, useLocation, useParams } from 'react-router';
+import { Link } from 'react-router-dom';
 
 const TabMap = (user: User) => {
     return {
@@ -103,7 +99,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                             }}
                         >
                             <Typography>@{profileData.user.username}</Typography>
-                            <span style={{margin: '0 4px'}}>&bull;</span>
+                            <span style={{ margin: '0 4px' }}>&bull;</span>
                             <Typography>Member since {format(profileData.user.createdAt, 'dd MMM yyyy')}</Typography>
                         </Box>
                         <Box
@@ -119,7 +115,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                                     {profileData.follows.followers === 1 ? 'Follower' : 'Followers'}
                                 </Link>
                             </Typography>
-                            <Divider orientation="vertical" flexItem sx={{m: '0 4px'}}/>
+                            <Divider orientation="vertical" flexItem sx={{ m: '0 4px' }} />
                             <Typography>
                                 <Link to={`/profile/${profileData.user.username}/following`}>
                                     Following {profileData.follows.following}
@@ -134,7 +130,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
 
 type ProfileData = { user: User; follows: { followers: number; following: number } };
 
-export default function Profile(props: Props): ReactElement {
+export default function ProfilePage(): ReactElement {
     const location = useLocation();
 
     // Get the user data
@@ -191,7 +187,7 @@ export default function Profile(props: Props): ReactElement {
                                         exact
                                         key={path}
                                         path={path}
-                                        render={(routeProps) => (
+                                        render={() => (
                                             <Box sx={{ width: '100%', alignSelf: 'stretch' }}>
                                                 {props.component(profileData.data.user)}
                                             </Box>

@@ -1,19 +1,19 @@
+import CommentThreadRenderer from '../../../../components/CommentThreadRenderer';
+import FileViewer from '../../../../components/FileViewer';
+import { useReviewState } from '../../../../hooks/review';
+import { FileResponse } from '../../../../lib/api/models';
+import { CommentThread } from '../../../../lib/utils/comment';
+
 import Box from '@mui/material/Box';
-import FileViewer from '../FileViewer';
 import { useEffect, useState } from 'react';
-import { useReviewState } from '../../hooks/review';
-import { CommentThread } from '../../lib/utils/comment';
-import { FileResponse, Review } from '../../lib/api/models';
-import CommentThreadRenderer from '../CommentThreadRenderer';
 
 interface CodeSourceListProps {
     entries: FileResponse[];
-    review: Review;
 }
 
-export default function SourceList({ entries, review }: CodeSourceListProps) {
+export default function SourceList({ entries }: CodeSourceListProps) {
     // we can get the comments from the current state
-    const { comments } = useReviewState();
+    const { comments, review } = useReviewState();
     const [generalComments, setGeneralComments] = useState<CommentThread[]>([]);
     const [fileCommentMap, setFileCommentMap] = useState<Map<string, CommentThread[]>>(new Map());
 
@@ -73,7 +73,7 @@ export default function SourceList({ entries, review }: CodeSourceListProps) {
     }, [comments]);
 
     return (
-        <Box sx={{ pb: 4 }}>
+        <Box>
             {entries.map((entry, index) => {
                 const fileComments = fileCommentMap.get(entry.filename);
 

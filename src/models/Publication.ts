@@ -1,9 +1,10 @@
+import assert from 'assert';
+import mongoose, { Document, Model, Schema } from 'mongoose';
+
 import { ExportSgPublication } from '../validators/sg';
 import Review from './Review';
 import User, { IUserDocument } from './User';
 import softDeleteMiddleware from './middlewares/softDelete';
-import assert from 'assert';
-import mongoose, { Document, Model, Schema } from 'mongoose';
 
 /** The publication document represents a publication object */
 export interface IPublication {

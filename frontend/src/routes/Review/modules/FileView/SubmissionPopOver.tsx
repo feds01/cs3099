@@ -1,25 +1,24 @@
-import { useEffect, useState } from 'react';
+import CommentField from '../../../../components/CommentField';
+import { useNotificationDispatch } from '../../../../hooks/notification';
+import { useReviewState, useReviewDispatch } from '../../../../hooks/review';
+import { usePutReviewIdComment } from '../../../../lib/api/reviews/reviews';
+
+import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
-
-import CommentField from '../CommentField';
-import { Review } from '../../lib/api/models';
-import Button from '@mui/material/Button';
-import LoadingButton from '@mui/lab/LoadingButton';
-import { useReviewDispatch } from '../../hooks/review';
-import { useNotificationDispatch } from '../../hooks/notification';
-import { usePutReviewIdComment } from '../../lib/api/reviews/reviews';
+import { useEffect, useState } from 'react';
 
 type SubmissionPopOverProps = {
     open: boolean;
     anchorEl: Element | null;
     onClose: () => void;
     onSubmission: () => void;
-    review: Review;
 };
 
-export default function SubmissionPopOver({ open, anchorEl, review, onClose, onSubmission }: SubmissionPopOverProps) {
+export default function SubmissionPopOver({ open, anchorEl, onClose, onSubmission }: SubmissionPopOverProps) {
+    const { review } = useReviewState();
     const { refetch } = useReviewDispatch();
     const [comment, setComment] = useState<string>('');
     const notificationDispatcher = useNotificationDispatch();

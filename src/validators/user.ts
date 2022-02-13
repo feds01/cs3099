@@ -26,21 +26,20 @@ export const IUserLoginRequestSchema = z
  * Generic User schema that can be used for registering, patching and other more
  * advanced schemas.
  */
-export const IUserSchema = z
-    .object({
-        username: z
-            .string()
-            .nonempty()
-            .max(50)
-            .regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric'),
-        email: z.string().email(),
-        firstName: z.string().nonempty().max(32),
-        lastName: z.string().max(32).optional(),
-        password: z.string().min(1),
-        about: z.string().optional(),
-        status: z.string().optional(),
-        profilePictureUrl: z.string().url().optional(),
-    });
+export const IUserSchema = z.object({
+    username: z
+        .string()
+        .nonempty()
+        .max(50)
+        .regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric'),
+    email: z.string().email(),
+    firstName: z.string().nonempty().max(32),
+    lastName: z.string().max(32).optional(),
+    password: z.string().min(1),
+    about: z.string().optional(),
+    status: z.string().optional(),
+    profilePictureUrl: z.string().url().optional(),
+});
 
 type PartialUserSchema = z.infer<typeof IUserPatchRequestSchema>;
 
@@ -94,8 +93,7 @@ export const IUserRegisterRequestSchema = IUserSchema.superRefine(verifyUniqueDe
 export const IUserPatchRequestSchema = IUserSchema.omit({
     password: true,
     profilePictureUrl: true,
-})
-    .partial();
+}).partial();
 
 /**
  * This Schema is used to validate requests that attempt to patch

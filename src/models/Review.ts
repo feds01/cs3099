@@ -1,9 +1,10 @@
+import mongoose, { Document, Model, Schema } from 'mongoose';
+
 import { ExportSgReview } from '../validators/sg';
 import Comment from './Comment';
 import Publication, { IPublication } from './Publication';
 import User, { IUser } from './User';
 import softDeleteMiddleware from './middlewares/softDelete';
-import mongoose, { Document, Model, Schema } from 'mongoose';
 
 /**
  * Representation of whether a publication is in either 'started' mode
