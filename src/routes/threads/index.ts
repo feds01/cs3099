@@ -1,5 +1,4 @@
 import express from 'express';
-import { Schema } from 'mongoose';
 import { z } from 'zod';
 
 import * as errors from '../../common/errors';
@@ -28,8 +27,7 @@ registerRoute(router, '/:id', {
     permissionVerification: verifyCommentThreadPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const { id } = req.params;
-        const comments = Comment.find({ thread: new Schema.Types.ObjectId(id) });
+        const comments = Comment.find({ thread: req.params.id });
 
         if (!comments) {
             return {
@@ -66,9 +64,7 @@ registerRoute(router, '/:id', {
     permissionVerification: verifyCommentThreadPermission,
     permission: { level: IUserRole.Moderator },
     handler: async (req) => {
-        const { id } = req.params;
-
-        const thread = await Comment.deleteMany({ thread: new Schema.Types.ObjectId(id) }).exec();
+        const thread = await Comment.deleteMany({ thread: req.params.id }).exec();
 
         if (!thread) {
             return {

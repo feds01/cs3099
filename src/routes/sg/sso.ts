@@ -4,7 +4,7 @@ import qs from 'query-string';
 import { z } from 'zod';
 
 import Logger from '../../common/logger';
-import { JwtError, createTokens, verifyToken } from '../../lib/auth';
+import { createTokens, JwtError, verifyToken } from '../../lib/auth';
 import { makeRequest } from '../../lib/fetch';
 import registerRoute from '../../lib/requests';
 import State from '../../models/State';
@@ -100,7 +100,9 @@ registerRoute(router, '/callback', {
         const { email, id } = userData.response;
         const transformedUser = transformSgUserToInternal(userData.response);
 
-        // try to find the user
+        // try to find the user, if the user is marked as deleted, we essentially
+        // have to revert this because we can't create a new document for them.
+        // If, we can't find them, then we create a new document with the specified values.
         const importedUser = await User.findOneAndUpdate(
             {
                 email,

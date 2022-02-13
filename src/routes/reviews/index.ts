@@ -39,11 +39,9 @@ registerRoute(router, '/:id/comment', {
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const { id } = req.params;
-        const { id: owner } = req.requester;
         const { replying, filename, anchor, contents } = req.body;
 
-        const review = await Review.findById(id)
+        const review = await Review.findById(req.params.id)
             .populate<{ owner: IUserDocument }>('owner')
             .populate<{ publication: IPublicationDocument }>('publication')
             .exec();
@@ -51,7 +49,7 @@ registerRoute(router, '/:id/comment', {
         // Check that the review exists and that the current commenter isn't trying
         // to publish comments on a non-public review. Only a review owner can comment
         // on a review whilst creating it.
-        if (!review || (review.status === 'started' && review.owner.id !== owner)) {
+        if (!review || (review.status === 'started' && review.owner.id !== req.requester.id)) {
             return {
                 status: 'error',
                 code: 404,
@@ -60,7 +58,6 @@ registerRoute(router, '/:id/comment', {
         }
 
         // check that the publication isn't in draft mode...
-        // @@Verify: It is impossible to begin publications that are in 'draft' mode.
         if (review.publication.draft) {
             return {
                 status: 'error',
@@ -156,9 +153,9 @@ registerRoute(router, '/:id/comment', {
             anchor,
             contents,
             replying,
-            review: id,
+            review: req.params.id,
             thread,
-            owner,
+            owner: req.requester.id,
             publication: review.publication.id as mongoose.Schema.Types.ObjectId,
         }).save();
 
@@ -259,10 +256,9 @@ registerRoute(router, '/:id/complete', {
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const { id } = req.params;
-
-        // @@TODO: Use findByIdAndUpdate
-        const review = await Review.findById(id).exec();
+        const review = await Review.findByIdAndUpdate(req.params.id, {
+            $set: { status: IReviewStatus.Completed },
+        }).exec();
 
         // verify that the review exists and the owner is trying to publish it...
         if (!review) {
@@ -272,8 +268,6 @@ registerRoute(router, '/:id/complete', {
                 message: errors.RESOURCE_NOT_FOUND,
             };
         }
-
-        await review.updateOne({ $set: { status: IReviewStatus.Completed } }).exec();
 
         return {
             status: 'ok',
@@ -353,8 +347,6 @@ registerRoute(router, '/:id', {
                 message: errors.RESOURCE_NOT_FOUND,
             };
         }
-
-        await Comment.deleteMany({ review: review.id }).exec();
 
         return {
             status: 'ok',

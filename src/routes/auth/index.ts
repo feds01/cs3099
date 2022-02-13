@@ -366,9 +366,8 @@ registerRoute(router, '/login', {
     handler: async (req) => {
         const { username, password, isEmail } = req.body;
 
-        const searchQuery = isEmail ? { email: username } : { username };
         const result = await User.findOne({
-            ...searchQuery,
+            ...(isEmail ? { email: username } : { username }),
             externalId: { $exists: false },
         }).exec();
 

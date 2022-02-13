@@ -40,7 +40,5 @@ export default function Review(): ReactElement {
         }
     };
 
-    // TODO: jump around sources
-    // TODO: reply to comments
     return <PageLayout title="Review">{renderContent()}</PageLayout>;
 }

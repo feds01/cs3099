@@ -218,7 +218,6 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
  *   "title": "Test",
  *   "introduction": "Introduction here",
  *   "collaborators": ["user1", "user2"],
- *   "draft": true
  * }
  *
  * @description Route to create a new publication entry in the database. The route
@@ -393,19 +392,15 @@ registerRoute(router, '/:username/:name', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name } = req.params;
-        const { revision } = req.query;
+        const name = req.params.name.toLowerCase();
+        const { revision, draft } = req.query;
 
-        // sort by id in descending order since this is actually faster than using a 'createdAt' field because
-        // ObjectID's in MongoDB have a natural ascending order of time. More information about the details
-        // are here: https://stackoverflow.com/a/54741405
         const publication = await Publication.findOne({
             owner: user.id,
-            name: name.toLowerCase(),
-            ...(typeof revision !== 'undefined' && { revision }),
-        })
-            .sort({ _id: -1 })
-            .exec();
+            name,
+            ...(typeof draft !== 'undefined' && { draft }),
+            ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
+        }).exec();
 
         if (!publication) {
             return {
@@ -417,7 +412,7 @@ registerRoute(router, '/:username/:name', {
 
         // So we don't need to actually specify the draft flag to the query
         // if the owner of the publication is a draft. However, if the callee
-        // not the owner of the current publication and doesn't have moderator
+        // is not the owner of the current publication and doesn't have moderator
         // privileges, they can't get the publication. Only the owner should be able
         // to retrieve their draft. This behaviour is entirely overridden if the query
         // flag 'draft' is specified.
@@ -433,15 +428,6 @@ registerRoute(router, '/:username/:name', {
                 code: 404,
                 message: errors.RESOURCE_NOT_FOUND,
             };
-        } else if (typeof req.query.draft !== 'undefined') {
-            // So now here we can allow explicit filtering by draft or not...
-            if (publication.draft !== req.query.draft) {
-                return {
-                    status: 'error',
-                    code: 404,
-                    message: errors.RESOURCE_NOT_FOUND,
-                };
-            }
         }
 
         // Check if the publication has an uploaded source file...
@@ -573,15 +559,15 @@ registerRoute(router, '/:username/:name/all', {
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
+        const name = req.params.name.toLowerCase();
 
-        const { name } = req.params;
-
-        await Publication.deleteMany({ owner: user.id, name: name.toLowerCase() }).exec();
+        // Since we have cascading deletes, all reviews and comments are deleted.
+        await Publication.deleteMany({ owner: user.id, name }).exec();
 
         const publicationPath = zip.resourceIndexToPath({
             type: 'publication',
             owner: user.id,
-            name: name,
+            name,
         });
 
         // we need to try to remove the folder that stores the publications...
@@ -611,7 +597,7 @@ registerRoute(router, '/:username/:name', {
     }),
     query: z.object({
         mode: ModeSchema,
-        draft: FlagSchema.default('false'),
+        draft: FlagSchema.optional(),
         revision: z.string().optional(),
     }),
     permissionVerification: verifyPublicationPermission,
@@ -620,16 +606,15 @@ registerRoute(router, '/:username/:name', {
         const user = await userUtils.transformUsernameIntoId(req);
 
         const { revision, draft } = req.query;
-        const { name } = req.params;
+        const name = req.params.name.toLowerCase();
 
+        // Since we have cascading deletes, all the reviews on the publication are deleted as well.
         const publication = await Publication.findOneAndDelete({
             owner: user.id,
-            name: name.toLowerCase(),
-            draft,
-            ...(typeof revision !== 'undefined' && { revision }),
-        })
-            .sort({ _id: -1 })
-            .exec(); // get the most recent document
+            name,
+            ...(typeof draft !== 'undefined' && { draft }),
+            ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
+        }).exec();
 
         if (!publication) {
             return {
@@ -675,7 +660,7 @@ registerRoute(router, '/:username/:name', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name } = req.params;
+        const name = req.params.name.toLowerCase();
         const { revision } = req.query;
 
         const publication = await Publication.findOne({
@@ -772,16 +757,14 @@ registerRoute(router, '/:username/:name/export', {
         const user = await userUtils.transformUsernameIntoId(req);
 
         // Get the publication
-        const { name } = req.params;
+        const name = req.params.name.toLowerCase();
         const { revision } = req.query;
 
         const publication = await Publication.findOne({
             owner: user.id,
-            name: name.toLowerCase(),
-            ...(typeof revision !== 'undefined' && { revision }),
-        })
-            .sort({ _id: -1 })
-            .exec(); // get the most recent document
+            name,
+            ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
+        }).exec();
 
         if (!publication) {
             return {

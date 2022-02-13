@@ -1,21 +1,35 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
-
 import { ExportSgReview } from '../validators/sg';
 import Comment from './Comment';
 import Publication, { IPublication } from './Publication';
 import User, { IUser } from './User';
+import softDeleteMiddleware from './middlewares/softDelete';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
+/**
+ * Representation of whether a publication is in either 'started' mode
+ * which means that the owner of the review hasn't yet submitted it. The
+ * 'completed' mode means that the owner has submitted it and external viewers
+ * can now see the publication.
+ */
 export enum IReviewStatus {
     Completed = 'completed',
     Started = 'started',
 }
 
+/** The Review document represents a review on a particular publication */
 export interface IReview {
+    /** The ID of the review publication */
     publication: mongoose.ObjectId;
+    /** The ID of the review owner */
     owner: mongoose.ObjectId;
+    /** If the review is completed or not. */
     status: IReviewStatus;
+    /** When the initial document was created */
     createdAt: Date;
+    /** When the document was last updated */
     updatedAt: Date;
+    /** If the document is 'deleted' */
+    isDeleted: boolean;
 }
 
 type PopulatedReview = (IReview & {
@@ -41,11 +55,25 @@ const ReviewSchema = new Schema<IReview, IReviewModel, IReview>(
             type: String,
             enum: IReviewStatus,
             default: IReviewStatus.Started,
-            requred: true,
+            required: true,
         },
+        isDeleted: { type: Boolean, default: false },
     },
     { timestamps: true },
 );
+
+// Register soft-deletion middleware
+ReviewSchema.plugin(softDeleteMiddleware);
+
+/**
+ * This function is a hook to remove any comments that are on a review
+ * if the publication is marked for deletion.
+ */
+ReviewSchema.post('remove', async (item: IReviewDocument, next) => {
+    await Comment.deleteMany({ review: item.id });
+
+    next();
+});
 
 /**
  * Function to project a user comment so that it can be returned as a

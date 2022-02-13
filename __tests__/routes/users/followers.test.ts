@@ -1,9 +1,8 @@
-import { Response, agent as supertest } from 'supertest';
-
-import * as errors from '../../../src/common/errors';
 import app from '../../../src/app';
+import * as errors from '../../../src/common/errors';
 import Follower from '../../../src/models/Follower';
 import User, { IUserDocument } from '../../../src/models/User';
+import { agent as supertest, Response } from 'supertest';
 
 const request = supertest(app);
 
@@ -66,7 +65,7 @@ describe('Follower endpoints testing ', () => {
             .post(`/user/followee/follow`)
             .auth(follower1Res.body.token, { type: 'bearer' });
         expect(followResponse.status).toBe(401);
-        expect(followResponse.body.message).toBe(errors.ALREADY_FOLLOWED);
+        expect(followResponse.body.message).toBe(errors.BAD_REQUEST);
 
         const followDoc = await Follower.count({
             follower: follower1!.id,

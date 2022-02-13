@@ -133,8 +133,16 @@ export default function registerRoute<
                 return null;
             });
 
-            if (typeof permissions === 'string' || permissions?.valid === false) {
-                throw new errors.ApiError(401, errors.UNAUTHORIZED);
+            if (typeof permissions === 'string') {
+                throw new errors.ApiError(401, permissions);
+            }
+
+            // Report a more informative error if the information is available
+            if (permissions && !permissions.valid) {
+                throw new errors.ApiError(
+                    permissions?.code || 401,
+                    permissions?.message || errors.UNAUTHORIZED,
+                );
             }
 
             const result = await registrar.handler({

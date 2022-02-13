@@ -26,9 +26,7 @@ registerRoute(router, '/:id', {
     permissionVerification: verifyCommentPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const { id } = req.params;
-
-        const comment = await Comment.findById(id)
+        const comment = await Comment.findById(req.params.id)
             .populate<{ owner: IUserDocument }>('owner')
             .exec();
 
@@ -82,13 +80,10 @@ registerRoute(router, '/:id', {
     permissionVerification: verifyCommentPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const { id } = req.params;
-        const { contents } = req.body;
-
         // Patch the comment here and set the state of the comment as 'edited'
         const updatedComment = await Comment.findByIdAndUpdate(
-            id,
-            { contents, edited: true },
+            req.params.id,
+            { contents: req.body.contents, edited: true },
             { new: true },
         )
             .populate<{ owner: IUserDocument }>('owner')
@@ -131,12 +126,7 @@ registerRoute(router, '/:id', {
     permissionVerification: verifyCommentPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
-        const { id } = req.params;
-
-        // @@Future: We shouldn't actually delete the comment, what we should do is remove
-        //           the content from the comment and mark it as deleted.
-        //           It cannot be further edited, and should be rendered as *deleted* on the frontend.
-        const comment = await Comment.findByIdAndDelete(id).exec();
+        const comment = await Comment.findByIdAndDelete(req.params.id).exec();
 
         if (!comment) {
             return {

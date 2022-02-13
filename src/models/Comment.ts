@@ -1,23 +1,41 @@
-import mongoose, { Document, Model, Schema } from 'mongoose';
-
 import { ExportSgComment, SgComment } from '../validators/sg';
 import User, { IUser } from './User';
+import softDeleteMiddleware from './middlewares/softDelete';
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
+/** A IComment document represents a comment object */
 export interface IComment {
-    publication: mongoose.ObjectId;
+    /** The ID of the publication that this comment refers to. */
     owner: mongoose.ObjectId;
-    contents: string;
+    /** The ID of the review that this comment belongs to. */
     review: mongoose.ObjectId;
+    /** The  contents of the comment */
+    contents: string;
+    /** The filename that the comment is referring to */
     filename?: string;
+    /**
+     * Anchor represents what lines the comment is referring to in the
+     * source code. An anchor cannot exist without a filename existing.
+     * The 'start' and 'end' parameters are inclusive, 1-indexed numbers.
+     */
     anchor?: {
         start: number;
         end: number;
     };
+    /** If the comment is a reply, it has an associated 'replying' ID to another comment */
     replying?: mongoose.ObjectId;
+    /** The thread that this comment belongs in */
     thread?: mongoose.ObjectId;
+    /**
+     * If the comment has been edited before
+     * @@Cleanup: We should make this an array to record all the modifications that the user has made */
     edited: boolean;
+    /** When the initial document was created */
     createdAt: Date;
+    /** When the document was last updated */
     updatedAt: Date;
+    /** If the document is 'deleted' */
+    isDeleted: boolean;
 }
 
 type PopulatedComment = (IComment & {
@@ -35,7 +53,6 @@ interface ICommentModel extends Model<ICommentDocument> {
 
 const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
     {
-        publication: { type: mongoose.Schema.Types.ObjectId, ref: 'publication', required: true },
         owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
         contents: { type: String, required: true },
         thread: { type: mongoose.Schema.Types.ObjectId, required: false },
@@ -47,9 +64,13 @@ const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
         },
         filename: { type: String },
         review: { type: mongoose.Schema.Types.ObjectId, ref: 'review' },
+        isDeleted: { type: Boolean, default: false },
     },
     { timestamps: true },
 );
+
+// Register soft-deletion middleware
+CommentSchema.plugin(softDeleteMiddleware);
 
 /**
  * Function to project a user comment so that it can be returned as a
@@ -59,13 +80,13 @@ const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
  * @returns A partial comment object with selected fields that are to be projected.
  */
 CommentSchema.statics.project = (comment: PopulatedComment) => {
-    const { publication, owner, contents, filename, edited, thread, replying, anchor, review } =
-        comment;
+    const { owner, contents, filename, edited, thread, replying, anchor, review } = comment;
+
+    // If the comment is deleted, we need to do some special projection.
 
     return {
         id: comment._id,
-        publication,
-        author: User.project(owner), // @@Cleanup: change this to being owner??
+        author: User.project(owner),
         contents,
         ...(typeof filename !== 'undefined' && { filename }),
         ...(typeof thread !== 'undefined' && { thread }),

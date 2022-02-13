@@ -70,7 +70,7 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Box sx={{ height: 32, display: 'flex', alignItems: 'center' }}>
                             <UserLink username={comment.author.username} />
-                            on {format(comment.updatedAt, 'do MMM')}
+                            {' '}on {format(comment.updatedAt, 'do MMM')}
                             {comment.edited && (
                                 <>
                                     <span

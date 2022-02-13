@@ -2,13 +2,13 @@ import express from 'express';
 import { z } from 'zod';
 
 import * as errors from '../../common/errors';
-import * as userUtils from '../../utils/users';
 import Logger from '../../common/logger';
 import { verifyPublicationPermission } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
 import Publication, { IPublication } from '../../models/Publication';
 import Review, { IReviewStatus } from '../../models/Review';
 import { IUser, IUserRole } from '../../models/User';
+import * as userUtils from '../../utils/users';
 import { ModeSchema } from '../../validators/requests';
 import { IReviewCreationSchema } from '../../validators/reviews';
 
@@ -34,12 +34,10 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name, revision } = req.params;
-
         const publication = await Publication.findOne({
             owner: user.id,
-            name: name,
-            revision: revision,
+            name: req.params.name,
+            revision: req.params.revision,
         });
 
         if (!publication) {
@@ -93,16 +91,14 @@ registerRoute(router, '/:username/:name/:revision/review', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const { name, revision } = req.params;
+        const name = req.params.name.toLowerCase();
 
         // Verify that the publication exists...
         const publication = await Publication.findOne({
             owner: user.id,
-            name: name.toLowerCase(),
-            revision,
-        })
-            .sort({ _id: -1 })
-            .exec();
+            name,
+            revision: req.params.revision,
+        }).exec();
 
         // Check that the publication isn't currently in draft mode...
         if (!publication || publication.draft) {

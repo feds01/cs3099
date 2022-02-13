@@ -1,6 +1,5 @@
-import { agent as supertest } from 'supertest';
-
 import app from '../../../src/app';
+import { agent as supertest } from 'supertest';
 
 const request = supertest(app);
 
