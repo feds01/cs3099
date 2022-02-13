@@ -1,3 +1,7 @@
+import assert from 'assert';
+import express from 'express';
+import { z } from 'zod';
+
 import * as errors from '../../common/errors';
 import * as zip from '../../lib/zip';
 import * as userUtils from '../../utils/users';
@@ -9,10 +13,6 @@ import User, { IUserRole } from '../../models/User';
 import { config } from '../../server';
 import { extractFile, joinPathsForResource, joinPathsRaw } from '../../utils/resources';
 import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
-
-import assert from 'assert';
-import express from 'express';
-import { z } from 'zod';
 
 const router = express.Router();
 

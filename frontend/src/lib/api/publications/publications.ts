@@ -21,7 +21,6 @@ import type {
   CreatePublicationRequest,
   ApiSuccessResponse,
   DeletePublicationUsernameNameParams,
-  PatchPublicationResponseResponse,
   PatchPublicationRequest,
   PatchPublicationUsernameNameParams,
   GetPublicationUsernameName200,
@@ -29,6 +28,7 @@ import type {
   GetPublicationUsername200,
   GetPublicationUsernameParams,
   PostPublicationUsernameNameExportParams,
+  RevisePublicationRequest,
   GetPublicationUsernameNameRevisions200,
   ResourceResponseResponse,
   GetPublicationUsernameNameTreePathParams,
@@ -121,7 +121,7 @@ export const patchPublicationUsernameName = (
     patchPublicationRequest: PatchPublicationRequest,
     params?: PatchPublicationUsernameNameParams,
  ) => {
-      return customInstance<PatchPublicationResponseResponse>(
+      return customInstance<CreatePublicationResponseResponse>(
       {url: `/publication/${username}/${name}`, method: 'patch',
       data: patchPublicationRequest,
         params,
@@ -269,6 +269,41 @@ export const postPublicationUsernameNameExport = (
         }
 
       return useMutation<AsyncReturnType<typeof postPublicationUsernameNameExport>, TError, {username: string;name: string;params?: PostPublicationUsernameNameExportParams}, TContext>(mutationFn, mutationOptions)
+    }
+    /**
+ * Revise the current version of a publication
+ * @summary Revise a publication
+ */
+export const postPublicationUsernameNameRevise = (
+    username: string,
+    name: string,
+    revisePublicationRequest: RevisePublicationRequest,
+ ) => {
+      return customInstance<CreatePublicationResponseResponse>(
+      {url: `/publication/${username}/${name}/revise`, method: 'post',
+      data: revisePublicationRequest
+    },
+      );
+    }
+  
+
+
+    export const usePostPublicationUsernameNameRevise = <TError = ApiErrorResponse,
+    
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<AsyncReturnType<typeof postPublicationUsernameNameRevise>, TError,{username: string;name: string;data: RevisePublicationRequest}, TContext>, }
+) => {
+      const {mutation: mutationOptions} = options || {}
+
+      
+
+
+      const mutationFn: MutationFunction<AsyncReturnType<typeof postPublicationUsernameNameRevise>, {username: string;name: string;data: RevisePublicationRequest}> = (props) => {
+          const {username,name,data} = props || {};
+
+          return  postPublicationUsernameNameRevise(username,name,data,)
+        }
+
+      return useMutation<AsyncReturnType<typeof postPublicationUsernameNameRevise>, TError, {username: string;name: string;data: RevisePublicationRequest}, TContext>(mutationFn, mutationOptions)
     }
     /**
  * Get a paginated list of publication revisions.

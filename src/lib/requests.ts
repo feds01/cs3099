@@ -1,3 +1,6 @@
+import express from 'express';
+import { ZodError, z } from 'zod';
+
 import * as errors from '../common/errors';
 import Logger from '../common/logger';
 import { IUserDocument } from '../models/User';
@@ -11,8 +14,6 @@ import {
     ensureValidPermissions,
 } from './permissions';
 import { ApiResponse, handleResponse } from './response';
-import express from 'express';
-import { z, ZodError } from 'zod';
 
 type RequestMethodWithBody = 'post' | 'put' | 'patch';
 type RequestMethodWithoutBody = 'delete' | 'get';
@@ -137,7 +138,7 @@ export default function registerRoute<
             }
 
             // Report a more informative error if the information is available
-            if (!permissions?.valid) {
+            if (permissions && !permissions.valid) {
                 throw new errors.ApiError(
                     permissions?.code || 401,
                     permissions?.message || errors.UNAUTHORIZED,

@@ -1,7 +1,7 @@
+import { RefinementEffect, z } from 'zod';
+
 import * as error from '../common/errors';
 import User, { IUserRole } from '../models/User';
-
-import { RefinementEffect, z } from 'zod';
 
 /**
  * Schema for validating login requests.
@@ -40,8 +40,7 @@ export const IUserSchema = z
         about: z.string().optional(),
         status: z.string().optional(),
         profilePictureUrl: z.string().url().optional(),
-    })
-    .strict();
+    });
 
 type PartialUserSchema = z.infer<typeof IUserPatchRequestSchema>;
 
@@ -96,8 +95,7 @@ export const IUserPatchRequestSchema = IUserSchema.omit({
     password: true,
     profilePictureUrl: true,
 })
-    .partial()
-    .strict();
+    .partial();
 
 /**
  * This Schema is used to validate requests that attempt to patch

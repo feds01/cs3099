@@ -7,5 +7,5 @@
     "importOrderSeparation": true,
     "importOrderGroupNamespaceSpecifiers": true,
     "importOrderSortSpecifiers": true,
-    "importOrder": ["^@mui/(.*)$", "^[./]", "<THIRD_PARTY_MODULES>"]
+    "importOrder": ["<THIRD_PARTY_MODULES>", "^@mui/(.*)$", "^[./]"]
 }

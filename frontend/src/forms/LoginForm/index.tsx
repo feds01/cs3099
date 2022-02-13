@@ -28,7 +28,8 @@ export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
         formState: { isSubmitting, isValid },
     } = useForm<ILoginForm>({
         resolver: zodResolver(LoginSchema),
-        mode: 'onChange',
+        reValidateMode: 'onChange',
+        mode: 'onBlur',
         defaultValues: {
             username: '',
             password: '',

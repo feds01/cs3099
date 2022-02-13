@@ -43,7 +43,7 @@ interface IPublicationModel extends Model<IPublicationDocument> {
 
 const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublication>(
     {
-        revision: { type: String },
+        revision: { type: String, required: true },
         name: { type: String, required: true },
         title: { type: String, required: true },
         introduction: { type: String },
@@ -95,7 +95,7 @@ PublicationSchema.statics.project = async (
         updatedAt: publication.updatedAt.getTime(),
 
         // add the revision to the structure
-        revision: publication.revision ?? '',
+        revision: publication.revision,
 
         // this is a flag that denotes whether or not we know that this publication has an attached
         // zip archive on disk.
@@ -109,7 +109,7 @@ PublicationSchema.statics.projectWith = (
 ) => {
     const { name, title, introduction, draft, owner: ownerId, collaborators } = publication;
 
-    assert(owner.id === ownerId._id.toString(), 'Owner ids mis-match');
+    assert(owner.id === ownerId._id.toString(), 'Owner ids mismatch');
 
     return {
         id: publication.id as string,
@@ -123,7 +123,7 @@ PublicationSchema.statics.projectWith = (
         updatedAt: publication.updatedAt.getTime(),
 
         // add the revision to the structure
-        revision: publication.revision ?? '',
+        revision: publication.revision,
 
         // TODO: project collaborators too...
         collaborators,

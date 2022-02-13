@@ -1,7 +1,8 @@
-import registerRoute from '../../lib/requests';
-import { IUserRole } from '../../models/User';
 import express from 'express';
 import { z } from 'zod';
+
+import registerRoute from '../../lib/requests';
+import { IUserRole } from '../../models/User';
 
 const router = express.Router({ mergeParams: true });
 

@@ -1,8 +1,7 @@
-import app from '../../../src/app';
-import User, { IUserRole } from '../../../src/models/User';
 import { agent as supertest } from 'supertest';
 
-import { agent as supertest } from 'supertest';
+import app from '../../../src/app';
+import User, { IUserRole } from '../../../src/models/User';
 
 const request = supertest(app);
 

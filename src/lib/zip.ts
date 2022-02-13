@@ -1,3 +1,6 @@
+import AdmZip, { IZipEntry } from 'adm-zip';
+import { promises as fs } from 'fs';
+
 import { ApiError } from '../common/errors';
 import Logger from '../common/logger';
 import { expr } from '../utils/expr';
@@ -8,8 +11,6 @@ import {
     joinPathsRaw,
     stripEndingSlash,
 } from '../utils/resources';
-import AdmZip, { IZipEntry } from 'adm-zip';
-import { promises as fs } from 'fs';
 
 // Interface representing either a file entry or a directory entry
 interface DirectoryEntry {

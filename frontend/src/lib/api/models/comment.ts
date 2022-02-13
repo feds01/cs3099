@@ -15,6 +15,7 @@ export interface Comment {
   anchor?: CommentAnchor;
   contents: string;
   thread: string;
+  review: string;
   replying?: string;
   author: User;
   createdAt: number;

@@ -1,36 +1,32 @@
-import { Route, Switch, useLocation, useParams } from 'react-router';
-import PageLayout from '../../components/PageLayout';
-import { ContentState } from '../../types/requests';
-import { ReactElement, useEffect, useState } from 'react';
-
-import Box from '@mui/material/Box';
-import { Button, Tabs } from '@mui/material';
-import Chip from '@mui/material/Chip';
-import { formatDistance } from 'date-fns';
-import Tab from '@mui/material/Tab';
-import { Link } from 'react-router-dom';
-
-import Divider from '@mui/material/Divider';
-import Skeleton from '@mui/material/Skeleton';
-import Container from '@mui/material/Container';
-import UserLink from '../../components/UserLink';
-import Typography from '@mui/material/Typography';
 import ErrorBanner from '../../components/ErrorBanner';
-import SkeletonList from '../../components/SkeletonList';
 import MarkdownRenderer from '../../components/MarkdownRenderer';
-import { transformQueryIntoContentState } from '../../wrappers/react-query';
-
+import PageLayout from '../../components/PageLayout';
+import SkeletonList from '../../components/SkeletonList';
+import UserLink from '../../components/UserLink';
+import ExportDialog from '../../forms/ExportPublicationForm';
+import { useAuth } from '../../hooks/auth';
+import { PublicationProvider } from '../../hooks/publication';
 import { GetPublicationUsernameName200 as PublicationResponse } from '../../lib/api/models';
 import { useGetPublicationUsernameName as useGetPublication } from '../../lib/api/publications/publications';
+import { ContentState } from '../../types/requests';
+import { transformQueryIntoContentState } from '../../wrappers/react-query';
 import Overview from './modules/Overview';
-import Source from './modules/Source';
-import Settings from './modules/Settings';
 import Reviews from './modules/Reviews';
+import Settings from './modules/Settings';
+import Source from './modules/Source';
+import { Alert, AlertTitle, Button, Tabs } from '@mui/material';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Container from '@mui/material/Container';
+import Divider from '@mui/material/Divider';
+import Skeleton from '@mui/material/Skeleton';
+import Tab from '@mui/material/Tab';
+import Typography from '@mui/material/Typography';
 import assert from 'assert';
-import { useAuth } from '../../hooks/auth';
-
-import ExportDialog from '../../forms/ExportPublicationForm';
-import { PublicationProvider } from '../../hooks/publication';
+import { formatDistance } from 'date-fns';
+import { ReactElement, useEffect, useState } from 'react';
+import { Route, Switch, useLocation, useParams } from 'react-router';
+import { Link } from 'react-router-dom';
 
 interface Props {}
 
@@ -172,7 +168,13 @@ function PublicationView() {
             // @@Bug: The export button and the title of the publication aren't aligned properly.
             return (
                 <PublicationProvider state={{ publication }} refetch={getPublicationQuery.refetch}>
-                    <Box sx={{ mb: 1 }}>
+                      {publication.draft && (
+                            <Alert severity="warning">
+                                <AlertTitle>Warning</AlertTitle>
+                                This publication isn't visible until you upload sources to it
+                            </Alert>
+                        )}
+                    <Box sx={{ mb: 1, pt: 1 }}> 
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                                 <MarkdownRenderer fontSize={24} contents={publication.title} />

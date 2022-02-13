@@ -1,17 +1,9 @@
-<<<<<<< HEAD
 import app from '../../../src/app';
-=======
->>>>>>> origin/main
+import { Response, agent as supertest } from 'supertest';
+
 import * as errors from '../../../src/common/errors';
-import app from '../../../src/app';
 import Publication from '../../../src/models/Publication';
 import User, { IUserDocument } from '../../../src/models/User';
-<<<<<<< HEAD
-import { agent as supertest, Response } from 'supertest';
-=======
-
-import { Response, agent as supertest } from 'supertest';
->>>>>>> origin/main
 
 const request = supertest(app);
 
@@ -109,8 +101,7 @@ describe('Publications endpoints testing', () => {
                 collaborators: ['collabo1', 'collabo2'],
             });
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe(errors.PUBLICATION_FAILED);
-        expect(response.body.extra).toBe(errors.PUBLICATION_EXISTS);
+        expect(response.body.message).toBe(errors.BAD_REQUEST);
 
         const publicationNum = await Publication.count({ name: 'test-name', revision: 'v1' });
         expect(publicationNum).toBe(1);
