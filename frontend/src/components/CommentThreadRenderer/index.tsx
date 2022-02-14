@@ -47,7 +47,7 @@ export default function CommentThreadRenderer({ contents, thread, review }: Comm
                 <Typography variant={'body1'} sx={{ fontWeight: 'bold', p: '4px 0', ml: 1 }}>
                     {filename}
                 </Typography>
-                <CodeRenderer contents={range} lineNumbers lineOffset={anchor.start} filename={filename} />
+                <CodeRenderer contents={range} lineNumbers lineOffset={anchor.start - 1} filename={filename} />
                 <Divider />
             </Box>
         );

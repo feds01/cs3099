@@ -26,7 +26,7 @@ export default function Reviews(): ReactElement {
         if (createReviewQuery.data && !createReviewQuery.isLoading) {
             notificationDispatcher({
                 type: 'add',
-                item: { severity: 'error', message: 'Started a review' },
+                item: { severity: 'success', message: 'Started a review' },
             });
             history.push({ pathname: `/review/${createReviewQuery.data.review.id}` });
         } else if (createReviewQuery.isError) {

@@ -1,7 +1,7 @@
-import CommentField from '../../../../components/CommentField';
-import { useNotificationDispatch } from '../../../../hooks/notification';
-import { useReviewState, useReviewDispatch } from '../../../../hooks/review';
-import { usePutReviewIdComment } from '../../../../lib/api/reviews/reviews';
+import CommentField from '../../../components/CommentField';
+import { useNotificationDispatch } from '../../../hooks/notification';
+import { useReviewState, useReviewDispatch } from '../../../hooks/review';
+import { usePutReviewIdComment } from '../../../lib/api/reviews/reviews';
 
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
@@ -61,12 +61,12 @@ export default function SubmissionPopOver({ open, anchorEl, onClose, onSubmissio
             anchorEl={anchorEl}
             onClose={onClose}
             anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: 'bottom',
+                horizontal: 'left',
             }}
             transformOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
+                vertical: 'top',
+                horizontal: 'left',
             }}
         >
             <Box sx={{ p: 2 }}>

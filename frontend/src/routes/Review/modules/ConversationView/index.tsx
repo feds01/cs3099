@@ -9,8 +9,10 @@ import {
     sortCommentsIntoFileMap,
     sortCommentsIntoThreads,
 } from '../../../../lib/utils/comment';
+import VoidImage from '../../../../static/images/void.svg';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
+import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import { formatDistance } from 'date-fns';
 import { useEffect, useState } from 'react';
@@ -35,7 +37,6 @@ export default function ConversionView(_props: ConversationViewProps) {
         async function fetchFiles() {
             const newFiles = new Map<string, string>();
 
-            console.log(fileCommentMap.keys());
             for (const fileName of fileCommentMap.keys()) {
                 if (!fileContentMap.has(fileName)) {
                     const contents = await getPublicationUsernameNameTreePath(
@@ -59,7 +60,7 @@ export default function ConversionView(_props: ConversationViewProps) {
 
     return (
         <Container maxWidth="md" sx={{ pt: 2 }}>
-            <Box sx={{ mb: 1 }}>
+            <Box sx={{ pb: 1 }}>
                 <Typography variant={'h4'}>
                     Review on {<PublicationLink username={review.publication.owner.username} {...review.publication} />}
                 </Typography>
@@ -69,7 +70,15 @@ export default function ConversionView(_props: ConversationViewProps) {
                         {formatDistance(review.createdAt, new Date(), { addSuffix: true })}
                     </Typography>
                 </Box>
+                <Divider />
             </Box>
+
+            {fileCommentMap.size === 0 && generalComments.length === 0 && (
+                <Box sx={{ p: 2, display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+                    <img src={VoidImage} height={128} width={128} alt="void" />
+                    <Typography variant={'body1'}>This review doesn't have any comments yet.</Typography>
+                </Box>
+            )}
 
             {[...fileCommentMap.entries()].map(([fileName, threads]) => {
                 const contents = fileContentMap.get(fileName);

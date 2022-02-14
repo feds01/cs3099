@@ -22,12 +22,10 @@ export default function DeletePublicationForm({ publication }: Props) {
     const history = useHistory();
     const notificationDispatcher = useNotificationDispatch();
 
-    const { isLoading, isSuccess, isError, error, mutateAsync } = useDeletePublicationUsernameName();
+    const { isLoading, isSuccess, isError, mutateAsync } = useDeletePublicationUsernameName();
 
     useEffect(() => {
         if (isError) {
-            console.log(error);
-
             notificationDispatcher({
                 type: 'add',
                 item: { severity: 'error', message: "Couldn't delete publication" },
