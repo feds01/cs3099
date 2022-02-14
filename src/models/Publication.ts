@@ -34,7 +34,7 @@ export interface IPublication {
     isDeleted: boolean;
 }
 
-export interface IPublicationDocument extends IPublication, Document {}
+export interface IPublicationDocument extends IPublication, Document { }
 
 interface IPublicationModel extends Model<IPublicationDocument> {
     project: (publication: IPublication, attachment?: boolean) => Promise<Partial<IPublication>>;
@@ -98,6 +98,9 @@ PublicationSchema.statics.project = async (
         // add the revision to the structure
         revision: publication.revision,
 
+        // If the publication is the current version or not
+        current: publication.current,
+
         // this is a flag that denotes whether or not we know that this publication has an attached
         // zip archive on disk.
         attachment,
@@ -125,6 +128,9 @@ PublicationSchema.statics.projectWith = (
 
         // add the revision to the structure
         revision: publication.revision,
+
+        // If the publication is the current version or not
+        current: publication.current,
 
         // TODO: project collaborators too...
         collaborators,

@@ -15,7 +15,6 @@ interface Props {
 export default function ReviewCard({ review }: Props): ReactElement {
     const { session } = useAuth();
 
-    const { name, revision } = review.publication;
     const { username } = review.publication.owner;
     const isOwner = session.username === review.publication.owner.username;
     const isComplete = review.status === 'completed';
@@ -43,8 +42,7 @@ export default function ReviewCard({ review }: Props): ReactElement {
                                     {' '}
                                     reviewed <PublicationLink
                                         username={username}
-                                        name={name}
-                                        revision={revision}
+                                        {...review.publication}
                                     />{' '}
                                     publication{' '}
                                 </>
@@ -54,8 +52,7 @@ export default function ReviewCard({ review }: Props): ReactElement {
                                     began reviewing{' '}
                                     <PublicationLink
                                         username={username}
-                                        name={name}
-                                        revision={revision}
+                                        {...review.publication}
                                     /> publication{' '}
                                 </>
                             )}

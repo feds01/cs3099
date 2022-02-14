@@ -212,7 +212,7 @@ export default function CustomizedTreeView({ paths }: CustomizedTreeViewProps): 
                 }
             }}
             defaultEndIcon={<RiFileFill />}
-            sx={{ pt: 1, background: '#fff', overflowY: 'scroll', overflowX: 'scroll' }}
+            sx={{ pt: 1, background: '#fff', height: '100%', overflowY: 'scroll', overflowX: 'scroll' }}
         >
             {entries.entries.map((item) => {
                 return <Node key={item.name} commentMap={commentMap} toggleExpanded={toggleExpanded} item={item} />;

@@ -90,13 +90,14 @@ export default function ReviewEditor(): ReactElement {
                                 width: '30%',
                                 maxWidth: 300,
                                 position: 'fixed',
-                                height: 'calc(100% - 180px)',
+                                height: '100%',
                                 borderRight: 1,
                                 flex: 1,
                                 zIndex: 80,
                                 borderColor: 'divider',
                                 overflowY: 'scroll',
                                 overflowX: 'scroll',
+                                ...(status === 'started' && { height: 'calc(100% - 172px)' }),
                             }}
                         >
                             <TreeView paths={entries.map((entry) => entry.filename)} />
@@ -113,7 +114,7 @@ export default function ReviewEditor(): ReactElement {
                                 overflowX: 'hidden',
                                 mr: 1,
                                 ml: 1,
-                                ...(status === 'started' && { pb: '60px' })
+                                ...(status === 'started' && { pb: '60px' }),
                             }}
                         >
                             <SourceList entries={entries} />

@@ -15,6 +15,7 @@ export interface Publication {
   revision: string;
   pinned: boolean;
   draft: boolean;
+  current: boolean;
   owner: User;
   attachment?: boolean;
   collaborators: string[];

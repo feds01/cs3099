@@ -1971,6 +1971,7 @@ components:
                 - collaborators
                 - owner
                 - draft
+                - current
                 - createdAt
                 - updatedAt
                 - pinned
@@ -1995,6 +1996,9 @@ components:
                     type: boolean
                     example: false
                 draft:
+                    type: boolean
+                    example: true
+                current:
                     type: boolean
                     example: true
                 owner:

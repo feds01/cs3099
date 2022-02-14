@@ -2,7 +2,7 @@ import CommentThreadRenderer from '../../../../components/CommentThreadRenderer'
 import FileViewer from '../../../../components/FileViewer';
 import { useReviewState } from '../../../../hooks/review';
 import { FileResponse } from '../../../../lib/api/models';
-import { CommentThread } from '../../../../lib/utils/comment';
+import { CommentThread, extractGeneralCommentsFromThreads, sortCommentsIntoFileMap, sortCommentsIntoThreads } from '../../../../lib/utils/comment';
 
 import Box from '@mui/material/Box';
 import { useEffect, useState } from 'react';
@@ -18,58 +18,10 @@ export default function SourceList({ entries }: CodeSourceListProps) {
     const [fileCommentMap, setFileCommentMap] = useState<Map<string, CommentThread[]>>(new Map());
 
     useEffect(() => {
-        const newGeneralComments = [];
-        const fileMap = new Map<string, CommentThread[]>();
+        const commentThreads = sortCommentsIntoThreads(comments);
 
-        // first create a default map that maps threads to comments...
-        const commentThreads = new Map<string, CommentThread>();
-
-        comments.forEach((comment) => {
-            if (commentThreads.has(comment.thread)) {
-                let thread = commentThreads.get(comment.thread)!;
-
-                thread.comments.push(comment);
-
-                // @@Cleanup: is this even necessary?
-                if (typeof thread.file === 'undefined' || typeof thread.anchor === 'undefined') {
-                    if (typeof comment.replying === 'undefined') {
-                        thread = {
-                            ...thread,
-                            file: comment.filename,
-                            anchor: comment.anchor,
-                        };
-
-                        commentThreads.set(comment.thread, thread);
-                    }
-                }
-            } else {
-                commentThreads.set(comment.thread, {
-                    comments: [comment],
-                    id: comment.id,
-                    ...(typeof comment.replying === 'undefined' && {
-                        file: comment.filename,
-                        anchor: comment.anchor,
-                    }),
-                });
-            }
-        });
-
-        // now sort the threads by file/general...
-        for (const thread of commentThreads.values()) {
-            if (typeof thread.file === 'string') {
-                if (fileMap.has(thread.file)) {
-                    const originalArr = fileMap.get(thread.file)!;
-                    originalArr.push(thread);
-                } else {
-                    fileMap.set(thread.file, [thread]);
-                }
-            } else {
-                newGeneralComments.push(thread);
-            }
-        }
-
-        setFileCommentMap(fileMap);
-        setGeneralComments(newGeneralComments);
+        setFileCommentMap(sortCommentsIntoFileMap(commentThreads));
+        setGeneralComments(extractGeneralCommentsFromThreads(commentThreads));
     }, [comments]);
 
     return (
