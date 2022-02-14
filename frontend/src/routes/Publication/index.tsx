@@ -39,9 +39,10 @@ interface PublicationParams {
 
 interface TabMapProps {
     isOwner: boolean;
+    isDraft: boolean;
 }
 
-const TabMap = ({ isOwner }: TabMapProps) => ({
+const TabMap = ({ isOwner, isDraft }: TabMapProps) => ({
     '/': {
         exact: true,
         strict: false,
@@ -56,13 +57,15 @@ const TabMap = ({ isOwner }: TabMapProps) => ({
         canonical: 'tree',
         component: () => <Source />,
     },
-    '/reviews': {
-        exact: false,
-        strict: false,
-        label: 'Reviews',
-        canonical: 'reviews',
-        component: () => <Reviews />,
-    },
+    ...(!isDraft && {
+        '/reviews': {
+            exact: false,
+            strict: false,
+            label: 'Reviews',
+            canonical: 'reviews',
+            component: () => <Reviews />,
+        },
+    }),
     ...(isOwner && {
         '/settings': {
             exact: true,
@@ -163,6 +166,7 @@ function PublicationView() {
             const basename = `/${username}/${name}` + (canonicalName[1] !== '' ? `/${canonicalName[1]}` : '');
             const tabMap = TabMap({
                 isOwner: username === session.username,
+                isDraft: publication.draft,
             });
 
             // @@Bug: The export button and the title of the publication aren't aligned properly.

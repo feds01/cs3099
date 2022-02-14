@@ -1,10 +1,10 @@
 import { strict } from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
+import Logger from '../common/logger';
 import { config } from '../server';
 import Follower from './Follower';
 import Publication from './Publication';
-import softDeleteMiddleware from './middlewares/softDelete';
 
 /**
  * A role represents what level of permissions a user has in the system.
@@ -78,21 +78,24 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
     },
 );
 
-// Register soft-deletion middleware
-UserSchema.plugin(softDeleteMiddleware);
-
 /**
  * This function is a hook to remove any comments that are on a review
  * if the publication is marked for deletion.
  */
-UserSchema.post('remove', async (item: IUserDocument, next) => {
-    await Publication.deleteMany({ owner: item.id });
+UserSchema.post(
+    /deleteOne|findOneAndDelete$/,
+    { document: true, query: true },
+    async (item: IUserDocument, next) => {
+        Logger.warn('Cleaning up user resources after account deletion');
 
-    // Now we need to delete any follower entries that contain the current user's id
-    await Follower.deleteMany({ $or: [{ following: item.id }, { follower: item.id }] }).exec();
+        await Publication.deleteMany({ owner: item.id }).exec();
 
-    next();
-});
+        // Now we need to delete any follower entries that contain the current user's id
+        await Follower.deleteMany({ $or: [{ following: item.id }, { follower: item.id }] }).exec();
+
+        next();
+    },
+);
 
 /**
  * Function to project a user document so that it can be returned as a

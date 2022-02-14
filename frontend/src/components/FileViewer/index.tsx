@@ -127,7 +127,7 @@ export default function FileViewer({ contents, filename, id, review, threads, la
 
     // Let's compute where the comments are to be placed once once we get them
     useEffect(() => {
-        if (renderSources && typeof threads !== 'undefined') {
+        if (typeof threads !== 'undefined') {
             const newMap = new Map<number, CommentThread[]>();
             const collectedFileComments: CommentThread[] = [];
 
@@ -172,7 +172,6 @@ export default function FileViewer({ contents, filename, id, review, threads, la
                         <Typography {...(typeof id !== 'undefined' && { id })}>{filename}</Typography>
                         <IconButton
                             aria-label="file-settings"
-                            disabled={!renderSources}
                             onClick={handleClick}
                             aria-expanded={isOpen ? 'true' : undefined}
                         >

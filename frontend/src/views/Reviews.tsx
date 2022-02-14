@@ -22,7 +22,7 @@ export default function Reviews({ user, withTitle = true }: Props): ReactElement
 
     useEffect(() => {
         setReviews(transformQueryIntoContentState(getReviewsQuery));
-    }, [getReviewsQuery.data]);
+    }, [getReviewsQuery.data, getReviewsQuery.isLoading]);
 
     function renderContent() {
         switch (reviews.state) {

@@ -14,6 +14,9 @@ const useStyles = makeStyles<Theme, MarkdownRendererProps>((theme) => ({
     wrapper: {
         fontSize: ({ fontSize }) => (fontSize ? `${fontSize}px !important` : 'inherit'),
         listStylePosition: 'inside',
+        overflowWrap: 'break-word',
+        whiteSpace: 'pre-wrap',
+        overflow: 'hidden',
     },
     inlineCode: {
         padding: '0.2em 0.4em',
