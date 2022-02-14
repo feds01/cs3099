@@ -29,7 +29,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
     } = useForm<ILoginForm>({
         resolver: zodResolver(LoginSchema),
         reValidateMode: 'onChange',
-        mode: 'onBlur',
+        mode: 'onChange',
         defaultValues: {
             username: '',
             password: '',

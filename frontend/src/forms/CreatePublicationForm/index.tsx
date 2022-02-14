@@ -28,7 +28,7 @@ export default function CreatePublicationForm(): ReactElement {
     } = useForm<ICreatePublication>({
         resolver: zodResolver(CreatePublicationSchema),
         reValidateMode: 'onChange',
-        mode: 'onBlur',
+        mode: 'onChange',
         defaultValues: {
             title: '',
             name: '',

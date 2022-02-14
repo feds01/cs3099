@@ -103,9 +103,7 @@ export default function CommentEditor({
         <Box sx={{ width: '100%', ...sx }}>
             <CommentField contents={contents} onChange={setValue} />
             <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', pt: 1, pb: 1 }}>
-                <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>
-                    Cancel
-                </Button>
+                mode: 'onChange',
                 <LoadingButton variant="contained" loading={commentQuery.isLoading} onClick={onSubmitComment}>
                     Submit
                 </LoadingButton>

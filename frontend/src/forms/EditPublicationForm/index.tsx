@@ -1,19 +1,18 @@
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import LoadingButton from '@mui/lab/LoadingButton';
-
-import { ReactElement, useEffect } from 'react';
-import { Publication } from '../../lib/api/models';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import ErrorBanner from '../../components/ErrorBanner';
-import { useNotificationDispatch } from '../../hooks/notification';
-import ControlledTextField from '../../components/ControlledTextField';
 import ControlledAutocomplete from '../../components/ControlledAutocomplete';
+import ControlledTextField from '../../components/ControlledTextField';
+import ErrorBanner from '../../components/ErrorBanner';
+import FieldLabel from '../../components/FieldLabel';
+import { useNotificationDispatch } from '../../hooks/notification';
+import { usePublicationDispatch } from '../../hooks/publication';
+import { Publication } from '../../lib/api/models';
 import { usePatchPublicationUsernameName } from '../../lib/api/publications/publications';
 import { IEditPublication, EditPublicationSchema } from '../../validators/publication';
-import { usePublicationDispatch } from '../../hooks/publication';
-import FieldLabel from '../../components/FieldLabel';
+import { zodResolver } from '@hookform/resolvers/zod';
+import LoadingButton from '@mui/lab/LoadingButton';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import { ReactElement, useEffect } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
 
 interface EditPublicationFormProps {
     publication: Publication;
@@ -37,7 +36,7 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
     } = useForm<IEditPublication>({
         resolver: zodResolver(EditPublicationSchema),
         reValidateMode: 'onChange',
-        mode: 'onBlur',
+        mode: 'onChange',
         defaultValues: {
             ...publication,
         },
@@ -49,7 +48,16 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
         if (isError && error) {
             if (typeof error.errors !== 'undefined') {
                 for (const [errorField, errorObject] of Object.entries(error.errors)) {
-                    setError(errorField as keyof IEditPublication, { type: 'manual', message: errorObject.message });
+                    // @@Hack: In the event if one of the collaborators is invalid, we still want to set the
+                    //         error. However, the backend will return collaborators.* as the error
+                    if (errorField.startsWith('collaborators')) {
+                        setError('collaborators', { type: 'manual', message: errorObject.message });
+                    } else {
+                        setError(errorField as keyof IEditPublication, {
+                            type: 'manual',
+                            message: errorObject.message,
+                        });
+                    }
                 }
             }
 

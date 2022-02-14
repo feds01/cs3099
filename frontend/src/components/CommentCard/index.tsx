@@ -94,14 +94,15 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                             <MoreVertIcon />
                         </IconButton>
                     </Box>
-                    <Box>
+                    <Box sx={{whiteSpace: 'pre-wrap'}}>
                         {editingComment ? (
                             <CommentEditor
                                 type={'modify'}
                                 filename={comment.filename}
                                 contents={comment.contents}
-                                // TODO: Support comment anchors!
-                                location={comment.anchor?.start || 0}
+                                {...(typeof comment.anchor !== 'undefined' && {
+                                    location: comment.anchor.end - 1
+                                })}
                                 reviewId={review.id}
                                 commentId={comment.id}
                                 onClose={() => setEditingComment(false)}

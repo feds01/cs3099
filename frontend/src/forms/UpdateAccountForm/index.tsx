@@ -26,6 +26,8 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
         setError,
         formState: { isValid, isSubmitting },
     } = useForm<AccountUpdate>({
+        reValidateMode: 'onChange',
+        mode: 'onChange',
         resolver: zodResolver(AccountUpdateSchema),
         defaultValues: { ...session },
     });

@@ -25,7 +25,8 @@ export default function RegisterForm({ onSuccess }: RegisterAccountFormProps): R
         formState: { isSubmitting, isValid },
     } = useForm<IRegisterForm>({
         resolver: zodResolver(RegisterSchema),
-        mode: 'onBlur',
+        reValidateMode: 'onChange',
+        mode: 'onChange',
         defaultValues: {
             username: '',
             email: '',
