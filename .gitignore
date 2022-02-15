@@ -20,3 +20,9 @@ swagger.json
 # Server saved files
 resources/
 tmp/
+
+# Python cache files
+__pycache__/
+
+# CLI config files
+cli/config/*
