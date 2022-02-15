@@ -99,22 +99,12 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
                         />
                     </Grid>
                     <Grid item xs={12} sm={8} md={6}>
-                        <FieldLabel label={'Name'} />
+                        <FieldLabel label={'Name'} required={false} />
                         <ControlledTextField
                             control={control}
-                            name="firstName"
+                            name="name"
                             textFieldProps={{
                                 helperText: 'Enter your first name',
-                            }}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={8} md={6}>
-                        <FieldLabel label={'Last Name'} required={false} />
-                        <ControlledTextField
-                            control={control}
-                            name="lastName"
-                            textFieldProps={{
-                                helperText: 'Enter your last name',
                             }}
                         />
                     </Grid>

@@ -3,6 +3,7 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import { Typography } from '@mui/material';
 import { User } from '../../lib/api/models';
+import { getUserInitials } from '../../lib/utils/user';
 
 type NameDisplayProps = { displayName?: false; position?: never } | { displayName: true; position: 'right' | 'bottom' };
 
@@ -11,31 +12,18 @@ interface CommonProps {
     size?: number;
 }
 
-type Props = User & CommonProps & NameDisplayProps;
-
-/**
- * Function that generates initials from provided first and last names of
- * a user.
- *
- * @param firstName The first name of the user.
- * @param lastName The last name of the user.
- * @returns The initials, based on the first and last name provided.
- */
-export function getUserInitials(firstName?: string, lastName?: string): string {
-    return `${firstName?.charAt(0).toUpperCase()}${lastName?.charAt(0).toUpperCase()}`;
-}
+type UserAvatarProps = User & CommonProps & NameDisplayProps;
 
 export default function UserAvatar({
     children,
-    firstName,
     displayName = false,
     size,
     position,
-    lastName,
     username,
+    name,
     profilePictureUrl,
-}: Props): ReactElement {
-    const initials = getUserInitials(firstName, lastName);
+}: UserAvatarProps): ReactElement {
+    const initials = getUserInitials(name || username);
 
     return (
         <Box

@@ -2,8 +2,7 @@ import { z } from 'zod';
 
 export const AccountUpdateSchema = z
     .object({
-        firstName: z.string().max(32),
-        lastName: z.string().max(32),
+        name: z.string().max(256),
         email: z.string().email(),
         username: z.string().max(50),
         status: z.string().max(32),

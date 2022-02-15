@@ -85,7 +85,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                     </Box>
                     <UserAvatar {...profileData.user} size={80}>
                         <Typography sx={{ fontWeight: 'bold', fontSize: 28 }} color="text" component="h1">
-                            {profileData.user.firstName} {profileData.user.lastName}
+                            {profileData.user.name}
                         </Typography>
                         {profileData.user.status && (
                             <Typography color="text" component="p">

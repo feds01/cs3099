@@ -14,8 +14,7 @@ describe('User endpoint tests ', () => {
         const registerRespoinse = await request.post('/auth/register').send({
             email: 'test@email.com',
             username: 'test',
-            firstName: 'test',
-            lastName: 'test',
+            name: 'test',
             password: 'Passwordexample123!',
             about: 'Nothing to say',
             profilePictureUrl: 'https://nothing-to-show.com',
@@ -71,16 +70,14 @@ describe('User endpoint tests ', () => {
 
     it("Updating user and check if user's information is updated", async () => {
         const response = await request.patch('/user/test').send({
-            firstName: 'tset',
-            lastName: 'tset',
+            name: 'tset',
             about: 'Something to say',
             profilePictureUrl: 'https://something-to-show.com',
         });
         expect(response.status).toBe(200);
 
         const user = await User.findOne({ username: 'test' });
-        expect(user?.firstName).toBe('tset');
-        expect(user?.lastName).toBe('tset');
+        expect(user?.name).toBe('tset');
         expect(user?.about).toBe('Something to say');
         expect(user?.profilePictureUrl).toBe('https://something-to-show.com');
     });

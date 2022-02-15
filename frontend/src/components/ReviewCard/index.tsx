@@ -36,7 +36,7 @@ export default function ReviewCard({ review }: Props): ReactElement {
                             />
                         )}
                         <Typography>
-                            <UserLink username={review.owner.username} />
+                            <UserLink user={review.owner} />
                             {isComplete ? (
                                 <>
                                     {' '}

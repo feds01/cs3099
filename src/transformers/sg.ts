@@ -23,13 +23,9 @@ export function transformSgUserToInternal(
 ): Partial<IUserDocument> & { username: string; email: string } {
     const { name, email, id, profilePictureUrl } = user;
 
-    const firstName = name.substring(0, name.indexOf(' '));
-    const lastName = name.substring(name.indexOf(' ') + 1);
-
     return {
         username: id.id, // TODO: this is somewhat flaky since what if the username is already taken?
-        firstName,
-        lastName,
+        name,
         password: '',
         profilePictureUrl,
         email,

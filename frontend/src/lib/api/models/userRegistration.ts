@@ -8,9 +8,8 @@
 
 export interface UserRegistration {
   email: string;
-  firstName: string;
   username: string;
-  lastName?: string;
+  name?: string;
   about?: string;
   password: string;
 }

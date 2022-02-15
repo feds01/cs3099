@@ -66,7 +66,7 @@ export default function ConversionView(_props: ConversationViewProps) {
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <Typography>
-                        by <UserLink username={review.owner.username} />{' '}
+                        by <UserLink user={review.owner} />{' '}
                         {formatDistance(review.createdAt, new Date(), { addSuffix: true })}
                     </Typography>
                 </Box>

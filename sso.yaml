@@ -316,8 +316,7 @@ components:
                 - id
                 - email
                 - username
-                - firstName
-                - lastName
+                - name
             properties:
                 id:
                     type: string
@@ -328,12 +327,9 @@ components:
                 username:
                     type: string
                     example: 'jdoe1'
-                firstName:
+                name:
                     type: string
-                    example: 'John'
-                lastName:
-                    type: string
-                    example: 'Doe'
+                    example: 'John Doe'
                 profilePictureUrl:
                     type: string
                     example: https://some-cdn.some-company.com/profiles/avatar.jpg

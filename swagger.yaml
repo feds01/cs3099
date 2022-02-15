@@ -1830,21 +1830,17 @@ components:
             required:
                 - email
                 - username
-                - firstName
                 - password
             properties:
                 email:
                     type: string
                     example: 'jon.doe@email.com'
-                firstName:
-                    type: string
-                    example: 'John'
                 username:
                     type: string
                     example: 'jdoe1'
-                lastName:
+                name:
                     type: string
-                    example: 'Doe'
+                    example: 'John Doe'
                 about:
                     type: string
                     example: 'Professor at Example University'
@@ -1857,15 +1853,12 @@ components:
                 email:
                     type: string
                     example: 'jon.doe@email.com'
-                firstName:
+                name:
                     type: string
-                    example: 'John'
+                    example: 'John Doe'
                 username:
                     type: string
                     example: 'jdoe1'
-                lastName:
-                    type: string
-                    example: 'Doe'
                 about:
                     type: string
                     example: 'Professor at Example University'
@@ -1894,7 +1887,6 @@ components:
                 - id
                 - email
                 - username
-                - firstName
                 - createdAt
             properties:
                 id:
@@ -1906,12 +1898,9 @@ components:
                 username:
                     type: string
                     example: 'jdoe1'
-                firstName:
+                name:
                     type: string
-                    example: 'John'
-                lastName:
-                    type: string
-                    example: 'Doe'
+                    example: 'John Doe'
                 createdAt:
                     type: number
                     example: 2387238172812

@@ -30,8 +30,7 @@ export default function RegisterForm({ onSuccess }: RegisterAccountFormProps): R
         defaultValues: {
             username: '',
             email: '',
-            firstName: '',
-            lastName: '',
+            name: '',
             password: '',
             confirm: ''
         }
@@ -64,13 +63,9 @@ export default function RegisterForm({ onSuccess }: RegisterAccountFormProps): R
                 }}
             >
                 <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                        <FieldLabel label={'First Name'} />
-                        <ControlledTextField name="firstName" control={control} />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                        <FieldLabel label={'Last name'} required={false} />
-                        <ControlledTextField name="lastName" control={control} textFieldProps={{ required: false }} />
+                    <Grid item xs={12}>
+                        <FieldLabel label={'Full Name'} required={false} />
+                        <ControlledTextField name="name" control={control} />
                     </Grid>
                 </Grid>
                 <Grid container spacing={1}>

@@ -13,7 +13,7 @@ import {
   SuccessStatus
 } from '.././models'
 
-export const getGetSgSsoLoginMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(Object.values(SuccessStatus)), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), firstName: faker.random.word(), lastName: faker.helpers.randomize([faker.random.word(), undefined]), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
+export const getGetSgSsoLoginMock = () => ({status: faker.helpers.randomize([faker.helpers.randomize(Object.values(SuccessStatus)), undefined]), token: faker.random.word(), refreshToken: faker.random.word(), user: {id: faker.random.word(), email: faker.random.word(), username: faker.random.word(), name: faker.helpers.randomize([faker.random.word(), undefined]), createdAt: faker.datatype.number(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]), status: faker.helpers.randomize([faker.random.word(), undefined]), about: faker.helpers.randomize([faker.random.word(), undefined])}})
 
 export const getPostSgSsoVerifyMock = () => ({status: faker.helpers.randomize(Object.values(SuccessStatus)), user_id: faker.random.word(), name: faker.random.word(), email: faker.random.word(), profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined])})
 

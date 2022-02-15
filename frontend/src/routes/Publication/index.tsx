@@ -196,7 +196,7 @@ function PublicationView() {
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                             <Typography>
-                                by <UserLink username={publication.owner.username} />{' '}
+                                by <UserLink user={publication.owner} />{' '}
                                 {formatDistance(publication.createdAt, new Date(), { addSuffix: true })}
                             </Typography>
                             <Chip

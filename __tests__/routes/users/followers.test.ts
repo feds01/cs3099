@@ -20,8 +20,7 @@ describe('Follower endpoints testing ', () => {
             const registerResponse = await request.post('/auth/register').send({
                 email: `${username}@email.com`,
                 username: username,
-                firstName: username,
-                lastName: username,
+                name: username,
                 password: 'Passwordexample123!',
                 about: `I am ${username}`,
                 profilePictureUrl: 'https://nothing-to-show.com',
