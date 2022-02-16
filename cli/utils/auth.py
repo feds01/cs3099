@@ -20,7 +20,7 @@ def get_auth(auth_file: pathlib.PosixPath, base_url: str) -> Tuple[str, dict[str
 
     return username, headers
 
-def authed(func):
+def authenticated(func):
     @wraps(func)
     def wrapper(obj, *args, **kwargs):
         base_url = obj["BASE_URL"]

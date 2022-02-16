@@ -1,6 +1,6 @@
 import click
 import requests
-from utils.auth import authed
+from utils.auth import authenticated
 from zipfile import is_zipfile
 
 
@@ -22,7 +22,7 @@ def validate_zipfile(
 )
 @click.option("--publication", prompt="Publication ID", help="Publication ID", type=str)
 @click.pass_obj
-@authed
+@authenticated
 def upload(
     obj: dict[str, str],
     file: str,
