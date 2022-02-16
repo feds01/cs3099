@@ -32,7 +32,6 @@ class ShowTest(unittest.TestCase):
             obj=cls.obj,
         )
         assert login_result.exit_code == 0
-        cls.obj["AUTH"] = get_auth(cls.test_dir, cls.test_config["baseUrl"])
 
     @classmethod
     def tearDownClass(cls):
@@ -46,12 +45,6 @@ class ShowTest(unittest.TestCase):
             result.output.startswith("Listing all publications available:\n")
             or result.output == "No publications found\n"
         )
-
-    def test_show_without_logged_in(self):
-        self.obj["AUTH"] = (None, None)
-        result = self.runner.invoke(show, [], obj=self.obj)
-        self.assertEqual(result.exit_code, 0)
-        self.assertEqual(result.output, "Please login first\n")
 
 
 if __name__ == "__main__":
