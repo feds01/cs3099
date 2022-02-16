@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ExistUsernameSchema } from './user';
 
+import { ExistUsernameSchema } from './user';
 
 const CollaboratorArraySchema = ExistUsernameSchema.array().refine(
     (arr) => arr.length === new Set(arr).size,

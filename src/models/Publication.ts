@@ -1,9 +1,10 @@
+import assert from 'assert';
+import mongoose, { Document, Model, Schema } from 'mongoose';
+
+import Logger from '../common/logger';
 import { ExportSgPublication } from '../validators/sg';
 import Review from './Review';
 import User, { IUserDocument } from './User';
-import softDeleteMiddleware from './middlewares/softDelete';
-import assert from 'assert';
-import mongoose, { Document, Model, Schema } from 'mongoose';
 
 /** The publication document represents a publication object */
 export interface IPublication {
@@ -29,8 +30,6 @@ export interface IPublication {
     createdAt: Date;
     /** When the document was last updated */
     updatedAt: Date;
-    /** If the document is 'deleted' */
-    isDeleted: boolean;
 }
 
 export interface IPublicationDocument extends IPublication, Document {}
@@ -52,23 +51,40 @@ const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublicati
         current: { type: Boolean, required: true },
         pinned: { type: Boolean, default: false },
         collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
-        isDeleted: { type: Boolean, default: false },
     },
     { timestamps: true },
 );
-
-// Register soft-deletion middleware
-PublicationSchema.plugin(softDeleteMiddleware);
 
 /**
  * This function is a hook to remove any reviews that are on a publication
  * if the publication is marked for deletion.
  */
-PublicationSchema.post('remove', async (item: IPublicationDocument, next) => {
-    await Review.deleteMany({ publication: item.id });
+PublicationSchema.post(
+    /deleteOne|findOneAndDelete$/,
+    { document: true, query: true },
+    async (item: IPublicationDocument, next) => {
+        Logger.warn('Cleaning up publication orphaned reviews (deleteOne)');
+        await Review.deleteMany({ publication: item.id }).exec();
 
-    next();
-});
+        next();
+    },
+);
+
+PublicationSchema.post(
+    'deleteMany',
+    { document: true, query: true },
+    async (items: IPublicationDocument[], next) => {
+        Logger.warn('Cleaning up publication orphaned reviews (deleteMany)');
+
+        await Promise.all(
+            items.map(async (item) => {
+                await Review.deleteMany({ publication: item.id }).exec();
+            }),
+        );
+
+        next();
+    },
+);
 
 PublicationSchema.statics.project = async (
     publication: IPublicationDocument,
@@ -97,6 +113,9 @@ PublicationSchema.statics.project = async (
         // add the revision to the structure
         revision: publication.revision,
 
+        // If the publication is the current version or not
+        current: publication.current,
+
         // this is a flag that denotes whether or not we know that this publication has an attached
         // zip archive on disk.
         attachment,
@@ -124,6 +143,9 @@ PublicationSchema.statics.projectWith = (
 
         // add the revision to the structure
         revision: publication.revision,
+
+        // If the publication is the current version or not
+        current: publication.current,
 
         // TODO: project collaborators too...
         collaborators,

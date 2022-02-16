@@ -1,9 +1,9 @@
+import mongoose, { Document, Model, Schema } from 'mongoose';
+
 import { ExportSgReview } from '../validators/sg';
 import Comment from './Comment';
 import Publication, { IPublication } from './Publication';
 import User, { IUser } from './User';
-import softDeleteMiddleware from './middlewares/softDelete';
-import mongoose, { Document, Model, Schema } from 'mongoose';
 
 /**
  * Representation of whether a publication is in either 'started' mode
@@ -28,8 +28,6 @@ export interface IReview {
     createdAt: Date;
     /** When the document was last updated */
     updatedAt: Date;
-    /** If the document is 'deleted' */
-    isDeleted: boolean;
 }
 
 type PopulatedReview = (IReview & {
@@ -57,20 +55,30 @@ const ReviewSchema = new Schema<IReview, IReviewModel, IReview>(
             default: IReviewStatus.Started,
             required: true,
         },
-        isDeleted: { type: Boolean, default: false },
     },
     { timestamps: true },
 );
-
-// Register soft-deletion middleware
-ReviewSchema.plugin(softDeleteMiddleware);
 
 /**
  * This function is a hook to remove any comments that are on a review
  * if the publication is marked for deletion.
  */
-ReviewSchema.post('remove', async (item: IReviewDocument, next) => {
-    await Comment.deleteMany({ review: item.id });
+ReviewSchema.post(
+    /deleteOne|findOneAndDelete$/,
+    { document: true, query: true },
+    async (item: IReviewDocument, next) => {
+        await Comment.deleteMany({ review: item.id });
+
+        next();
+    },
+);
+
+ReviewSchema.post('deleteMany', { document: true }, async (items: IReviewDocument[], next) => {
+    await Promise.all(
+        items.map(async (item) => {
+            await Comment.deleteMany({ review: item.id }).exec();
+        }),
+    );
 
     next();
 });

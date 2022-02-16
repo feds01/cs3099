@@ -17,9 +17,9 @@ export default function FollowerCard({ user }: Props): ReactElement {
                     <UserAvatar {...user} displayName={false} size={40} />
                     <Box sx={{ width: '100%', paddingLeft: 1 }}>
                         <Typography variant={'body1'}>
-                            {user.firstName} {user.lastName}
+                            {user.name}
                         </Typography>
-                        <UserLink username={user.username} />
+                        <UserLink user={user} />
                     </Box>
                 </Box>
             </CardContent>

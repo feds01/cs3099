@@ -1,10 +1,11 @@
+import mongoose from 'mongoose';
+
 import * as errors from '../common/errors';
 import Comment from '../models/Comment';
 import Publication from '../models/Publication';
 import Review, { IReviewStatus } from '../models/Review';
 import User, { IUserDocument, IUserRole } from '../models/User';
 import { BasicRequest } from './requests';
-import mongoose from 'mongoose';
 
 export interface Permission {
     level: IUserRole;

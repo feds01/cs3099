@@ -8,9 +8,8 @@
 
 export interface UserPatchRequest {
   email?: string;
-  firstName?: string;
+  name?: string;
   username?: string;
-  lastName?: string;
   about?: string;
   status?: string;
   password?: string;

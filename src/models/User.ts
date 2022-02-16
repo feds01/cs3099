@@ -1,9 +1,10 @@
+import { strict } from 'assert';
+import mongoose, { Document, Model, Schema } from 'mongoose';
+
+import Logger from '../common/logger';
 import { config } from '../server';
 import Follower from './Follower';
 import Publication from './Publication';
-import softDeleteMiddleware from './middlewares/softDelete';
-import { strict } from 'assert';
-import mongoose, { Document, Model, Schema } from 'mongoose';
 
 /**
  * A role represents what level of permissions a user has in the system.
@@ -28,10 +29,8 @@ export interface IUser {
     username: string;
     /** User password (hashed and salted) */
     password: string;
-    /** User first name */
-    firstName: string;
-    /** User last name */
-    lastName?: string;
+    /** User optional full name */
+    name?: string;
     /** A String determining the location of where the uploaded avatar is. */
     profilePictureUrl?: string;
     /** User permission level */
@@ -62,8 +61,7 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
     {
         email: { type: String, required: true, unique: true },
         username: { type: String, required: true, unique: true },
-        firstName: { type: String, required: true, minLength: 1 },
-        lastName: { type: String, required: false },
+        name: { type: String },
         password: { type: String, default: '' },
         profilePictureUrl: { type: String, required: false },
         about: { type: String },
@@ -77,21 +75,24 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
     },
 );
 
-// Register soft-deletion middleware
-UserSchema.plugin(softDeleteMiddleware);
-
 /**
  * This function is a hook to remove any comments that are on a review
  * if the publication is marked for deletion.
  */
-UserSchema.post('remove', async (item: IUserDocument, next) => {
-    await Publication.deleteMany({ owner: item.id });
+UserSchema.post(
+    /deleteOne|findOneAndDelete$/,
+    { document: true, query: true },
+    async (item: IUserDocument, next) => {
+        Logger.warn('Cleaning up user resources after account deletion');
 
-    // Now we need to delete any follower entries that contain the current user's id
-    await Follower.deleteMany({ $or: [{ following: item.id }, { follower: item.id }] }).exec();
+        await Publication.deleteMany({ owner: item.id }).exec();
 
-    next();
-});
+        // Now we need to delete any follower entries that contain the current user's id
+        await Follower.deleteMany({ $or: [{ following: item.id }, { follower: item.id }] }).exec();
+
+        next();
+    },
+);
 
 /**
  * Function to project a user document so that it can be returned as a
@@ -101,7 +102,7 @@ UserSchema.post('remove', async (item: IUserDocument, next) => {
  * @returns A partial user object with selected fields that are to be projected.
  */
 UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
-    const { profilePictureUrl, about, status, lastName } = user;
+    const { profilePictureUrl, about, name, status } = user;
 
     strict.strict(typeof user.id === 'string');
 
@@ -109,12 +110,11 @@ UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
         ...(!omitId && { id: user.id }),
         email: user.email,
         username: user.username,
-        firstName: user.firstName,
         createdAt: user.createdAt.getTime(),
         ...(profilePictureUrl && { profilePictureUrl }),
         ...(typeof about !== 'undefined' && { about }),
         ...(typeof status !== 'undefined' && { status }),
-        ...(typeof lastName !== 'undefined' && { lastName }),
+        ...(typeof name !== 'undefined' && { name }),
     };
 };
 
@@ -134,11 +134,11 @@ UserSchema.statics.getExternalId = (user: IUserDocument): string => {
  * @returns A partial user object with selected fields that are to be projected.
  */
 UserSchema.statics.projectAsSg = (user: IUserDocument) => {
-    const { firstName, lastName, email, profilePictureUrl } = user;
+    const { name, email, profilePictureUrl, username } = user;
 
     return {
-        name: firstName + (typeof lastName !== 'undefined' ? ` ${lastName}` : ''),
         email,
+        name: typeof name !== 'undefined' ? name : username,
         ...(profilePictureUrl && { profilePictureUrl }),
     };
 };

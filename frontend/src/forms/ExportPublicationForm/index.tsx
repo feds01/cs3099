@@ -1,17 +1,17 @@
-import Select from '@mui/material/Select';
-import Dialog from '@mui/material/Dialog';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
-import FormControl from '@mui/material/FormControl';
-import DialogTitle from '@mui/material/DialogTitle';
-import FormControlLabel from '@mui/material/FormControlLabel';
-
-import { ReactElement } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { Box, Button, DialogActions, DialogContent, FormHelperText, FormLabel } from '@mui/material';
-import { ExportPublicationSchema, IExportPublication } from '../../validators/export';
 import { usePostPublicationUsernameNameExport } from '../../lib/api/publications/publications';
+import { ExportPublicationSchema, IExportPublication } from '../../validators/export';
+import { zodResolver } from '@hookform/resolvers/zod';
+import LoadingButton from '@mui/lab/LoadingButton';
+import { Box, Button, DialogActions, DialogContent, FormHelperText, FormLabel } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import { ReactElement } from 'react';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 interface ExportDialogProps {
     open: boolean;
@@ -40,6 +40,8 @@ export default function ExportDialog({ username, name, revision, open, onClose }
         formState: { isSubmitting, isValid },
     } = useForm<IExportPublication>({
         resolver: zodResolver(ExportPublicationSchema),
+        mode: 'onChange',
+        reValidateMode: 'onChange',
         defaultValues: {
             to: '',
             exportReviews: false,
@@ -99,9 +101,17 @@ export default function ExportDialog({ username, name, revision, open, onClose }
                 </DialogContent>
                 <DialogActions>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button disabled={!isValid || isSubmitting} type="submit">
-                            Confirm
+                        <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>
+                            Cancel
                         </Button>
+                        <LoadingButton
+                            variant="contained"
+                            loading={exportPub.isLoading}
+                            disabled={!isValid || isSubmitting}
+                            type="submit"
+                        >
+                            Confirm
+                        </LoadingButton>
                     </Box>
                 </DialogActions>
             </form>

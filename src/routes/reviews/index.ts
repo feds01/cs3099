@@ -135,7 +135,9 @@ registerRoute(router, '/:id/comment', {
             if (typeof anchor !== 'undefined') {
                 const lines = file.countLines(entry.getData().toString());
 
-                if (anchor.start > lines || anchor.end > lines) {
+                // end + 1 is allowed since it might cover the last line and thus the anchor becomes ranged
+                // to the last line and the the last line + 1
+                if (anchor.start > lines || anchor.end > lines + 1) {
                     return {
                         status: 'error',
                         message: errors.BAD_REQUEST,

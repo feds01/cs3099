@@ -6,6 +6,7 @@ import React, { ReactElement } from 'react';
 interface Props {
     username: string;
     name: string;
+    current: boolean;
     revision?: string;
 }
 
@@ -17,13 +18,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
     },
 }));
 
-export default function PublicationLink({ username, name, revision }: Props): ReactElement {
+export default function PublicationLink({ username, name, current, revision }: Props): ReactElement {
     const classes = useStyles();
     const basename = `/${username}/${name}` + (revision ? `/${revision}` : '');
 
     return (
         <Link className={classes.wrapper} to={basename}>
-            {username}/{name}
+            {username}/{name}{!current && typeof revision !== 'undefined' && (`@${revision}`) }
         </Link>
     );
 }

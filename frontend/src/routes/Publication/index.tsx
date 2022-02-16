@@ -39,9 +39,10 @@ interface PublicationParams {
 
 interface TabMapProps {
     isOwner: boolean;
+    isDraft: boolean;
 }
 
-const TabMap = ({ isOwner }: TabMapProps) => ({
+const TabMap = ({ isOwner, isDraft }: TabMapProps) => ({
     '/': {
         exact: true,
         strict: false,
@@ -56,13 +57,15 @@ const TabMap = ({ isOwner }: TabMapProps) => ({
         canonical: 'tree',
         component: () => <Source />,
     },
-    '/reviews': {
-        exact: false,
-        strict: false,
-        label: 'Reviews',
-        canonical: 'reviews',
-        component: () => <Reviews />,
-    },
+    ...(!isDraft && {
+        '/reviews': {
+            exact: false,
+            strict: false,
+            label: 'Reviews',
+            canonical: 'reviews',
+            component: () => <Reviews />,
+        },
+    }),
     ...(isOwner && {
         '/settings': {
             exact: true,
@@ -163,18 +166,19 @@ function PublicationView() {
             const basename = `/${username}/${name}` + (canonicalName[1] !== '' ? `/${canonicalName[1]}` : '');
             const tabMap = TabMap({
                 isOwner: username === session.username,
+                isDraft: publication.draft,
             });
 
             // @@Bug: The export button and the title of the publication aren't aligned properly.
             return (
                 <PublicationProvider state={{ publication }} refetch={getPublicationQuery.refetch}>
-                      {publication.draft && (
-                            <Alert severity="warning">
-                                <AlertTitle>Warning</AlertTitle>
-                                This publication isn't visible until you upload sources to it
-                            </Alert>
-                        )}
-                    <Box sx={{ mb: 1, pt: 1 }}> 
+                    {publication.draft && (
+                        <Alert severity="warning">
+                            <AlertTitle>Warning</AlertTitle>
+                            This publication isn't visible until you upload sources to it
+                        </Alert>
+                    )}
+                    <Box sx={{ mb: 1, pt: 1 }}>
                         <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                                 <MarkdownRenderer fontSize={24} contents={publication.title} />
@@ -192,7 +196,7 @@ function PublicationView() {
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                             <Typography>
-                                by <UserLink username={publication.owner.username} />{' '}
+                                by <UserLink user={publication.owner} />{' '}
                                 {formatDistance(publication.createdAt, new Date(), { addSuffix: true })}
                             </Typography>
                             <Chip

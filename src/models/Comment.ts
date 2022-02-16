@@ -1,7 +1,7 @@
+import mongoose, { Document, Model, Schema } from 'mongoose';
+
 import { ExportSgComment, SgComment } from '../validators/sg';
 import User, { IUser } from './User';
-import softDeleteMiddleware from './middlewares/softDelete';
-import mongoose, { Document, Model, Schema } from 'mongoose';
 
 /** A IComment document represents a comment object */
 export interface IComment {
@@ -68,9 +68,6 @@ const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
     },
     { timestamps: true },
 );
-
-// Register soft-deletion middleware
-CommentSchema.plugin(softDeleteMiddleware);
 
 /**
  * Function to project a user comment so that it can be returned as a

@@ -1,8 +1,9 @@
-import app from '../../../src/app';
+import { Response, agent as supertest } from 'supertest';
+
 import * as errors from '../../../src/common/errors';
+import app from '../../../src/app';
 import Follower from '../../../src/models/Follower';
 import User, { IUserDocument } from '../../../src/models/User';
-import { agent as supertest, Response } from 'supertest';
 
 const request = supertest(app);
 
@@ -19,8 +20,7 @@ describe('Follower endpoints testing ', () => {
             const registerResponse = await request.post('/auth/register').send({
                 email: `${username}@email.com`,
                 username: username,
-                firstName: username,
-                lastName: username,
+                name: username,
                 password: 'Passwordexample123!',
                 about: `I am ${username}`,
                 profilePictureUrl: 'https://nothing-to-show.com',

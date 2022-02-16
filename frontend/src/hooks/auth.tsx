@@ -84,7 +84,6 @@ const initAuth = (state: AuthState): AuthState => {
                 state.session = parsedSession;
             }
         } catch (e) {
-            console.log('Session in localStorage was invalid');
             state.isLoggedIn = false;
         }
     }

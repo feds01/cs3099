@@ -24,11 +24,11 @@ export default function CreatePublicationForm(): ReactElement {
         control,
         handleSubmit,
         setError,
-        formState: { isSubmitting, isValid, errors },
+        formState: { isSubmitting, isValid },
     } = useForm<ICreatePublication>({
         resolver: zodResolver(CreatePublicationSchema),
         reValidateMode: 'onChange',
-        mode: 'onBlur',
+        mode: 'onChange',
         defaultValues: {
             title: '',
             name: '',
@@ -37,8 +37,6 @@ export default function CreatePublicationForm(): ReactElement {
             collaborators: [],
         },
     });
-
-    console.log(errors);
 
     const { isLoading, isError, data, error, mutateAsync } = usePostPublication();
 
