@@ -1,10 +1,13 @@
 import ErrorBanner from '../../components/ErrorBanner';
 import PageLayout from '../../components/PageLayout';
+import DeleteReviewForm from '../../forms/DeleteReviewForm';
+import { useAuth } from '../../hooks/auth';
 import { useNotificationDispatch } from '../../hooks/notification';
 import { ReviewProvider } from '../../hooks/review';
 import { ApiErrorResponse, GetReviewId200 as GetReviewResponse, GetReviewIdComments200 } from '../../lib/api/models';
 import { Review } from '../../lib/api/models';
 import { useGetReviewId, useGetReviewIdComments, usePostReviewIdComplete } from '../../lib/api/reviews/reviews';
+import { computeUserPermission } from '../../lib/utils/roles';
 import { ContentState } from '../../types/requests';
 import { transformQueryIntoContentState } from '../../wrappers/react-query';
 import ConversationView from './modules/ConversationView';
@@ -49,6 +52,7 @@ interface ReviewParams {
 
 export default function ReviewPage(): ReactElement {
     const location = useLocation();
+    const { session } = useAuth();
     const notificationDispatcher = useNotificationDispatch();
     const params = useParams<ReviewParams>();
 
@@ -68,7 +72,7 @@ export default function ReviewPage(): ReactElement {
 
             // This is a hack to prevent us jumping from '/' in conversation view
             // and file view...
-            window.history.replaceState(null, "", `/review/${params.id}/files`);
+            window.history.replaceState(null, '', `/review/${params.id}/files`);
 
             getReview.refetch();
         } else if (completeReviewQuery.isError && completeReviewQuery.error) {
@@ -110,7 +114,11 @@ export default function ReviewPage(): ReactElement {
     if (commentResourceResponse.state === 'loading') {
         return <LinearProgress />;
     } else if (commentResourceResponse.state === 'error') {
-        return <ErrorBanner message={commentResourceResponse.error.message} />;
+        return (
+            <PageLayout title="Review">
+                <ErrorBanner message={commentResourceResponse.error.message} />
+            </PageLayout>
+        );
     }
 
     const renderContent = () => {
@@ -124,12 +132,10 @@ export default function ReviewPage(): ReactElement {
             case 'ok':
                 const { review } = reviewResponse.data;
                 const { comments } = commentResourceResponse.data;
+                const permission = computeUserPermission(review.owner.id, session);
 
                 return (
-                    <ReviewProvider
-                        state={{ comments, review }}
-                        refetch={() => getCommentsQuery.refetch()}
-                    >
+                    <ReviewProvider state={{ comments, review, permission }} refetch={() => getCommentsQuery.refetch()}>
                         <Box
                             sx={{
                                 display: 'flex',
@@ -167,10 +173,12 @@ export default function ReviewPage(): ReactElement {
                                         );
                                     })}
                                 </Tabs>
-                                {review.status === 'started' && (
-                                    <Box>
+                                <Box>
+                                    {permission.delete && <DeleteReviewForm reviewId={review.id} />}
+                                    {review.status === 'started' && (
                                         <LoadingButton
                                             variant="contained"
+                                            {...(permission.delete && { sx: { ml: 1 } })}
                                             loading={completeReviewQuery.isLoading}
                                             onClick={handleClick}
                                             disabled={comments.length === 0}
@@ -178,8 +186,8 @@ export default function ReviewPage(): ReactElement {
                                         >
                                             Finish review
                                         </LoadingButton>
-                                    </Box>
-                                )}
+                                    )}
+                                </Box>
                             </Box>
                             <Switch>
                                 <Box sx={{ pt: '48px' }}>

@@ -1887,6 +1887,7 @@ components:
                 - id
                 - email
                 - username
+                - role
                 - createdAt
             properties:
                 id:
@@ -1898,6 +1899,10 @@ components:
                 username:
                     type: string
                     example: 'jdoe1'
+                role:
+                    type: string
+                    example: 'default'
+                    enum: ['default', 'moderator', 'administrator']
                 name:
                     type: string
                     example: 'John Doe'

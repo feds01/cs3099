@@ -16,6 +16,7 @@ import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
+import DeleteUserAccountForm from '../../forms/DeleteUserAccountForm';
 
 export default function Account() {
     const { session } = useAuth();
@@ -146,9 +147,37 @@ export default function Account() {
                         {uploadAvatar.state === 'error' && <ErrorBanner message={uploadAvatar.error.message} />}
                         {deleteAvatarQuery.error && <ErrorBanner message={deleteAvatarQuery.error.message} />}
                     </Grid>
-                    <Divider />
                     <Grid item xs={12}>
                         <AccountUpdateForm session={session} />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Grid container spacing={2} sx={{ borderTop: '1px solid', borderColor: 'divider', pb: 2 }}>
+                            <Grid item xs={12} md={5}>
+                                <Typography variant={'h5'} sx={{ fontWeight: 'bold' }}>
+                                    Delete Account
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12} md={7}>
+                                <Typography variant={'h6'}>
+                                    Deleting an account has certain effects on your data:
+                                </Typography>
+                                <Box component="ul" sx={{ pt: 1, paddingInlineStart: '40px' }}>
+                                    <li>
+                                        <Typography variant={'body1'}>
+                                            Some content that you post on the platform might persist and is inherited by
+                                            a system user to preserve data consistency.
+                                        </Typography>
+                                    </li>
+                                    <li>
+                                        <Typography variant={'body1'}>
+                                            All of your reviews, publications, and comments might be deleted when
+                                            performing this action.
+                                        </Typography>
+                                    </li>
+                                </Box>
+                                <DeleteUserAccountForm username={session.username} />
+                            </Grid>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Box>

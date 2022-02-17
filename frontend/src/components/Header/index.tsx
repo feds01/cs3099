@@ -31,7 +31,7 @@ export default function Header({ title }: Props): ReactElement {
                 boxShadow: '0 1px 0 0 #dbdbdb',
             }}
         >
-            <Toolbar sx={{ ...(!title && { justifyContent: 'space-between' }) }}>
+            <Toolbar sx={{ ...(!title && { justifyContent: 'space-between' }), height: '64px' }}>
                 <Link to='/' aria-label="home">
                     <img src={LogoImage} height={48} alt="Avatar" />
                 </Link>

@@ -95,3 +95,4 @@ export * from './getOpenapi200TwoVersion';
 export * from './getOpenapi200TwoSchema';
 export * from './getOpenapi200Schema';
 export * from './revisePublicationRequest';
+export * from './userRole';

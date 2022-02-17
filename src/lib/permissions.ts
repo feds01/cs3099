@@ -11,6 +11,23 @@ export interface Permission {
     level: IUserRole;
 }
 
+type BodylessBasicRequest<P, Q> = Omit<BasicRequest<P, Q, unknown>, 'body'>;
+
+/**
+ * This is a type that represents what the permission verification function can return when
+ * resolving a permission query.
+ */
+export type ResolvedPermission =
+    | {
+        valid: false;
+        code?: 401 | 400 | 404;
+        message?: string;
+    }
+    | {
+        valid: true;
+        user: IUserDocument;
+    };
+
 /**
  * This is a function that is defined for some endpoint that is used to determined whether some
  * request given it's context has permissions to perform a particular request in the given
@@ -20,23 +37,6 @@ export type PermissionVerificationFn<P, Q> = (
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
 ) => Promise<ResolvedPermission>;
-
-type BodylessBasicRequest<P, Q> = Omit<BasicRequest<P, Q, unknown>, 'body'>;
-
-/**
- * This is a type that represents what the permission verification function can return when
- * resolving a permission query.
- */
-export type ResolvedPermission =
-    | {
-          valid: false;
-          code?: 401 | 400 | 404;
-          message?: string;
-      }
-    | {
-          valid: true;
-          user: IUserDocument;
-      };
 
 /**
  * Convert a permission into an integer.
@@ -96,7 +96,7 @@ export async function ensureValidPermissions<P, Q>(
         return { valid: true, user };
     }
 
-    return verifyPermission(user, req);
+    return await verifyPermission(user, req);
 }
 
 /**
@@ -110,9 +110,7 @@ export async function ensureValidPermissions<P, Q>(
 export const defaultPermissionVerifier = async <P, Q>(
     _user: IUserDocument,
     _req: BodylessBasicRequest<P, Q>,
-): Promise<ResolvedPermission> => {
-    return { valid: false };
-};
+): Promise<ResolvedPermission> => ({ valid: false });
 
 /**
  * This is a generic implementation of a function that returns
@@ -152,10 +150,8 @@ export const verifyUserPermission = async <P extends UserParamsRequest, Q extend
         if (user._id === req.params.username) {
             return { valid: true, user };
         }
-    } else {
-        if (user.username === req.params.username) {
-            return { valid: true, user };
-        }
+    } else if (user.username === req.params.username) {
+        return { valid: true, user };
     }
 
     return { valid: false };
@@ -174,7 +170,7 @@ export const verifyCommentPermission = async <P extends IdRequest, Q>(
 
     if (!comment) {
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
-    } else if (comment.owner.toString() !== user.id) {
+    } if (comment.owner.toString() !== user.id) {
         return { valid: false };
     }
 
@@ -194,7 +190,7 @@ export const verifyCommentThreadPermission = async <P extends IdRequest, Q>(
 
     if (!commentThread) {
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
-    } else if (commentThread.owner.toString() !== user.id) {
+    } if (commentThread.owner.toString() !== user.id) {
         return { valid: false };
     }
 
@@ -220,9 +216,8 @@ export const verifyReviewPermission = async <P extends IdRequest, Q>(
     //         who can view the review.
     if (!review) {
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
-    } else if (
-        !review ||
-        (review.status !== IReviewStatus.Completed && review.owner.toString() !== user.id)
+    } if (
+        review.status !== IReviewStatus.Completed && review.owner.toString() !== user.id
     ) {
         return { valid: false };
     }
@@ -239,7 +234,7 @@ export const verifyPublicationPermission = async <P extends PublicationRequest, 
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
 ): Promise<ResolvedPermission> => {
-    const publication = await Publication.findOne({ owner: user.id, name: req.params.name }).exec();
+    const publication = await Publication.findOne({ owner: user.id as string, name: req.params.name }).exec();
 
     if (!publication) {
         return { valid: false, message: errors.RESOURCE_NOT_FOUND, code: 404 };
@@ -265,7 +260,7 @@ export const verifyPublicationIdPermission = async <P extends IdRequest, Q>(
 
     if (!publication) {
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
-    } else if (publication.owner.toString() !== user.id) {
+    } if (publication.owner.toString() !== user.id) {
         return { valid: false };
     }
 

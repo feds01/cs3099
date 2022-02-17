@@ -1,30 +1,35 @@
-import { format } from 'date-fns';
-import React, { ReactElement, useEffect, useState } from 'react';
-import Box from '@mui/material/Box';
-import Menu from '@mui/material/Menu';
-import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-
-import UserLink from '../UserLink';
-import UserAvatar from '../UserAvatar';
+import { useNotificationDispatch } from '../../hooks/notification';
+import { useReviewDispatch, useReviewState } from '../../hooks/review';
+import { useDeleteCommentId } from '../../lib/api/comments/comments';
+import { Comment } from '../../lib/api/models';
 import CommentEditor from '../CommentEditor';
 import MarkdownRenderer from '../MarkdownRenderer';
-import { useReviewDispatch } from '../../hooks/review';
-import { Comment, Review } from '../../lib/api/models';
-import { useNotificationDispatch } from '../../hooks/notification';
-import { useDeleteCommentId } from '../../lib/api/comments/comments';
+import UserAvatar from '../UserAvatar';
+import UserLink from '../UserLink';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
+import { format } from 'date-fns';
+import React, { ReactElement, useEffect, useState } from 'react';
+import { useAuth } from '../../hooks/auth';
+import { Permission, computeUserPermission } from '../../lib/utils/roles';
 
 interface CommentCardProps {
     comment: Comment;
-    review: Review;
 }
 
-export default function CommentCard({ comment, review }: CommentCardProps): ReactElement {
+export default function CommentCard({ comment }: CommentCardProps): ReactElement {
+    const { session } = useAuth();
     const { refetch } = useReviewDispatch();
+    const { review } = useReviewState();
     const notificationDispatcher = useNotificationDispatch();
+
+    // Permissions on the comment 
+    const [permissions] = useState<Permission>(computeUserPermission(comment.author.id, session));
 
     // Comment card editing menu
     const [editingComment, setEditingComment] = useState<boolean>(false);
@@ -68,9 +73,9 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                 <UserAvatar {...comment.author} displayName={false} size={32} />
                 <Box sx={{ pl: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Box sx={{ height: 32, display: 'flex', alignItems: 'center' }}>
+                        <Box sx={{ height: 32, display: 'flex', alignItems: 'center', whiteSpace: 'normal' }}>
                             <UserLink user={comment.author} />
-                            {' on'} {format(comment.updatedAt, 'do MMM')}
+                            &nbsp;on {format(comment.updatedAt, 'do MMM')}
                             {comment.edited && (
                                 <>
                                     <span
@@ -85,23 +90,25 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                                 </>
                             )}
                         </Box>
-                        <IconButton
-                            aria-label="comment-settings"
-                            onClick={handleClick}
-                            size={'small'}
-                            aria-expanded={anchorEl ? 'true' : undefined}
-                        >
-                            <MoreVertIcon />
-                        </IconButton>
+                        {permissions.modify && (
+                            <IconButton
+                                aria-label="comment-settings"
+                                onClick={handleClick}
+                                size={'small'}
+                                aria-expanded={anchorEl ? 'true' : undefined}
+                            >
+                                <MoreVertIcon />
+                            </IconButton>
+                        )}
                     </Box>
-                    <Box sx={{whiteSpace: 'pre-wrap'}}>
+                    <Box sx={{ whiteSpace: 'pre-wrap' }}>
                         {editingComment ? (
                             <CommentEditor
                                 type={'modify'}
                                 filename={comment.filename}
                                 contents={comment.contents}
                                 {...(typeof comment.anchor !== 'undefined' && {
-                                    location: comment.anchor.end - 1
+                                    location: comment.anchor.end - 1,
                                 })}
                                 reviewId={review.id}
                                 commentId={comment.id}
@@ -131,7 +138,7 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                 onClose={() => setAnchorEl(null)}
             >
                 <MenuItem
-                    disabled={editingComment || deleteComment.isLoading}
+                    disabled={!permissions.modify || editingComment || deleteComment.isLoading}
                     onClick={() => {
                         setEditingComment(true);
                         setAnchorEl(null);
@@ -142,7 +149,7 @@ export default function CommentCard({ comment, review }: CommentCardProps): Reac
                 </MenuItem>
                 <Divider />
                 <MenuItem
-                    disabled={deleteComment.isLoading}
+                    disabled={!permissions.delete || deleteComment.isLoading}
                     onClick={() => {
                         deleteComment.mutateAsync({ id: comment.id });
                         setAnchorEl(null);

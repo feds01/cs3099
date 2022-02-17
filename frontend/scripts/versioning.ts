@@ -51,7 +51,6 @@ async function exec(command: string): Promise<string> {
 async function main() {
     await clearEnv();
 
-    // TODO: use actual env values
     await writeToEnv('REACT_APP_NAME', 'Iamus');
     await writeToEnv('REACT_APP_VERSION', '0.1.0');
 

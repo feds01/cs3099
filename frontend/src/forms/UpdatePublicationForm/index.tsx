@@ -9,7 +9,6 @@ import { usePatchPublicationUsernameName } from '../../lib/api/publications/publ
 import { IEditPublication, EditPublicationSchema } from '../../validators/publication';
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
-import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import { ReactElement, useEffect } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
@@ -103,17 +102,15 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
                     <ControlledAutocomplete name="collaborators" control={control} />
                 </Grid>
                 <Grid item xs={12}>
-                    <Box>
-                        <LoadingButton
-                            loading={isLoading || isSubmitting}
-                            disabled={!isValid}
-                            sx={{ mt: 1, mr: 1 }}
-                            variant="contained"
-                            type={'submit'}
-                        >
-                            Save Changes
-                        </LoadingButton>
-                    </Box>
+                    <LoadingButton
+                        loading={isLoading || isSubmitting}
+                        disabled={!isValid}
+                        sx={{ mt: 1, mr: 1 }}
+                        variant="contained"
+                        type={'submit'}
+                    >
+                        Save Changes
+                    </LoadingButton>
                     {isError && <ErrorBanner message={error?.message || 'Something went wrong.'} />}
                 </Grid>
             </Grid>

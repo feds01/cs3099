@@ -64,7 +64,7 @@ PublicationSchema.post(
     { document: true, query: true },
     async (item: IPublicationDocument, next) => {
         Logger.warn('Cleaning up publication orphaned reviews (deleteOne)');
-        await Review.deleteMany({ publication: item.id }).exec();
+        await Review.deleteMany({ publication: item.id as string }).exec();
 
         next();
     },
@@ -73,12 +73,12 @@ PublicationSchema.post(
 PublicationSchema.post(
     'deleteMany',
     { document: true, query: true },
-    async (items: IPublicationDocument[], next) => {
+    async (_: unknown, items: IPublicationDocument[], next: () => void) => {
         Logger.warn('Cleaning up publication orphaned reviews (deleteMany)');
 
         await Promise.all(
             items.map(async (item) => {
-                await Review.deleteMany({ publication: item.id }).exec();
+                await Review.deleteMany({ publication: item.id as string }).exec();
             }),
         );
 
@@ -177,7 +177,7 @@ PublicationSchema.statics.projectAsSg = async (
         name,
         title,
         owner: ownerId,
-        introduction: introduction || '',
+        introduction: introduction ?? '',
         revision,
         collaborators: collaboratorIds,
     };

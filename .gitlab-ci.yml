@@ -14,6 +14,7 @@ install:
   stage: install
   script:
     - yarn install
+    - yarn transform-yaml
   artifacts:
     name: "artifacts"
     untracked: true
@@ -21,7 +22,7 @@ install:
     paths:
       - .npm/
       - node_modules/
-
+      - swagger.json
 linting:
   extends: install
   stage: quality

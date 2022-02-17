@@ -1,13 +1,13 @@
-import { ReactElement } from 'react';
+import DeletePublicationForm from '../../../forms/DeletePublicationForm';
+import EditPublicationForm from '../../../forms/UpdatePublicationForm';
+import { usePublicationState } from '../../../hooks/publication';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
-import EditPublicationForm from '../../../forms/EditPublicationForm';
-import { usePublicationState } from '../../../hooks/publication';
-import DeletePublicationForm from '../../../forms/DeletePublicationForm';
+import { ReactElement } from 'react';
 
 export default function Settings(): ReactElement {
-    const { publication } = usePublicationState();
+    const { publication, permission } = usePublicationState();
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -17,12 +17,14 @@ export default function Settings(): ReactElement {
                 <Divider sx={{ mb: 2 }} />
                 <EditPublicationForm publication={publication} />
             </Box>
-            <Box sx={{ pt: 4 }}>
-                <Typography variant={'h5'}>Delete Publication</Typography>
-                <Typography variant={'body2'}>Delete the current publication</Typography>
-                <Divider />
-                <DeletePublicationForm publication={publication} />
-            </Box>
+            {permission.delete && (
+                <Box sx={{ pt: 4 }}>
+                    <Typography variant={'h5'}>Delete Publication</Typography>
+                    <Typography variant={'body2'}>Delete the current publication</Typography>
+                    <Divider />
+                    <DeletePublicationForm publication={publication} />
+                </Box>
+            )}
         </Box>
     );
 }

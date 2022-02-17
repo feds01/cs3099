@@ -16,7 +16,8 @@ module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
 
-    setupFilesAfterEnv: ['<rootDir>/__tests__/utils/setupDB.ts'],
+    // A list of paths to modules that run some code to configure or set up the testing framework before each test
+    setupFilesAfterEnv: ['./jest.setup.js', '<rootDir>/__tests__/utils/setupDB.ts'],
 
     testPathIgnorePatterns: [
         '<rootDir>/node_modules/',
@@ -25,6 +26,4 @@ module.exports = {
         // Here we ignore utilities because it just contains utility functions for testing the app
         '<rootDir>/__tests__/utils',
     ],
-    // A list of paths to modules that run some code to configure or set up the testing framework before each test
-    // setupFilesAfterEnv: ['./jest.setup.js'],
 };

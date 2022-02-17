@@ -6,6 +6,7 @@ export const SessionSchema = z.object({
     email: z.string(),
     username: z.string(),
     name: z.string().optional(),
+    role: z.enum(['default', 'moderator', 'administrator']),
     status: z.string().optional(),
     about: z.string().optional(),
     profilePictureUrl: z.string().optional(),

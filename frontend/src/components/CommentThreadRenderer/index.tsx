@@ -1,5 +1,6 @@
 import { useAuth } from '../../hooks/auth';
-import { CommentAnchor, Review } from '../../lib/api/models';
+import { useReviewState } from '../../hooks/review';
+import { CommentAnchor } from '../../lib/api/models';
 import { CommentThread } from '../../lib/utils/comment';
 import CodeRenderer from '../CodeRenderer';
 import CommentCard from '../CommentCard';
@@ -11,8 +12,12 @@ import TextField from '@mui/material/TextField';
 import { useState } from 'react';
 
 type CommentThreadProps = {
+    /**
+     * Relevant information about the current comment thread. This includes all the
+     * comments in the current thread, the source anchor and source filename (if any)
+     * and the id of the thread itself.
+     */
     thread: CommentThread;
-    review: Review;
     /** If we provide the contents of the file, it can be rendered automatically using the
      *  the inline feature of the CommentThreadRenderer
      */
@@ -29,24 +34,35 @@ function selectLineRange(contents: string, range: CommentAnchor): string | undef
     return lines.slice(range.start - 1, range.end - 1).join('\n');
 }
 
-export default function CommentThreadRenderer({ contents, thread, review }: CommentThreadProps) {
+export default function CommentThreadRenderer({ contents, thread }: CommentThreadProps) {
     const { session } = useAuth();
+    const { review } = useReviewState();
 
     // Comment reply mechanism
     const [replyingToComment, setReplyingToComment] = useState(false);
 
-    const renderInlineSources = (filename: string, contents: string, anchor: CommentAnchor) => {
-        const range = selectLineRange(contents, anchor);
+    const renderInlineSources = (filename: string, contents: string, anchor?: CommentAnchor) => {
+        const renderFilename = () => (
+            <Typography variant={'body1'} sx={{ fontWeight: 'bold', fontFamily: 'monospace', p: '4px 0', ml: 1 }}>
+                {filename}
+            </Typography>
+        );
 
-        if (typeof range !== 'string') {
-            return;
+        if (typeof anchor === 'undefined') {
+            return (
+                <Box>
+                    {renderFilename()}
+                    <Divider />
+                </Box>
+            );
         }
+
+        const range = selectLineRange(contents, anchor);
+        if (typeof range !== 'string') return;
 
         return (
             <Box>
-                <Typography variant={'body1'} sx={{ fontWeight: 'bold', p: '4px 0', ml: 1 }}>
-                    {filename}
-                </Typography>
+                {renderFilename()}
                 <CodeRenderer contents={range} lineNumbers lineOffset={anchor.start - 1} filename={filename} />
                 <Divider />
             </Box>
@@ -57,13 +73,12 @@ export default function CommentThreadRenderer({ contents, thread, review }: Comm
         <Card variant="outlined" sx={{ maxWidth: 800 }}>
             {typeof contents !== 'undefined' &&
                 typeof thread.file !== 'undefined' &&
-                typeof thread.anchor !== 'undefined' &&
                 renderInlineSources(thread.file, contents, thread.anchor)}
             <CardContent>
                 {thread.comments.map((comment) => {
                     return (
                         <Box key={comment.contents} sx={{ pt: 0.5, pb: 0.5 }}>
-                            <CommentCard review={review} comment={comment} />
+                            <CommentCard comment={comment} />
                         </Box>
                     );
                 })}

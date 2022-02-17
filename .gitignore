@@ -13,6 +13,7 @@ dist/
 # Environment files
 .env
 .env.*
+!.env.test
 
 # Generated Swagger JSON file
 swagger.json

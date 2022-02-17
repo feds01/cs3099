@@ -43,7 +43,7 @@ export default function SourceList({ entries }: CodeSourceListProps) {
             })}
             <Box>
                 {generalComments.map((thread) => {
-                    return <CommentThreadRenderer thread={thread} review={review} key={thread.id} />;
+                    return <CommentThreadRenderer thread={thread} key={thread.id} />;
                 })}
             </Box>
         </Box>

@@ -7,15 +7,15 @@ import { GROUP_URI_MAP } from './requests';
 
 type ExportStatus<O> =
     | {
-          status: 'error';
-          message: string;
-          extra?: string;
-          error: unknown;
-      }
+        status: 'error';
+        message: string;
+        extra?: string;
+        error: unknown;
+    }
     | {
-          status: 'ok';
-          item: O;
-      };
+        status: 'ok';
+        item: O;
+    };
 
 /**
  * Function that attempts to import an external user specified by an an @see {SgUserId}.
@@ -31,11 +31,12 @@ type ExportStatus<O> =
 export async function importUser(externalUserId: SgUserId): Promise<ExportStatus<IUserDocument>> {
     const externalId = convertSgId(externalUserId);
     const user = await User.findOne({ externalId }).exec();
-    if (user)
+    if (user) {
         return {
             status: 'ok',
             item: user,
         };
+    }
 
     // get the correct address based on the owner.group
     const userFrom = GROUP_URI_MAP[externalUserId.group];
@@ -68,7 +69,7 @@ export async function importUser(externalUserId: SgUserId): Promise<ExportStatus
             status: 'error',
             message: `request failed due to: ${userData.type}.`,
             extra: 'Cannot import user from external service.',
-            error: userData.errors || {},
+            error: userData.errors,
         };
     }
 

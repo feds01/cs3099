@@ -32,7 +32,7 @@ export default function ConfirmationDialogue({
                 <Button color="secondary" variant={'text'} onClick={onClose}>
                     Cancel
                 </Button>
-                <LoadingButton loading={submitEnabled} color="secondary" variant={'text'} onClick={onConfirm}>
+                <LoadingButton loading={submitEnabled} color="primary" variant={'contained'} onClick={onConfirm}>
                     {confirmationLabel}
                 </LoadingButton>
             </DialogActions>

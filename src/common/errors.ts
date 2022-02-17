@@ -23,6 +23,7 @@ export function isExpressError(err: unknown): err is ExpressError {
 
 export class ApiError extends Error {
     readonly code: number;
+
     readonly errors?: ResponseErrorSummary;
 
     constructor(code: number, message: string, errors?: ResponseErrorSummary) {

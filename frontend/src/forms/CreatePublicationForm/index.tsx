@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 
@@ -95,15 +94,11 @@ export default function CreatePublicationForm(): ReactElement {
                         <LoadingButton
                             loading={isLoading || isSubmitting}
                             disabled={!isValid}
-                            sx={{ mr: 1 }}
                             variant="contained"
                             type={'submit'}
                         >
                             Create
                         </LoadingButton>
-                        <Button variant="outlined" href="/">
-                            Cancel
-                        </Button>
                     </Box>
                     {isError && error && <ErrorBanner message={error.message} />}
                 </Grid>
