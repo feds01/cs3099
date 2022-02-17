@@ -32,7 +32,6 @@ class UploadTest(unittest.TestCase):
             obj=cls.obj,
         )
         assert login_result.exit_code == 0
-        cls.obj["AUTH"] = get_auth(cls.test_dir, cls.test_config["baseUrl"])
 
     @classmethod
     def tearDownClass(cls):

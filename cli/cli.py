@@ -2,8 +2,6 @@ import json
 import click
 from pathlib import Path
 
-from utils.auth import get_auth
-
 from commands.show import show
 from commands.login import login
 from commands.logout import logout
@@ -28,7 +26,6 @@ def cli(ctx: click.core.Context) -> None:
     except FileNotFoundError:
         click.echo("No config.json found. Please create one.")
         exit(1)
-    ctx.obj["AUTH"] = get_auth(cli_path, ctx.obj["BASE_URL"])
 
 
 cli.add_command(show)
