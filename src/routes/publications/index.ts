@@ -25,6 +25,7 @@ import {
 import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../validators/requests';
 import reviewRouter from './reviews';
 import searchRouter from './search';
+import { PaginationQuerySchema } from '../../validators/pagination';
 
 const router = express.Router();
 router.use('/', searchRouter);
@@ -302,13 +303,13 @@ registerRoute(router, '/', {
 registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
-    query: z.object({ mode: ModeSchema, pinned: FlagSchema.optional() }),
+    query: z.object({ mode: ModeSchema, pinned: FlagSchema.optional() }).merge(PaginationQuerySchema),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const { pinned } = req.query;
+        const { pinned, skip, take } = req.query;
 
         const result = await Publication.find({
             owner: user.id,
@@ -317,7 +318,8 @@ registerRoute(router, '/:username', {
             }),
             current: true,
         })
-            .limit(50)
+            .skip(skip)
+            .limit(take)
             .exec();
 
         return {
@@ -342,17 +344,19 @@ registerRoute(router, '/:username', {
 registerRoute(router, '/:username/:name/revisions', {
     method: 'get',
     params: z.object({ username: z.string(), name: z.string() }),
-    query: z.object({ mode: ModeSchema }),
+    query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
+        const { skip, take } = req.query; 
         const result = await Publication.find({
             owner: user.id,
             current: true,
         })
-            .limit(50)
+            .skip(skip)
+            .limit(take)
             .exec();
 
         return {

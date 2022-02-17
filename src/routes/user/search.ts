@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import registerRoute from '../../lib/requests';
 import User from '../../models/User';
-import { PaginationQuerySchema } from '../../validators/requests';
+import { PaginationQuerySchema } from '../../validators/pagination';
 
 const router = express.Router();
 
@@ -27,9 +27,10 @@ registerRoute(router, '/search', {
 
         const users = await User.find(
             { $text: { $search: query } },
-            { score: { $meta: 'textScore' }, skip },
+            { score: { $meta: 'textScore' } },
         )
             .sort({ score: { $meta: 'textScore' } })
+            .skip(skip)
             .limit(take)
             .exec();
 

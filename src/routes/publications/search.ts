@@ -4,7 +4,7 @@ import { z } from 'zod';
 import registerRoute from '../../lib/requests';
 import Publication from '../../models/Publication';
 import { IUser } from '../../models/User';
-import { PaginationQuerySchema } from '../../validators/requests';
+import { PaginationQuerySchema } from '../../validators/pagination';
 
 const router = express.Router({ mergeParams: true });
 
@@ -28,10 +28,11 @@ registerRoute(router, '/search', {
 
         const publications = await Publication.find(
             { $text: { $search: query } },
-            { score: { $meta: 'textScore' }, skip },
+            { score: { $meta: 'textScore' } },
         )
             .sort({ score: { $meta: 'textScore' } })
             .populate<{ owner: IUser }>('owner')
+            .skip(skip)
             .limit(take)
             .exec();
 
