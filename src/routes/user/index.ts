@@ -15,11 +15,13 @@ import { ModeSchema } from '../../validators/requests';
 import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
 import followerRouter from './followers';
 import reviewRouter from './reviews';
+import searchRouter from './search';
 
 const router = express.Router();
 
 router.use('/', followerRouter);
 router.use('/', reviewRouter);
+router.use('/', searchRouter);
 
 /**
  * @version v1.0.0
