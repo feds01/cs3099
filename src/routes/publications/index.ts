@@ -18,6 +18,7 @@ import registerRoute from '../../lib/requests';
 import Publication from '../../models/Publication';
 import User, { IUserRole } from '../../models/User';
 import { config } from '../../server';
+import { PaginationQuerySchema } from '../../validators/pagination';
 import {
     IPublicationCreationSchema,
     IPublicationPatchRequestSchema,
@@ -25,7 +26,6 @@ import {
 import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../validators/requests';
 import reviewRouter from './reviews';
 import searchRouter from './search';
-import { PaginationQuerySchema } from '../../validators/pagination';
 
 const router = express.Router();
 router.use('/', searchRouter);
@@ -303,7 +303,9 @@ registerRoute(router, '/', {
 registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
-    query: z.object({ mode: ModeSchema, pinned: FlagSchema.optional() }).merge(PaginationQuerySchema),
+    query: z
+        .object({ mode: ModeSchema, pinned: FlagSchema.optional() })
+        .merge(PaginationQuerySchema),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -350,7 +352,7 @@ registerRoute(router, '/:username/:name/revisions', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const { skip, take } = req.query; 
+        const { skip, take } = req.query;
         const result = await Publication.find({
             owner: user.id,
             current: true,

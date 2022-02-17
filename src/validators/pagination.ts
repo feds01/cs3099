@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 const PaginationSchema = z.object({
     /** The offset number of items to read from */
@@ -12,11 +12,11 @@ export type Pagination = z.infer<typeof PaginationSchema>;
 /** Schema for representing a pagination query */
 export const PaginationQuerySchema = z.object({
     take: z.preprocess(
-        (i) => typeof i !== 'undefined' ? Number.parseInt(String(i)) : i,
-        PaginationSchema.shape.take
+        (i) => (typeof i !== 'undefined' ? Number.parseInt(String(i)) : i),
+        PaginationSchema.shape.take,
     ),
     skip: z.preprocess(
-        (i) => typeof i !== 'undefined' ? Number.parseInt(String(i)) : i,
-        PaginationSchema.shape.skip
+        (i) => (typeof i !== 'undefined' ? Number.parseInt(String(i)) : i),
+        PaginationSchema.shape.skip,
     ),
 });

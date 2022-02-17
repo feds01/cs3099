@@ -11,9 +11,9 @@ const router = express.Router({ mergeParams: true });
 /**
  * @version v1.0.0
  * @method GET
- * @url /api/publication/search
+ * @url /api/search/publication/
  * @example
- * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/search
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/search/publication
  *
  * @description This endpoint will be used for searching publications that
  * are globally visible to the platform.

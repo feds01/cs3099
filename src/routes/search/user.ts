@@ -10,9 +10,9 @@ const router = express.Router();
 /**
  * @version v1.0.0
  * @method GET
- * @url /api/user/search
+ * @url /api/search/user
  * @example
- * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user/search
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/search/user
  *
  * @description This endpoint will be used for searching publications that
  * are globally visible to the platform.
