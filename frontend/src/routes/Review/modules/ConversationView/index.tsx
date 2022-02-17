@@ -1,7 +1,8 @@
+import CommentEditor from '../../../../components/CommentEditor';
 import CommentThreadRenderer from '../../../../components/CommentThreadRenderer';
 import PublicationLink from '../../../../components/PublicationLink';
 import UserLink from '../../../../components/UserLink';
-import { useReviewState } from '../../../../hooks/review';
+import { useReviewDispatch, useReviewState } from '../../../../hooks/review';
 import { getPublicationUsernameNameTreePath } from '../../../../lib/api/publications/publications';
 import {
     CommentThread,
@@ -20,6 +21,7 @@ import { useEffect, useState } from 'react';
 interface ConversationViewProps {}
 
 export default function ConversionView(_props: ConversationViewProps) {
+    const { refetch } = useReviewDispatch();
     const { review, comments } = useReviewState();
     const [generalComments, setGeneralComments] = useState<CommentThread[]>([]);
     const [fileCommentMap, setFileCommentMap] = useState<Map<string, CommentThread[]>>(new Map());
@@ -40,9 +42,10 @@ export default function ConversionView(_props: ConversationViewProps) {
             for (const fileName of fileCommentMap.keys()) {
                 if (!fileContentMap.has(fileName)) {
                     const contents = await getPublicationUsernameNameTreePath(
-                        review.owner.username,
+                        review.publication.owner.username,
                         review.publication.name,
                         fileName,
+                        ...(!review.publication.current ? [{ revision: review.publication.revision }] : []),
                     );
 
                     // Since comments can only be made on files...
@@ -86,7 +89,7 @@ export default function ConversionView(_props: ConversationViewProps) {
                 return threads.map((thread) => {
                     return (
                         <Box key={thread.id} sx={{ pt: 1, pb: 1 }}>
-                            <CommentThreadRenderer contents={contents} thread={thread} review={review} />
+                            <CommentThreadRenderer contents={contents} thread={thread} />
                         </Box>
                     );
                 });
@@ -94,8 +97,15 @@ export default function ConversionView(_props: ConversationViewProps) {
 
             <Box>
                 {generalComments.map((thread) => {
-                    return <CommentThreadRenderer thread={thread} review={review} key={thread.id} />;
+                    return (
+                        <Box key={thread.id} sx={{ pt: 1, pb: 1 }}>
+                            <CommentThreadRenderer thread={thread} />
+                        </Box>
+                    );
                 })}
+            </Box>
+            <Box sx={{ pt: 1, maxWidth: 800 }}>
+                <CommentEditor type="post" autoFocus={false} reviewId={review.id} uncancelable onClose={refetch} />
             </Box>
         </Container>
     );

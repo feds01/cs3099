@@ -1,8 +1,13 @@
 import React from 'react';
 import { Publication } from '../lib/api/models';
+import { Permission } from '../lib/utils/roles';
 
+/** Internal state of the PublicationProvider */
 export interface PublicationState {
+    /** The relevant publication document. */
     publication: Publication;
+    /** What the current user has permissions for.  */
+    permission: Permission
 }
 
 export interface PublicationDispatch {

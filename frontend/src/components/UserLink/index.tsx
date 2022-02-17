@@ -48,11 +48,13 @@ export default function UserLink({ user, noPopover = false }: Props): ReactEleme
             title={
                 <>
                     {user.status && (
-                        <Box>
-                            <Typography variant={'body2'}>{user.status}</Typography>
-                        </Box>
+                        <>
+                            <Box>
+                                <Typography variant={'body2'}>{user.status}</Typography>
+                            </Box>
+                            <Divider />
+                        </>
                     )}
-                    <Divider />
                     <Box sx={{ display: 'flex', flexDirection: 'row', p: '4px 12px', pb: 1 }}>
                         <UserAvatar {...user} displayName={false} size={40} />
                         <Box
@@ -65,11 +67,13 @@ export default function UserLink({ user, noPopover = false }: Props): ReactEleme
                             }}
                         >
                             <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                <Link className={classes.hoverable} to={`/profile/${user.username}`}>
-                                    <Typography sx={{ pr: 1, fontWeight: 'bold' }} variant={'body1'}>
-                                        {user.name}
-                                    </Typography>
-                                </Link>
+                                {user.name && (
+                                    <Link className={classes.hoverable} to={`/profile/${user.username}`}>
+                                        <Typography sx={{ pr: 1, fontWeight: 'bold' }} variant={'body1'}>
+                                            {user.name}
+                                        </Typography>
+                                    </Link>
+                                )}
                                 <Link className={classes.hoverable} to={`/profile/${user.username}`}>
                                     <Typography
                                         variant={'body2'}

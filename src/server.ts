@@ -8,7 +8,9 @@ import Logger from './common/logger';
 import { ConfigSchema } from './validators/config';
 import program from './config/commander';
 
-require('dotenv').config(); // Import our environment variables
+require('dotenv').config({
+    path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env'
+}); // Import our environment variables
 
 // Here we create a config object and try to validate it using the config validator...
 const rawConfig = {

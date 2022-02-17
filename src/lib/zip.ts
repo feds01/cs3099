@@ -88,27 +88,27 @@ export function resourceIndexToPath(resource: ResourceIndex): string {
 }
 
 /**
- * Function to find and load the archive from the filesystem using an ArchiveIndex entry.
- *
- * @param archive - The entry describing the archives location in the file system.
- */
-export function loadArchive(archive: ArchiveIndex): AdmZip | null {
-    return loadArchiveFromPath(archiveIndexToPath(archive));
-}
-
-/**
  * Attempt to load a ZIP archive from a raw file path. This is primarily done
  * when zip files are being verified/loaded pre-resource stage.
  *
  * @param filePath - The path of the archive.
  *
  */
-export function loadArchiveFromPath(filePath: string): AdmZip | null {
+ export function loadArchiveFromPath(filePath: string): AdmZip | null {
     try {
         return new AdmZip(filePath);
     } catch (e: unknown) {
         return null;
     }
+}
+
+/**
+ * Function to find and load the archive from the filesystem using an ArchiveIndex entry.
+ *
+ * @param archive - The entry describing the archives location in the file system.
+ */
+export function loadArchive(archive: ArchiveIndex): AdmZip | null {
+    return loadArchiveFromPath(archiveIndexToPath(archive));
 }
 
 /**
@@ -124,9 +124,8 @@ export async function createArchive(archive: ArchiveIndex | string, filePath: st
     const zip = expr(() => {
         if (typeof archive === 'string') {
             return loadArchiveFromPath(archive);
-        } else {
-            return loadArchive(archive);
         }
+            return loadArchive(archive);
     });
 
     if (!zip) throw new Error("Couldn't load archive");
@@ -194,9 +193,8 @@ export function getEntry(
     const zip = expr(() => {
         if (typeof archive === 'string') {
             return loadArchiveFromPath(archive);
-        } else {
-            return loadArchive(archive);
         }
+            return loadArchive(archive);
     });
 
     if (!zip) return null;
@@ -239,7 +237,10 @@ export function getEntry(
             contents,
         };
     } catch (e: unknown) {
-        Logger.error(`Encountered invalid zip file:\n${e}`);
+        if (e instanceof Error) {
+            Logger.error(`Encountered invalid zip file:\n${e.message}`);
+        }
+
         throw new ApiError(400, 'Invalid ZIP Archive');
     }
 }

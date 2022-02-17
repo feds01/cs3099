@@ -39,7 +39,7 @@ export interface IComment {
 }
 
 type PopulatedComment = (IComment & {
-    _id: string;
+    _id: mongoose.Types.ObjectId;
 }) & {
     owner: IUser;
 };

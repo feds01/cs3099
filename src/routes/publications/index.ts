@@ -656,7 +656,7 @@ registerRoute(router, '/:username/:name', {
     query: z.object({ mode: ModeSchema, revision: z.string().optional() }),
     body: IPublicationPatchRequestSchema,
     permissionVerification: verifyPublicationPermission,
-    permission: { level: IUserRole.Administrator },
+    permission: { level: IUserRole.Moderator },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 

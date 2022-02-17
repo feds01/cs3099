@@ -8,12 +8,23 @@ import { Button, SxProps, Theme } from '@mui/material';
 import Box from '@mui/material/Box';
 import { ReactElement, useEffect, useState } from 'react';
 
+/** Comment Editor properties */
 type CommentEditorProps = {
+    /** Relevant id of the review that the comment is on */
     reviewId: string;
+    /** The anchor of the comment in the filename  */
     location?: number;
+    /** Whether the comment is on a particular filename */
     filename?: string;
+    /** Function invoked when closing the comment editor or a successful submission occurs */
     onClose: () => void;
+    /** Whether the comment editor should automatically focus the comment input box */
+    autoFocus?: boolean;
+    /** Whether the editor should show a cancel button or not */
+    uncancelable?: boolean;
+    /** Initial comment contents */
     contents?: string;
+    /** Any styles applied to the root of the comment editor */
     sx?: SxProps<Theme>;
 } & (CommentReply | CommentModify | CommentPost);
 
@@ -50,6 +61,8 @@ export default function CommentEditor({
     reviewId,
     filename,
     onClose,
+    autoFocus = true,
+    uncancelable,
     location,
     sx,
     ...rest
@@ -77,6 +90,7 @@ export default function CommentEditor({
                 });
             }
 
+            setValue('');
             onClose();
         } else if (commentQuery.isError && commentQuery.error) {
             notificationDispatcher({
@@ -100,12 +114,19 @@ export default function CommentEditor({
 
     return (
         <Box sx={{ width: '100%', ...sx }}>
-            <CommentField contents={contents} onChange={setValue} />
+            <CommentField contents={contents} autoFocus={autoFocus} onChange={setValue} />
             <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', pt: 1, pb: 1 }}>
-                <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>
-                    Cancel
-                </Button>
-                <LoadingButton variant="contained" loading={commentQuery.isLoading} onClick={onSubmitComment}>
+                {!uncancelable && (
+                    <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>
+                        Cancel
+                    </Button>
+                )}
+                <LoadingButton
+                    variant="contained"
+                    disabled={value === ''}
+                    loading={commentQuery.isLoading}
+                    onClick={onSubmitComment}
+                >
                     Submit
                 </LoadingButton>
             </Box>

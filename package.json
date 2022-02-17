@@ -8,9 +8,9 @@
         "start": "tsc & node .",
         "start:all": "(yarn start &) && cd frontend && (yarn start &)",
         "dev": "ts-node-dev  --respawn --rs --trace-warnings --  ./src/server.ts",
-        "test": "jest --ci",
+        "test": "jest --ci --verbose=true",
         "test:coverage": "jest --collect-coverage --ci",
-        "lint": "eslint src/*/**.ts frontend/src/*/**.ts",
+        "lint": "eslint src/*/**.ts",
         "tcheck": "tsc --noEmit",
         "fmt": "prettier --write src/**/*.ts src/**/**/*.ts frontend/src/**/*.ts __tests__/**/*.ts __tests__/**/**/*.ts",
         "generate-client": "orval",
@@ -48,10 +48,10 @@
         "mongodb-memory-server": "^7.6.3",
         "prettier": "^2.5.1",
         "supertest": "^6.2.2",
-        "swagger-jsdoc": "^6.1.0",
         "ts-jest": "^27.1.3",
         "ts-node-dev": "^1.1.8",
-        "typescript": "^4.5.5"
+        "typescript": "^4.5.5",
+        "yamljs": "^0.3.0"
     },
     "dependencies": {
         "@types/node-fetch": "2",
@@ -73,6 +73,7 @@
         "node-fetch": "2.6.7",
         "orval": "^6.6.0",
         "query-string": "^7.1.1",
+        "swagger-jsdoc": "^6.1.0",
         "swagger-ui-express": "^4.3.0",
         "winston": "^3.5.1",
         "zod": "^3.11.6"

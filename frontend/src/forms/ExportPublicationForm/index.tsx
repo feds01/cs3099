@@ -101,7 +101,7 @@ export default function ExportDialog({ username, name, revision, open, onClose }
                 </DialogContent>
                 <DialogActions>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>
+                        <Button variant="outlined" color="secondary" sx={{ mr: 1 }} onClick={onClose}>
                             Cancel
                         </Button>
                         <LoadingButton

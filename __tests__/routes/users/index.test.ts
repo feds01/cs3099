@@ -72,14 +72,14 @@ describe('User endpoint tests ', () => {
         const response = await request.patch('/user/test').send({
             name: 'tset',
             about: 'Something to say',
-            profilePictureUrl: 'https://something-to-show.com',
         });
+
         expect(response.status).toBe(200);
 
         const user = await User.findOne({ username: 'test' });
+
         expect(user?.name).toBe('tset');
         expect(user?.about).toBe('Something to say');
-        expect(user?.profilePictureUrl).toBe('https://something-to-show.com');
     });
 
     // Tests for PATCH /user/:username/role

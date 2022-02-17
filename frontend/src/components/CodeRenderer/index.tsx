@@ -1,27 +1,26 @@
-import React, { ReactElement } from 'react';
-import Prism from 'prismjs';
-import Box from '@mui/material/Box/Box';
-import { styled } from '@mui/material';
-import CommentButton from '../CommentButton';
 import { Review } from '../../lib/api/models';
-import theme from 'prism-react-renderer/themes/github';
 import { CommentThread } from '../../lib/utils/comment';
-import CommentThreadRenderer from '../CommentThreadRenderer';
 import { coerceExtensionToLanguage, getExtension } from '../../lib/utils/file';
+import CommentButton from '../CommentButton';
+import CommentThreadRenderer from '../CommentThreadRenderer';
+import { styled } from '@mui/material';
+import Box from '@mui/material/Box/Box';
 import Highlight, { Language, Prism as PrismRR } from 'prism-react-renderer';
-
-// We have to essentially pre-load all of the languages
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-tsx';
-import 'prismjs/components/prism-rust';
+import theme from 'prism-react-renderer/themes/github';
+import Prism from 'prismjs';
+import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-haskell';
 import 'prismjs/components/prism-java';
+import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-jsx';
 import 'prismjs/components/prism-markdown';
 import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-clike';
+import 'prismjs/components/prism-rust';
+import 'prismjs/components/prism-tsx';
+// We have to essentially pre-load all of the languages
+import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-v';
-import 'prismjs/components/prism-json';
+import React, { ReactElement } from 'react';
 
 type PrismLib = typeof PrismRR & typeof Prism;
 
@@ -75,7 +74,7 @@ export default function CodeRenderer({
     commentMap,
     language,
     lineNumbers = true,
-    lineOffset = 0
+    lineOffset = 0,
 }: CodeRendererProps): ReactElement {
     const extension = coerceExtensionToLanguage(getExtension(filename) ?? language ?? '');
 
@@ -88,11 +87,11 @@ export default function CodeRenderer({
         >
             {({ className, style, tokens, getLineProps, getTokenProps }) => (
                 <Pre className={className} style={style}>
-                    {tokens.map((line, i) =>
-                        typeof review !== 'undefined' ? (
-                            <React.Fragment key={i}>
-                                <CommentButton review={review} location={i} filename={filename}>
-                                    <Line {...getLineProps({ line, key: i })}>
+                    {tokens.map((line, i) => (
+                        <React.Fragment key={i}>
+                            {typeof review !== 'undefined' && review.status === 'started' ? (
+                                <CommentButton key={i} review={review} location={i} filename={filename}>
+                                    <Line {...getLineProps({ line })}>
                                         {lineNumbers && <LineNo>{i + 1 + lineOffset}</LineNo>}
                                         <LineContent>
                                             {line.map((token, key) => (
@@ -101,25 +100,26 @@ export default function CodeRenderer({
                                         </LineContent>
                                     </Line>
                                 </CommentButton>
-                                {commentMap?.get(i + 1)?.map((thread) => {
+                            ) : (
+                                <Line {...getLineProps({ line })}>
+                                    {lineNumbers && <LineNo>{i + 1 + lineOffset}</LineNo>}
+                                    <LineContent>
+                                        {line.map((token, key) => (
+                                            <span key={key} {...getTokenProps({ token, key })} />
+                                        ))}
+                                    </LineContent>
+                                </Line>
+                            )}
+                            {typeof review !== 'undefined' &&
+                                commentMap?.get(i + 1)?.map((thread) => {
                                     return (
                                         <Box key={thread.id} sx={{ pt: 1, pb: 1 }}>
-                                            <CommentThreadRenderer review={review} thread={thread} />
+                                            <CommentThreadRenderer thread={thread} />
                                         </Box>
                                     );
                                 })}
-                            </React.Fragment>
-                        ) : (
-                            <Line {...getLineProps({ line, key: i })}>
-                                {lineNumbers && <LineNo>{i + 1 + lineOffset}</LineNo>}
-                                <LineContent>
-                                    {line.map((token, key) => (
-                                        <span key={key} {...getTokenProps({ token, key })} />
-                                    ))}
-                                </LineContent>
-                            </Line>
-                        ),
-                    )}
+                        </React.Fragment>
+                    ))}
                 </Pre>
             )}
         </Highlight>

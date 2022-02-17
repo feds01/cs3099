@@ -5,11 +5,11 @@ import { useEffect, useRef, useState } from 'react';
 type CommentFieldProps = {
     contents?: string;
     onChange: (value: string) => void;
+    autoFocus?: boolean;
 };
 
-// TODO: in the future, add support for images
 // TODO: we can also use the suggestion for usernames.
-export default function CommentField({ onChange, contents = '' }: CommentFieldProps) {
+export default function CommentField({ onChange, autoFocus = true, contents = '' }: CommentFieldProps) {
     const [value, setValue] = useState<string>(contents);
     const [selectedTab, setSelectedTab] = useState<'write' | 'preview'>('write');
 
@@ -17,7 +17,7 @@ export default function CommentField({ onChange, contents = '' }: CommentFieldPr
 
     // Focus the text area on initial render
     useEffect(() => {
-        if (textAreaRef.current !== null) {
+        if (autoFocus && textAreaRef.current !== null) {
             textAreaRef.current.focus();
         }
     }, [textAreaRef]);
@@ -42,7 +42,7 @@ export default function CommentField({ onChange, contents = '' }: CommentFieldPr
                 },
                 textArea: {
                     placeholder: 'Leave a comment',
-                    autofocus: true,
+                    autoFocus,
                 },
             }}
         />

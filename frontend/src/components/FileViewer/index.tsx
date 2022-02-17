@@ -228,7 +228,7 @@ export default function FileViewer({ contents, filename, id, review, threads, la
                 fileComments?.map((thread) => {
                     return (
                         <Box key={thread.id} sx={{ pt: 1, pb: 1 }}>
-                            <CommentThreadRenderer review={review} thread={thread} />
+                            <CommentThreadRenderer thread={thread} />
                         </Box>
                     );
                 })}

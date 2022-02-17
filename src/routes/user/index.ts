@@ -180,47 +180,52 @@ registerRoute(router, '/:username', {
     query: z.object({ mode: ModeSchema }),
     body: IUserPatchRequestSchema,
     permissionVerification: verifyUserPermission,
-    permission: { level: IUserRole.Administrator },
+    permission: { level: IUserRole.Moderator },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
         // Verify that email and username aren't taken...
         const { username, email } = req.body;
 
-        const searchQueryUser = {
-            _id: { $ne: user._id },
-            $or: [
-                ...(typeof username !== 'undefined' ? [{ username }] : []),
-                ...(typeof email !== 'undefined'
-                    ? [{ email, externalId: { $exists: false } }]
-                    : []),
-            ],
-        };
-
-        const search = await User.findOne(searchQueryUser).exec();
-
-        if (search?.username === username) {
-            return {
-                status: 'error',
-                code: 400,
-                message: error.BAD_REQUEST,
-                errors: {
-                    username: {
-                        message: 'Username already taken',
-                    },
-                } as ResponseErrorSummary,
+        // We need to check that if either one field is specified, we should add an
+        // 'or' clause into the query. If neither fields are specified, the 'or' query
+        // will fail because MongoDB disallows an empty 'or' clause.
+        if (typeof username !== 'undefined' || typeof email !== 'undefined') {
+            const searchQueryUser = {
+                _id: { $ne: user.id as string },
+                $or: [
+                    ...(typeof username !== 'undefined' ? [{ username }] : []),
+                    ...(typeof email !== 'undefined'
+                        ? [{ email, externalId: { $exists: false } }]
+                        : []),
+                ],
             };
-        } else if (search?.email === email) {
-            return {
-                status: 'error',
-                code: 400,
-                message: error.BAD_REQUEST,
-                errors: {
-                    email: {
-                        message: 'Email already taken',
-                    },
-                } as ResponseErrorSummary,
-            };
+
+            const search = await User.findOne(searchQueryUser).exec();
+
+            if (typeof username !== 'undefined' && search?.username === username) {
+                return {
+                    status: 'error',
+                    code: 400,
+                    message: error.BAD_REQUEST,
+                    errors: {
+                        username: {
+                            message: 'Username already taken',
+                        },
+                    } as ResponseErrorSummary,
+                };
+            } else if (typeof email !== 'undefined' && search?.email === email) {
+                return {
+                    status: 'error',
+                    code: 400,
+                    message: error.BAD_REQUEST,
+                    errors: {
+                        email: {
+                            message: 'Email already taken',
+                        },
+                    } as ResponseErrorSummary,
+                };
+            }
         }
 
         // So take the fields that are to be updated into the set request, it's okay to this because

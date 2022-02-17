@@ -20,6 +20,6 @@ function parseIntWrapper(value: string) {
 // Setup argument parsing
 const program = new Command();
 
-program.option('-p, --port <number>', 'port number', parseIntWrapper);
+program.option('-p, --port <number>', 'port number', parseIntWrapper).allowUnknownOption();
 
 export default program;

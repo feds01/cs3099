@@ -2,9 +2,9 @@ import { ZodError } from 'zod';
 
 import { expr } from '../utils/expr';
 
-export type ResponseError = {
+export interface ResponseError {
     message: string;
-};
+}
 
 export type ResponseErrorSummary = Record<string, ResponseError>;
 
@@ -16,19 +16,19 @@ export type ResponseErrorSummary = Record<string, ResponseError>;
 export function transformZodErrorIntoResponseError<T>(error: ZodError<T>): ResponseErrorSummary {
     const errorMap = new Map();
 
-    error.errors.forEach((error) => {
-        const path = error.path.join('.');
+    error.errors.forEach((errorItem) => {
+        const path = errorItem.path.join('.');
 
         // Perform some transformation on the ZodError to get into a more readable format
         const responseError = expr(() => {
-            switch (error.code) {
+            switch (errorItem.code) {
                 case 'invalid_type':
                     return {
-                        message: `Expected to receive a '${error.expected}', but got '${error.received}'`,
+                        message: `Expected to receive a '${errorItem.expected}', but got '${errorItem.received}'`,
                     };
                 default:
                     return {
-                        message: error.message,
+                        message: errorItem.message,
                     };
             }
         });
@@ -37,9 +37,9 @@ export function transformZodErrorIntoResponseError<T>(error: ZodError<T>): Respo
 
         return {
             message: error.message,
-            path: error.path.map((item) => item.toString()),
+            path: errorItem.path.map((item) => item.toString()),
         };
     });
 
-    return Object.fromEntries(errorMap);
+    return Object.fromEntries(errorMap) as ResponseErrorSummary;
 }

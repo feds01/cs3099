@@ -1,6 +1,5 @@
 import { Response, agent as supertest } from 'supertest';
 
-import * as errors from '../../../src/common/errors';
 import app from '../../../src/app';
 import Follower from '../../../src/models/Follower';
 import User, { IUserDocument } from '../../../src/models/User';
@@ -64,8 +63,10 @@ describe('Follower endpoints testing ', () => {
         const followResponse = await request
             .post(`/user/followee/follow`)
             .auth(follower1Res.body.token, { type: 'bearer' });
-        expect(followResponse.status).toBe(401);
-        expect(followResponse.body.message).toBe(errors.BAD_REQUEST);
+
+        // Attempting to follow a user again will respond with a '200', but internally it will
+        // do nothing...
+        expect(followResponse.status).toBe(200);
 
         const followDoc = await Follower.count({
             follower: follower1!.id,
@@ -98,16 +99,20 @@ describe('Follower endpoints testing ', () => {
     });
 
     it('check if follower1 is following followee and follower2 is not', async () => {
-        const isfollowingResponse = await request
+        const isFollowingResponse = await request
             .get('/user/followee/follow')
             .auth(follower1Res.body.token, { type: 'bearer' });
-        expect(isfollowingResponse.status).toBe(200);
-        expect(isfollowingResponse.body.following).toBe(true);
+        expect(isFollowingResponse.status).toBe(200);
+        expect(isFollowingResponse.body.following).toBe(true);
 
+        // If the user isn't following the user, the service should still reply with '200'.
+        // Testing the body property 'following' specifies if the user is following the other
+        // user or not
         const notFollowingResponse = await request
             .get('/user/followee/follow')
             .auth(follower2Res.body.token, { type: 'bearer' });
-        expect(notFollowingResponse.status).toBe(404);
+
+        expect(notFollowingResponse.status).toBe(200);
         expect(notFollowingResponse.body.following).toBe(false);
     });
 
@@ -116,7 +121,7 @@ describe('Follower endpoints testing ', () => {
             .get('/user/followee/followers')
             .auth(follower1Res.body.token, { type: 'bearer' });
         expect(followerListResponse.status).toBe(200);
-        expect(followerListResponse.body.data.followers).toEqual([follower1Res.body.user]);
+        expect(followerListResponse.body.followers).toEqual([follower1Res.body.user]);
     });
 
     it("Get follower1's following list", async () => {
@@ -124,15 +129,19 @@ describe('Follower endpoints testing ', () => {
             .get('/user/follower1/following')
             .auth(follower1Res.body.token, { type: 'bearer' });
         expect(followingListResponse.status).toBe(200);
-        expect(followingListResponse.body.data.following).toEqual([followeeRes.body.user]);
+        expect(followingListResponse.body.followers).toEqual([followeeRes.body.user]);
     });
 
     it("Get follower2's following list", async () => {
+        
+        // make the request to get all the followers
         const followingListResponse = await request
             .get('/user/follower2/following')
             .auth(follower2Res.body.token, { type: 'bearer' });
+
+        // Verify that the use has no followers
         expect(followingListResponse.status).toBe(200);
-        expect(followingListResponse.body.data.following).toEqual([]);
+        expect(followingListResponse.body.followers).toEqual([]);
     });
 
     it('should delete all users and all following maps', async () => {
@@ -145,6 +154,7 @@ describe('Follower endpoints testing ', () => {
         const deleteFollower2 = await request
             .delete('/user/follower2')
             .auth(follower2Res.body.token, { type: 'bearer' });
+
         expect(deleteFollowee.status).toBe(200);
         expect(deleteFollower1.status).toBe(200);
         expect(deleteFollower2.status).toBe(200);

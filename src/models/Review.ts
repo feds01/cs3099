@@ -1,3 +1,4 @@
+import assert from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 import { ExportSgReview } from '../validators/sg';
@@ -31,7 +32,7 @@ export interface IReview {
 }
 
 type PopulatedReview = (IReview & {
-    _id: string;
+    _id: mongoose.Types.ObjectId;
 }) & {
     owner: IUser;
 } & {
@@ -67,7 +68,7 @@ ReviewSchema.post(
     /deleteOne|findOneAndDelete$/,
     { document: true, query: true },
     async (item: IReviewDocument, next) => {
-        await Comment.deleteMany({ review: item.id });
+        await Comment.deleteMany({ review: item.id as string });
 
         next();
     },
@@ -76,7 +77,7 @@ ReviewSchema.post(
 ReviewSchema.post('deleteMany', { document: true }, async (items: IReviewDocument[], next) => {
     await Promise.all(
         items.map(async (item) => {
-            await Comment.deleteMany({ review: item.id }).exec();
+            await Comment.deleteMany({ review: item.id as string }).exec();
         }),
     );
 
@@ -94,7 +95,7 @@ ReviewSchema.statics.project = async (review: PopulatedReview) => {
     const { publication, owner, status } = review;
 
     return {
-        id: review._id,
+        id: review._id.toString(),
         publication: await Publication.project(publication),
         owner: User.project(owner),
         status,
@@ -117,17 +118,19 @@ ReviewSchema.statics.projectAsSg = async (review: PopulatedReview): Promise<Expo
     // way that they wish.
     const commentMap: Map<string, number> = new Map();
 
-    const comments = await Comment.find({ review: review._id })
+    const comments = await Comment.find({ review: review._id.toString() })
         .populate<{ owner: IUser }>('owner')
         .exec();
 
     // firstly we want to populate the comment map...
     comments.forEach((comment, index) => {
-        commentMap.set(comment._id.toString(), index);
+        commentMap.set(comment.id as string, index);
     });
 
     const projectedComments = comments.map((comment) => {
-        const id = commentMap.get(comment._id.toString())!;
+        const id = commentMap.get(comment.id as string);
+        assert(typeof id === 'number');
+
         let replying;
 
         if (typeof comment.replying !== 'undefined') {

@@ -1,9 +1,15 @@
 import { Comment, Review } from '../lib/api/models';
+import { Permission } from '../lib/utils/roles';
 import React from 'react';
 
+/** Internal state of the ReviewProvider */
 export interface ReviewState {
+    /** The review document */
     review: Review;
+    /** Any comments that are attached to the current review */
     comments: Comment[];
+    /** The permissions that the current user has on the review */
+    permission: Permission;
 }
 
 export interface ReviewDispatch {
@@ -17,7 +23,7 @@ export type ReviewContext = {
 
 const ReviewStateContext = React.createContext<ReviewContext>({
     // @ts-ignore
-    state: { comments: [], review: {} },
+    state: { comments: [], review: {}, permission: { modify: false, delete: false } },
     dispatch: {
         refetch: () => undefined,
     },

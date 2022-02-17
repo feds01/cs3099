@@ -56,18 +56,18 @@ export async function downloadOctetStream(
         headers: Record<string, string>;
     },
 ): Promise<ServiceResponse<string>> {
-    const url = buildUrl(baseUrl, endpoint, additional?.query);
+    const url = buildUrl(baseUrl, endpoint, additional.query);
     Logger.info(`Attempting to download stream at: ${url}`);
 
     try {
         const rawResponse = await fetch(url, {
             headers: additional.headers,
-            ...(typeof additional?.method !== 'undefined' && { method: additional.method }),
+            ...(typeof additional.method !== 'undefined' && { method: additional.method }),
         });
 
         if (rawResponse.status !== 200) {
             Logger.warn(
-                `Failed to download the stream from the external service. Body responded with ${rawResponse.body}`,
+                'Failed to download the stream from the external service.',
             );
             return {
                 status: 'error',
@@ -135,7 +135,10 @@ export async function downloadOctetStream(
             return { status: 'error', type: 'fetch', errors: {} };
         }
 
-        Logger.warn(`Service request failed with: ${e}`);
+        if (e instanceof Error) {
+            Logger.warn(`Service request failed with: ${e.message}`);
+        }
+
         return { status: 'error', type: 'unknown', errors: {} };
     }
 }
@@ -169,7 +172,7 @@ export async function makeRequest<I, O>(
         const validation = RawResponseSchema.safeParse(json);
 
         if (!validation.success) {
-            Logger.warn(`Service replied with an invalid format:\n${validation.error}`);
+            Logger.warn(`Service replied with an invalid format:\n${JSON.stringify(validation.error)}`);
             return {
                 status: 'error',
                 type: 'service',

@@ -8,6 +8,7 @@ import { useAuth } from '../../hooks/auth';
 import { PublicationProvider } from '../../hooks/publication';
 import { GetPublicationUsernameName200 as PublicationResponse } from '../../lib/api/models';
 import { useGetPublicationUsernameName as useGetPublication } from '../../lib/api/publications/publications';
+import { computeUserPermission } from '../../lib/utils/roles';
 import { ContentState } from '../../types/requests';
 import { transformQueryIntoContentState } from '../../wrappers/react-query';
 import Overview from './modules/Overview';
@@ -38,11 +39,11 @@ interface PublicationParams {
 }
 
 interface TabMapProps {
-    isOwner: boolean;
+    viewSettings: boolean;
     isDraft: boolean;
 }
 
-const TabMap = ({ isOwner, isDraft }: TabMapProps) => ({
+const TabMap = ({ viewSettings, isDraft }: TabMapProps) => ({
     '/': {
         exact: true,
         strict: false,
@@ -66,7 +67,7 @@ const TabMap = ({ isOwner, isDraft }: TabMapProps) => ({
             component: () => <Reviews />,
         },
     }),
-    ...(isOwner && {
+    ...(viewSettings && {
         '/settings': {
             exact: true,
             strict: true,
@@ -164,14 +165,18 @@ function PublicationView() {
         case 'ok': {
             const { publication } = publicationInfo.data;
             const basename = `/${username}/${name}` + (canonicalName[1] !== '' ? `/${canonicalName[1]}` : '');
+            
+            // Calculate the permissions of the current user in regards to the current publication
+            const permission = computeUserPermission(publication.owner.id, session);
+
             const tabMap = TabMap({
-                isOwner: username === session.username,
+                viewSettings: permission.modify,
                 isDraft: publication.draft,
             });
 
             // @@Bug: The export button and the title of the publication aren't aligned properly.
             return (
-                <PublicationProvider state={{ publication }} refetch={getPublicationQuery.refetch}>
+                <PublicationProvider state={{ publication, permission }} refetch={getPublicationQuery.refetch}>
                     {publication.draft && (
                         <Alert severity="warning">
                             <AlertTitle>Warning</AlertTitle>

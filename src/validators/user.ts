@@ -40,6 +40,15 @@ export const IUserSchema = z.object({
     profilePictureUrl: z.string().url().optional(),
 });
 
+/**
+ * This Schema is used to validate patch requests for users, omitting fields
+ * that cannot be patched like the 'password', 'profilePictureUrl'
+ */
+export const IUserPatchRequestSchema = IUserSchema.omit({
+    password: true,
+    profilePictureUrl: true,
+}).partial();
+
 type PartialUserSchema = z.infer<typeof IUserPatchRequestSchema>;
 
 /**
@@ -84,15 +93,6 @@ const verifyUniqueDetails: RefinementEffect<PartialUserSchema>['refinement'] = a
  *
  */
 export const IUserRegisterRequestSchema = IUserSchema.superRefine(verifyUniqueDetails);
-
-/**
- * This Schema is used to validate patch requests for users, omitting fields
- * that cannot be patched like the 'password', 'profilePictureUrl'
- */
-export const IUserPatchRequestSchema = IUserSchema.omit({
-    password: true,
-    profilePictureUrl: true,
-}).partial();
 
 /**
  * This Schema is used to validate requests that attempt to patch

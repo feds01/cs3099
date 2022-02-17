@@ -85,10 +85,11 @@ UserSchema.post(
     async (item: IUserDocument, next) => {
         Logger.warn('Cleaning up user resources after account deletion');
 
-        await Publication.deleteMany({ owner: item.id }).exec();
+        const id = item.id as string;
+        await Publication.deleteMany({ owner: id }).exec();
 
         // Now we need to delete any follower entries that contain the current user's id
-        await Follower.deleteMany({ $or: [{ following: item.id }, { follower: item.id }] }).exec();
+        await Follower.deleteMany({ $or: [{ following: id }, { follower: id }] }).exec();
 
         next();
     },
@@ -111,7 +112,8 @@ UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
         email: user.email,
         username: user.username,
         createdAt: user.createdAt.getTime(),
-        ...(profilePictureUrl && { profilePictureUrl }),
+        role: user.role,
+        ...(typeof profilePictureUrl !== 'undefined' && { profilePictureUrl }),
         ...(typeof about !== 'undefined' && { about }),
         ...(typeof status !== 'undefined' && { status }),
         ...(typeof name !== 'undefined' && { name }),
@@ -139,7 +141,7 @@ UserSchema.statics.projectAsSg = (user: IUserDocument) => {
     return {
         email,
         name: typeof name !== 'undefined' ? name : username,
-        ...(profilePictureUrl && { profilePictureUrl }),
+        ...(typeof profilePictureUrl !== 'undefined' && { profilePictureUrl }),
     };
 };
 

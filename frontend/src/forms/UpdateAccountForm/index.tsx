@@ -1,18 +1,20 @@
-import { useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import LoadingButton from '@mui/lab/LoadingButton';
-import { User } from '../../lib/api/models';
+import ControlledTextField from '../../components/ControlledTextField';
 import FieldLabel from '../../components/FieldLabel';
 import { useDispatchAuth } from '../../hooks/auth';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import { usePatchUserUsername } from '../../lib/api/users/users';
 import { useNotificationDispatch } from '../../hooks/notification';
-import ControlledTextField from '../../components/ControlledTextField';
+import { User } from '../../lib/api/models';
+import { usePatchUserUsername } from '../../lib/api/users/users';
 import { AccountUpdate, AccountUpdateSchema } from '../../validators/updateAccount';
+import { zodResolver } from '@hookform/resolvers/zod';
+import LoadingButton from '@mui/lab/LoadingButton';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import { useEffect } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
+
 interface AccountUpdateFormProps {
     session: User;
 }
@@ -135,8 +137,13 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
             <Grid container spacing={2} sx={{ borderTop: '1px solid', borderColor: 'divider', pb: 2 }}>
                 <Grid item xs={12}>
                     <Box sx={{ mt: 1 }}>
+                        <Link to="/">
+                            <Button variant="outlined" color="secondary">
+                                Cancel
+                            </Button>
+                        </Link>
                         <LoadingButton
-                            sx={{ mr: 1 }}
+                            sx={{ ml: 1 }}
                             disabled={!isValid}
                             loading={isSubmitting}
                             type="submit"
@@ -144,9 +151,6 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
                         >
                             Update profile
                         </LoadingButton>
-                        <Button variant="outlined" href="/">
-                            Cancel
-                        </Button>
                     </Box>
                 </Grid>
             </Grid>

@@ -5,11 +5,13 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
+import type { UserRole } from './userRole';
 
 export interface User {
   id: string;
   email: string;
   username: string;
+  role: UserRole;
   name?: string;
   createdAt: number;
   profilePictureUrl?: string;

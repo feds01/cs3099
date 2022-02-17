@@ -19,28 +19,6 @@ type RequestMethodWithBody = 'post' | 'put' | 'patch';
 type RequestMethodWithoutBody = 'delete' | 'get';
 type RequestMethod = RequestMethodWithBody | RequestMethodWithoutBody;
 
-function registrarHasBody<
-    Params,
-    Query,
-    Method extends RequestMethod,
-    Body,
-    RoutePermission extends Permission | null,
-    Res,
->(
-    registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
-): registrar is RegisterRoute<
-    Params,
-    Query,
-    Method & RequestMethodWithBody,
-    Body,
-    RoutePermission,
-    Res
-> {
-    return (
-        registrar.method === 'post' || registrar.method === 'put' || registrar.method === 'patch'
-    );
-}
-
 export interface BasicRequest<Params, Query, Body> {
     params: Params;
     query: Query;
@@ -59,28 +37,50 @@ type RegisterRoute<
     Body,
     RoutePermission extends Permission | null,
     Res,
-> = {
-    method: Method;
-    permission: RoutePermission;
-    sgMode?: boolean;
-    // @@Cleanup: Since permission verification doesn't actually use the body for any
-    //            verification at the moment, we don't actually include in the verification
-    //            of the permissions. This could be a limitation in the future, but it is hard
-    //            to reason about whether it is null or not a given point,
-    permissionVerification?: PermissionVerificationFn<Params, Query>;
-    params: z.Schema<Params, z.ZodTypeDef, Record<string, any>>;
-    query: z.Schema<Query, z.ZodTypeDef, Record<string, any>>;
-    handler: (
-        req: Request<
-            Params,
-            Query,
-            RoutePermission extends null ? null : IUserDocument,
-            Method extends RequestMethodWithBody ? Body : null
-        >,
-    ) => Promise<ApiResponse<Res>>;
-} & (Method extends RequestMethodWithBody
-    ? { body: z.Schema<Body, z.ZodTypeDef, Record<string, any>> }
-    : {});
+    > = {
+        method: Method;
+        permission: RoutePermission;
+        sgMode?: boolean;
+        // @@Cleanup: Since permission verification doesn't actually use the body for any
+        //            verification at the moment, we don't actually include in the verification
+        //            of the permissions. This could be a limitation in the future, but it is hard
+        //            to reason about whether it is null or not a given point,
+        permissionVerification?: PermissionVerificationFn<Params, Query>;
+        params: z.Schema<Params, z.ZodTypeDef, Record<string, any>>;
+        query: z.Schema<Query, z.ZodTypeDef, Record<string, any>>;
+        handler: (
+            req: Request<
+                Params,
+                Query,
+                RoutePermission extends null ? null : IUserDocument,
+                Method extends RequestMethodWithBody ? Body : null
+            >,
+        ) => Promise<ApiResponse<Res>>;
+    } & (Method extends RequestMethodWithBody
+        ? { body: z.Schema<Body, z.ZodTypeDef, Record<string, any>> }
+        : {});
+
+function registrarHasBody<
+    Params,
+    Query,
+    Method extends RequestMethod,
+    Body,
+    RoutePermission extends Permission | null,
+    Res,
+    >(
+        registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
+): registrar is RegisterRoute<
+    Params,
+    Query,
+    Method & RequestMethodWithBody,
+    Body,
+    RoutePermission,
+    Res
+> {
+    return (
+        registrar.method === 'post' || registrar.method === 'put' || registrar.method === 'patch'
+    );
+}
 
 export default function registerRoute<
     Params,
@@ -89,10 +89,10 @@ export default function registerRoute<
     Body,
     RoutePermission extends Permission | null,
     Res,
->(
-    router: express.Router,
-    path: string,
-    registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
+    >(
+        router: express.Router,
+        path: string,
+        registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
 ) {
     const wrappedHandler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
@@ -107,7 +107,7 @@ export default function registerRoute<
                 body = await registrar.body.parseAsync(req.body);
             }
 
-            let basicRequest = { query, params, body };
+            const basicRequest = { query, params, body };
 
             const permissions = await expr(async () => {
                 if (registrar.permission !== null) {
@@ -124,9 +124,9 @@ export default function registerRoute<
                         registrar.permission,
                         tokenOrError.data.id,
                         basicRequest,
-                        typeof registrar.permissionVerification === 'function'
-                            ? registrar.permissionVerification
-                            : defaultPermissionVerifier,
+                        typeof registrar.permissionVerification === 'function' ?
+                            registrar.permissionVerification :
+                            defaultPermissionVerifier,
                     );
                 }
 
@@ -138,10 +138,10 @@ export default function registerRoute<
             }
 
             // Report a more informative error if the information is available
-            if (permissions && !permissions.valid) {
+            if (permissions !== null && !permissions.valid) {
                 throw new errors.ApiError(
-                    permissions?.code || 401,
-                    permissions?.message || errors.UNAUTHORIZED,
+                    typeof permissions.code === 'undefined' ? 401 : permissions.code,
+                    typeof permissions.message === 'undefined' ? errors.UNAUTHORIZED : permissions.message,
                 );
             }
 
@@ -175,17 +175,18 @@ export default function registerRoute<
 
             // If something else went wrong that we don't quite understand, then we return an
             // internal server error as this was unexpected
-            Logger.error(`Server encountered an unexpected error:\n${e}`);
-
             if (e instanceof Error) {
-                Logger.error(`Error stack:\n${e.stack}`);
+                Logger.error(`Server encountered an unexpected error:\n${e.message}`);
+
+                if (typeof e.stack !== 'undefined') {
+                    Logger.error(`Error stack:\n${e.stack}`);
+                }
             }
 
             res.status(500).json({
                 status: 'error',
                 message: errors.INTERNAL_SERVER_ERROR,
             });
-            return;
         }
     };
 
@@ -211,7 +212,7 @@ export default function registerRoute<
     }
 }
 
-type Dictionary = { [index: string]: string };
+type Dictionary = Record<string, string>;
 export const GROUP_URI_MAP: Dictionary = {
     t06: 'https://cs3099user06.host.cs.st-andrews.ac.uk/',
     t12: 'https://cs3099user12.host.cs.st-andrews.ac.uk/',
