@@ -15,7 +15,9 @@ import {
 import type {
   GetUserUsernameFollow200,
   ApiErrorResponse,
-  FollowerListResponse
+  FollowerListResponse,
+  GetUserUsernameFollowersParams,
+  GetUserUsernameFollowingParams
 } from '.././models'
 import { customInstance } from '.././mutator/custom-instance'
 
@@ -69,29 +71,33 @@ export const useGetUserUsernameFollow = <TData = AsyncReturnType<typeof getUserU
  */
 export const getUserUsernameFollowers = (
     username: string,
+    params?: GetUserUsernameFollowersParams,
  ) => {
       return customInstance<FollowerListResponse>(
-      {url: `/user/${username}/followers`, method: 'get'
+      {url: `/user/${username}/followers`, method: 'get',
+        params,
     },
       );
     }
   
 
-export const getGetUserUsernameFollowersQueryKey = (username: string,) => [`/user/${username}/followers`];
+export const getGetUserUsernameFollowersQueryKey = (username: string,
+    params?: GetUserUsernameFollowersParams,) => [`/user/${username}/followers`, ...(params ? [params]: [])];
 
     
 export const useGetUserUsernameFollowers = <TData = AsyncReturnType<typeof getUserUsernameFollowers>, TError = ApiErrorResponse>(
- username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowers>, TError, TData>, }
+ username: string,
+    params?: GetUserUsernameFollowersParams, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowers>, TError, TData>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
 
   const {query: queryOptions} = options || {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowersQueryKey(username);
+  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowersQueryKey(username,params);
 
   
 
-  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollowers>> = () => getUserUsernameFollowers(username, );
+  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollowers>> = () => getUserUsernameFollowers(username,params, );
 
   const query = useQuery<AsyncReturnType<typeof getUserUsernameFollowers>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
 
@@ -107,29 +113,33 @@ export const useGetUserUsernameFollowers = <TData = AsyncReturnType<typeof getUs
  */
 export const getUserUsernameFollowing = (
     username: string,
+    params?: GetUserUsernameFollowingParams,
  ) => {
       return customInstance<FollowerListResponse>(
-      {url: `/user/${username}/following`, method: 'get'
+      {url: `/user/${username}/following`, method: 'get',
+        params,
     },
       );
     }
   
 
-export const getGetUserUsernameFollowingQueryKey = (username: string,) => [`/user/${username}/following`];
+export const getGetUserUsernameFollowingQueryKey = (username: string,
+    params?: GetUserUsernameFollowingParams,) => [`/user/${username}/following`, ...(params ? [params]: [])];
 
     
 export const useGetUserUsernameFollowing = <TData = AsyncReturnType<typeof getUserUsernameFollowing>, TError = ApiErrorResponse>(
- username: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowing>, TError, TData>, }
+ username: string,
+    params?: GetUserUsernameFollowingParams, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getUserUsernameFollowing>, TError, TData>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
 
   const {query: queryOptions} = options || {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowingQueryKey(username);
+  const queryKey = queryOptions?.queryKey ?? getGetUserUsernameFollowingQueryKey(username,params);
 
   
 
-  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollowing>> = () => getUserUsernameFollowing(username, );
+  const queryFn: QueryFunction<AsyncReturnType<typeof getUserUsernameFollowing>> = () => getUserUsernameFollowing(username,params, );
 
   const query = useQuery<AsyncReturnType<typeof getUserUsernameFollowing>, TError, TData>(queryKey, queryFn, {enabled: !!(username), ...queryOptions})
 

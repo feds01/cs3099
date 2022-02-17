@@ -28,6 +28,8 @@ tags:
       description: Endpoints relating to publications.
     - name: resources
       description: Endpoints related to managing uploaded resources.
+    - name: search
+      description: Endpoints related to searching content on the platform.
 paths:
     /version:
         get:
@@ -71,8 +73,7 @@ paths:
                                     status:
                                         $ref: '#/components/schemas/SuccessStatus'
                                     schema:
-                                        type: object
-                
+                                        type: object      
     /sg/sso/login:
         get:
             summary: External login endpoint
@@ -715,6 +716,16 @@ paths:
                       type: string
                   required: true
                   description: Username.
+                - in: query
+                  name: skip
+                  schema:
+                    $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents 
+                - in: query
+                  name: take
+                  schema:
+                    $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take 
             responses:
                 '200':
                     $ref: '#/components/responses/FollowerList'
@@ -735,6 +746,16 @@ paths:
                       type: string
                   required: true
                   description: Username.
+                - in: query
+                  name: skip
+                  schema:
+                    $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents 
+                - in: query
+                  name: take
+                  schema:
+                    $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take 
             responses:
                 '200':
                     $ref: '#/components/responses/FollowerList'
@@ -902,6 +923,16 @@ paths:
                       example: 'false'
                       enum: ['true', 'false']
                       description: Filter by pinned used publications.
+                - in: query
+                  name: skip
+                  schema:
+                    $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents 
+                - in: query
+                  name: take
+                  schema:
+                    $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take 
             responses:
                 '200':
                     description: Returns the requested publications.
@@ -1019,6 +1050,16 @@ paths:
                       type: string
                   required: true
                   description: The name of the publication for the current user.
+                - in: query
+                  name: skip
+                  schema:
+                    $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents 
+                - in: query
+                  name: take
+                  schema:
+                    $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take 
             responses:
                 '200':
                     description: Returns the requested publications.
@@ -1192,6 +1233,16 @@ paths:
                       type: string
                   required: true
                   description: The revision of the publication.
+                - in: query
+                  name: skip
+                  schema:
+                    $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents 
+                - in: query
+                  name: take
+                  schema:
+                    $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take 
             responses:
                 '200':
                     description: Returns the requested publications.
@@ -1390,7 +1441,6 @@ paths:
                                         $ref: '#/components/schemas/Comment'
                 default:
                     $ref: '#/components/responses/ApiError'
-
     /comment/{id}:
         get:
             summary: Get a comment
@@ -1584,7 +1634,90 @@ paths:
                     $ref: '#/components/responses/NoContent'
                 default:
                     $ref: '#/components/responses/ApiError'
-
+    /search/publication:
+        get:
+            summary: Search publications by specific keywords in a query.
+            description: Get a paginated list of publications from searching all available publications
+            tags:
+                - search
+            parameters:
+                - in: query
+                  name: query
+                  schema:
+                      type: string
+                  required: true
+                  description: The search query.
+                - in: query
+                  name: skip
+                  schema:
+                    $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents 
+                - in: query
+                  name: take
+                  schema:
+                    $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take 
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - comments
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    publications:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Publication'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /search/user:
+        get:
+            summary: Search publications by specific keywords in a query.
+            description: Get a paginated list of publications from searching all available publications
+            tags:
+                - search
+            parameters:
+                - in: query
+                  name: query
+                  schema:
+                      type: string
+                  required: true
+                  description: The search query.
+                - in: query
+                  name: skip
+                  schema:
+                    $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents 
+                - in: query
+                  name: take
+                  schema:
+                    $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take 
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - comments
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    users:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/User'
+                default:
+                    $ref: '#/components/responses/ApiError'
 components:
     securitySchemes:
         BearerAuth:
@@ -1612,7 +1745,6 @@ components:
                                 example: 'src/server.ts'
                             anchor:
                                 $ref: '#/components/schemas/CommentAnchor'
-
     responses:
         NoContent:
             description: No Content. Server acknowledges request but has no return body.
@@ -1792,6 +1924,17 @@ components:
             properties:
                 status:
                     $ref: '#/components/schemas/SuccessStatus'
+        SkipQuery:
+            type: number
+            default: 0
+            example: 50
+        TakeQuery:
+            type: number
+            default: 50
+            example: 50
+            minimum: 1
+            maximum: 200
+
         ResponseError:
             type: object
             required:
@@ -2031,7 +2174,6 @@ components:
                     items:
                         type: string
                         example: jdoe1
-
         RevisePublicationRequest:
             type: object
             required:

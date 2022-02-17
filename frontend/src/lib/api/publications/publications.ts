@@ -30,6 +30,7 @@ import type {
   PostPublicationUsernameNameExportParams,
   RevisePublicationRequest,
   GetPublicationUsernameNameRevisions200,
+  GetPublicationUsernameNameRevisionsParams,
   ResourceResponseResponse,
   GetPublicationUsernameNameTreePathParams,
   GetPublicationUsernameNameAll200,
@@ -312,31 +313,35 @@ export const postPublicationUsernameNameRevise = (
 export const getPublicationUsernameNameRevisions = (
     username: string,
     name: string,
+    params?: GetPublicationUsernameNameRevisionsParams,
  ) => {
       return customInstance<GetPublicationUsernameNameRevisions200>(
-      {url: `/publication/${username}/${name}/revisions`, method: 'get'
+      {url: `/publication/${username}/${name}/revisions`, method: 'get',
+        params,
     },
       );
     }
   
 
 export const getGetPublicationUsernameNameRevisionsQueryKey = (username: string,
-    name: string,) => [`/publication/${username}/${name}/revisions`];
+    name: string,
+    params?: GetPublicationUsernameNameRevisionsParams,) => [`/publication/${username}/${name}/revisions`, ...(params ? [params]: [])];
 
     
 export const useGetPublicationUsernameNameRevisions = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError = ApiErrorResponse>(
  username: string,
-    name: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError, TData>, }
+    name: string,
+    params?: GetPublicationUsernameNameRevisionsParams, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError, TData>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
 
   const {query: queryOptions} = options || {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameRevisionsQueryKey(username,name);
+  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameRevisionsQueryKey(username,name,params);
 
   
 
-  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameRevisions>> = () => getPublicationUsernameNameRevisions(username,name, );
+  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameRevisions>> = () => getPublicationUsernameNameRevisions(username,name,params, );
 
   const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name), ...queryOptions})
 
