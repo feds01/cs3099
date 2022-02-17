@@ -147,4 +147,6 @@ ReviewSchema.statics.projectAsSg = async (review: PopulatedReview): Promise<Expo
     };
 };
 
-export default mongoose.model<IReview, IReviewModel>('review', ReviewSchema);
+const ReviewModel = mongoose.model<IReview, IReviewModel>('review', ReviewSchema);
+
+export default ReviewModel;

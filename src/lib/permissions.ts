@@ -19,14 +19,14 @@ type BodylessBasicRequest<P, Q> = Omit<BasicRequest<P, Q, unknown>, 'body'>;
  */
 export type ResolvedPermission =
     | {
-        valid: false;
-        code?: 401 | 400 | 404;
-        message?: string;
-    }
+          valid: false;
+          code?: 401 | 400 | 404;
+          message?: string;
+      }
     | {
-        valid: true;
-        user: IUserDocument;
-    };
+          valid: true;
+          user: IUserDocument;
+      };
 
 /**
  * This is a function that is defined for some endpoint that is used to determined whether some
@@ -170,7 +170,8 @@ export const verifyCommentPermission = async <P extends IdRequest, Q>(
 
     if (!comment) {
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
-    } if (comment.owner.toString() !== user.id) {
+    }
+    if (comment.owner.toString() !== user.id) {
         return { valid: false };
     }
 
@@ -190,7 +191,8 @@ export const verifyCommentThreadPermission = async <P extends IdRequest, Q>(
 
     if (!commentThread) {
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
-    } if (commentThread.owner.toString() !== user.id) {
+    }
+    if (commentThread.owner.toString() !== user.id) {
         return { valid: false };
     }
 
@@ -211,14 +213,10 @@ export const verifyReviewPermission = async <P extends IdRequest, Q>(
     // prevent requesters who aren't owners viewing reviews that are currently
     // still incomplete. If the status of the review is completed, all individuals
     // should be able to see the review...
-    //
-    // @@TODO: in the future, it should be possible to make a review private and specify
-    //         who can view the review.
     if (!review) {
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
-    } if (
-        review.status !== IReviewStatus.Completed && review.owner.toString() !== user.id
-    ) {
+    }
+    if (review.status !== IReviewStatus.Completed && review.owner.toString() !== user.id) {
         return { valid: false };
     }
 
@@ -234,7 +232,10 @@ export const verifyPublicationPermission = async <P extends PublicationRequest, 
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
 ): Promise<ResolvedPermission> => {
-    const publication = await Publication.findOne({ owner: user.id as string, name: req.params.name }).exec();
+    const publication = await Publication.findOne({
+        owner: user.id as string,
+        name: req.params.name,
+    }).exec();
 
     if (!publication) {
         return { valid: false, message: errors.RESOURCE_NOT_FOUND, code: 404 };
@@ -260,7 +261,8 @@ export const verifyPublicationIdPermission = async <P extends IdRequest, Q>(
 
     if (!publication) {
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
-    } if (publication.owner.toString() !== user.id) {
+    }
+    if (publication.owner.toString() !== user.id) {
         return { valid: false };
     }
 

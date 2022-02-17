@@ -6,7 +6,7 @@ import User, { IUserDocument } from '../../../src/models/User';
 
 const request = supertest(app);
 
-type PopulatedUserDocument = (IUserDocument & { _id: string | undefined });
+type PopulatedUserDocument = IUserDocument & { _id: string | undefined };
 
 describe('Publications endpoints testing', () => {
     let owner: PopulatedUserDocument | null;
@@ -69,7 +69,10 @@ describe('Publications endpoints testing', () => {
         expect(response.body.publication.title).toBe('Test title');
         expect(response.body.publication.name).toBe('test-name');
         expect(response.body.publication.introduction).toBe('Introduction here');
-        expect(response.body.publication.collaborators).toEqual([collaborator1!.id, collaborator2!.id]);
+        expect(response.body.publication.collaborators).toEqual([
+            collaborator1!.id,
+            collaborator2!.id,
+        ]);
         expect(response.body.publication.owner).toStrictEqual(User.project(owner as IUserDocument));
 
         const publication = await Publication.count({ name: 'test-name', revision: 'v1' });
@@ -103,7 +106,7 @@ describe('Publications endpoints testing', () => {
                 collaborators: ['collabo1', 'collabo2'],
             });
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe("Publication with the same name already exists");
+        expect(response.body.message).toBe('Publication with the same name already exists');
 
         const publicationNum = await Publication.count({ name: 'test-name', revision: 'v1' });
         expect(publicationNum).toBe(1);
@@ -121,16 +124,13 @@ describe('Publications endpoints testing', () => {
                 collaborators: ['collabo1', 'collabo3'],
             });
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe(
-            "Request parameters didn't match the expected format.",
-        );
+        expect(response.body.message).toBe("Request parameters didn't match the expected format.");
     });
 
     // Tests for GET /publication/:username/:name/:revision?/tree/:path(*)
 
     // Tests for GET /publication/:username/
     it('should get all publications of a user', async () => {
-        
         // Make a request to get all of the publications of the user 'owner'
         const response = await request
             .get('/publication/owner')

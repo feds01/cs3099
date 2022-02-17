@@ -66,9 +66,7 @@ export async function downloadOctetStream(
         });
 
         if (rawResponse.status !== 200) {
-            Logger.warn(
-                'Failed to download the stream from the external service.',
-            );
+            Logger.warn('Failed to download the stream from the external service.');
             return {
                 status: 'error',
                 type: 'service',
@@ -172,7 +170,9 @@ export async function makeRequest<I, O>(
         const validation = RawResponseSchema.safeParse(json);
 
         if (!validation.success) {
-            Logger.warn(`Service replied with an invalid format:\n${JSON.stringify(validation.error)}`);
+            Logger.warn(
+                `Service replied with an invalid format:\n${JSON.stringify(validation.error)}`,
+            );
             return {
                 status: 'error',
                 type: 'service',

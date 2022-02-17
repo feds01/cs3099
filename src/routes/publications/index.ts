@@ -310,7 +310,6 @@ registerRoute(router, '/:username', {
 
         const { pinned } = req.query;
 
-        // @@TODO: we might want to include revisions in the future with some options.
         const result = await Publication.find({
             owner: user.id,
             ...(typeof pinned !== 'undefined' && {

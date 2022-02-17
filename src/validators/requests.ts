@@ -17,3 +17,11 @@ export type UserRequestMode = z.infer<typeof ModeSchema>;
 
 const sorts = ['directory', 'file'] as const;
 export const ResourceSortSchema = z.enum(sorts).optional();
+
+/** Schema for representing a pagination query */
+export const PaginationQuerySchema = z.object({
+    /** The number of items that should be taken from the given offset */
+    take: z.number().int().min(1).max(200).default(50),
+    /** The offset number of items to read from */
+    skip: z.number().int().default(0),
+});

@@ -55,6 +55,9 @@ const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublicati
     { timestamps: true },
 );
 
+// Create the text index schema for searching publications.
+PublicationSchema.index({ title: 'text', introduction: 'text', name: 'text' });
+
 /**
  * This function is a hook to remove any reviews that are on a publication
  * if the publication is marked for deletion.
@@ -183,4 +186,10 @@ PublicationSchema.statics.projectAsSg = async (
     };
 };
 
-export default mongoose.model<IPublication, IPublicationModel>('publication', PublicationSchema);
+const PublicationModel = mongoose.model<IPublication, IPublicationModel>(
+    'publication',
+    PublicationSchema,
+);
+PublicationModel.createIndexes();
+
+export default PublicationModel;

@@ -7,15 +7,15 @@ import { GROUP_URI_MAP } from './requests';
 
 type ExportStatus<O> =
     | {
-        status: 'error';
-        message: string;
-        extra?: string;
-        error: unknown;
-    }
+          status: 'error';
+          message: string;
+          extra?: string;
+          error: unknown;
+      }
     | {
-        status: 'ok';
-        item: O;
-    };
+          status: 'ok';
+          item: O;
+      };
 
 /**
  * Function that attempts to import an external user specified by an an @see {SgUserId}.

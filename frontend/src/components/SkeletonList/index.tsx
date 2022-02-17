@@ -1,15 +1,14 @@
+import { range } from '../../lib/utils/arrays';
 import Box from '@mui/material/Box';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
-import { range } from '../../lib/utils/arrays';
-import React, { ReactElement } from 'react';
+import { ReactElement } from 'react';
 
-interface Props {
+interface SkeletonListProps {
     rows: number;
-    // children: React.ReactNode; @@TODO: use this as the list bit
 }
 
-export default function SkeletonList({ rows }: Props): ReactElement {
+export default function SkeletonList({ rows }: SkeletonListProps): ReactElement {
     return (
         <Box sx={{ display: 'flex', paddingTop: 1, flexDirection: 'column' }}>
             {range(rows).map((idx) => {

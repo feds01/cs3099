@@ -2,7 +2,9 @@ import express from 'express';
 import { z } from 'zod';
 
 import registerRoute from '../../lib/requests';
-import { IUserRole } from '../../models/User';
+import Publication from '../../models/Publication';
+import { IUser } from '../../models/User';
+import { PaginationQuerySchema } from '../../validators/requests';
 
 const router = express.Router({ mergeParams: true });
 
@@ -19,14 +21,28 @@ const router = express.Router({ mergeParams: true });
 registerRoute(router, '/search', {
     method: 'get',
     params: z.object({}),
-    query: z.object({}),
-    permission: { level: IUserRole.Default },
-    handler: async (_req) => {
-        // TODO: Implement search endpoint
+    query: z.object({ query: z.string() }).merge(PaginationQuerySchema),
+    permission: null,
+    handler: async (req) => {
+        const { query, take, skip } = req.query;
+
+        const publications = await Publication.find(
+            { $text: { $search: query } },
+            { score: { $meta: 'textScore' }, skip },
+        )
+            .sort({ score: { $meta: 'textScore' } })
+            .populate<{ owner: IUser }>('owner')
+            .limit(take)
+            .exec();
+
         return {
-            status: 'error',
-            code: 503,
-            message: 'Service Unavailable',
+            status: 'ok',
+            code: 200,
+            data: {
+                publications: await Promise.all(
+                    publications.map(async (pub) => await Publication.project(pub)),
+                ),
+            },
         };
     },
 });
