@@ -10,5 +10,5 @@ import type { Publication } from './publication';
 
 export type GetSearchPublication200 = {
   status: SuccessStatus;
-  publications?: Publication[];
+  publications: Publication[];
 };

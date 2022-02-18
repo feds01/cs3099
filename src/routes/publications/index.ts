@@ -25,10 +25,8 @@ import {
 } from '../../validators/publications';
 import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../validators/requests';
 import reviewRouter from './reviews';
-import searchRouter from './search';
 
 const router = express.Router();
-router.use('/', searchRouter);
 router.use('/', reviewRouter);
 
 /**

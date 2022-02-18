@@ -150,7 +150,7 @@ export default function ProfilePage(): ReactElement {
     }, [content.data]);
 
     return (
-        <PageLayout title={'Profile'} sidebar={false}>
+        <PageLayout sidebar={false}>
             <Box
                 sx={{
                     display: 'flex',

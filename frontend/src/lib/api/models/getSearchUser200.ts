@@ -10,5 +10,5 @@ import type { User } from './user';
 
 export type GetSearchUser200 = {
   status: SuccessStatus;
-  users?: User[];
+  users: User[];
 };

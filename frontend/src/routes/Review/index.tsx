@@ -115,7 +115,7 @@ export default function ReviewPage(): ReactElement {
         return <LinearProgress />;
     } else if (commentResourceResponse.state === 'error') {
         return (
-            <PageLayout title="Review">
+            <PageLayout>
                 <ErrorBanner message={commentResourceResponse.error.message} />
             </PageLayout>
         );
@@ -211,5 +211,5 @@ export default function ReviewPage(): ReactElement {
         }
     };
 
-    return <PageLayout title="Review">{renderContent()}</PageLayout>;
+    return <PageLayout>{renderContent()}</PageLayout>;
 }

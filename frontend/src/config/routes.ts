@@ -1,6 +1,7 @@
 import PublicationRoute from '../routes/Publication';
 import CreatePublicationRoute from '../routes/Publication/Create';
 import AccountRoute from './../routes/Account';
+import ExploreRoute from './../routes/Explore';
 import HomeRoute from './../routes/Home';
 import ProfileRoute from './../routes/Profile';
 import ReviewRoute from './../routes/Review';
@@ -28,6 +29,11 @@ export const routes = {
         exact: true,
         title: 'Home',
         component: HomeRoute,
+    },
+    '/explore': {
+        exact: true,
+        title: 'Explore',
+        component: ExploreRoute,
     },
     '/profile/:id': {
         exact: false,

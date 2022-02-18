@@ -1666,7 +1666,7 @@ paths:
                                 type: object
                                 required:
                                     - status
-                                    - comments
+                                    - publications
                                 properties:
                                     status:
                                         $ref: '#/components/schemas/SuccessStatus'
@@ -1708,7 +1708,7 @@ paths:
                                 type: object
                                 required:
                                     - status
-                                    - comments
+                                    - users
                                 properties:
                                     status:
                                         $ref: '#/components/schemas/SuccessStatus'
@@ -2126,6 +2126,9 @@ components:
                 introduction:
                     type: string
                     example: 'Iamus is a platform for managing code journals...'
+                about:
+                    type: string
+                    example: 'This is a short description of the publication'
                 revision:
                     type: string
                     example: 'v1.0.0'
@@ -2169,6 +2172,9 @@ components:
                 revision:
                     type: string
                     example: 'v1.0.0'
+                about:
+                    type: string
+                    example: 'This is a short description of the publication'
                 collaborators:
                     type: array
                     items:
@@ -2198,6 +2204,9 @@ components:
                 introduction:
                     type: string
                     example: 'Iamus is a platform for managing code journals...'
+                about:
+                    type: string
+                    example: 'This is a short description of the publication'
                 revision:
                     type: string
                     example: 'v1.0.0'

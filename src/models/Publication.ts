@@ -18,6 +18,8 @@ export interface IPublication {
     name: string;
     /** Introduction of the publication */
     introduction?: string;
+    /** Short about section of what the publication is off */
+    about?: string;
     /** If the publication is still in draft mode */
     draft: boolean;
     /** If the current revision of the publication is the most current revision */
@@ -46,6 +48,7 @@ const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublicati
         name: { type: String, required: true },
         title: { type: String, required: true },
         introduction: { type: String },
+        about: { type: String },
         owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
         draft: { type: Boolean, required: true },
         current: { type: Boolean, required: true },
@@ -129,7 +132,7 @@ PublicationSchema.statics.projectWith = (
     publication: IPublicationDocument,
     owner: IUserDocument,
 ) => {
-    const { name, title, introduction, draft, owner: ownerId, collaborators } = publication;
+    const { name, title, introduction, about, draft, owner: ownerId, collaborators } = publication;
 
     assert(owner.id === ownerId._id.toString(), 'Owner ids mismatch');
 
@@ -137,6 +140,7 @@ PublicationSchema.statics.projectWith = (
         id: publication.id as string,
         name,
         title,
+        about,
         introduction,
         owner: User.project(owner),
         draft,

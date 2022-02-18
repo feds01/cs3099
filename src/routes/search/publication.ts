@@ -18,7 +18,7 @@ const router = express.Router({ mergeParams: true });
  * @description This endpoint will be used for searching publications that
  * are globally visible to the platform.
  */
-registerRoute(router, '/search', {
+registerRoute(router, '/', {
     method: 'get',
     params: z.object({}),
     query: z.object({ query: z.string() }).merge(PaginationQuerySchema),

@@ -83,6 +83,10 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
                     <ControlledTextField name="title" control={control} />
                 </Grid>
                 <Grid item xs={12}>
+                    <FieldLabel label="Publication about" required={false} />
+                    <ControlledTextField name="about" control={control} />
+                </Grid>
+                <Grid item xs={12}>
                     <FieldLabel label="Publication description" required={false} />
                     <ControlledTextField
                         name="introduction"
