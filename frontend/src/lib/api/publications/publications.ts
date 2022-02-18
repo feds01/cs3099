@@ -19,6 +19,8 @@ import type {
   CreatePublicationResponseResponse,
   ApiErrorResponse,
   CreatePublicationRequest,
+  GetPublication200,
+  GetPublicationParams,
   ApiSuccessResponse,
   DeletePublicationUsernameNameParams,
   PatchPublicationRequest,
@@ -78,6 +80,45 @@ export const postPublication = (
       return useMutation<AsyncReturnType<typeof postPublication>, TError, {data: CreatePublicationRequest}, TContext>(mutationFn, mutationOptions)
     }
     /**
+ * Get a paginated list of publications
+ * @summary Paginated publications
+ */
+export const getPublication = (
+    params?: GetPublicationParams,
+ ) => {
+      return customInstance<GetPublication200>(
+      {url: `/publication`, method: 'get',
+        params,
+    },
+      );
+    }
+  
+
+export const getGetPublicationQueryKey = (params?: GetPublicationParams,) => [`/publication`, ...(params ? [params]: [])];
+
+    
+export const useGetPublication = <TData = AsyncReturnType<typeof getPublication>, TError = ApiErrorResponse>(
+ params?: GetPublicationParams, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublication>, TError, TData>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+
+  const {query: queryOptions} = options || {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetPublicationQueryKey(params);
+
+  
+
+  const queryFn: QueryFunction<AsyncReturnType<typeof getPublication>> = () => getPublication(params, );
+
+  const query = useQuery<AsyncReturnType<typeof getPublication>, TError, TData>(queryKey, queryFn, queryOptions)
+
+  return {
+    queryKey,
+    ...query
+  }
+}
+
+/**
  * Delete the publication resource.
  * @summary Delete a publication
  */

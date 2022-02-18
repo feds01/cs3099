@@ -26,39 +26,39 @@ registerRoute(router, '/', {
         const { query, take, skip } = req.query;
 
         type AggregationQuery = {
-            data: IPublicationDocument[],
-            total?: number
+            data: IPublicationDocument[];
+            total?: number;
         };
 
-        const aggregation = await Publication.aggregate([
+        const aggregation = (await Publication.aggregate([
             { $match: { $text: { $search: query } } },
-            { $addFields: { score: { $meta: "textScore" } } },
+            { $addFields: { score: { $meta: 'textScore' } } },
             {
                 $facet: {
                     metadata: [
                         {
                             $group: {
                                 _id: null,
-                                total: { $sum: 1 }
-                            }
+                                total: { $sum: 1 },
+                            },
                         },
                     ],
                     data: [
                         { $sort: { score: { $meta: 'textScore' } } },
                         { $skip: skip },
                         { $limit: take },
-                    ]
-                }
+                    ],
+                },
             },
             {
                 $project: {
                     data: 1,
-                    // Get total from the first element of the metadata array 
-                    total: { $arrayElemAt: ['$metadata.total', 0] }
-                }
-            }
-        ]) as unknown as [AggregationQuery];
-        
+                    // Get total from the first element of the metadata array
+                    total: { $arrayElemAt: ['$metadata.total', 0] },
+                },
+            },
+        ])) as unknown as [AggregationQuery];
+
         const publications = aggregation[0];
 
         return {
@@ -70,7 +70,7 @@ registerRoute(router, '/', {
                 ),
                 skip,
                 take,
-                total: publications.total ?? 0
+                total: publications.total ?? 0,
             },
         };
     },

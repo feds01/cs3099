@@ -106,3 +106,5 @@ export * from './getPublicationUsernameNameRevisionsParams';
 export * from './getSearchPublicationParams';
 export * from './getUserUsernameFollowersParams';
 export * from './getSearchUser200';
+export * from './getPublicationParams';
+export * from './getPublication200';

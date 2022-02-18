@@ -781,6 +781,55 @@ paths:
                     $ref: '#/components/responses/CreatePublicationResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
+        get:
+            summary: Paginated publications
+            description: Get a paginated list of publications
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: query
+                  name: skip
+                  schema:
+                    $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents 
+                - in: query
+                  name: take
+                  schema:
+                    $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take 
+            responses:
+                '200':
+                    description: Returns a paginated list of publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - publications
+                                    - skip
+                                    - take
+                                    - total
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    publications:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Publication'
+                                    skip:
+                                        $ref: '#/components/schemas/SkipQuery'
+                                    take:
+                                        $ref: '#/components/schemas/TakeQuery'
+                                    total:
+                                        type: number
+                                        example: 12
+                    
+                default:
+                    $ref: '#/components/responses/ApiError'
+
     /publication/{username}/{name}:
         delete:
             summary: Delete a publication

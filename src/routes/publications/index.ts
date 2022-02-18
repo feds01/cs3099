@@ -15,7 +15,7 @@ import {
     verifyUserPermission,
 } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
-import Publication from '../../models/Publication';
+import Publication, { IPublicationDocument } from '../../models/Publication';
 import User, { IUserRole } from '../../models/User';
 import { config } from '../../server';
 import { PaginationQuerySchema } from '../../validators/pagination';
@@ -283,6 +283,66 @@ registerRoute(router, '/', {
             code: 201,
             data: {
                 publication: Publication.projectWith(publication, req.requester),
+            },
+        };
+    },
+});
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/publication
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/
+ *
+ * @description Route to list the most publications in a paginated form
+ */
+registerRoute(router, '/', {
+    method: 'get',
+    params: z.object({}),
+    query: PaginationQuerySchema,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const { skip, take } = req.query;
+
+        type PublicationAggregation = {
+            data: IPublicationDocument[];
+            total?: number;
+        };
+
+        const aggregation = (await Publication.aggregate([
+            {
+                $facet: {
+                    data: [
+                        { $match: { draft: false } },
+                        { $sort: { _id: -1 } },
+                        { $skip: skip },
+                        { $limit: take },
+                    ],
+                    total: [{ $count: 'total' }],
+                },
+            },
+            {
+                $project: {
+                    data: 1,
+                    // Get total from the first element of the metadata array
+                    total: { $arrayElemAt: ['$total.total', 0] },
+                },
+            },
+        ])) as unknown as [PublicationAggregation];
+
+        const result = aggregation[0];
+
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                publications: await Promise.all(
+                    result.data.map(async (publication) => await Publication.project(publication)),
+                ),
+                total: result.total ?? 0,
+                skip,
+                take,
             },
         };
     },

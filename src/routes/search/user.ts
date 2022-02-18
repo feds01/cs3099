@@ -23,41 +23,41 @@ registerRoute(router, '/', {
     query: z.object({ query: z.string() }).merge(PaginationQuerySchema),
     permission: null,
     handler: async (req) => {
-        const { query, skip, take, } = req.query;
+        const { query, skip, take } = req.query;
 
         type AggregationQuery = {
-            data: IUserDocument[],
-            total?: number
+            data: IUserDocument[];
+            total?: number;
         };
 
-        const aggregation = await User.aggregate([
+        const aggregation = (await User.aggregate([
             { $match: { $text: { $search: query } } },
-            { $addFields: { score: { $meta: "textScore" } } },
+            { $addFields: { score: { $meta: 'textScore' } } },
             {
                 $facet: {
                     metadata: [
                         {
                             $group: {
                                 _id: null,
-                                total: { $sum: 1 }
-                            }
+                                total: { $sum: 1 },
+                            },
                         },
                     ],
                     data: [
                         { $sort: { score: { $meta: 'textScore' } } },
                         { $skip: skip },
                         { $limit: take },
-                    ]
-                }
+                    ],
+                },
             },
             {
                 $project: {
                     data: 1,
-                    // Get total from the first element of the metadata array 
-                    total: { $arrayElemAt: ['$metadata.total', 0] }
-                }
-            }
-        ]) as unknown as [AggregationQuery];
+                    // Get total from the first element of the metadata array
+                    total: { $arrayElemAt: ['$metadata.total', 0] },
+                },
+            },
+        ])) as unknown as [AggregationQuery];
 
         const users = aggregation[0];
 
@@ -68,7 +68,7 @@ registerRoute(router, '/', {
                 users: users.data.map((user) => User.project(user)),
                 skip,
                 take,
-                total: users.total ?? 0
+                total: users.total ?? 0,
             },
         };
     },
