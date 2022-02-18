@@ -70,14 +70,9 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                 <Box sx={{ pt: 2, width: '100%' }}>
                     <Box
                         sx={{
-                            position: 'absolute',
-                            zIndex: 1000,
-                            pt: 2,
-                            justifyContent: 'flex-end',
-                            alignItems: 'flex-end',
                             display: 'flex',
                             flexDirection: 'row',
-                            marginRight: 2,
+                            justifyContent: "flex-end",
                             width: '100%',
                         }}
                     >
@@ -128,7 +123,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
     }
 }
 
-type ProfileData = { user: User; follows: { followers: number; following: number } };
+type ProfileData = { user: User; follows: { followers: number; following: number }; tabMap: ReturnType<typeof TabMap> };
 
 export default function ProfilePage(): ReactElement {
     const location = useLocation();
@@ -137,17 +132,25 @@ export default function ProfilePage(): ReactElement {
     const { id }: { id: string } = useParams();
     const content = useGetUserUsername(id);
 
+
     const [profileData, setProfileData] = useState<ContentState<ProfileData, any>>({ state: 'loading' });
+
+    useEffect(() => {
+        setProfileData({ state: 'loading' });
+    }, [id]);
 
     useEffect(() => {
         if (!content.isLoading) {
             if (content.isError) {
                 setProfileData({ state: 'error', error: content.error });
             } else if (content.data) {
-                setProfileData({ state: 'ok', data: { user: content.data.user, follows: content.data.follows } });
+                setProfileData({
+                    state: 'ok',
+                    data: { user: content.data.user, follows: content.data.follows, tabMap: TabMap(content.data.user) },
+                });
             }
         }
-    }, [content.data]);
+    }, [content.data, content.isLoading]);
 
     return (
         <PageLayout sidebar={false}>
@@ -161,12 +164,13 @@ export default function ProfilePage(): ReactElement {
                 <ProfileLayout content={profileData} />
             </Box>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={location.pathname} centered>
-                    {profileData.state === 'ok' &&
-                        Object.entries(TabMap(profileData.data.user)).map(([path, props]) => {
+                {profileData.state === 'ok' && (
+                    <Tabs value={location.pathname} centered>
+                        {Object.entries(profileData.data.tabMap).map(([path, props]) => {
                             return <Tab key={path} component={Link} to={path} value={path} label={props.label} />;
                         })}
-                </Tabs>
+                    </Tabs>
+                )}
             </Box>
             <Box
                 sx={{
@@ -181,7 +185,7 @@ export default function ProfilePage(): ReactElement {
                 <Switch>
                     {profileData.state === 'ok' && (
                         <>
-                            {Object.entries(TabMap(profileData.data.user)).map(([path, props]) => {
+                            {Object.entries(profileData.data.tabMap).map(([path, props]) => {
                                 return (
                                     <Route
                                         exact

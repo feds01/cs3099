@@ -96,7 +96,7 @@ PublicationSchema.statics.project = async (
     publication: IPublicationDocument,
     attachment?: boolean,
 ) => {
-    const { name, title, introduction, draft, owner: ownerId, collaborators } = publication;
+    const { name, title, introduction, about, draft, owner: ownerId, collaborators } = publication;
 
     // If the comment is deleted, we need to do some special projection.
 
@@ -109,6 +109,7 @@ PublicationSchema.statics.project = async (
         name,
         title,
         introduction,
+        about,
         owner: User.project(owner),
         pinned: publication.pinned,
         draft,

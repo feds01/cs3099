@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import React, { ReactElement } from 'react';
 import Header from '../Header';
-import Sidebar from '../Sidebar';
+import Sidebar from '../SideBar';
 
 interface Props {
     children: React.ReactNode;

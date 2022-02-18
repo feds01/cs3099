@@ -11,5 +11,6 @@ export interface PatchPublicationRequest {
   title?: string;
   introduction?: string;
   revision?: string;
+  about?: string;
   collaborators?: string[];
 }

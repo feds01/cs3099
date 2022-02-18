@@ -9,7 +9,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { styled, Theme, CSSObject } from '@mui/material/styles';
 
 import { TiHome } from 'react-icons/ti';
-import { RiContactsBookUploadLine } from 'react-icons/ri';
+import { BsJournalArrowUp } from 'react-icons/bs';
 
 const drawerWidth = 180;
 
@@ -59,7 +59,7 @@ const SidebarContainer = styled('div', { shouldForwardProp: (prop) => prop !== '
 
 const menuMap = [
     { title: 'Home', icon: TiHome, href: '/' },
-    { title: 'Create publication', icon: RiContactsBookUploadLine, href: '/publication/create' },
+    { title: 'Create publication', icon: BsJournalArrowUp, href: '/publication/create' },
     { title: 'Explore', icon: SearchIcon, href: '/explore' },
 ];
 

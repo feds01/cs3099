@@ -1,9 +1,10 @@
 import React from 'react'
+import PageLayout from '../../components/PageLayout'
 
-type Props = {}
-
-export default function Explore({}: Props) {
+export default function Explore() {
   return (
-    <div>Explore</div>
+    <PageLayout>
+      <div>Explore</div>
+    </PageLayout>
   )
 }

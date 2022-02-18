@@ -12,6 +12,7 @@ export interface Publication {
   name: string;
   title: string;
   introduction?: string;
+  about?: string;
   revision: string;
   pinned: boolean;
   draft: boolean;
