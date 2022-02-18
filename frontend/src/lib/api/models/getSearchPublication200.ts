@@ -7,8 +7,13 @@
  */
 import type { SuccessStatus } from './successStatus';
 import type { Publication } from './publication';
+import type { SkipQuery } from './skipQuery';
+import type { TakeQuery } from './takeQuery';
 
 export type GetSearchPublication200 = {
   status: SuccessStatus;
   publications: Publication[];
+  skip: SkipQuery;
+  take: TakeQuery;
+  total: number;
 };

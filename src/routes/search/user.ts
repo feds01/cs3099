@@ -2,7 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 
 import registerRoute from '../../lib/requests';
-import User from '../../models/User';
+import User, { IUserDocument } from '../../models/User';
 import { PaginationQuerySchema } from '../../validators/pagination';
 
 const router = express.Router();
@@ -23,22 +23,52 @@ registerRoute(router, '/', {
     query: z.object({ query: z.string() }).merge(PaginationQuerySchema),
     permission: null,
     handler: async (req) => {
-        const { query, take, skip } = req.query;
+        const { query, skip, take, } = req.query;
 
-        const users = await User.find(
-            { $text: { $search: query } },
-            { score: { $meta: 'textScore' } },
-        )
-            .sort({ score: { $meta: 'textScore' } })
-            .skip(skip)
-            .limit(take)
-            .exec();
+        type AggregationQuery = {
+            data: IUserDocument[],
+            total?: number
+        };
+
+        const aggregation = await User.aggregate([
+            { $match: { $text: { $search: query } } },
+            { $addFields: { score: { $meta: "textScore" } } },
+            {
+                $facet: {
+                    metadata: [
+                        {
+                            $group: {
+                                _id: null,
+                                total: { $sum: 1 }
+                            }
+                        },
+                    ],
+                    data: [
+                        { $sort: { score: { $meta: 'textScore' } } },
+                        { $skip: skip },
+                        { $limit: take },
+                    ]
+                }
+            },
+            {
+                $project: {
+                    data: 1,
+                    // Get total from the first element of the metadata array 
+                    total: { $arrayElemAt: ['$metadata.total', 0] }
+                }
+            }
+        ]) as unknown as [AggregationQuery];
+
+        const users = aggregation[0];
 
         return {
             status: 'ok',
             code: 200,
             data: {
-                users: users.map((user) => User.project(user)),
+                users: users.data.map((user) => User.project(user)),
+                skip,
+                take,
+                total: users.total ?? 0
             },
         };
     },

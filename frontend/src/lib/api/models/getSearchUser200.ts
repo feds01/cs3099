@@ -7,8 +7,13 @@
  */
 import type { SuccessStatus } from './successStatus';
 import type { User } from './user';
+import type { SkipQuery } from './skipQuery';
+import type { TakeQuery } from './takeQuery';
 
 export type GetSearchUser200 = {
   status: SuccessStatus;
   users: User[];
+  skip: SkipQuery;
+  take: TakeQuery;
+  total: number;
 };

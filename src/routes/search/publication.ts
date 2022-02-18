@@ -2,8 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 
 import registerRoute from '../../lib/requests';
-import Publication from '../../models/Publication';
-import { IUser } from '../../models/User';
+import Publication, { IPublicationDocument } from '../../models/Publication';
 import { PaginationQuerySchema } from '../../validators/pagination';
 
 const router = express.Router({ mergeParams: true });
@@ -26,23 +25,52 @@ registerRoute(router, '/', {
     handler: async (req) => {
         const { query, take, skip } = req.query;
 
-        const publications = await Publication.find(
-            { $text: { $search: query } },
-            { score: { $meta: 'textScore' } },
-        )
-            .sort({ score: { $meta: 'textScore' } })
-            .populate<{ owner: IUser }>('owner')
-            .skip(skip)
-            .limit(take)
-            .exec();
+        type AggregationQuery = {
+            data: IPublicationDocument[],
+            total?: number
+        };
+
+        const aggregation = await Publication.aggregate([
+            { $match: { $text: { $search: query } } },
+            { $addFields: { score: { $meta: "textScore" } } },
+            {
+                $facet: {
+                    metadata: [
+                        {
+                            $group: {
+                                _id: null,
+                                total: { $sum: 1 }
+                            }
+                        },
+                    ],
+                    data: [
+                        { $sort: { score: { $meta: 'textScore' } } },
+                        { $skip: skip },
+                        { $limit: take },
+                    ]
+                }
+            },
+            {
+                $project: {
+                    data: 1,
+                    // Get total from the first element of the metadata array 
+                    total: { $arrayElemAt: ['$metadata.total', 0] }
+                }
+            }
+        ]) as unknown as [AggregationQuery];
+        
+        const publications = aggregation[0];
 
         return {
             status: 'ok',
             code: 200,
             data: {
                 publications: await Promise.all(
-                    publications.map(async (pub) => await Publication.project(pub)),
+                    publications.data.map(async (pub) => await Publication.project(pub)),
                 ),
+                skip,
+                take,
+                total: publications.total ?? 0
             },
         };
     },
