@@ -124,9 +124,9 @@ export default function registerRoute<
                         registrar.permission,
                         tokenOrError.data.id,
                         basicRequest,
-                        typeof registrar.permissionVerification === 'function'
-                            ? registrar.permissionVerification
-                            : defaultPermissionVerifier,
+                        typeof registrar.permissionVerification === 'function' ?
+                            registrar.permissionVerification :
+                            defaultPermissionVerifier,
                     );
                 }
 
@@ -141,9 +141,9 @@ export default function registerRoute<
             if (permissions !== null && !permissions.valid) {
                 throw new errors.ApiError(
                     typeof permissions.code === 'undefined' ? 401 : permissions.code,
-                    typeof permissions.message === 'undefined'
-                        ? errors.UNAUTHORIZED
-                        : permissions.message,
+                    typeof permissions.message === 'undefined' ?
+                        errors.UNAUTHORIZED :
+                        permissions.message,
                 );
             }
 

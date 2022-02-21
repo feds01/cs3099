@@ -30,8 +30,9 @@ registerRoute(router, '/', {
             total?: number;
         };
 
+        // We set 'draft' to false since they aren't visible to the whole platform
         const aggregation = (await Publication.aggregate([
-            { $match: { $text: { $search: query } } },
+            { $match: { $text: { $search: query, $caseSensitive: false }, draft: false } },
             { $addFields: { score: { $meta: 'textScore' } } },
             {
                 $facet: {

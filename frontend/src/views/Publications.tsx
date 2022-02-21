@@ -1,14 +1,12 @@
-import { Box, Grid } from '@mui/material';
+import ErrorBanner from '../components/ErrorBanner';
+import PublicationList from '../components/PublicationList';
+import SkeletonList from '../components/SkeletonList';
+import { Publication, User } from '../lib/api/models';
+import { useGetPublicationUsername } from '../lib/api/publications/publications';
+import { ContentState } from '../types/requests';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
-import VoidImage from '../static/images/void.svg';
 import { ReactElement, useEffect, useState } from 'react';
-import { ContentState } from '../types/requests';
-import ErrorBanner from '../components/ErrorBanner';
-import { Publication, User } from '../lib/api/models';
-import SkeletonList from '../components/SkeletonList';
-import PublicationCard from '../components/PublicationCard';
-import { useGetPublicationUsername } from '../lib/api/publications/publications';
 
 interface Props {
     user: User;
@@ -44,46 +42,7 @@ export default function Publications({ user, limit, withTitle = true }: Props): 
             case 'error':
                 return <ErrorBanner message={publications.error.message} />;
             case 'ok':
-                return (
-                    <div>
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                            }}
-                        >
-                            {publications.data.length === 0 ? (
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        width: '100%',
-                                        pt: 2,
-                                    }}
-                                >
-                                    <img src={VoidImage} height={96} width={96} alt={'nothing'} />
-                                    <Typography variant="body2">No publications yet.</Typography>
-                                </Box>
-                            ) : (
-                                <Grid
-                                    container
-                                    spacing={1}
-                                    columns={{ xs: 1, sm: 1, md: 1 }}
-                                    sx={{ marginTop: '0.25rem' }}
-                                >
-                                    {publications.data.map((pub) => {
-                                        return (
-                                            <Grid key={pub.id} item xs={2} sm={3} md={3}>
-                                                <PublicationCard user={user} pub={pub} />
-                                            </Grid>
-                                        );
-                                    })}
-                                </Grid>
-                            )}
-                        </Box>
-                    </div>
-                );
+                return <PublicationList publications={publications.data} />;
         }
     }
 

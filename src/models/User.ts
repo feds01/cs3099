@@ -143,6 +143,5 @@ UserSchema.statics.projectAsSg = (user: IUserDocument) => {
 };
 
 const UserModel = mongoose.model<IUser, IUserModel>('user', UserSchema);
-UserModel.createIndexes();
 
 export default UserModel;

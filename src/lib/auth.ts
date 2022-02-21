@@ -40,8 +40,7 @@ export class JwtError extends Error {
  * @returns The token payload if the token is valid, throws an error if the token is invalid.
  */
 export async function verifyToken(token: string, secret: string): Promise<TokenData> {
-    return await new Promise((resolve, reject) =>
-        jwt.verify(token, secret, {}, (err, payload) => {
+    return await new Promise((resolve, reject) => jwt.verify(token, secret, {}, (err, payload) => {
             if (err) {
                 if (err.name === 'TokenExpiredError') {
                     return reject(new JwtError('expired', err));
@@ -52,8 +51,7 @@ export async function verifyToken(token: string, secret: string): Promise<TokenD
             // If there was no error, it shouldn't be undefined.
             assert(typeof payload !== 'undefined' && typeof payload !== 'string');
             return resolve(payload.data);
-        }),
-    );
+        }));
 }
 
 /**

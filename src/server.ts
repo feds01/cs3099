@@ -7,6 +7,8 @@ import { ZodError } from 'zod';
 import Logger from './common/logger';
 import { ConfigSchema } from './validators/config';
 import program from './config/commander';
+import PublicationModel from './models/Publication';
+import UserModel from './models/User';
 
 require('dotenv').config({
     path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env'
@@ -52,7 +54,7 @@ export const config = validateConfig();
 const server = createServer(app);
 
 function startServer() {
-    server.listen(config.port, () => {
+    server.listen(config.port, async () => {
         const port = (server.address() as AddressInfo).port;
 
         Logger.info(
@@ -69,13 +71,18 @@ function startServer() {
             {
                 connectTimeoutMS: 30000,
             },
-            (err: any) => {
+            async (err) => {
                 if (err) {
                     Logger.error(`Failed to connect to MongoDB: ${err.message}`);
                     process.exit(1);
                 }
 
                 Logger.info('Established connection with MongoDB service');
+                // Now create/ensure that the indexes for publications and users exist...
+                Logger.info("Verifying that search indexes exist...");
+
+                await PublicationModel.createIndexes();
+                await UserModel.createIndexes();
             },
         );
     });

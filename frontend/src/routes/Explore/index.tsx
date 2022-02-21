@@ -1,7 +1,7 @@
 import Container from '@mui/material/Container'
 import Typography from '@mui/material/Typography'
-import React from 'react'
 import PageLayout from '../../components/PageLayout'
+import PaginatedList from '../../components/PaginatedList'
 
 export default function Explore() {
   return (
@@ -14,6 +14,7 @@ export default function Explore() {
           Here you can explore content on Iamus, find the latest posts, reviews, 
           users here. 
         </Typography>
+        <PaginatedList take={50}/>
       </Container>
     </PageLayout>
   )

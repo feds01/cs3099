@@ -1,11 +1,54 @@
-import React from 'react'
+import { ApiErrorResponse, GetPublication200 } from '../../lib/api/models';
+import { useGetPublication } from '../../lib/api/publications/publications';
+import { ContentState } from '../../types/requests';
+import { transformQueryIntoContentState } from '../../wrappers/react-query';
+import ErrorBanner from '../ErrorBanner';
+import SkeletonList from '../SkeletonList';
+import Box from '@mui/material/Box';
+import Pagination from '@mui/material/Pagination';
+import { useEffect, useState } from 'react';
+import PublicationCard from '../PublicationCard';
+import PublicationList from '../PublicationList';
 
-type Props = {}
+type PaginatedListProps = {
+    take: number;
+};
 
-export default function PaginatedList({}: Props) {
+export default function PaginatedList({ take }: PaginatedListProps) {
+    const [page, setPage] = useState(0);
 
-    
-  return (
-    <div>PaginatedList</div>
-  )
+    const publicationQuery = useGetPublication({ skip: page * take, take });
+    const [queryResponse, setQueryResponse] = useState<ContentState<GetPublication200, ApiErrorResponse>>({
+        state: 'loading',
+    });
+
+    useEffect(() => {
+        setQueryResponse(transformQueryIntoContentState(publicationQuery));
+    }, [publicationQuery.isLoading, publicationQuery.isError]);
+
+    useEffect(() => {
+        publicationQuery.refetch();
+    }, [page]);
+
+    switch (queryResponse.state) {
+        case 'loading':
+            return <SkeletonList rows={4} />;
+        case 'error':
+            return <ErrorBanner message={queryResponse.error.message} />;
+        case 'ok':
+            const { total, publications, take } = queryResponse.data;
+
+            return (
+                <Box>
+                    <PublicationList publications={publications} />
+                    <Pagination
+                        count={Math.ceil(total / take)}
+                        page={page + 1}
+                        onChange={(event, newPage) => setPage(newPage)}
+                        variant="outlined"
+                        shape="rounded"
+                    />
+                </Box>
+            );
+    }
 }

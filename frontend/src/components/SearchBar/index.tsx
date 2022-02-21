@@ -12,8 +12,6 @@ import React, { useEffect, useCallback, useState } from 'react';
 import { BsJournalCode } from 'react-icons/bs';
 import { useHistory } from 'react-router-dom';
 
-type SearchBarProps = {};
-
 type SearchResponse =
     | {
           type: 'user';
@@ -28,7 +26,7 @@ type SearchResponse =
           data: string;
       };
 
-function SearchBar({}: SearchBarProps) {
+function SearchBar() {
     const history = useHistory();
 
     const [open, setOpen] = useState(false);
@@ -37,6 +35,12 @@ function SearchBar({}: SearchBarProps) {
     const [loading, setLoading] = useState(false);
 
     async function searchForResource(input: string) {
+        // Don't query the backend if no query is provided
+        if (input === '') {
+            setOptions([]);
+            return;
+        }
+
         setLoading(true);
 
         try {

@@ -124,11 +124,14 @@ ReviewSchema.statics.projectAsSg = async (review: PopulatedReview): Promise<Expo
 
     // firstly we want to populate the comment map...
     comments.forEach((comment, index) => {
-        commentMap.set(comment.id as string, index);
+        const commentId = comment._id.toString();
+        commentMap.set(commentId, index);
     });
 
     const projectedComments = comments.map((comment) => {
-        const id = commentMap.get(comment.id as string);
+        const commentId = comment._id.toString();
+
+        const id = commentMap.get(commentId);
         assert(typeof id === 'number');
 
         let replying;

@@ -34,7 +34,7 @@ export interface IPublication {
     updatedAt: Date;
 }
 
-export interface IPublicationDocument extends IPublication, Document {}
+export interface IPublicationDocument extends IPublication, Document { }
 
 interface IPublicationModel extends Model<IPublicationDocument> {
     project: (publication: IPublication, attachment?: boolean) => Promise<Partial<IPublication>>;
@@ -70,7 +70,7 @@ PublicationSchema.post(
     { document: true, query: true },
     async (item: IPublicationDocument, next) => {
         Logger.warn('Cleaning up publication orphaned reviews (deleteOne)');
-        await Review.deleteMany({ publication: item.id as string }).exec();
+        await Review.deleteMany({ publication: item._id.toString() }).exec();
 
         next();
     },
@@ -84,7 +84,7 @@ PublicationSchema.post(
 
         await Promise.all(
             items.map(async (item) => {
-                await Review.deleteMany({ publication: item.id as string }).exec();
+                await Review.deleteMany({ publication: item._id.toString() }).exec();
             }),
         );
 
@@ -96,16 +96,23 @@ PublicationSchema.statics.project = async (
     publication: IPublicationDocument,
     attachment?: boolean,
 ) => {
-    const { name, title, introduction, about, draft, owner: ownerId, collaborators } = publication;
-
-    // If the comment is deleted, we need to do some special projection.
+    const { name, title, introduction, about, draft, owner: ownerId } = publication;
 
     // Resolve the owner name...
     const owner = await User.findById(ownerId).exec();
     assert(owner !== null, 'Owner ID is null');
 
+    const collaborators = await Promise.all(
+        publication.collaborators.map(async (id) => {
+            const collaborator = await User.findById(id).exec();
+            assert(collaborator !== null);
+
+            return collaborator;
+        }),
+    );
+
     return {
-        id: publication.id as string,
+        id: publication._id.toString(),
         name,
         title,
         introduction,
@@ -129,16 +136,25 @@ PublicationSchema.statics.project = async (
     };
 };
 
-PublicationSchema.statics.projectWith = (
+PublicationSchema.statics.projectWith = async (
     publication: IPublicationDocument,
     owner: IUserDocument,
 ) => {
-    const { name, title, introduction, about, draft, owner: ownerId, collaborators } = publication;
+    const { name, title, introduction, about, draft, owner: ownerId } = publication;
 
     assert(owner.id === ownerId._id.toString(), 'Owner ids mismatch');
 
+    const collaborators = await Promise.all(
+        publication.collaborators.map(async (id) => {
+            const collaborator = await User.findById(id).exec();
+            assert(collaborator !== null);
+
+            return collaborator;
+        }),
+    );
+
     return {
-        id: publication.id as string,
+        id: publication._id.toString(),
         name,
         title,
         about,
@@ -195,6 +211,5 @@ const PublicationModel = mongoose.model<IPublication, IPublicationModel>(
     'publication',
     PublicationSchema,
 );
-PublicationModel.createIndexes();
 
 export default PublicationModel;
