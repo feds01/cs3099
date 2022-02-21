@@ -2,7 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 
 import registerRoute from '../../lib/requests';
-import Publication, { IPublicationDocument } from '../../models/Publication';
+import Publication, { AugmentedPublicationDocument } from '../../models/Publication';
 import { PaginationQuerySchema } from '../../validators/pagination';
 
 const router = express.Router({ mergeParams: true });
@@ -26,7 +26,7 @@ registerRoute(router, '/', {
         const { query, take, skip } = req.query;
 
         type AggregationQuery = {
-            data: IPublicationDocument[];
+            data: AugmentedPublicationDocument[];
             total?: number;
         };
 

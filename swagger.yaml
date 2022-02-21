@@ -2182,6 +2182,7 @@ components:
                 - updatedAt
                 - pinned
                 - revision
+                - reviews
             properties:
                 id:
                     type: string
@@ -2210,6 +2211,9 @@ components:
                 current:
                     type: boolean
                     example: true
+                reviews:
+                    type: number
+                    example: 7
                 owner:
                     $ref: '#/components/schemas/User'
                 attachment:

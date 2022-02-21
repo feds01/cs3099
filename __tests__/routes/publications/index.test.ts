@@ -1,3 +1,4 @@
+import assert from 'assert';
 import { Response, agent as supertest } from 'supertest';
 
 import app from '../../../src/app';
@@ -9,9 +10,9 @@ const request = supertest(app);
 type PopulatedUserDocument = IUserDocument & { _id: string | undefined };
 
 describe('Publications endpoints testing', () => {
-    let owner: PopulatedUserDocument | null;
-    let collaborator1: PopulatedUserDocument | null;
-    let collaborator2: PopulatedUserDocument | null;
+    let owner: PopulatedUserDocument;
+    let collaborator1: PopulatedUserDocument;
+    let collaborator2: PopulatedUserDocument;
 
     let ownerRes: Response;
     let collaboratorResponse1: Response;
@@ -46,9 +47,17 @@ describe('Publications endpoints testing', () => {
         collaboratorResponse1 = await createAndLogin('collabo1');
         collaboratorResponse2 = await createAndLogin('collabo2');
 
-        owner = await User.findOne({ username: 'owner' });
-        collaborator1 = await User.findOne({ username: 'collabo1' });
-        collaborator2 = await User.findOne({ username: 'collabo2' });
+        const ownerUser = await User.findOne({ username: 'owner' });
+        assert(ownerUser !== null);
+
+        owner = ownerUser;
+
+        const user1 = await User.findOne({ username: 'collabo1' });
+        const user2 = await User.findOne({ username: 'collabo2' });
+        assert(user1 !== null && user2 !== null);
+
+        collaborator1 = user1;
+        collaborator2 = user2;
     });
 
     // Tests for POST /publication/
@@ -69,11 +78,15 @@ describe('Publications endpoints testing', () => {
         expect(response.body.publication.title).toBe('Test title');
         expect(response.body.publication.name).toBe('test-name');
         expect(response.body.publication.introduction).toBe('Introduction here');
+
+        // Verify that the the users have been projected...
         expect(response.body.publication.collaborators).toEqual([
-            collaborator1!.id,
-            collaborator2!.id,
+            User.project(collaborator1),
+            User.project(collaborator2),
         ]);
-        expect(response.body.publication.owner).toStrictEqual(User.project(owner as IUserDocument));
+
+        // Verify that the owner has been projected...
+        expect(response.body.publication.owner).toStrictEqual(User.project(owner));
 
         const publication = await Publication.count({ name: 'test-name', revision: 'v1' });
         expect(publication).toBe(1);

@@ -3,7 +3,7 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 
 import Logger from '../common/logger';
 import { ExportSgPublication } from '../validators/sg';
-import Review from './Review';
+import Review, { IReviewStatus } from './Review';
 import User, { IUserDocument } from './User';
 
 /** The publication document represents a publication object */
@@ -34,11 +34,21 @@ export interface IPublication {
     updatedAt: Date;
 }
 
-export interface IPublicationDocument extends IPublication, Document { }
+export interface IPublicationDocument extends IPublication, Document {}
+
+export type AugmentedPublicationDocument = Omit<IPublication, '_id'> & {
+    _id: mongoose.Types.ObjectId;
+};
 
 interface IPublicationModel extends Model<IPublicationDocument> {
-    project: (publication: IPublication, attachment?: boolean) => Promise<Partial<IPublication>>;
-    projectWith: (publication: IPublication, user: IUserDocument) => Promise<Partial<IPublication>>;
+    project: (
+        publication: AugmentedPublicationDocument,
+        attachment?: boolean,
+    ) => Promise<Partial<IPublication>>;
+    projectWith: (
+        publication: AugmentedPublicationDocument,
+        user: IUserDocument,
+    ) => Promise<Partial<IPublication>>;
     projectAsSg: (publication: IPublicationDocument) => Promise<ExportSgPublication>;
 }
 
@@ -68,7 +78,7 @@ PublicationSchema.index({ title: 'text', introduction: 'text', name: 'text' });
 PublicationSchema.post(
     /deleteOne|findOneAndDelete$/,
     { document: true, query: true },
-    async (item: IPublicationDocument, next) => {
+    async (item: AugmentedPublicationDocument, next) => {
         Logger.warn('Cleaning up publication orphaned reviews (deleteOne)');
         await Review.deleteMany({ publication: item._id.toString() }).exec();
 
@@ -79,7 +89,7 @@ PublicationSchema.post(
 PublicationSchema.post(
     'deleteMany',
     { document: true, query: true },
-    async (_: unknown, items: IPublicationDocument[], next: () => void) => {
+    async (_: unknown, items: AugmentedPublicationDocument[], next: () => void) => {
         Logger.warn('Cleaning up publication orphaned reviews (deleteMany)');
 
         await Promise.all(
@@ -93,7 +103,7 @@ PublicationSchema.post(
 );
 
 PublicationSchema.statics.project = async (
-    publication: IPublicationDocument,
+    publication: AugmentedPublicationDocument,
     attachment?: boolean,
 ) => {
     const { name, title, introduction, about, draft, owner: ownerId } = publication;
@@ -102,14 +112,21 @@ PublicationSchema.statics.project = async (
     const owner = await User.findById(ownerId).exec();
     assert(owner !== null, 'Owner ID is null');
 
+    // Project all the collaborators
     const collaborators = await Promise.all(
         publication.collaborators.map(async (id) => {
             const collaborator = await User.findById(id).exec();
             assert(collaborator !== null);
 
-            return collaborator;
+            return User.project(collaborator);
         }),
     );
+
+    // We want to count the number of reviews that have been left on this publication
+    const reviews = await Review.count({
+        publication: publication._id.toString(),
+        status: IReviewStatus.Completed,
+    }).exec();
 
     return {
         id: publication._id.toString(),
@@ -120,16 +137,16 @@ PublicationSchema.statics.project = async (
         owner: User.project(owner),
         pinned: publication.pinned,
         draft,
-        collaborators, // TODO: project collaborators too...
         createdAt: publication.createdAt.getTime(),
         updatedAt: publication.updatedAt.getTime(),
-
         // add the revision to the structure
         revision: publication.revision,
-
         // If the publication is the current version or not
         current: publication.current,
-
+        // Any collaborators that are attached to the publication
+        collaborators,
+        // Count of reviews that have been left on the publication
+        reviews,
         // this is a flag that denotes whether or not we know that this publication has an attached
         // zip archive on disk.
         attachment,
@@ -137,21 +154,28 @@ PublicationSchema.statics.project = async (
 };
 
 PublicationSchema.statics.projectWith = async (
-    publication: IPublicationDocument,
+    publication: AugmentedPublicationDocument,
     owner: IUserDocument,
 ) => {
     const { name, title, introduction, about, draft, owner: ownerId } = publication;
 
     assert(owner.id === ownerId._id.toString(), 'Owner ids mismatch');
 
+    // Project all the collaborators
     const collaborators = await Promise.all(
         publication.collaborators.map(async (id) => {
             const collaborator = await User.findById(id).exec();
             assert(collaborator !== null);
 
-            return collaborator;
+            return User.project(collaborator);
         }),
     );
+
+    // We want to count the number of reviews that have been left on this publication
+    const reviews = await Review.count({
+        publication: publication._id.toString(),
+        status: IReviewStatus.Completed,
+    }).exec();
 
     return {
         id: publication._id.toString(),
@@ -161,18 +185,16 @@ PublicationSchema.statics.projectWith = async (
         introduction,
         owner: User.project(owner),
         draft,
-
         createdAt: publication.createdAt.getTime(),
         updatedAt: publication.updatedAt.getTime(),
-
         // add the revision to the structure
         revision: publication.revision,
-
         // If the publication is the current version or not
         current: publication.current,
-
-        // TODO: project collaborators too...
+        // Any collaborators that are attached to the publication
         collaborators,
+        // Count of reviews that have been left on the publication
+        reviews,
     };
 };
 

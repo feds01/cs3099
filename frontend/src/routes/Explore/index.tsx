@@ -6,7 +6,7 @@ import PaginatedList from '../../components/PaginatedList'
 export default function Explore() {
   return (
     <PageLayout>
-      <Container  maxWidth="lg" sx={{justifyContent: 'center'}}>
+      <Container  maxWidth="lg" sx={{justifyContent: 'center', pb: 1}}>
         <Typography variant={'h2'}>
           Explore Iamus
         </Typography>

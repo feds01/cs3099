@@ -173,11 +173,12 @@ export default function ReviewPage(): ReactElement {
                                         );
                                     })}
                                 </Tabs>
-                                <Box>
+                                <Box sx={{display: 'flex', flexDirection: 'row'}}>
                                     {permission.delete && <DeleteReviewForm reviewId={review.id} />}
                                     {review.status === 'started' && (
                                         <LoadingButton
                                             variant="contained"
+                                            size="small"
                                             {...(permission.delete && { sx: { ml: 1 } })}
                                             loading={completeReviewQuery.isLoading}
                                             onClick={handleClick}

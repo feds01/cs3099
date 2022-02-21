@@ -15,7 +15,7 @@ import {
     verifyUserPermission,
 } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
-import Publication, { IPublicationDocument } from '../../models/Publication';
+import Publication, { AugmentedPublicationDocument } from '../../models/Publication';
 import User, { IUserRole } from '../../models/User';
 import { config } from '../../server';
 import { PaginationQuerySchema } from '../../validators/pagination';
@@ -282,7 +282,7 @@ registerRoute(router, '/', {
             status: 'ok',
             code: 201,
             data: {
-                publication: Publication.projectWith(publication, req.requester),
+                publication: await Publication.projectWith(publication, req.requester),
             },
         };
     },
@@ -306,7 +306,7 @@ registerRoute(router, '/', {
         const { skip, take } = req.query;
 
         type PublicationAggregation = {
-            data: IPublicationDocument[];
+            data: AugmentedPublicationDocument[];
             total?: number;
         };
 
@@ -386,7 +386,13 @@ registerRoute(router, '/:username', {
             status: 'ok',
             code: 200,
             data: {
-                publications: result.map((item) => Publication.projectWith(item, user)),
+                publications: await Promise.all(
+                    result.map(
+                        async (publication) => await Publication.projectWith(publication, user),
+                    ),
+                ),
+                skip,
+                take,
             },
         };
     },
@@ -423,7 +429,13 @@ registerRoute(router, '/:username/:name/revisions', {
             status: 'ok',
             code: 200,
             data: {
-                revisions: result.map((item) => Publication.projectWith(item, user)),
+                revisions: await Promise.all(
+                    result.map(
+                        async (publication) => await Publication.projectWith(publication, user),
+                    ),
+                ),
+                skip,
+                take,
             },
         };
     },
