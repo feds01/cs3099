@@ -16,7 +16,7 @@ import {
 } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
 import Publication, { AugmentedPublicationDocument } from '../../models/Publication';
-import User, { IUserRole } from '../../models/User';
+import { IUserRole } from '../../models/User';
 import { config } from '../../server';
 import { PaginationQuerySchema } from '../../validators/pagination';
 import {
@@ -247,36 +247,17 @@ registerRoute(router, '/', {
             };
         }
 
-        // Find all corresponding ids of each collaborators' username
-        const collaboratorDocs = await User.find({ username: { $in: collaborators } }).exec();
-
-        if (collaboratorDocs.length < collaborators.length) {
-            const found = collaboratorDocs.map((doc) => doc.username);
-            const missing = collaborators.filter((name) => !found.includes(name));
-
-            return {
-                status: 'error',
-                code: 404,
-                message: errors.RESOURCE_NOT_FOUND,
-                errors: {
-                    collaborators: {
-                        message: `Collaborators ${missing
-                            .map((item) => `'${item}'`)
-                            .join(', ')} don't exist.`,
-                    },
-                },
-            };
-        }
-
-        const newPublication = new Publication({
+        // @@Hack: Basically we have to verify again that the set has no null items since
+        //         TypeScript can't be entirely sure if there are no nulls in the set.
+        //         This is also partly due to the fact that zod cant'c combine .transform()
+        //         and .refine() functions yet...
+        const publication = await new Publication({
             ...req.body,
             draft: true,
             current: true,
-            collaborators: collaboratorDocs.map((doc) => doc.id),
+            collaborators: [...collaborators.values()].filter((c) => c !== null),
             owner,
-        });
-
-        const publication = await newPublication.save();
+        }).save();
 
         return {
             status: 'ok',
@@ -419,7 +400,7 @@ registerRoute(router, '/:username/:name/revisions', {
         const { skip, take } = req.query;
         const result = await Publication.find({
             owner: user.id,
-            current: true,
+            name: req.params.name,
         })
             .skip(skip)
             .limit(take)
@@ -540,7 +521,7 @@ registerRoute(router, '/:username/:name/revise', {
     method: 'post',
     params: z.object({ username: z.string(), name: z.string() }),
     query: z.object({ mode: ModeSchema }),
-    body: z.object({ revision: z.string() }),
+    body: z.object({ revision: z.string(), changelog: z.string() }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
@@ -586,7 +567,7 @@ registerRoute(router, '/:username/:name/revise', {
 
         const newPublication = await new Publication({
             ...currentPublication,
-            revision: req.body.revision,
+            ...req.body,
         }).save();
 
         // Move the current publication file into it's corresponding revision folder within the
@@ -784,7 +765,14 @@ registerRoute(router, '/:username/:name', {
         // will return an error because these fields have to be unique.
         const patchedPublication = await Publication.findByIdAndUpdate(
             publication.id,
-            { $set: { ...req.body } },
+            {
+                $set: {
+                    ...req.body,
+                    ...(typeof req.body.collaborators !== 'undefined' && {
+                        collaborators: [...req.body.collaborators?.values()],
+                    }),
+                },
+            },
             { new: true },
         );
         assert(patchedPublication !== null);

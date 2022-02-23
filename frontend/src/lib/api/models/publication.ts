@@ -12,6 +12,7 @@ export interface Publication {
   name: string;
   title: string;
   introduction?: string;
+  changelog?: string;
   about?: string;
   revision: string;
   pinned: boolean;
@@ -20,7 +21,7 @@ export interface Publication {
   reviews: number;
   owner: User;
   attachment?: boolean;
-  collaborators: string[];
+  collaborators: User[];
   createdAt: number;
   updatedAt: number;
 }

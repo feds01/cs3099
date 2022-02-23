@@ -1,7 +1,6 @@
 import ConfirmationDialogue from '../../components/ConfirmationDialogue';
 import { useNotificationDispatch } from '../../hooks/notification';
 import { useDeleteReviewId } from '../../lib/api/reviews/reviews';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';

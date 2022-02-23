@@ -48,6 +48,10 @@ export interface IUser {
 
 export interface IUserDocument extends IUser, Document<string> {}
 
+export type AugmentedUserDocument = Omit<IUser, '_id'> & {
+    _id: mongoose.Types.ObjectId;
+};
+
 export interface IUserModel extends Model<IUserDocument> {
     project: (user: IUser, omitId?: boolean) => Partial<IUser>;
     projectAsSg: (user: IUser) => { name: string; email: string };
