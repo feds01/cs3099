@@ -9,9 +9,10 @@ import { useDeletePublicationUsernameName } from '../../lib/api/publications/pub
 
 type Props = {
     publication: Publication;
+    onCompletion?: () => void;
 };
 
-export default function DeletePublicationForm({ publication }: Props) {
+export default function DeletePublicationForm({ publication, onCompletion }: Props) {
     const {
         name,
         owner: { username },
@@ -36,7 +37,12 @@ export default function DeletePublicationForm({ publication }: Props) {
                 item: { severity: 'success', message: 'Successfully deleted publication' },
             });
             setDialogueOpen(false);
-            history.push('/');
+
+            if (typeof onCompletion === 'function') {
+                onCompletion();
+            } else {
+                history.push('/');
+            }
         }
     }, [isLoading, isError, isSuccess]);
 

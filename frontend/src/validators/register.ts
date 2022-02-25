@@ -8,7 +8,7 @@ export const RegisterSchema = z
             .string()
             .nonempty()
             .max(50)
-            .regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric'),
+            .regex(/^[a-zA-Z0-9._~-]*$/, 'Username must be alphanumeric'),
         password: z.string().min(1),
         confirm: z.string().min(1),
     })

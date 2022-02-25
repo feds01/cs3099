@@ -31,7 +31,7 @@ export const IUserSchema = z.object({
         .string()
         .nonempty()
         .max(50)
-        .regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric'),
+        .regex(/^[a-zA-Z0-9._~-]*$/, 'Username must be URL safe'),
     email: z.string().email(),
     name: z.string().max(256),
     password: z.string().min(1),
@@ -110,9 +110,8 @@ export const ExistUsernameSchema = z
     .string()
     .nonempty()
     .max(50)
-    .regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric')
+    .regex(/^[a-zA-Z0-9._~-]*$/, 'Username must be URL safe')
     .transform(async (username) => {
-        console.log(username);
         const user: AugmentedUserDocument | null = await User.findOne({ username });
 
         if (user !== null) {

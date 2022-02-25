@@ -8,7 +8,7 @@ import * as userUtils from './../../utils/users';
 import Logger from '../../common/logger';
 import { createTokens } from '../../lib/auth';
 import { makeRequest } from '../../lib/fetch';
-import { deleteResource, moveResource } from '../../lib/fs';
+import { deleteResource, moveResource, resourceExists } from '../../lib/fs';
 import {
     compareUserRoles,
     verifyPublicationPermission,
@@ -402,6 +402,7 @@ registerRoute(router, '/:username/:name/revisions', {
             owner: user.id,
             name: req.params.name,
         })
+            .sort({ _id: -1 })
             .skip(skip)
             .limit(take)
             .exec();
@@ -566,9 +567,14 @@ registerRoute(router, '/:username/:name/revise', {
         }
 
         const newPublication = await new Publication({
-            ...currentPublication,
+            ...currentPublication.toObject(),
+            _id: undefined,
             ...req.body,
+            draft: true,
         }).save();
+
+        // we need to update the old publication to state that it is no longer the current one...
+        await currentPublication.updateOne({ $set: { current: false } });
 
         // Move the current publication file into it's corresponding revision folder within the
         // resources folder. We have to do this in the event that when the user uploads a new
@@ -579,10 +585,14 @@ registerRoute(router, '/:username/:name/revise', {
             name: currentPublication.name,
         };
 
-        await moveResource(
-            zip.archiveIndexToPath(archiveIndex),
-            zip.archiveIndexToPath({ ...archiveIndex, revision: currentPublication.revision }),
-        );
+        const resourcePath = zip.archiveIndexToPath(archiveIndex);
+
+        if (await resourceExists(resourcePath)) {
+            await moveResource(
+                resourcePath,
+                zip.archiveIndexToPath({ ...archiveIndex, revision: currentPublication.revision }),
+            );
+        }
 
         return {
             status: 'ok',
@@ -653,7 +663,6 @@ registerRoute(router, '/:username/:name', {
     }),
     query: z.object({
         mode: ModeSchema,
-        draft: FlagSchema.optional(),
         revision: z.string().optional(),
     }),
     permissionVerification: verifyPublicationPermission,
@@ -661,14 +670,13 @@ registerRoute(router, '/:username/:name', {
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const { revision, draft } = req.query;
+        const { revision } = req.query;
         const name = req.params.name.toLowerCase();
 
         // Since we have cascading deletes, all the reviews on the publication are deleted as well.
         const publication = await Publication.findOneAndDelete({
             owner: user.id,
             name,
-            ...(typeof draft !== 'undefined' && { draft }),
             ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
         }).exec();
 
@@ -680,15 +688,44 @@ registerRoute(router, '/:username/:name', {
             };
         }
 
-        const publicationPath = zip.resourceIndexToPath({
-            type: 'publication',
-            owner: user.id.toString(),
-            name,
-            ...(typeof revision !== 'undefined' && { path: [revision, 'publication.zip'] }),
+        const publicationPath = zip.archiveIndexToPath({
+            userId: publication.owner.toString(),
+            name: publication.name,
+            ...(!publication.current && { revision: publication.revision }),
         });
 
         // we need to try to remove the folder that stores the publications...
         await deleteResource(publicationPath);
+
+        // If the deleted publication is current, we need to essentially set the last publication in the
+        // set of publications at the current one...
+        if (publication.current) {
+            const publications = await Publication.find({ owner: user.id, name }).sort({ _id: -1 });
+
+            // Update the most recent publication as the current one...
+            if (publications.length > 0) {
+                const newCurrentPublication = publications[0];
+                assert(typeof newCurrentPublication !== 'undefined');
+
+                await newCurrentPublication.updateOne({ current: true });
+
+                // Move the resource of the publication from `<publication_name>/<revision>/publication.zip` to `<publication_name>/publication.zip`
+                let archiveIndex = {
+                    userId: newCurrentPublication.owner.toString(),
+                    name: newCurrentPublication.name,
+                };
+
+                const oldResourcePath = zip.archiveIndexToPath({
+                    ...archiveIndex,
+                    revision: newCurrentPublication.revision,
+                });
+
+                // Check if it does exist, and if so move it to the 'new' one...
+                if (await resourceExists(oldResourcePath)) {
+                    await moveResource(oldResourcePath, zip.archiveIndexToPath(archiveIndex));
+                }
+            }
+        }
 
         return { status: 'ok', code: 200 };
     },

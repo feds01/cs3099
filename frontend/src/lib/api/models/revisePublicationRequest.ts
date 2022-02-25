@@ -8,4 +8,5 @@
 
 export interface RevisePublicationRequest {
   revision: string;
+  changelog?: string;
 }

@@ -2263,6 +2263,9 @@ components:
                 revision:
                     type: string
                     example: 'v1.0.0'
+                changelog:
+                    type: string
+                    example: 'v2 does something in a more consolidated way'
         CreatePublicationRequest:
             type: object
             required:

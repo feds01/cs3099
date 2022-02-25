@@ -261,6 +261,7 @@ function PublicationView() {
                             </Box>
                             <Typography sx={{ lineHeight: '28px !important' }}>
                                 <UserLink user={publication.owner} />
+                                {publication.collaborators.length === 0 && <>&nbsp;</>}
                             </Typography>
                             {publication.collaborators.length > 0 && (
                                 <Box sx={{ display: 'inline-flex' }}>

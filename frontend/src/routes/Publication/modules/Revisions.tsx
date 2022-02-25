@@ -4,7 +4,7 @@ import SkeletonList from '../../../components/SkeletonList';
 import UserLink from '../../../components/UserLink';
 import DeletePublicationForm from '../../../forms/DeletePublicationForm';
 import { useAuth } from '../../../hooks/auth';
-import { usePublicationState } from '../../../hooks/publication';
+import { usePublicationDispatch, usePublicationState } from '../../../hooks/publication';
 import { ApiErrorResponse, GetPublicationUsernameNameRevisions200, Publication, User } from '../../../lib/api/models';
 import { useGetPublicationUsernameNameRevisions } from '../../../lib/api/publications/publications';
 import { computeUserPermission } from '../../../lib/utils/roles';
@@ -20,14 +20,17 @@ import { Box, Button, Chip, Divider, Typography } from '@mui/material';
 import { formatDistance } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import RevisePublicationForm from '../../../forms/RevisePublicationForm';
 
 interface RevisionProps {
     item: Publication;
     session: User;
+    refetchRevisions: () => Promise<unknown>;
 }
 
-function Revision({ item, session }: RevisionProps) {
+function Revision({ item, session, refetchRevisions }: RevisionProps) {
     const permission = computeUserPermission(item.owner.id, session);
+    const { refetch } = usePublicationDispatch();
 
     return (
         <TimelineItem key={item.id}>
@@ -57,7 +60,10 @@ function Revision({ item, session }: RevisionProps) {
                             {formatDistance(item.createdAt, new Date(), { addSuffix: true })}
                         </Typography>
                     </Box>
-                    {permission.delete && <DeletePublicationForm publication={item} />}
+                    {permission.delete && <DeletePublicationForm publication={item} onCompletion={async () => { 
+                        await refetchRevisions();
+                        refetch();
+                    }} />}
                 </Box>
                 <Divider />
                 <Box sx={{ pt: 1 }}>
@@ -88,7 +94,9 @@ export default function Revisions() {
 
     useEffect(() => {
         setRevisionsResult(transformQueryIntoContentState(revisionQuery));
-    }, [revisionQuery.isLoading, revisionQuery.isError]);
+    }, [revisionQuery.isLoading, revisionQuery.isError, revisionQuery.data]);
+
+    const [revisePublicationDialogOpen, setRevisePublicationDialogOpen] = useState(false);
 
     switch (revisionsResult.state) {
         case 'loading':
@@ -104,7 +112,7 @@ export default function Revisions() {
                         <Typography variant="h4">Revision history</Typography>
                         {permission.delete && (
                             <Box>
-                                <Button onClick={() => console.log('revise')}>Revise</Button>
+                                <Button onClick={() => setRevisePublicationDialogOpen(true)}>Revise</Button>
                             </Box>
                         )}
                     </Box>
@@ -112,10 +120,11 @@ export default function Revisions() {
                     <Box sx={{ width: '100%' }}>
                         <Timeline>
                             {revisions.map((item) => {
-                                return <Revision key={item.id} session={session} item={item} />;
+                                return <Revision key={item.id} session={session} item={item} refetchRevisions={revisionQuery.refetch} />;
                             })}
                         </Timeline>
                     </Box>
+                    <RevisePublicationForm isOpen={revisePublicationDialogOpen} onClose={() => setRevisePublicationDialogOpen(false)} onCompletion={revisionQuery.refetch}/>
                 </Box>
             );
         }

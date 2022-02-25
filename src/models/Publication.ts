@@ -118,7 +118,6 @@ PublicationSchema.statics.project = async (
     // Project all the collaborators
     const collaborators = await Promise.all(
         publication.collaborators.map(async (id) => {
-            console.log(id);
             const collaborator = await User.findById(id.toString()).exec();
             assert(collaborator !== null);
 
