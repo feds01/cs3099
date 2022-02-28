@@ -6,5 +6,7 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { GetPublicationUsernamePinned } from './getPublicationUsernamePinned';
+import type { SkipQuery } from './skipQuery';
+import type { TakeQuery } from './takeQuery';
 
-export type GetPublicationUsernameParams = { pinned?: GetPublicationUsernamePinned };
+export type GetPublicationUsernameParams = { pinned?: GetPublicationUsernamePinned; skip?: SkipQuery; take?: TakeQuery };

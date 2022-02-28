@@ -29,8 +29,6 @@ import { ReactElement, useEffect, useState } from 'react';
 import { Route, Switch, useLocation, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 
-interface Props {}
-
 interface PublicationParams {
     username: string;
     name: string;
@@ -254,9 +252,9 @@ function PublicationView() {
     }
 }
 
-export default function PublicationRoute(props: Props): ReactElement {
+export default function PublicationRoute(): ReactElement {
     return (
-        <PageLayout title={'Publication'}>
+        <PageLayout>
             <Container sx={{ p: 2 }}>
                 <PublicationView />
             </Container>

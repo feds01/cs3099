@@ -2,8 +2,8 @@ import assert from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 import { ExportSgReview } from '../validators/sg';
-import Comment from './Comment';
-import Publication, { IPublication } from './Publication';
+import Comment, { PopulatedComment } from './Comment';
+import Publication, { AugmentedPublicationDocument } from './Publication';
 import User, { IUser } from './User';
 
 /**
@@ -31,18 +31,20 @@ export interface IReview {
     updatedAt: Date;
 }
 
-type PopulatedReview = (IReview & {
-    _id: mongoose.Types.ObjectId;
-}) & {
-    owner: IUser;
-} & {
-    publication: IPublication;
-};
-
 interface IReviewDocument extends IReview, Document {}
 
+export type AugmentedReviewDocument = Omit<IReviewDocument, '_id'> & {
+    _id: mongoose.Types.ObjectId;
+};
+
+export type PopulatedReview = AugmentedReviewDocument & {
+    owner: IUser;
+} & {
+    publication: AugmentedPublicationDocument;
+};
+
 interface IReviewModel extends Model<IReviewDocument> {
-    project: (review: IReview) => Promise<Partial<IReview>>;
+    project: (review: AugmentedReviewDocument) => Promise<Partial<IReview>>;
     projectAsSg: (review: PopulatedReview) => Promise<ExportSgReview>;
 }
 
@@ -67,22 +69,26 @@ const ReviewSchema = new Schema<IReview, IReviewModel, IReview>(
 ReviewSchema.post(
     /deleteOne|findOneAndDelete$/,
     { document: true, query: true },
-    async (item: IReviewDocument, next) => {
-        await Comment.deleteMany({ review: item.id as string });
+    async (item: AugmentedReviewDocument, next) => {
+        await Comment.deleteMany({ review: item._id.toString() });
 
         next();
     },
 );
 
-ReviewSchema.post('deleteMany', { document: true }, async (items: IReviewDocument[], next) => {
-    await Promise.all(
-        items.map(async (item) => {
-            await Comment.deleteMany({ review: item.id as string }).exec();
-        }),
-    );
+ReviewSchema.post(
+    'deleteMany',
+    { document: true },
+    async (items: AugmentedReviewDocument[], next) => {
+        await Promise.all(
+            items.map(async (item) => {
+                await Comment.deleteMany({ review: item._id.toString() }).exec();
+            }),
+        );
 
-    next();
-});
+        next();
+    },
+);
 
 /**
  * Function to project a user comment so that it can be returned as a
@@ -118,17 +124,21 @@ ReviewSchema.statics.projectAsSg = async (review: PopulatedReview): Promise<Expo
     // way that they wish.
     const commentMap: Map<string, number> = new Map();
 
-    const comments = await Comment.find({ review: review._id.toString() })
+    const comments = (await Comment.find({ review: review._id.toString() })
         .populate<{ owner: IUser }>('owner')
-        .exec();
+        .exec()) as PopulatedComment[];
 
     // firstly we want to populate the comment map...
     comments.forEach((comment, index) => {
-        commentMap.set(comment.id as string, index);
+        const commentId = comment._id.toString();
+
+        commentMap.set(commentId, index);
     });
 
     const projectedComments = comments.map((comment) => {
-        const id = commentMap.get(comment.id as string);
+        const commentId = comment._id.toString();
+
+        const id = commentMap.get(commentId);
         assert(typeof id === 'number');
 
         let replying;
@@ -147,4 +157,6 @@ ReviewSchema.statics.projectAsSg = async (review: PopulatedReview): Promise<Expo
     };
 };
 
-export default mongoose.model<IReview, IReviewModel>('review', ReviewSchema);
+const ReviewModel = mongoose.model<IReview, IReviewModel>('review', ReviewSchema);
+
+export default ReviewModel;

@@ -10,7 +10,7 @@ export default function CreatePublicationRoute(): ReactElement {
         <PageLayout>
             <Container maxWidth={'md'} sx={{ pt: 2 }}>
                 <Typography variant={'h4'}>Create Publication</Typography>
-                <Typography variant={'caption'}>Upload new publication to Iamus</Typography>
+                <Typography variant={'body1'}>Upload new publication to Iamus</Typography>
                 <Divider />
                 <CreatePublicationForm />
             </Container>

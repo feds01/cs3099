@@ -21,7 +21,7 @@ export default function ReviewCard({ review }: Props): ReactElement {
 
     return (
         <Card>
-            <CardContent sx={{ p: '0.4rem', backgroundColor: '#f5fafc' }}>
+            <CardContent sx={{ p: '0.4rem' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                     <Box sx={{ flex: 1, display: 'flex', flexDirection: 'row' }}>
                         {!isComplete && (

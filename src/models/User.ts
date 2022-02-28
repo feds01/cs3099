@@ -1,4 +1,3 @@
-import { strict } from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 import Logger from '../common/logger';
@@ -45,8 +44,6 @@ export interface IUser {
     createdAt: Date;
     /** When the document was last updated */
     updatedAt: Date;
-    /** If the document is 'deleted' */
-    isDeleted: boolean;
 }
 
 export interface IUserDocument extends IUser, Document<string> {}
@@ -68,12 +65,14 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
         status: { type: String },
         externalId: { type: String },
         role: { type: String, enum: IUserRole, default: IUserRole.Default },
-        isDeleted: { type: Boolean, default: false },
     },
     {
         timestamps: { createdAt: true, updatedAt: false },
     },
 );
+
+// Create the text index schema for searching users.
+UserSchema.index({ username: 'text', about: 'text', name: 'text', status: 'text' });
 
 /**
  * This function is a hook to remove any comments that are on a review
@@ -105,10 +104,8 @@ UserSchema.post(
 UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
     const { profilePictureUrl, about, name, status } = user;
 
-    strict.strict(typeof user.id === 'string');
-
     return {
-        ...(!omitId && { id: user.id }),
+        ...(!omitId && { id: user.id as string }),
         email: user.email,
         username: user.username,
         createdAt: user.createdAt.getTime(),
@@ -145,4 +142,6 @@ UserSchema.statics.projectAsSg = (user: IUserDocument) => {
     };
 };
 
-export default mongoose.model<IUser, IUserModel>('user', UserSchema);
+const UserModel = mongoose.model<IUser, IUserModel>('user', UserSchema);
+
+export default UserModel;

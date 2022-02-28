@@ -9,7 +9,7 @@ import { importUser } from '../../lib/import';
 import registerRoute from '../../lib/requests';
 import { archiveIndexToPath } from '../../lib/zip';
 import Publication, { IPublication } from '../../models/Publication';
-import Review, { IReviewStatus } from '../../models/Review';
+import Review, { IReviewStatus, PopulatedReview } from '../../models/Review';
 import { IUser } from '../../models/User';
 import { ObjectIdSchema } from '../../validators/requests';
 import { SgMetadataSchema } from '../../validators/sg';
@@ -157,13 +157,13 @@ registerRoute(router, '/export/:id/metadata', {
         // Okay, let's find all the reviews that are related to the current revision
         // of the publication, for now we don't consider revisions of a publication
         // a concept at all because external groups don't know about our revision system.
-        const reviews = await Review.find({
+        const reviews = (await Review.find({
             publication: publication.id,
             status: IReviewStatus.Completed,
         })
             .populate<{ publication: IPublication }>('publication')
             .populate<{ owner: IUser }>('owner')
-            .exec();
+            .exec()) as PopulatedReview[];
 
         return {
             status: 'ok',

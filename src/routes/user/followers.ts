@@ -6,6 +6,7 @@ import * as userUtils from '../../utils/users';
 import registerRoute from '../../lib/requests';
 import Follower from '../../models/Follower';
 import User, { IUser, IUserRole } from '../../models/User';
+import { PaginationQuerySchema } from '../../validators/pagination';
 import { ModeSchema } from '../../validators/requests';
 
 const router = express.Router({ mergeParams: true });
@@ -178,17 +179,16 @@ registerRoute(router, '/:username/follow', {
 registerRoute(router, '/:username/followers', {
     method: 'get',
     params: z.object({ username: z.string() }),
-    query: z.object({ mode: ModeSchema }),
+    query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        // TODO:(alex) Implement pagination for this endpoint since the current limit will
-        //             be 50 documents.
-        // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
+        const { take, skip } = req.query;
         const result = await Follower.find({ following: user.id })
             .populate<{ follower: IUser }>('follower')
-            .limit(50);
+            .skip(skip)
+            .limit(take);
 
         return {
             status: 'ok',
@@ -212,17 +212,16 @@ registerRoute(router, '/:username/followers', {
 registerRoute(router, '/:username/following', {
     method: 'get',
     params: z.object({ username: z.string() }),
-    query: z.object({ mode: ModeSchema }),
+    query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     permission: { kind: 'follower', level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        // TODO:(alex) Implement pagination for this endpoint since the current limit will
-        //             be 50 documents.
-        // https://medium.com/swlh/mongodb-pagination-fast-consistent-ece2a97070f3
+        const { skip, take } = req.query;
         const result = await Follower.find({ follower: user.id })
             .populate<{ following: IUser }>('following')
-            .limit(50)
+            .skip(skip)
+            .limit(take)
             .exec();
 
         return {

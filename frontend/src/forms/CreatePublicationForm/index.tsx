@@ -68,8 +68,13 @@ export default function CreatePublicationForm(): ReactElement {
                     <ControlledTextField name="title" control={control} />
                 </Grid>
                 <Grid item xs={12} sx={{pt: 1}}>
+                    <FieldLabel label="About" required={false} />
+                    <Typography variant={'body2'}>Write a small about section for the publication</Typography>
+                    <ControlledTextField name="about" control={control} />
+                </Grid>
+                <Grid item xs={12} sx={{pt: 1}}>
                     <FieldLabel label="Introduction" required={false} />
-                    <Typography variant={'body2'}>Write a small introduction for the publication</Typography>
+                    <Typography variant={'body2'}>Write a introduction for the publication</Typography>
                     <ControlledTextField
                         name="introduction"
                         control={control}

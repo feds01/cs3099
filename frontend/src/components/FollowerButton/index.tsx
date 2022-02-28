@@ -1,41 +1,68 @@
-import Button from '@mui/material/Button';
 import { useAuth } from '../../hooks/auth';
-import { ContentState } from '../../types/requests';
-import React, { ReactElement, useEffect, useState } from 'react';
+import { useNotificationDispatch } from '../../hooks/notification';
 import { useGetUserUsernameFollow } from '../../lib/api/followers/followers';
+import { deleteUserUsernameFollow, postUserUsernameFollow } from '../../lib/api/users/users';
+import { ContentState } from '../../types/requests';
+import Button from '@mui/material/Button';
+import { ReactElement, useEffect, useState } from 'react';
 
 interface Props {
     username: string;
 }
 
-type FollowState = { following: boolean; self: boolean };
+type FollowState = {
+    following: boolean;
+    self: boolean;
+    followUserQuery: typeof postUserUsernameFollow | typeof deleteUserUsernameFollow;
+};
+
+const getFollowQuery = (state: Omit<FollowState, 'followUserQuery'>) => {
+    if (!state.following) {
+        return postUserUsernameFollow;
+    } else {
+        return deleteUserUsernameFollow;
+    }
+};
 
 export default function FollowerButton({ username }: Props): ReactElement {
     const auth = useAuth();
+    const notificationDispatcher = useNotificationDispatch();
     const follow = useGetUserUsernameFollow(username);
 
     const [response, setResponse] = useState<ContentState<FollowState, Error>>({ state: 'loading' });
 
-    useEffect(() => {
-        if (auth.session.username === username) {
-            setResponse({ state: 'ok', data: { self: true, following: false } });
+    const handleClick = async () => {
+        if (response.state !== 'ok') return;
+
+        const followResponse = await response.data.followUserQuery(username);
+
+        // We need to refetch the follow state if they have changed it...
+        if (followResponse.status === 'ok') {
+            follow.refetch();
         } else {
-            if (follow.data) {
-                setResponse({ state: 'ok', data: { self: false, following: follow.data.following } });
-            }
+            notificationDispatcher({ type: 'add', item: { severity: 'error', message: "Couldn't follow user" } });
         }
+    };
+
+    useEffect(() => {
+        const state = {
+            self: auth.session.username === username,
+            following: follow.data?.following || false,
+        };
+        
+        const query = getFollowQuery(state);
+        setResponse({ state: 'ok', data: { ...state, followUserQuery: query } });
     }, [username, follow.data, auth.session.username]);
 
-    if (response.state === 'loading' || response.state === 'error') {
+    if (response.state !== 'ok' || response.data.self) {
         return <></>;
     } else {
-        // Return nothing if we shouldn't render this button
-        if (response.data.self) {
-            return <></>;
-        }
-
         return (
-            <Button variant="contained" sx={{ fontWeight: 'bold' }}>
+            <Button
+                variant="contained"
+                sx={{ fontWeight: 'bold' }}
+                onClick={handleClick}
+            >
                 {response.data.following ? 'Unfollow' : 'Follow'}
             </Button>
         );

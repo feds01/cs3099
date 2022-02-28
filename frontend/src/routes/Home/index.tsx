@@ -12,7 +12,7 @@ export default function Home(props: Props): ReactElement {
     const auth = useAuth();
 
     return (
-        <PageLayout title={'Home'}>
+        <PageLayout>
             <Container>
                 <Box sx={{ pt: 2 }}>
                     <Box

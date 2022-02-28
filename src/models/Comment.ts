@@ -38,9 +38,11 @@ export interface IComment {
     isDeleted: boolean;
 }
 
-type PopulatedComment = (IComment & {
+export type AugmentedCommentDocument = Omit<IComment, '_id'> & {
     _id: mongoose.Types.ObjectId;
-}) & {
+};
+
+export type PopulatedComment = AugmentedCommentDocument & {
     owner: IUser;
 };
 

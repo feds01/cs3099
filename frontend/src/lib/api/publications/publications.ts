@@ -19,6 +19,8 @@ import type {
   CreatePublicationResponseResponse,
   ApiErrorResponse,
   CreatePublicationRequest,
+  GetPublication200,
+  GetPublicationParams,
   ApiSuccessResponse,
   DeletePublicationUsernameNameParams,
   PatchPublicationRequest,
@@ -30,6 +32,7 @@ import type {
   PostPublicationUsernameNameExportParams,
   RevisePublicationRequest,
   GetPublicationUsernameNameRevisions200,
+  GetPublicationUsernameNameRevisionsParams,
   ResourceResponseResponse,
   GetPublicationUsernameNameTreePathParams,
   GetPublicationUsernameNameAll200,
@@ -77,6 +80,45 @@ export const postPublication = (
       return useMutation<AsyncReturnType<typeof postPublication>, TError, {data: CreatePublicationRequest}, TContext>(mutationFn, mutationOptions)
     }
     /**
+ * Get a paginated list of publications
+ * @summary Paginated publications
+ */
+export const getPublication = (
+    params?: GetPublicationParams,
+ ) => {
+      return customInstance<GetPublication200>(
+      {url: `/publication`, method: 'get',
+        params,
+    },
+      );
+    }
+  
+
+export const getGetPublicationQueryKey = (params?: GetPublicationParams,) => [`/publication`, ...(params ? [params]: [])];
+
+    
+export const useGetPublication = <TData = AsyncReturnType<typeof getPublication>, TError = ApiErrorResponse>(
+ params?: GetPublicationParams, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublication>, TError, TData>, }
+
+  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+
+  const {query: queryOptions} = options || {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetPublicationQueryKey(params);
+
+  
+
+  const queryFn: QueryFunction<AsyncReturnType<typeof getPublication>> = () => getPublication(params, );
+
+  const query = useQuery<AsyncReturnType<typeof getPublication>, TError, TData>(queryKey, queryFn, queryOptions)
+
+  return {
+    queryKey,
+    ...query
+  }
+}
+
+/**
  * Delete the publication resource.
  * @summary Delete a publication
  */
@@ -312,31 +354,35 @@ export const postPublicationUsernameNameRevise = (
 export const getPublicationUsernameNameRevisions = (
     username: string,
     name: string,
+    params?: GetPublicationUsernameNameRevisionsParams,
  ) => {
       return customInstance<GetPublicationUsernameNameRevisions200>(
-      {url: `/publication/${username}/${name}/revisions`, method: 'get'
+      {url: `/publication/${username}/${name}/revisions`, method: 'get',
+        params,
     },
       );
     }
   
 
 export const getGetPublicationUsernameNameRevisionsQueryKey = (username: string,
-    name: string,) => [`/publication/${username}/${name}/revisions`];
+    name: string,
+    params?: GetPublicationUsernameNameRevisionsParams,) => [`/publication/${username}/${name}/revisions`, ...(params ? [params]: [])];
 
     
 export const useGetPublicationUsernameNameRevisions = <TData = AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError = ApiErrorResponse>(
  username: string,
-    name: string, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError, TData>, }
+    name: string,
+    params?: GetPublicationUsernameNameRevisionsParams, options?: { query?:UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError, TData>, }
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
 
   const {query: queryOptions} = options || {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameRevisionsQueryKey(username,name);
+  const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameRevisionsQueryKey(username,name,params);
 
   
 
-  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameRevisions>> = () => getPublicationUsernameNameRevisions(username,name, );
+  const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameRevisions>> = () => getPublicationUsernameNameRevisions(username,name,params, );
 
   const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameRevisions>, TError, TData>(queryKey, queryFn, {enabled: !!(username && name), ...queryOptions})
 

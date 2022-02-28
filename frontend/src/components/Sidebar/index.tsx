@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import { Button, Tooltip } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
+import SearchIcon from '@mui/icons-material/Search';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { styled, Theme, CSSObject } from '@mui/material/styles';
 
 import { TiHome } from 'react-icons/ti';
-import { ImProfile } from 'react-icons/im';
-import { RiSearchLine, RiContactsBookUploadLine } from 'react-icons/ri';
+import { BsJournalArrowUp } from 'react-icons/bs';
 
 const drawerWidth = 180;
 
@@ -59,9 +59,8 @@ const SidebarContainer = styled('div', { shouldForwardProp: (prop) => prop !== '
 
 const menuMap = [
     { title: 'Home', icon: TiHome, href: '/' },
-    { title: 'Create publication', icon: RiContactsBookUploadLine, href: '/publication/create' },
-    { title: 'Search publications', icon: ImProfile, href: '/publication/search' },
-    { title: 'Search reviews', icon: RiSearchLine, href: '/review/search' },
+    { title: 'Create publication', icon: BsJournalArrowUp, href: '/publication/create' },
+    { title: 'Explore', icon: SearchIcon, href: '/explore' },
 ];
 
 export default function Sidebar(): ReactElement {

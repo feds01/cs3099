@@ -10,7 +10,7 @@ import { verifyReviewPermission } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
 import Comment from '../../models/Comment';
 import { IPublication, IPublicationDocument } from '../../models/Publication';
-import Review, { IReviewStatus } from '../../models/Review';
+import Review, { IReviewStatus, PopulatedReview } from '../../models/Review';
 import { IUser, IUserDocument, IUserRole } from '../../models/User';
 import { ResponseErrorSummary } from '../../transformers/error';
 import { ICommentCreationSchema } from '../../validators/comments';
@@ -297,10 +297,10 @@ registerRoute(router, '/:id', {
     handler: async (req) => {
         const { id } = req.params;
 
-        const review = await Review.findById(id)
+        const review = (await Review.findById(id)
             .populate<{ publication: IPublication }>('publication')
             .populate<{ owner: IUserDocument }>('owner')
-            .exec();
+            .exec()) as unknown as PopulatedReview;
 
         if (!review) {
             return {

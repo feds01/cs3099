@@ -94,7 +94,7 @@ export function resourceIndexToPath(resource: ResourceIndex): string {
  * @param filePath - The path of the archive.
  *
  */
- export function loadArchiveFromPath(filePath: string): AdmZip | null {
+export function loadArchiveFromPath(filePath: string): AdmZip | null {
     try {
         return new AdmZip(filePath);
     } catch (e: unknown) {
@@ -125,7 +125,7 @@ export async function createArchive(archive: ArchiveIndex | string, filePath: st
         if (typeof archive === 'string') {
             return loadArchiveFromPath(archive);
         }
-            return loadArchive(archive);
+        return loadArchive(archive);
     });
 
     if (!zip) throw new Error("Couldn't load archive");
@@ -194,7 +194,7 @@ export function getEntry(
         if (typeof archive === 'string') {
             return loadArchiveFromPath(archive);
         }
-            return loadArchive(archive);
+        return loadArchive(archive);
     });
 
     if (!zip) return null;

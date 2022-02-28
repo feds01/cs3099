@@ -15,19 +15,18 @@ import {
     verifyUserPermission,
 } from '../../lib/permissions';
 import registerRoute from '../../lib/requests';
-import Publication from '../../models/Publication';
+import Publication, { AugmentedPublicationDocument } from '../../models/Publication';
 import User, { IUserRole } from '../../models/User';
 import { config } from '../../server';
+import { PaginationQuerySchema } from '../../validators/pagination';
 import {
     IPublicationCreationSchema,
     IPublicationPatchRequestSchema,
 } from '../../validators/publications';
 import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../validators/requests';
 import reviewRouter from './reviews';
-import searchRouter from './search';
 
 const router = express.Router();
-router.use('/', searchRouter);
 router.use('/', reviewRouter);
 
 /**
@@ -283,7 +282,67 @@ registerRoute(router, '/', {
             status: 'ok',
             code: 201,
             data: {
-                publication: Publication.projectWith(publication, req.requester),
+                publication: await Publication.projectWith(publication, req.requester),
+            },
+        };
+    },
+});
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/publication
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/
+ *
+ * @description Route to list the most publications in a paginated form
+ */
+registerRoute(router, '/', {
+    method: 'get',
+    params: z.object({}),
+    query: PaginationQuerySchema,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const { skip, take } = req.query;
+
+        type PublicationAggregation = {
+            data: AugmentedPublicationDocument[];
+            total?: number;
+        };
+
+        const aggregation = (await Publication.aggregate([
+            {
+                $facet: {
+                    data: [
+                        { $match: { draft: false } },
+                        { $sort: { _id: -1 } },
+                        { $skip: skip },
+                        { $limit: take },
+                    ],
+                    total: [{ $count: 'total' }],
+                },
+            },
+            {
+                $project: {
+                    data: 1,
+                    // Get total from the first element of the metadata array
+                    total: { $arrayElemAt: ['$total.total', 0] },
+                },
+            },
+        ])) as unknown as [PublicationAggregation];
+
+        const result = aggregation[0];
+
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                publications: await Promise.all(
+                    result.data.map(async (publication) => await Publication.project(publication)),
+                ),
+                total: result.total ?? 0,
+                skip,
+                take,
             },
         };
     },
@@ -302,15 +361,16 @@ registerRoute(router, '/', {
 registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
-    query: z.object({ mode: ModeSchema, pinned: FlagSchema.optional() }),
+    query: z
+        .object({ mode: ModeSchema, pinned: FlagSchema.optional() })
+        .merge(PaginationQuerySchema),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
-        const { pinned } = req.query;
+        const { pinned, skip, take } = req.query;
 
-        // @@TODO: we might want to include revisions in the future with some options.
         const result = await Publication.find({
             owner: user.id,
             ...(typeof pinned !== 'undefined' && {
@@ -318,14 +378,21 @@ registerRoute(router, '/:username', {
             }),
             current: true,
         })
-            .limit(50)
+            .skip(skip)
+            .limit(take)
             .exec();
 
         return {
             status: 'ok',
             code: 200,
             data: {
-                publications: result.map((item) => Publication.projectWith(item, user)),
+                publications: await Promise.all(
+                    result.map(
+                        async (publication) => await Publication.projectWith(publication, user),
+                    ),
+                ),
+                skip,
+                take,
             },
         };
     },
@@ -343,24 +410,32 @@ registerRoute(router, '/:username', {
 registerRoute(router, '/:username/:name/revisions', {
     method: 'get',
     params: z.object({ username: z.string(), name: z.string() }),
-    query: z.object({ mode: ModeSchema }),
+    query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
+        const { skip, take } = req.query;
         const result = await Publication.find({
             owner: user.id,
             current: true,
         })
-            .limit(50)
+            .skip(skip)
+            .limit(take)
             .exec();
 
         return {
             status: 'ok',
             code: 200,
             data: {
-                revisions: result.map((item) => Publication.projectWith(item, user)),
+                revisions: await Promise.all(
+                    result.map(
+                        async (publication) => await Publication.projectWith(publication, user),
+                    ),
+                ),
+                skip,
+                take,
             },
         };
     },

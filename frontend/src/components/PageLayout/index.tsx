@@ -2,16 +2,15 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import React, { ReactElement } from 'react';
 import Header from '../Header';
-import Sidebar from '../Sidebar';
+import Sidebar from '../SideBar';
 
 interface Props {
     children: React.ReactNode;
-    title?: string;
     drawerWidth?: number;
     sidebar?: boolean;
 }
 
-export default function PageLayout({ children, drawerWidth = 180, title, sidebar = true }: Props): ReactElement {
+export default function PageLayout({ children, drawerWidth = 180, sidebar = true }: Props): ReactElement {
     return (
         <Box
             sx={{
@@ -26,7 +25,7 @@ export default function PageLayout({ children, drawerWidth = 180, title, sidebar
             }}
         >
             <Box component="main" sx={{ display: 'flex', flexDirection: 'column', flex: 1, height: 'inherit' }}>
-                <Header title={title} />
+                <Header />
                 <Box sx={{ display: 'flex', flexDirection: 'row', flexGrow: 1, pt: 8 }}>
                     {sidebar && <Sidebar />}
                     <Container

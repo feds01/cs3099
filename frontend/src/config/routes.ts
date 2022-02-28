@@ -1,8 +1,7 @@
 import PublicationRoute from '../routes/Publication';
 import CreatePublicationRoute from '../routes/Publication/Create';
-import SearchPublicationRoute from '../routes/Publication/Search';
-import SearchReviewRoute from '../routes/Review/Search';
 import AccountRoute from './../routes/Account';
+import ExploreRoute from './../routes/Explore';
 import HomeRoute from './../routes/Home';
 import ProfileRoute from './../routes/Profile';
 import ReviewRoute from './../routes/Review';
@@ -31,15 +30,15 @@ export const routes = {
         title: 'Home',
         component: HomeRoute,
     },
+    '/explore': {
+        exact: true,
+        title: 'Explore',
+        component: ExploreRoute,
+    },
     '/profile/:id': {
         exact: false,
         title: 'Profile',
         component: ProfileRoute,
-    },
-    '/review/search': {
-        exact: true,
-        title: 'Search reviews',
-        component: SearchReviewRoute,
     },
     '/review/:id': {
         exact: false,
@@ -51,11 +50,6 @@ export const routes = {
         exact: true,
         title: 'Create publication',
         component: CreatePublicationRoute,
-    },
-    '/publication/search': {
-        exact: true,
-        title: 'Search publications',
-        component: SearchPublicationRoute,
     },
     '/account': {
         exact: true,

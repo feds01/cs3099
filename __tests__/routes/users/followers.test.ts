@@ -133,7 +133,6 @@ describe('Follower endpoints testing ', () => {
     });
 
     it("Get follower2's following list", async () => {
-        
         // make the request to get all the followers
         const followingListResponse = await request
             .get('/user/follower2/following')

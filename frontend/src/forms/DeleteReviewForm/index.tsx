@@ -37,8 +37,8 @@ export default function DeletePublicationForm({ reviewId }: Props) {
     const onConfirm = async () => await mutateAsync({ id: reviewId });
 
     return (
-        <Box>
-            <Button sx={{ mt: 1, mr: 1 }} variant="contained" onClick={() => setDialogueOpen(true)} color="error">
+        <>
+            <Button variant="contained" onClick={() => setDialogueOpen(true)} color="error">
                 Delete Review
             </Button>
             <ConfirmationDialogue
@@ -49,6 +49,6 @@ export default function DeletePublicationForm({ reviewId }: Props) {
                 message={'Are you sure you want to delete this review?'}
                 title={'Delete review'}
             />
-        </Box>
+        </>
     );
 }
