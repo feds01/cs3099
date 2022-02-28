@@ -10,7 +10,6 @@ import Publication, { IPublication } from '../../models/Publication';
 import Review, { IReviewStatus } from '../../models/Review';
 import { IUser, IUserRole } from '../../models/User';
 import { ModeSchema } from '../../validators/requests';
-import { IReviewCreationSchema } from '../../validators/reviews';
 
 const router = express.Router();
 
@@ -79,7 +78,7 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
  */
 registerRoute(router, '/:username/:name/:revision/review', {
     method: 'post',
-    body: IReviewCreationSchema,
+    body: z.object({}),
     query: z.object({ mode: ModeSchema }),
     params: z.object({
         username: z.string(),

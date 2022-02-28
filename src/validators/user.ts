@@ -1,7 +1,7 @@
 import { RefinementEffect, z } from 'zod';
 
 import * as error from '../common/errors';
-import User, { IUserRole } from '../models/User';
+import User, { AugmentedUserDocument, IUserRole } from '../models/User';
 
 /**
  * Schema for validating login requests.
@@ -31,7 +31,7 @@ export const IUserSchema = z.object({
         .string()
         .nonempty()
         .max(50)
-        .regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric'),
+        .regex(/^[a-zA-Z0-9._~-]*$/, 'Username must be URL safe'),
     email: z.string().email(),
     name: z.string().max(256),
     password: z.string().min(1),
@@ -110,7 +110,16 @@ export const ExistUsernameSchema = z
     .string()
     .nonempty()
     .max(50)
-    .regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric')
-    .refine(async (username) => (await User.count({ username })) > 0, {
+    .regex(/^[a-zA-Z0-9._~-]*$/, 'Username must be URL safe')
+    .transform(async (username) => {
+        const user: AugmentedUserDocument | null = await User.findOne({ username });
+
+        if (user !== null) {
+            return user._id.toString();
+        }
+
+        return null;
+    })
+    .refine((id) => id !== null, {
         message: error.NON_EXISTENT_USER,
     });

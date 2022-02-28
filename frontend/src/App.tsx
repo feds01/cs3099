@@ -1,22 +1,22 @@
-import { ReactElement } from 'react';
+import AppliedRoute from './components/AppliedRoute';
+import ErrorContainer from './components/ErrorContainer';
+import NotificationDisplay from './components/Notification';
+import PrivateRoute from './components/PrivateRoute';
+import * as routeConfig from './config/routes';
+import { AuthProvider } from './hooks/auth';
+import { NotificationProvider } from './hooks/notification';
+import LoginRoute from './routes/Auth/Login';
+import RegisterRoute from './routes/Auth/Register';
+import SessionRoute from './routes/Auth/Session';
+import SingleSignOnRoute from './routes/Auth/SingleSignOn';
+import NotFoundRoute from './routes/NotFound';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import type {} from '@mui/lab/themeAugmentation';
+import { ReactElement } from 'react';
 import { QueryCache, QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
-
-import { AuthProvider } from './hooks/auth';
-import NotFoundRoute from './routes/NotFound';
-import LoginRoute from './routes/Auth/Login';
-import SessionRoute from './routes/Auth/Session';
-import SingleSignOnRoute from './routes/Auth/SingleSignOn';
-import * as routeConfig from './config/routes';
-import AppliedRoute from './components/AppliedRoute';
-import RegisterRoute from './routes/Auth/Register';
-import PrivateRoute from './components/PrivateRoute';
-import ErrorContainer from './components/ErrorContainer';
-import { NotificationProvider } from './hooks/notification';
-import NotificationDisplay from './components/Notification';
 
 // API querying client.
 const queryCache = new QueryCache();
@@ -73,7 +73,17 @@ const theme = createTheme({
             xl: 1536,
         },
     },
+
     components: {
+        MuiTimelineItem: {
+            styleOverrides: {
+                root: {
+                    '&:before': {
+                        display: 'none',
+                    },
+                },
+            }
+        },
         MuiButton: {
             defaultProps: {
                 disableRipple: true,

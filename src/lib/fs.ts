@@ -1,6 +1,23 @@
-import { promises as fs } from 'fs';
+import { constants, promises as fs } from 'fs';
+import path from 'path';
 
 import Logger from '../common/logger';
+
+/**
+ * Wrapper function to check if a resource with a given path exists in the resource folder.
+ *
+ * @param resource The path to the resource to check
+ *
+ * @returns Boolean on whether or not the resource exists.
+ */
+ export async function resourceExists(resource: string): Promise<boolean> {
+    try {
+        await fs.access(resource, constants.F_OK);
+        return true;
+    } catch (e: unknown) {
+        return false;
+    }
+}
 
 /**
  * Wrapper function for fs.rename. Moves a file from a source to a
@@ -11,6 +28,15 @@ import Logger from '../common/logger';
  */
 export async function moveResource(from: string, to: string): Promise<void> {
     Logger.warn(`Attempting to move file: ${from} to ${to}`);
+
+    // Here we need to check if the location 'to' exists, specifically the parent. If it does
+    // not, then we need to create the directory before we move it.
+    const dirname = path.dirname(to);
+
+    if (!(await resourceExists(dirname))) {
+        await fs.mkdir(dirname, { recursive: true });
+    }
+
     await fs.rename(from, to);
 }
 

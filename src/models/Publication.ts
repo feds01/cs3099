@@ -18,6 +18,8 @@ export interface IPublication {
     name: string;
     /** Introduction of the publication */
     introduction?: string;
+    /** Information about the current revision (potentially specifying what changed between revisions) */
+    changelog?: string;
     /** Short about section of what the publication is off */
     about?: string;
     /** If the publication is still in draft mode */
@@ -58,6 +60,7 @@ const PublicationSchema = new Schema<IPublication, IPublicationModel, IPublicati
         name: { type: String, required: true },
         title: { type: String, required: true },
         introduction: { type: String },
+        changelog: { type: String },
         about: { type: String },
         owner: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
         draft: { type: Boolean, required: true },
@@ -106,7 +109,7 @@ PublicationSchema.statics.project = async (
     publication: AugmentedPublicationDocument,
     attachment?: boolean,
 ) => {
-    const { name, title, introduction, about, draft, owner: ownerId } = publication;
+    const { name, title, introduction, changelog, about, draft, owner: ownerId } = publication;
 
     // Resolve the owner name...
     const owner = await User.findById(ownerId).exec();
@@ -115,7 +118,7 @@ PublicationSchema.statics.project = async (
     // Project all the collaborators
     const collaborators = await Promise.all(
         publication.collaborators.map(async (id) => {
-            const collaborator = await User.findById(id).exec();
+            const collaborator = await User.findById(id.toString()).exec();
             assert(collaborator !== null);
 
             return User.project(collaborator);
@@ -133,6 +136,7 @@ PublicationSchema.statics.project = async (
         name,
         title,
         introduction,
+        changelog,
         about,
         owner: User.project(owner),
         pinned: publication.pinned,
@@ -157,7 +161,7 @@ PublicationSchema.statics.projectWith = async (
     publication: AugmentedPublicationDocument,
     owner: IUserDocument,
 ) => {
-    const { name, title, introduction, about, draft, owner: ownerId } = publication;
+    const { name, title, introduction, about, changelog, draft, owner: ownerId } = publication;
 
     assert(owner.id === ownerId._id.toString(), 'Owner ids mismatch');
 
@@ -183,6 +187,7 @@ PublicationSchema.statics.projectWith = async (
         title,
         about,
         introduction,
+        changelog,
         owner: User.project(owner),
         draft,
         createdAt: publication.createdAt.getTime(),

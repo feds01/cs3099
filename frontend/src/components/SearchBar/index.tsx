@@ -55,7 +55,6 @@ function SearchBar() {
 
             setOptions(newOptions);
         } catch (e: unknown) {
-            console.log('failed loading data');
         } finally {
             setLoading(false);
         }

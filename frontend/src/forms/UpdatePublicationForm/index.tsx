@@ -38,6 +38,7 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
         mode: 'onChange',
         defaultValues: {
             ...publication,
+            collaborators: publication.collaborators.map((item) => item.username)
         },
     });
 

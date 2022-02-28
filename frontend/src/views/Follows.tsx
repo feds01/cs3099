@@ -6,7 +6,7 @@ import { Container, Typography } from '@mui/material';
 import Astronaut from '../static/images/spacewalk.svg';
 import { ApiErrorResponse, User } from '../lib/api/models';
 import { ReactElement, useEffect, useState } from 'react';
-import FollowerCard, { FollowerCardSkeleton } from '../components/FollowerCard';
+import UserCard, { UserCardSkeleton } from '../components/UserCard';
 import { useGetUserUsernameFollowers, useGetUserUsernameFollowing } from '../lib/api/followers/followers';
 
 interface Props {
@@ -50,7 +50,7 @@ export default function Follows({ type, username }: Props): ReactElement {
                 <Grid container spacing={1} columns={{ xs: 4, sm: 9, md: 12 }}>
                     {Array.apply(null, Array(4)).map((_, index) => (
                         <Grid key={index} item xs={2} sm={3} md={4} lg={3}>
-                            <FollowerCardSkeleton />
+                            <UserCardSkeleton />
                         </Grid>
                     ))}
                 </Grid>
@@ -84,7 +84,7 @@ export default function Follows({ type, username }: Props): ReactElement {
                     {followers.data.map((follower) => {
                         return (
                             <Grid key={follower.username} item xs={2} sm={3} md={3}>
-                                <FollowerCard key={follower.id} user={follower} />
+                                <UserCard key={follower.id} user={follower} />
                             </Grid>
                         );
                     })}

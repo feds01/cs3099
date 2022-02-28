@@ -2,16 +2,15 @@ import { z } from 'zod';
 
 import { ExistUsernameSchema } from './user';
 
-const CollaboratorArraySchema = ExistUsernameSchema.array().refine(
-    (arr) => arr.length === new Set(arr).size,
-    { message: 'No duplicated collaborators allowed' },
-);
+const CollaboratorArraySchema = z
+    .array(ExistUsernameSchema)
+    .transform((x) => new Set(x.filter((c) => c !== null)));
 
 export const IPublicationCreationSchema = z.object({
     name: z
         .string()
         .min(1)
-        .regex(/^[a-zA-Z0-9_-]*$/, { message: 'Name must be URL safe.' })
+        .regex(/^[a-zA-Z0-9._~-]*$/, { message: 'Name must be URL safe.' })
         .transform((x) => x.toLowerCase()),
     title: z.string().min(1).max(200),
     introduction: z.string().optional(),
