@@ -10,7 +10,7 @@ import Logger from '../common/logger';
  *
  * @returns Boolean on whether or not the resource exists.
  */
- export async function resourceExists(resource: string): Promise<boolean> {
+export async function resourceExists(resource: string): Promise<boolean> {
     try {
         await fs.access(resource, constants.F_OK);
         return true;
