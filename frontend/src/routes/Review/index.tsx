@@ -1,11 +1,11 @@
 import ErrorBanner from '../../components/ErrorBanner';
 import PageLayout from '../../components/PageLayout';
+import { useAuth } from '../../contexts/auth';
+import { useNotificationDispatch } from '../../contexts/notification';
+import { ReviewProvider } from '../../contexts/review';
 import DeleteReviewForm from '../../forms/DeleteReviewForm';
-import { useAuth } from '../../hooks/auth';
-import { useNotificationDispatch } from '../../hooks/notification';
-import { ReviewProvider } from '../../hooks/review';
 import { ApiErrorResponse, GetReviewId200 as GetReviewResponse, GetReviewIdComments200 } from '../../lib/api/models';
-import { Review } from '../../lib/api/models';
+import { Review, Comment } from '../../lib/api/models';
 import { useGetReviewId, useGetReviewIdComments, usePostReviewIdComplete } from '../../lib/api/reviews/reviews';
 import { computeUserPermission } from '../../lib/utils/roles';
 import { ContentState } from '../../types/requests';
@@ -16,34 +16,52 @@ import SubmissionPopOver from './modules/SubmissionPopOver';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import LinearProgress from '@mui/material/LinearProgress';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
 import { ReactElement, useEffect, useState } from 'react';
+import { BiConversation, BiFile } from 'react-icons/bi';
 import { Route, useLocation, useParams } from 'react-router';
 import { Link, Switch } from 'react-router-dom';
 
 interface TabMapProps {
     review: Review;
+    comments: Comment[];
 }
 
-const TabMap = ({ review }: TabMapProps) =>
+interface TabProps {
+    label: string | React.ReactElement;
+    icon?: React.ReactElement;
+    component: () => React.ReactNode;
+}
+
+const FileTab: TabProps = {
+    label: "Files",
+    icon: <BiFile size={16} />,
+    component: () => <FileView />,
+};
+
+const TabMap = ({ review, comments }: TabMapProps): Record<string, TabProps> =>
     review.status === 'completed'
         ? {
               [`/review/${review.id}`]: {
-                  label: 'Conversation',
+                label: (
+                    <>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                            Conversation
+                        </Typography>
+                        <Chip size="small" sx={{ ml: 0.5 }} label={comments.length} />
+                    </>
+                ),
+                  icon: <BiConversation size={16} />,
                   component: () => <ConversationView />,
               },
-              [`/review/${review.id}/files`]: {
-                  label: 'Files',
-                  component: () => <FileView />,
-              },
+              [`/review/${review.id}/files`]: FileTab,
           }
         : {
-              [`/review/${review.id}`]: {
-                  label: 'Files',
-                  component: () => <FileView />,
-              },
+              [`/review/${review.id}`]: FileTab,
           };
 
 interface ReviewParams {
@@ -110,107 +128,126 @@ export default function ReviewPage(): ReactElement {
         setCommentResourceResponse(transformQueryIntoContentState(getCommentsQuery));
     }, [getCommentsQuery.data, getCommentsQuery.isLoading]);
 
-    // @@Hack: This is a very hacky way of displaying the state for both queries, we should fix this!
-    if (commentResourceResponse.state === 'loading') {
-        return <LinearProgress />;
-    } else if (commentResourceResponse.state === 'error') {
+    if (commentResourceResponse.state === 'loading' || reviewResponse.state === 'loading') {
         return (
             <PageLayout>
-                <ErrorBanner message={commentResourceResponse.error.message} />
+                <LinearProgress />
+            </PageLayout>
+        );
+    } else if (commentResourceResponse.state === 'error' || reviewResponse.state === 'error') {
+        return (
+            <PageLayout>
+                {commentResourceResponse.state === 'error' && (
+                    <ErrorBanner message={commentResourceResponse.error.message} />
+                )}
+                {reviewResponse.state === 'error' && <ErrorBanner message={reviewResponse.error.message} />}
             </PageLayout>
         );
     }
 
-    const renderContent = () => {
-        switch (reviewResponse.state) {
-            case 'loading': {
-                return <LinearProgress />;
-            }
-            case 'error': {
-                return <ErrorBanner message={reviewResponse.error.message} />;
-            }
-            case 'ok':
-                const { review } = reviewResponse.data;
-                const { comments } = commentResourceResponse.data;
-                const permission = computeUserPermission(review.owner.id, session);
+    const { review } = reviewResponse.data;
+    const { comments } = commentResourceResponse.data;
+    const permission = computeUserPermission(review.owner.id, session);
 
-                return (
-                    <ReviewProvider state={{ comments, review, permission }} refetch={() => getCommentsQuery.refetch()}>
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                flex: 1,
-                                borderLeft: 1,
-                                borderColor: 'divider',
-                            }}
-                        >
-                            <Box
-                                sx={{
-                                    borderBottom: 1,
-                                    background: '#fff',
-                                    borderColor: 'divider',
-                                    position: 'fixed',
-                                    display: 'flex',
-                                    pr: 1,
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    width: 'calc(100vw - 41px)',
-                                    zIndex: '82',
-                                }}
-                            >
-                                <Tabs value={location.pathname}>
-                                    {Object.entries(TabMap({ review })).map(([path, props]) => {
-                                        return (
-                                            <Tab
-                                                key={path}
-                                                component={Link}
-                                                to={path}
-                                                value={path}
-                                                label={props.label}
-                                            />
-                                        );
-                                    })}
-                                </Tabs>
-                                <Box sx={{display: 'flex', flexDirection: 'row'}}>
-                                    {permission.delete && <DeleteReviewForm reviewId={review.id} />}
-                                    {review.status === 'started' && (
-                                        <LoadingButton
-                                            variant="contained"
-                                            size="small"
-                                            {...(permission.delete && { sx: { ml: 1 } })}
-                                            loading={completeReviewQuery.isLoading}
-                                            onClick={handleClick}
-                                            disabled={comments.length === 0}
-                                            endIcon={<ArrowDropDownIcon />}
-                                        >
-                                            Finish review
-                                        </LoadingButton>
-                                    )}
-                                </Box>
-                            </Box>
-                            <Switch>
-                                <Box sx={{ pt: '48px' }}>
-                                    {Object.entries(TabMap({ review })).map(([path, props]) => {
-                                        return <Route exact key={path} path={path} render={() => props.component()} />;
-                                    })}
-                                </Box>
-                            </Switch>
+    const tabMap = TabMap({
+        review,
+        comments,
+    });
+
+    return (
+        <ReviewProvider state={{ comments, review, permission }} refetch={() => getCommentsQuery.refetch()}>
+            <PageLayout>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        flex: 1,
+                        borderLeft: 1,
+                        borderColor: 'divider',
+                    }}
+                >
+                    <Box
+                        sx={{
+                            borderBottom: 1,
+                            background: '#fff',
+                            borderColor: 'divider',
+                            position: 'fixed',
+                            display: 'flex',
+                            pr: 1,
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            width: 'calc(100vw - 41px)',
+                            zIndex: '82',
+                        }}
+                    >
+                        <Tabs value={location.pathname}>
+                            {Object.entries(tabMap).map(([path, props]) => {
+                                return (
+                                    <Tab
+                                        key={path}
+                                        component={Link}
+                                        to={path}
+                                        value={path}
+                                        sx={{
+                                            height: '48px !important',
+                                            minHeight: '48px',
+                                            '&:hover': {
+                                                color: (t) => t.palette.primary.main,
+                                            },
+                                        }}
+                                        label={
+                                            typeof props.label === 'string' ? (
+                                                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                                    {props.label}
+                                                </Typography>
+                                            ) : (
+                                                props.label
+                                            )
+                                        }
+                                        {...(typeof props.icon !== 'undefined' && {
+                                            icon: props.icon,
+                                            iconPosition: 'start',
+                                        })}
+                                    />
+                                );
+                            })}
+                        </Tabs>
+                        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                            {permission.delete && <DeleteReviewForm reviewId={review.id} />}
+                            {review.status === 'started' && (
+                                <LoadingButton
+                                    variant="contained"
+                                    size="small"
+                                    {...(permission.delete && { sx: { ml: 1 } })}
+                                    loading={completeReviewQuery.isLoading}
+                                    onClick={handleClick}
+                                    disabled={comments.length === 0}
+                                    endIcon={<ArrowDropDownIcon />}
+                                >
+                                    Finish review
+                                </LoadingButton>
+                            )}
                         </Box>
-                        <SubmissionPopOver
-                            open={open}
-                            anchorEl={anchorEl}
-                            onClose={() => setAnchorEl(null)}
-                            onSubmission={() => {
-                                setAnchorEl(null);
-                                completeReviewQuery.mutateAsync({ id: review.id });
-                            }}
-                        />
-                    </ReviewProvider>
-                );
-        }
-    };
-
-    return <PageLayout>{renderContent()}</PageLayout>;
+                    </Box>
+                    <Switch>
+                        <Box sx={{ pt: '48px' }}>
+                            {Object.entries(tabMap).map(([path, props]) => {
+                                return <Route exact key={path} path={path} render={() => props.component()} />;
+                            })}
+                        </Box>
+                    </Switch>
+                </Box>
+                <SubmissionPopOver
+                    open={open}
+                    anchorEl={anchorEl}
+                    onClose={() => setAnchorEl(null)}
+                    onSubmission={() => {
+                        setAnchorEl(null);
+                        completeReviewQuery.mutateAsync({ id: review.id });
+                    }}
+                />
+            </PageLayout>
+        </ReviewProvider>
+    );
 }

@@ -1,5 +1,5 @@
 import Grid from '@mui/material/Grid';
-import { useAuth } from '../hooks/auth';
+import { useAuth } from '../contexts/auth';
 import { ContentState } from '../types/requests';
 import ErrorBanner from '../components/ErrorBanner';
 import { Container, Typography } from '@mui/material';

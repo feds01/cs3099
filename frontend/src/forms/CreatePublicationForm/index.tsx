@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import { useHistory } from 'react-router';
-import { useAuth } from '../../hooks/auth';
+import { useAuth } from '../../contexts/auth';
 import { ReactElement, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';

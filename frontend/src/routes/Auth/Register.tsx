@@ -5,7 +5,7 @@ import { User } from '../../lib/api/models';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import AuthCover from './../../static/images/login.svg';
 import RegisterForm from '../../forms/RegisterAccountForm';
-import { useDispatchAuth } from '../../hooks/auth';
+import { useDispatchAuth } from '../../contexts/auth';
 
 interface LocationState {
     from: { pathname: string };

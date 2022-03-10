@@ -1,5 +1,5 @@
-import { useNotificationDispatch } from '../../hooks/notification';
-import { useReviewDispatch } from '../../hooks/review';
+import { useNotificationDispatch } from '../../contexts/notification';
+import { useReviewDispatch } from '../../contexts/review';
 import { usePatchCommentId } from '../../lib/api/comments/comments';
 import { usePutReviewIdComment } from '../../lib/api/reviews/reviews';
 import CommentField from '../CommentField';
@@ -13,7 +13,10 @@ type CommentEditorProps = {
     /** Relevant id of the review that the comment is on */
     reviewId: string;
     /** The anchor of the comment in the filename  */
-    location?: number;
+    range?: {
+        start: number;
+        end: number;
+    };
     /** Whether the comment is on a particular filename */
     filename?: string;
     /** Function invoked when closing the comment editor or a successful submission occurs */
@@ -63,7 +66,7 @@ export default function CommentEditor({
     onClose,
     autoFocus = true,
     uncancelable,
-    location,
+    range,
     sx,
     ...rest
 }: CommentEditorProps): ReactElement {
@@ -107,13 +110,13 @@ export default function CommentEditor({
                 filename,
                 contents: value,
                 ...(rest.type === 'reply' && { replying: rest.commentId }),
-                ...(typeof location !== 'undefined' && { anchor: { start: location + 1, end: location + 2 } }),
+                ...(typeof range !== 'undefined' && { anchor: { start: range.start + 1, end: range.end + 2 } }),
             },
         });
     };
 
     return (
-        <Box sx={{ width: '100%', ...sx }}>
+        <Box sx={{ width: '100%', ...sx }} onClick={(event) => event.stopPropagation()}>
             <CommentField contents={contents} autoFocus={autoFocus} onChange={setValue} />
             <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', pt: 1, pb: 1 }}>
                 {!uncancelable && (

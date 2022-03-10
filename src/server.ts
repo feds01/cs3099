@@ -61,11 +61,7 @@ function startServer() {
             `Server started on ${port}! (environment: ${process.env['NODE_ENV'] || 'dev'})`,
         );
         Logger.info('Attempting connection with MongoDB service');
-
-        // TODO(alex): Try to load the current federations configuration from disk, but if we don't
-        //             have it, then we make a request to the supergroup info endpoint at:
-        //             --> https://gbs3.host.cs.st-andrews.ac.uk/cs3099-journals.json
-
+        
         mongoose.connect(
             config.mongoURI,
             {

@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import React, { ReactElement } from 'react';
 import UserLink from '../../../components/UserLink';
 import MarkdownRenderer from '../../../components/MarkdownRenderer';
-import { usePublicationState } from '../../../hooks/publication';
+import { usePublicationState } from '../../../contexts/publication';
 
 export default function Overview(): ReactElement {
     const { publication } = usePublicationState();

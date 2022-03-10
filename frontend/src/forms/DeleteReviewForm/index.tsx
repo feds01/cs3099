@@ -1,5 +1,5 @@
 import ConfirmationDialogue from '../../components/ConfirmationDialogue';
-import { useNotificationDispatch } from '../../hooks/notification';
+import { useNotificationDispatch } from '../../contexts/notification';
 import { useDeleteReviewId } from '../../lib/api/reviews/reviews';
 import Button from '@mui/material/Button';
 import { useEffect, useState } from 'react';

@@ -6,11 +6,12 @@ module.exports = {
             schemas: './frontend/src/lib/api/models',
             client: 'react-query',
             mock: true,
+            prettier: true,
+            clean: true,
             override: {
                 mutator: {
                     path: './frontend/src/lib/api/mutator/custom-instance.ts',
                     name: 'customInstance',
-                    // default: true
                 },
             },
         },

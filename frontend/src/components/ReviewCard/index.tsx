@@ -4,7 +4,7 @@ import { Review } from '../../lib/api/models';
 import UserLink from '../UserLink';
 import { ReactElement } from 'react';
 import { formatDistance } from 'date-fns';
-import { useAuth } from '../../hooks/auth';
+import { useAuth } from '../../contexts/auth';
 import { Box, CardContent, Typography, Chip, Button } from '@mui/material';
 import PublicationLink from '../PublicationLink';
 

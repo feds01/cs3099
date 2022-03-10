@@ -4,7 +4,7 @@ import qs from 'query-string';
 import Button from '@mui/material/Button';
 import { User } from '../../lib/api/models';
 import Typography from '@mui/material/Typography';
-import { useDispatchAuth } from '../../hooks/auth';
+import { useDispatchAuth } from '../../contexts/auth';
 import LoginForm from '../../forms/LoginForm';
 import LoginCover from './../../static/images/login.svg';
 import { Link, useHistory, useLocation } from 'react-router-dom';
