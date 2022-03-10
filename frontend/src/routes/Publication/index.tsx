@@ -4,8 +4,8 @@ import SkeletonList from '../../components/SkeletonList';
 import UserAvatar from '../../components/UserAvatar';
 import UserLink from '../../components/UserLink';
 import ExportDialog from '../../forms/ExportPublicationForm';
-import { useAuth } from '../../hooks/auth';
-import { PublicationProvider } from '../../hooks/publication';
+import { useAuth } from '../../contexts/auth';
+import { PublicationProvider } from '../../contexts/publication';
 import { GetPublicationUsernameName200 as PublicationResponse } from '../../lib/api/models';
 import { useGetPublicationUsernameName as useGetPublication } from '../../lib/api/publications/publications';
 import { computeUserPermission } from '../../lib/utils/roles';
@@ -25,7 +25,6 @@ import Divider from '@mui/material/Divider';
 import Skeleton from '@mui/material/Skeleton';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
-import assert from 'assert';
 import { formatDistance } from 'date-fns';
 import { ReactElement, useEffect, useState } from 'react';
 import { FiUsers } from 'react-icons/fi';
@@ -135,7 +134,11 @@ const TabMap = ({ viewSettings, reviewCount, collaboratorCount, isDraft }: TabMa
 function getCanonicalName(location: string, username: string, name: string): [string, string] {
     // essentially we want to split by the first `/username/name` chunk.
     const components = location.split(`/${username}/${name}`);
-    assert(typeof components[1] !== 'undefined');
+
+    if (typeof components[1] === 'undefined') {
+        throw new Error("Invalid path in canonical name")
+    }
+
     const component = components[1];
 
     // Now check if the current path has a revision, we also have to account

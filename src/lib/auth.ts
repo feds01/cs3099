@@ -28,7 +28,7 @@ export interface TokenData {
 }
 
 export class JwtError extends Error {
-    constructor(readonly type: 'expired' | 'unknown', readonly inner: Error) {
+    constructor(readonly type: 'expired' | 'unknown', readonly inner?: Error) {
         super();
     }
 }
@@ -40,18 +40,24 @@ export class JwtError extends Error {
  * @returns The token payload if the token is valid, throws an error if the token is invalid.
  */
 export async function verifyToken(token: string, secret: string): Promise<TokenData> {
-    return await new Promise((resolve, reject) => jwt.verify(token, secret, {}, (err, payload) => {
-            if (err) {
-                if (err.name === 'TokenExpiredError') {
-                    return reject(new JwtError('expired', err));
-                }
-                return reject(new JwtError('unknown', err));
-            }
+    try {
+        const payload = jwt.verify(token, secret, {});
+        assert(typeof payload !== 'undefined' && typeof payload !== 'string');
 
-            // If there was no error, it shouldn't be undefined.
-            assert(typeof payload !== 'undefined' && typeof payload !== 'string');
-            return resolve(payload.data);
-        }));
+        return payload.data;
+    } catch (err: unknown) {
+        if (err instanceof TokenExpiredError) {
+            throw new JwtError('expired', err);
+        }
+
+        if (err instanceof Error) {
+            throw new JwtError('unknown', err);
+        }
+
+        // We don't know what the thrown object is, but it shouldn't get here anyway
+        // as this should always be an error...
+        throw new JwtError('unknown');
+    }
 }
 
 /**

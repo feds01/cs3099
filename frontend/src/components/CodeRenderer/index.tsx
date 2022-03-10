@@ -3,26 +3,11 @@ import { CommentThread } from '../../lib/utils/comment';
 import { coerceExtensionToLanguage, getExtension } from '../../lib/utils/file';
 import CommentButton from '../CommentButton';
 import CommentThreadRenderer from '../CommentThreadRenderer';
+import Highlight from './PrismRenderer';
 import { styled } from '@mui/material';
 import Box from '@mui/material/Box/Box';
-import Highlight, { Language, Prism as PrismRR } from 'prism-react-renderer';
-import theme from 'prism-react-renderer/themes/github';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-clike';
-import 'prismjs/components/prism-haskell';
-import 'prismjs/components/prism-java';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-jsx';
-import 'prismjs/components/prism-markdown';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-rust';
-import 'prismjs/components/prism-tsx';
-// We have to essentially pre-load all of the languages
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-v';
 import React, { ReactElement } from 'react';
-
-type PrismLib = typeof PrismRR & typeof Prism;
+import { useSelectionState } from '../../contexts/selection';
 
 export const Wrapper = styled('div')`
     font-family: sans-serif;
@@ -65,6 +50,7 @@ interface CodeRendererProps {
     commentMap?: Map<number, CommentThread[]>;
     lineNumbers?: boolean;
     lineOffset?: number;
+    worker?: Worker;
 }
 
 export default function CodeRenderer({
@@ -75,25 +61,22 @@ export default function CodeRenderer({
     language,
     lineNumbers = true,
     lineOffset = 0,
+    worker,
 }: CodeRendererProps): ReactElement {
     const extension = coerceExtensionToLanguage(getExtension(filename) ?? language ?? '');
+    const selectionState = useSelectionState();
 
     return (
-        <Highlight
-            Prism={Prism as PrismLib}
-            theme={theme}
-            code={contents}
-            language={extension as unknown as Language} // @@Hack: this fucking library defined their own lang types..
-        >
-            {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                <Pre className={className} style={style}>
+        <Highlight code={contents} language={extension ?? 'text'} worker={worker}>
+            {({ style, tokens, getLineProps, getTokenProps }) => (
+                <Pre style={style}>
                     {tokens.map((line, i) => (
                         <React.Fragment key={i}>
                             {typeof review !== 'undefined' && review.status === 'started' ? (
                                 <CommentButton key={i} review={review} location={i} filename={filename}>
                                     <Line {...getLineProps({ line })}>
                                         {lineNumbers && <LineNo>{i + 1 + lineOffset}</LineNo>}
-                                        <LineContent>
+                                        <LineContent sx={{userSelect: selectionState.isDragging ? "none" : "auto"}}>
                                             {line.map((token, key) => (
                                                 <span key={key} {...getTokenProps({ token, key })} />
                                             ))}

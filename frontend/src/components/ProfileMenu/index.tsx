@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
-import { useAuth, useDispatchAuth } from '../../hooks/auth';
+import { useAuth, useDispatchAuth } from '../../contexts/auth';
 
 export interface IProfileMenu {
     anchor: HTMLElement | null;

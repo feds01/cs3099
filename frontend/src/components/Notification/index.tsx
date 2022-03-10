@@ -13,7 +13,7 @@ import {
     Notification,
     useNotificationDispatch,
     NotificationSeverity,
-} from '../../hooks/notification';
+} from '../../contexts/notification';
 
 function NotificationIcon({ type }: { type: NotificationSeverity }): ReactElement {
     switch (type) {

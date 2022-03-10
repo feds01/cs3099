@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import qs from 'query-string';
 import { useHistory, useLocation } from 'react-router-dom';
-import { useDispatchAuth } from '../../hooks/auth';
+import { useDispatchAuth } from '../../contexts/auth';
 import { ReactElement, useEffect, useState } from 'react';
 import { usePostAuthSession } from '../../lib/api/auth/auth';
 

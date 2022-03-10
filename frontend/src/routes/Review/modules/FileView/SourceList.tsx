@@ -1,9 +1,14 @@
 import CommentThreadRenderer from '../../../../components/CommentThreadRenderer';
 import FileViewer from '../../../../components/FileViewer';
-import { useReviewState } from '../../../../hooks/review';
+import { useReviewState } from '../../../../contexts/review';
+import { SelectionProvider } from '../../../../contexts/selection';
 import { FileResponse } from '../../../../lib/api/models';
-import { CommentThread, extractGeneralCommentsFromThreads, sortCommentsIntoFileMap, sortCommentsIntoThreads } from '../../../../lib/utils/comment';
-
+import {
+    CommentThread,
+    extractGeneralCommentsFromThreads,
+    sortCommentsIntoFileMap,
+    sortCommentsIntoThreads,
+} from '../../../../lib/utils/comment';
 import Box from '@mui/material/Box';
 import { useEffect, useState } from 'react';
 
@@ -24,23 +29,42 @@ export default function SourceList({ entries }: CodeSourceListProps) {
         setGeneralComments(extractGeneralCommentsFromThreads(commentThreads));
     }, [comments]);
 
+    // This is a reference to the web worker that will be used
+    const [worker] = useState<Worker | undefined>(() => {
+        // Return a worker instance only if the browser supports workers...
+        if (window.Worker) {
+            return new Worker(new URL('./../../../../worker/highlight.worker.ts', import.meta.url));
+        } else {
+            return undefined;
+        }
+    });
+
+    useEffect(() => {
+        return () => {
+            worker?.terminate();
+        };
+    }, []);
+
     return (
         <Box>
-            {entries.map((entry, index) => {
-                const fileComments = fileCommentMap.get(entry.filename);
+            <SelectionProvider>
+                {entries.map((entry, index) => {
+                    const fileComments = fileCommentMap.get(entry.filename);
 
-                return (
-                    <Box key={entry.filename} sx={{ pb: 0.5, pt: index === 0 ? 1 : 0.5 }}>
-                        <FileViewer
-                            review={review}
-                            id={`file-${index}`}
-                            filename={entry.filename}
-                            contents={entry.contents}
-                            threads={fileComments}
-                        />
-                    </Box>
-                );
-            })}
+                    return (
+                        <Box key={entry.filename} sx={{ pb: 0.5, pt: index === 0 ? 1 : 0.5 }}>
+                            <FileViewer
+                                worker={worker}
+                                review={review}
+                                id={`file-${index}`}
+                                filename={entry.filename}
+                                contents={entry.contents}
+                                threads={fileComments}
+                            />
+                        </Box>
+                    );
+                })}
+            </SelectionProvider>
             <Box>
                 {generalComments.map((thread) => {
                     return <CommentThreadRenderer thread={thread} key={thread.id} />;

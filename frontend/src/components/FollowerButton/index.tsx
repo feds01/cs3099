@@ -1,5 +1,5 @@
-import { useAuth } from '../../hooks/auth';
-import { useNotificationDispatch } from '../../hooks/notification';
+import { useAuth } from '../../contexts/auth';
+import { useNotificationDispatch } from '../../contexts/notification';
 import { useGetUserUsernameFollow } from '../../lib/api/followers/followers';
 import { deleteUserUsernameFollow, postUserUsernameFollow } from '../../lib/api/users/users';
 import { ContentState } from '../../types/requests';

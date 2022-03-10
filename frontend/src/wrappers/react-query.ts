@@ -1,5 +1,4 @@
 import { ContentState } from '../types/requests';
-import assert from 'assert';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 
 /**
@@ -14,7 +13,6 @@ export function transformQueryIntoContentState<T, E>(query: UseQueryResult<T, E>
     } else if (query.data && query.status === 'success') {
         // It cannot be that the data doesn't exist here as we have checked that it is neither
         // an error nor is loading, thus the data on the type must exist!
-        assert.strict(query.data);
         return { state: 'ok', data: query.data };
     }
 
@@ -35,7 +33,6 @@ export function transformMutationIntoContentState<T, E, V, Ctx>(
     } else if (query.data && query.status === 'success') {
         // It cannot be that the data doesn't exist here as we have checked that it is neither
         // an error nor is loading, thus the data on the type must exist!
-        assert.strict(query.data);
         return { state: 'ok', data: query.data };
     }
 

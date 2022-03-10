@@ -1,5 +1,5 @@
 import Box from '@mui/material/Box';
-import { useAuth } from '../../../hooks/auth';
+import { useAuth } from '../../../contexts/auth';
 import { useLocation } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import Void from './../../../static/images/void.svg';
@@ -9,7 +9,7 @@ import UploadAttachment from '../../../views/UploadAttachment';
 import { ResourceResponseResponse } from '../../../lib/api/models';
 import PublicationViewSource from '../../../components/PublicationSourceView';
 import { transformQueryIntoContentState } from '../../../wrappers/react-query';
-import { usePublicationState, usePublicationDispatch } from '../../../hooks/publication';
+import { usePublicationState, usePublicationDispatch } from '../../../contexts/publication';
 import { useGetPublicationUsernameNameTreePath as useGetPublicationSource } from '../../../lib/api/publications/publications';
 
 export default function Source(): ReactElement {
