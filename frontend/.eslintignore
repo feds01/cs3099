@@ -1,0 +1,3 @@
+# Since this is a copy of the library file to patch it, we don't want to lint it because 
+# this isn't our responsibility (yes the code in the library is fucking garbage!)
+src/lib/prismjs/index.js

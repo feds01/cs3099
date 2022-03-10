@@ -1,7 +1,7 @@
 import ControlledTextField from '../../components/ControlledTextField';
 import FieldLabel from '../../components/FieldLabel';
-import { useDispatchAuth } from '../../hooks/auth';
-import { useNotificationDispatch } from '../../hooks/notification';
+import { useDispatchAuth } from '../../contexts/auth';
+import { useNotificationDispatch } from '../../contexts/notification';
 import { User } from '../../lib/api/models';
 import { usePatchUserUsername } from '../../lib/api/users/users';
 import { AccountUpdate, AccountUpdateSchema } from '../../validators/updateAccount';

@@ -1,10 +1,10 @@
 import ConfirmationDialogue from '../../components/ConfirmationDialogue';
-import { useNotificationDispatch } from '../../hooks/notification';
+import { useNotificationDispatch } from '../../contexts/notification';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { useEffect, useState } from 'react';
 import { useDeleteUserUsername } from '../../lib/api/users/users';
-import { useDispatchAuth } from '../../hooks/auth';
+import { useDispatchAuth } from '../../contexts/auth';
 
 type DeleteUserAccountFormProps = {
     username: string;

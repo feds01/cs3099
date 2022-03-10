@@ -1,5 +1,5 @@
-import { useAuth } from '../../hooks/auth';
-import { useReviewState } from '../../hooks/review';
+import { useAuth } from '../../contexts/auth';
+import { useReviewState } from '../../contexts/review';
 import { CommentAnchor } from '../../lib/api/models';
 import { CommentThread } from '../../lib/utils/comment';
 import CodeRenderer from '../CodeRenderer';
@@ -72,8 +72,19 @@ export default function CommentThreadRenderer({ contents, thread }: CommentThrea
     return (
         <Card variant="outlined" sx={{ maxWidth: 800 }}>
             {typeof contents !== 'undefined' &&
-                typeof thread.file !== 'undefined' &&
-                renderInlineSources(thread.file, contents, thread.anchor)}
+                typeof thread.filename !== 'undefined' &&
+                renderInlineSources(thread.filename, contents, thread.anchor)}
+            {typeof contents === 'undefined' &&
+                typeof thread.anchor !== 'undefined' &&
+                thread.anchor.end - thread.anchor.start > 1 && (
+                    <Box>
+                        <Typography variant={'caption'} sx={{ ml: 1, color: 'grey !important' }}>
+                            Comment on lines <span style={{ fontWeight: 'bold' }}>{thread.anchor.start}</span> to{' '}
+                            <span style={{ fontWeight: 'bold' }}>{thread.anchor.end - 1}</span>
+                        </Typography>
+                        <Divider />
+                    </Box>
+                )}
             <CardContent>
                 {thread.comments.map((comment) => {
                     return (

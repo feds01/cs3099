@@ -1,5 +1,5 @@
-import { useNotificationDispatch } from '../../hooks/notification';
-import { useReviewDispatch, useReviewState } from '../../hooks/review';
+import { useNotificationDispatch } from '../../contexts/notification';
+import { useReviewDispatch, useReviewState } from '../../contexts/review';
 import { useDeleteCommentId } from '../../lib/api/comments/comments';
 import { Comment } from '../../lib/api/models';
 import CommentEditor from '../CommentEditor';
@@ -15,7 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import { format } from 'date-fns';
 import React, { ReactElement, useEffect, useState } from 'react';
-import { useAuth } from '../../hooks/auth';
+import { useAuth } from '../../contexts/auth';
 import { Permission, computeUserPermission } from '../../lib/utils/roles';
 
 interface CommentCardProps {

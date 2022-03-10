@@ -86,9 +86,10 @@ type FileViewerProps = {
     language?: string;
     review: Review;
     threads?: CommentThread[];
+    worker?: Worker;
 };
 
-export default function FileViewer({ contents, filename, id, review, threads, language }: FileViewerProps) {
+export default function FileViewer({ contents, filename, id, review, threads, worker, language }: FileViewerProps) {
     const [expanded, setExpanded] = useState<boolean>(true);
     const [renderSources, setRenderSources] = useState<boolean>(shouldRenderByDefault(contents));
 
@@ -131,22 +132,18 @@ export default function FileViewer({ contents, filename, id, review, threads, la
             const newMap = new Map<number, CommentThread[]>();
             const collectedFileComments: CommentThread[] = [];
 
-            // TODO: support anchors...
             threads.forEach((thread) => {
                 // Essentially, if no anchor is present on the comment, we put it on the file comments
                 if (typeof thread.anchor === 'undefined') {
                     collectedFileComments.push(thread);
                 } else {
-                    const start = thread.anchor.start;
+                    const insertionIndex = thread.anchor.end - 1;
 
-                    if (newMap.has(start)) {
-                        let originalArr = newMap.get(start)!;
-                        // let insertionIndex = sortedIndexBy(originalArr, thread, (c) => c.updatedAt);
-                        // Safety: We mutate the original array so it should still live in the map.
-                        // originalArr.splice(insertionIndex, 0, thread);
+                    if (newMap.has(insertionIndex)) {
+                        let originalArr = newMap.get(insertionIndex)!;
                         originalArr.push(thread);
                     } else {
-                        newMap.set(thread.anchor.start, [thread]);
+                        newMap.set(insertionIndex, [thread]);
                     }
                 }
             });
@@ -181,7 +178,7 @@ export default function FileViewer({ contents, filename, id, review, threads, la
                 </AccordionSummary>
                 <AccordionDetails>
                     {renderSources ? (
-                        <CodeRenderer contents={contents} filename={filename} commentMap={commentMap} review={review} />
+                        <CodeRenderer worker={worker} contents={contents} filename={filename} commentMap={commentMap} review={review} />
                     ) : (
                         <>
                             <FileSkeleton sx={{ p: 1, zIndex: 10, width: '100%' }} />

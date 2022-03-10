@@ -1,6 +1,6 @@
 import CommentField from '../../../components/CommentField';
-import { useNotificationDispatch } from '../../../hooks/notification';
-import { useReviewState, useReviewDispatch } from '../../../hooks/review';
+import { useNotificationDispatch } from '../../../contexts/notification';
+import { useReviewState, useReviewDispatch } from '../../../contexts/review';
 import { usePutReviewIdComment } from '../../../lib/api/reviews/reviews';
 
 import LoadingButton from '@mui/lab/LoadingButton';

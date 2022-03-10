@@ -1,7 +1,7 @@
 import * as LangIcons from 'react-icons/si';
 import { IconType } from 'react-icons/lib';
 import { RiHashtag } from 'react-icons/ri';
-import { Language } from 'prism-react-renderer';
+import { Language } from '../../types/renderer';
 
 export function getExtension(path: string): string | null {
     const components = path.split('.');

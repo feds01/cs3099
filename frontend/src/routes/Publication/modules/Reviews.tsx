@@ -5,9 +5,9 @@ import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import { ReactElement, useEffect } from 'react';
 import PublicationReviews from '../../../views/PublicationReviews';
-import { useNotificationDispatch } from '../../../hooks/notification';
+import { useNotificationDispatch } from '../../../contexts/notification';
 import { usePostPublicationUsernameNameRevisionReview as useCreateReview } from '../../../lib/api/reviews/reviews';
-import { usePublicationState } from '../../../hooks/publication';
+import { usePublicationState } from '../../../contexts/publication';
 
 export default function Reviews(): ReactElement {
     const history = useHistory();

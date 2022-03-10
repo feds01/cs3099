@@ -131,9 +131,6 @@ export async function createArchive(archive: ArchiveIndex | string, filePath: st
     if (!zip) throw new Error("Couldn't load archive");
 
     const base = getPathBase(filePath);
-
-    // TODO: assert here that the path to the resource is an actual file and has an acceptable
-    // mime-type to be zipped.
     const buf = await fs.readFile(filePath);
     const savePath = typeof archive === 'string' ? archive : archiveIndexToPath(archive);
 

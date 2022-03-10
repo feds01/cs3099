@@ -1,5 +1,5 @@
 import { ReactElement } from 'react';
-import { useRawAuth } from '../../hooks/auth';
+import { useRawAuth } from '../../contexts/auth';
 import { Route, Redirect, RouteProps } from 'react-router-dom';
 
 export default function PrivateRoute({ component: C, ...rest }: RouteProps): ReactElement {

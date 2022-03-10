@@ -1,6 +1,6 @@
 import DeletePublicationForm from '../../../forms/DeletePublicationForm';
 import EditPublicationForm from '../../../forms/UpdatePublicationForm';
-import { usePublicationState } from '../../../hooks/publication';
+import { usePublicationState } from '../../../contexts/publication';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';

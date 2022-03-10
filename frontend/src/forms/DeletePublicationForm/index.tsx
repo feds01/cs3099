@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import { useHistory } from 'react-router';
 import React, { useEffect, useState } from 'react';
 import { Publication } from '../../lib/api/models';
-import { useNotificationDispatch } from '../../hooks/notification';
+import { useNotificationDispatch } from '../../contexts/notification';
 import ConfirmationDialogue from '../../components/ConfirmationDialogue';
 import { useDeletePublicationUsernameName } from '../../lib/api/publications/publications';
 

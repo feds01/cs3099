@@ -36,6 +36,16 @@ app.use(fileUpload({
     useTempFiles: true,
     tempFileDir: path.join(__dirname, '..', 'tmp'),
     createParentPath: true,
+    limits: {
+        fileSize: 1024 * 1024 * 10,
+    },
+    limitHandler: (_, res) => {
+        res.sendStatus(413).json({
+            status: "error",
+            message: "The file sent is too large; limit is 10MiB.",
+            errors: {}
+        })
+    }
 }));
 
 // Setup express middleware

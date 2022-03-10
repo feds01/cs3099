@@ -3,7 +3,7 @@ import Container from '@mui/material/Container';
 import PageLayout from '../../components/PageLayout';
 import { Box, Button, Divider, Typography } from '@mui/material';
 import Publications from '../../views/Publications';
-import { useAuth } from '../../hooks/auth';
+import { useAuth } from '../../contexts/auth';
 import Reviews from '../../views/Reviews';
 
 interface Props {}

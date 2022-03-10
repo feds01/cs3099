@@ -38,6 +38,7 @@ export default function UserAvatar({
                 alt={username}
                 {...(size && { sx: { width: size, height: size } })}
                 {...(profilePictureUrl && { src: profilePictureUrl })}
+                imgProps={{crossOrigin: "anonymous"}}
             >
                 <Typography {...(size && { sx: { fontSize: size / 2 } })}>{initials}</Typography>
             </Avatar>

@@ -1,4 +1,4 @@
-import { useAuth } from '../../hooks/auth';
+import { useAuth } from '../../contexts/auth';
 import ProfileMenu from '../ProfileMenu';
 import SearchBar from '../SearchBar';
 import UserAvatar from '../UserAvatar';

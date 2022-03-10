@@ -1,6 +1,6 @@
 import ControlledTextField from '../../components/ControlledTextField';
 import FieldLabel from '../../components/FieldLabel';
-import { usePublicationState } from '../../hooks/publication';
+import { usePublicationState } from '../../contexts/publication';
 import { usePostPublicationUsernameNameRevise } from '../../lib/api/publications/publications';
 import { IRevisePublication, RevisePublicationSchema } from '../../validators/publication';
 import { zodResolver } from '@hookform/resolvers/zod';

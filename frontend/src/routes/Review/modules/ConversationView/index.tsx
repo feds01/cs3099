@@ -2,7 +2,7 @@ import CommentEditor from '../../../../components/CommentEditor';
 import CommentThreadRenderer from '../../../../components/CommentThreadRenderer';
 import PublicationLink from '../../../../components/PublicationLink';
 import UserLink from '../../../../components/UserLink';
-import { useReviewDispatch, useReviewState } from '../../../../hooks/review';
+import { useReviewDispatch, useReviewState } from '../../../../contexts/review';
 import { getPublicationUsernameNameTreePath } from '../../../../lib/api/publications/publications';
 import {
     CommentThread,
