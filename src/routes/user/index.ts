@@ -4,15 +4,16 @@ import { z } from 'zod';
 
 import * as error from '../../common/errors';
 import * as userUtils from './../../utils/users';
-import { deleteFileResource } from '../../lib/fs';
-import { verifyUserPermission } from '../../lib/permissions';
-import registerRoute from '../../lib/requests';
+import { verifyUserPermission } from '../../lib/communication/permissions';
+import registerRoute from '../../lib/communication/requests';
+import { deleteFileResource } from '../../lib/resources/fs';
 import Follower from '../../models/Follower';
 import User, { IUserRole } from '../../models/User';
 import { ResponseErrorSummary } from '../../transformers/error';
 import { joinPathsForResource } from '../../utils/resources';
 import { ModeSchema } from '../../validators/requests';
 import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
+import activityRouter from './activity';
 import followerRouter from './followers';
 import reviewRouter from './reviews';
 
@@ -20,6 +21,7 @@ const router = express.Router();
 
 router.use('/', followerRouter);
 router.use('/', reviewRouter);
+router.use('/', activityRouter);
 
 /**
  * @version v1.0.0

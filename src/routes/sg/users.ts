@@ -2,7 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 
 import * as errors from '../../common/errors';
-import registerRoute from '../../lib/requests';
+import registerRoute from '../../lib/communication/requests';
 import User from '../../models/User';
 import { config } from '../../server';
 import { convertSgId } from '../../transformers/sg';

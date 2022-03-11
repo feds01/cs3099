@@ -1,7 +1,7 @@
 import { constants, promises as fs } from 'fs';
 import path from 'path';
 
-import Logger from '../common/logger';
+import Logger from '../../common/logger';
 
 /**
  * Wrapper function to check if a resource with a given path exists in the resource folder.

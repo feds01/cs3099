@@ -1,12 +1,14 @@
 import express from 'express';
 import { ZodError, z } from 'zod';
 
-import * as errors from '../common/errors';
-import Logger from '../common/logger';
-import { IUserDocument } from '../models/User';
-import { transformZodErrorIntoResponseError } from '../transformers/error';
-import { expr } from '../utils/expr';
-import { getTokensFromHeader } from './auth';
+import * as errors from '../../common/errors';
+import Logger from '../../common/logger';
+import { IUserDocument } from '../../models/User';
+import { transformZodErrorIntoResponseError } from '../../transformers/error';
+import { expr } from '../../utils/expr';
+import ActivityRecord, { ActivityType } from '../activity';
+import { ActivityMetadataTransformer, defaultActivityMetadataFn } from '../activity/transformer';
+import { getTokensFromHeader } from '../auth/auth';
 import {
     Permission,
     PermissionVerificationFn,
@@ -40,12 +42,13 @@ type RegisterRoute<
 > = {
     method: Method;
     permission: RoutePermission;
-    sgMode?: boolean;
+    activity?: ActivityType;
     // @@Cleanup: Since permission verification doesn't actually use the body for any
     //            verification at the moment, we don't actually include in the verification
     //            of the permissions. This could be a limitation in the future, but it is hard
     //            to reason about whether it is null or not a given point,
     permissionVerification?: PermissionVerificationFn<Params, Query>;
+    activityMetadataFn?: ActivityMetadataTransformer<Params, Query, Body | null>;
     params: z.Schema<Params, z.ZodTypeDef, Record<string, any>>;
     query: z.Schema<Query, z.ZodTypeDef, Record<string, any>>;
     handler: (
@@ -147,6 +150,27 @@ export default function registerRoute<
                 );
             }
 
+            // Here we pass the parameters of the request in order to determine whether we can record
+            // a particular event, if the function returns the id of the activity, we know that the
+            // server has recorded an activity and it could be marked as valid, or otherwise it will
+            // be deleted in the event of the request being invalid
+            const activity = expr(() => {
+                if (typeof registrar.activity !== 'undefined') {
+                    return new ActivityRecord(
+                        registrar.activity,
+                        basicRequest,
+                        permissions?.user || null,
+                        typeof registrar.activityMetadataFn !== 'undefined'
+                            ? registrar.activityMetadataFn
+                            : defaultActivityMetadataFn,
+                    );
+                } else {
+                    return null;
+                }
+            });
+
+            await activity?.begin();
+
             const result = await registrar.handler({
                 ...basicRequest,
                 // @@Cleanup: would be nice if we could get rid of this!
@@ -155,7 +179,7 @@ export default function registerRoute<
                 requester: permissions?.user ?? null,
             });
 
-            return handleResponse(res, result);
+            return await handleResponse(res, result, activity);
         } catch (e: unknown) {
             if (e instanceof ZodError) {
                 res.status(400).json({
@@ -213,13 +237,3 @@ export default function registerRoute<
             throw new Error('Unreachable');
     }
 }
-
-type Dictionary = Record<string, string>;
-export const GROUP_URI_MAP: Dictionary = {
-    t06: 'https://cs3099user06.host.cs.st-andrews.ac.uk/',
-    t12: 'https://cs3099user12.host.cs.st-andrews.ac.uk/',
-    t15: 'https://cs3099user15.host.cs.st-andrews.ac.uk/',
-    t21: 'https://cs3099user21.host.cs.st-andrews.ac.uk/',
-    t24: 'https://cs3099user24.host.cs.st-andrews.ac.uk/',
-    t27: 'https://cs3099user27.host.cs.st-andrews.ac.uk/',
-};

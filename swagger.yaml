@@ -30,6 +30,8 @@ tags:
       description: Endpoints related to managing uploaded resources.
     - name: search
       description: Endpoints related to searching content on the platform.
+    - name: activity
+      description: Endpoints relating to activity information.
 paths:
     /version:
         get:
@@ -37,7 +39,7 @@ paths:
             description: Get the current version of the service
             tags:
                 - api
-            responses:  
+            responses:
                 '200':
                     description: The API Version
                     content:
@@ -52,14 +54,14 @@ paths:
                                         $ref: '#/components/schemas/SuccessStatus'
                                     version:
                                         type: string
-                                        example: "1.0.0"
+                                        example: '1.0.0'
     /openapi:
         get:
             summary: Service OpenAPI schema
             description: Get the current service OpenAPI schema
             tags:
                 - api
-            responses:  
+            responses:
                 '200':
                     description: The API Schema
                     content:
@@ -73,7 +75,7 @@ paths:
                                     status:
                                         $ref: '#/components/schemas/SuccessStatus'
                                     schema:
-                                        type: object      
+                                        type: object
     /sg/sso/login:
         get:
             summary: External login endpoint
@@ -719,13 +721,13 @@ paths:
                 - in: query
                   name: skip
                   schema:
-                    $ref: '#/components/schemas/SkipQuery'
-                  description: If the query should skip ahead a number of documents 
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
                 - in: query
                   name: take
                   schema:
-                    $ref: '#/components/schemas/TakeQuery'
-                  description: The number of items the query should take 
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
             responses:
                 '200':
                     $ref: '#/components/responses/FollowerList'
@@ -749,16 +751,71 @@ paths:
                 - in: query
                   name: skip
                   schema:
-                    $ref: '#/components/schemas/SkipQuery'
-                  description: If the query should skip ahead a number of documents 
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
                 - in: query
                   name: take
                   schema:
-                    $ref: '#/components/schemas/TakeQuery'
-                  description: The number of items the query should take 
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
             responses:
                 '200':
                     $ref: '#/components/responses/FollowerList'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /user/{username}/feed:
+        get:
+            summary: List activities for a given user
+            description: Get a paginated list of activities for a particular user=
+            tags:
+                - activity
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true 
+                  description: Username.
+                - in: query
+                  name: skip
+                  schema:
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
+                - in: query
+                  name: take
+                  schema:
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - activities
+                                    - take
+                                    - skip
+                                    - total
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    activities:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Activity'
+                                    skip:
+                                        $ref: '#/components/schemas/SkipQuery'
+                                    take:
+                                        $ref: '#/components/schemas/TakeQuery'
+                                    total:
+                                        type: number
+                                        example: 12
+
                 default:
                     $ref: '#/components/responses/ApiError'
     /publication:
@@ -792,13 +849,13 @@ paths:
                 - in: query
                   name: skip
                   schema:
-                    $ref: '#/components/schemas/SkipQuery'
-                  description: If the query should skip ahead a number of documents 
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
                 - in: query
                   name: take
                   schema:
-                    $ref: '#/components/schemas/TakeQuery'
-                  description: The number of items the query should take 
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
             responses:
                 '200':
                     description: Returns a paginated list of publications.
@@ -826,10 +883,9 @@ paths:
                                     total:
                                         type: number
                                         example: 12
-                    
+
                 default:
                     $ref: '#/components/responses/ApiError'
-
     /publication/{username}/{name}:
         delete:
             summary: Delete a publication
@@ -975,13 +1031,13 @@ paths:
                 - in: query
                   name: skip
                   schema:
-                    $ref: '#/components/schemas/SkipQuery'
-                  description: If the query should skip ahead a number of documents 
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
                 - in: query
                   name: take
                   schema:
-                    $ref: '#/components/schemas/TakeQuery'
-                  description: The number of items the query should take 
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
             responses:
                 '200':
                     description: Returns the requested publications.
@@ -1000,7 +1056,7 @@ paths:
                                         items:
                                             $ref: '#/components/schemas/Publication'
                 default:
-                    $ref: '#/components/responses/ApiError'            
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/export:
         post:
             summary: Export a publication
@@ -1102,13 +1158,13 @@ paths:
                 - in: query
                   name: skip
                   schema:
-                    $ref: '#/components/schemas/SkipQuery'
-                  description: If the query should skip ahead a number of documents 
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
                 - in: query
                   name: take
                   schema:
-                    $ref: '#/components/schemas/TakeQuery'
-                  description: The number of items the query should take 
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
             responses:
                 '200':
                     description: Returns the requested publications.
@@ -1285,13 +1341,13 @@ paths:
                 - in: query
                   name: skip
                   schema:
-                    $ref: '#/components/schemas/SkipQuery'
-                  description: If the query should skip ahead a number of documents 
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
                 - in: query
                   name: take
                   schema:
-                    $ref: '#/components/schemas/TakeQuery'
-                  description: The number of items the query should take 
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
             responses:
                 '200':
                     description: Returns the requested publications.
@@ -1699,13 +1755,13 @@ paths:
                 - in: query
                   name: skip
                   schema:
-                    $ref: '#/components/schemas/SkipQuery'
-                  description: If the query should skip ahead a number of documents 
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
                 - in: query
                   name: take
                   schema:
-                    $ref: '#/components/schemas/TakeQuery'
-                  description: The number of items the query should take 
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
             responses:
                 '200':
                     description: OK
@@ -1751,13 +1807,13 @@ paths:
                 - in: query
                   name: skip
                   schema:
-                    $ref: '#/components/schemas/SkipQuery'
-                  description: If the query should skip ahead a number of documents 
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
                 - in: query
                   name: take
                   schema:
-                    $ref: '#/components/schemas/TakeQuery'
-                  description: The number of items the query should take 
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
             responses:
                 '200':
                     description: OK
@@ -1785,6 +1841,38 @@ paths:
                                     total:
                                         type: number
                                         example: 12
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /activity/{id}:
+        get:
+            summary: Activity by ID
+            description: Get an activity by ID
+            tags:
+                - activity
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: The ID of the activity.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - activity
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    activity:
+                                        $ref: '#/components/schemas/Activity'
                 default:
                     $ref: '#/components/responses/ApiError'
 components:
@@ -2003,7 +2091,80 @@ components:
             example: 50
             minimum: 1
             maximum: 200
-
+        Activity:
+            type: object
+            required:
+                - message
+                - references
+                - id
+                - owner
+            properties:
+                id:
+                    type: string
+                    example: '507f1f77bcf86cd799439011'
+                owner:
+                    $ref: '#/components/schemas/User'
+                message:
+                    type: string
+                    example: "<1> created a publication <2> with title 'x'"
+                references:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ActivityReference'
+        ActivityReference:
+            oneOf:
+                - $ref: '#/components/schemas/PublicationActivity'
+                - $ref: '#/components/schemas/UserActivity'
+                - $ref: '#/components/schemas/CommentActivity'
+                - $ref: '#/components/schemas/ReviewActivity'
+        PublicationActivity:
+            type: object
+            required:
+                - type
+                - document
+            properties:
+                type:
+                    type: string
+                    enum: ['publication']
+                    example: 'publication'
+                document:
+                    $ref: '#/components/schemas/Publication'
+        UserActivity:
+            type: object
+            required:
+                - type
+                - document
+            properties:
+                type:
+                    type: string
+                    enum: ['user']
+                    example: 'user'
+                document:
+                    $ref: '#/components/schemas/User'
+        CommentActivity:
+            type: object
+            required:
+                - type
+                - document
+            properties:
+                type:
+                    type: string
+                    enum: ['comment']
+                    example: 'comment'
+                document:
+                    $ref: '#/components/schemas/Comment'
+        ReviewActivity:
+            type: object
+            required:
+                - type
+                - document
+            properties:
+                type:
+                    type: string
+                    enum: ['review']
+                    example: 'review'
+                document:
+                    $ref: '#/components/schemas/Review'
         ResponseError:
             type: object
             required:

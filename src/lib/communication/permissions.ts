@@ -1,10 +1,10 @@
 import mongoose from 'mongoose';
 
-import * as errors from '../common/errors';
-import Comment from '../models/Comment';
-import Publication from '../models/Publication';
-import Review, { IReviewStatus } from '../models/Review';
-import User, { IUserDocument, IUserRole } from '../models/User';
+import * as errors from '../../common/errors';
+import Comment from '../../models/Comment';
+import Publication from '../../models/Publication';
+import Review, { IReviewStatus } from '../../models/Review';
+import User, { IUserDocument, IUserRole } from '../../models/User';
 import { BasicRequest } from './requests';
 
 export interface Permission {

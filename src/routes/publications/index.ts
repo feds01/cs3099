@@ -2,19 +2,19 @@ import assert from 'assert';
 import express from 'express';
 import { z } from 'zod';
 
-import * as zip from '../../lib/zip';
+import * as zip from '../../lib/resources/zip';
 import * as errors from './../../common/errors';
 import * as userUtils from './../../utils/users';
 import Logger from '../../common/logger';
-import { createTokens } from '../../lib/auth';
-import { makeRequest } from '../../lib/fetch';
-import { deleteResource, moveResource, resourceExists } from '../../lib/fs';
+import { createTokens } from '../../lib/auth/auth';
+import { makeRequest } from '../../lib/communication/fetch';
 import {
     compareUserRoles,
     verifyPublicationPermission,
     verifyUserPermission,
-} from '../../lib/permissions';
-import registerRoute from '../../lib/requests';
+} from '../../lib/communication/permissions';
+import registerRoute from '../../lib/communication/requests';
+import { deleteResource, moveResource, resourceExists } from '../../lib/resources/fs';
 import Publication, { AugmentedPublicationDocument } from '../../models/Publication';
 import { IUserRole } from '../../models/User';
 import { config } from '../../server';
@@ -382,7 +382,7 @@ registerRoute(router, '/:username', {
 /**
  * @version v1.0.0
  * @method GET
- * @url /api/publication/:id/revisions
+ * @url /api/publication/:username/:name/revisions
  * @example
  * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/507f1f77bcf86cd799439011
  *
@@ -827,7 +827,7 @@ registerRoute(router, '/:username/:name', {
 /**
  * @version v1.0.0
  * @method POST
- * @url /api/publication/:id/export
+ * @url /api/publication/:username/:name/export
  * @example
  * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/507f1f77bcf86cd799439011/export
  *

@@ -3,11 +3,11 @@ import { z } from 'zod';
 
 import * as errors from '../../common/errors';
 import Logger from '../../common/logger';
-import { downloadOctetStream, makeRequest } from '../../lib/fetch';
-import { moveResource } from '../../lib/fs';
-import { importUser } from '../../lib/import';
-import registerRoute from '../../lib/requests';
-import { archiveIndexToPath } from '../../lib/zip';
+import { downloadOctetStream, makeRequest } from '../../lib/communication/fetch';
+import { importUser } from '../../lib/communication/import';
+import registerRoute from '../../lib/communication/requests';
+import { moveResource } from '../../lib/resources/fs';
+import { archiveIndexToPath } from '../../lib/resources/zip';
 import Publication, { IPublication } from '../../models/Publication';
 import Review, { IReviewStatus, PopulatedReview } from '../../models/Review';
 import { IUser } from '../../models/User';

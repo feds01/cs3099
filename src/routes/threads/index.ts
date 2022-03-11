@@ -2,8 +2,8 @@ import express from 'express';
 import { z } from 'zod';
 
 import * as errors from '../../common/errors';
-import { verifyCommentThreadPermission } from '../../lib/permissions';
-import registerRoute from '../../lib/requests';
+import { verifyCommentThreadPermission } from '../../lib/communication/permissions';
+import registerRoute from '../../lib/communication/requests';
 import Comment from '../../models/Comment';
 import { IUserRole } from '../../models/User';
 import { ObjectIdSchema } from '../../validators/requests';

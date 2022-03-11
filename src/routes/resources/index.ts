@@ -3,11 +3,15 @@ import express from 'express';
 import { z } from 'zod';
 
 import * as errors from '../../common/errors';
-import * as zip from '../../lib/zip';
+import * as fs from '../../lib/resources/fs';
+import * as zip from '../../lib/resources/zip';
 import * as userUtils from '../../utils/users';
 import Logger from '../../common/logger';
-import { verifyPublicationIdPermission, verifyReviewPermission } from '../../lib/permissions';
-import registerRoute from '../../lib/requests';
+import {
+    verifyPublicationIdPermission,
+    verifyReviewPermission,
+} from '../../lib/communication/permissions';
+import registerRoute from '../../lib/communication/requests';
 import Publication from '../../models/Publication';
 import User, { IUserRole } from '../../models/User';
 import { config } from '../../server';
@@ -126,7 +130,13 @@ registerRoute(router, '/upload/publication/:id', {
         // Verify that the zip file isn't corrupted by loading it using the zip file
         // library. We will try to list the root entries of the archive to see if there
         // are any problems with the arhive
-        zip.getEntry(file.tempFilePath, '');
+        if (!zip.testArchive(file.tempFilePath)) {
+            return {
+                status: 'error',
+                code: 400,
+                message: 'Provided ZIP Archive is corrupt or malformed',
+            };
+        }
 
         const publication = await Publication.findById(req.params.id).exec();
 
@@ -138,21 +148,23 @@ registerRoute(router, '/upload/publication/:id', {
             };
         }
 
-        if (!publication.draft) {
+        let uploadPath = joinPathsForResource('publication', req.requester.id, publication.name);
+
+        // now we need to append the revision number if it actually exists...
+        if (req.query.revision && !publication.current) {
+            uploadPath = joinPathsRaw(uploadPath, req.query.revision, 'publication.zip');
+        } else {
+            uploadPath = joinPathsRaw(uploadPath, 'publication.zip');
+        }
+
+        // If for some reason, this archive does not have a publication source attached to it, we can allow
+        // an upload to occur...
+        if (!publication.draft && (await fs.resourceExists(uploadPath))) {
             return {
                 status: 'error',
                 code: 400,
                 message: "Cannot modify publication sources that aren't marked as draft.",
             };
-        }
-
-        let uploadPath = joinPathsForResource('publication', req.requester.id, publication.name);
-
-        // now we need to append the revision number if it actually exists...
-        if (req.query.revision) {
-            uploadPath = joinPathsRaw(uploadPath, req.query.revision, 'publication.zip');
-        } else {
-            uploadPath = joinPathsRaw(uploadPath, 'publication.zip');
         }
 
         // Move the file into it's appropriate storage location
