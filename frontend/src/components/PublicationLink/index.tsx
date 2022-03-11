@@ -2,14 +2,11 @@ import { Theme } from '@mui/material';
 import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { ReactElement } from 'react';
+import { Publication } from '../../lib/api/models/publication';
 
-interface PublicationLinkProps {
-    username: string;
-    name: string;
-    current: boolean;
-    revision?: string;
+type PublicationLinkProps = {
     style?: React.CSSProperties;
-}
+} & Publication;
 
 const useStyles = makeStyles<Theme>((theme) => ({
     wrapper: {
@@ -19,18 +16,19 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
         '&:hover': {
             color: `${theme.palette.primary.main} !important`,
-            textDecoration: 'underline'
-        }
+            textDecoration: 'underline',
+        },
     },
 }));
 
-export default function PublicationLink({ username, name, current, revision, style }: PublicationLinkProps): ReactElement {
+export default function PublicationLink({ owner, name, current, revision, style }: PublicationLinkProps): ReactElement {
     const classes = useStyles();
-    const basename = `/${username}/${name}` + (revision ? `/${revision}` : '');
+    const basename = `/${owner.username}/${name}` + (revision ? `/${revision}` : '');
 
     return (
         <Link className={classes.wrapper} style={style} to={basename}>
-            {username}/{name}{!current && typeof revision !== 'undefined' && (`@${revision}`) }
+            {owner.username}/{name}
+            {!current && typeof revision !== 'undefined' && `@${revision}`}
         </Link>
     );
 }

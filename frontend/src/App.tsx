@@ -12,11 +12,12 @@ import SingleSignOnRoute from './routes/Auth/SingleSignOn';
 import NotFoundRoute from './routes/NotFound';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import type {} from '@mui/lab/themeAugmentation';
 import { ReactElement } from 'react';
 import { QueryCache, QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import Theme from './config/theme';
 
 // API querying client.
 const queryCache = new QueryCache();
@@ -31,78 +32,11 @@ const queryClient = new QueryClient({
     },
 });
 
-// The application theme
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#0076FF',
-        },
-        secondary: {
-            main: '#37123C',
-        },
-        text: {
-            primary: '#303035',
-            secondary: '#303035',
-        },
-    },
-    typography: {
-        fontSize: 12,
-        fontFamily: [
-            'Noto Sans',
-            '-apple-system',
-            'BlinkMacSystemFont',
-            '"Segoe UI"',
-            'Roboto',
-            '"Helvetica Neue"',
-            'Arial',
-            'sans-serif',
-            '"Apple Color Emoji"',
-            '"Segoe UI Emoji"',
-            '"Segoe UI Symbol"',
-        ].join(','),
-        button: {
-            textTransform: 'none',
-        },
-    },
-    breakpoints: {
-        values: {
-            xs: 0,
-            sm: 600,
-            md: 900,
-            lg: 1200,
-            xl: 1536,
-        },
-    },
-
-    components: {
-        MuiTimelineItem: {
-            styleOverrides: {
-                root: {
-                    '&:before': {
-                        display: 'none',
-                    },
-                },
-            }
-        },
-        MuiButton: {
-            defaultProps: {
-                disableRipple: true,
-                disableElevation: true,
-                variant: 'contained',
-                size: 'small',
-                sx: {
-                    fontWeight: 'bold',
-                },
-            },
-        },
-    },
-});
-
 function App(): ReactElement {
     return (
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
-                <ThemeProvider theme={theme}>
+                <ThemeProvider theme={Theme}>
                     <NotificationProvider>
                         <NotificationDisplay>
                             <Router>
