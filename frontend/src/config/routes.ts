@@ -1,3 +1,4 @@
+import { User, UserRole } from '../lib/api/models';
 import PublicationRoute from '../routes/Publication';
 import CreatePublicationRoute from '../routes/Publication/Create';
 import AccountRoute from './../routes/Account';
@@ -5,24 +6,18 @@ import ExploreRoute from './../routes/Explore';
 import HomeRoute from './../routes/Home';
 import ProfileRoute from './../routes/Profile';
 import ReviewRoute from './../routes/Review';
-import { RouteProps } from 'react-router';
-
-type Extends<T, U extends T> = U;
+import { matchPath } from 'react-router';
 
 type RoutesShape = {
-    [key: string]: RouteProps;
+    permissionFn?: (session: User, pathname: string) => boolean;
+    minimumRole?: UserRole;
+    exact?: boolean;
+    strict?: boolean;
+    title?: string;
+    component: typeof HomeRoute;
 };
 
-type RedirectRoute = {
-    from: string;
-    to: string;
-};
-
-// Defined re-directs for the router to render prior to the routes. This is used
-// when to define re-mappings of routes from one location to another.
-export const redirects: RedirectRoute[] = [];
-
-export type Routes = Extends<RoutesShape, typeof routes>;
+export type Routes = Record<string, RoutesShape>;
 
 export const routes = {
     '/': {
@@ -53,6 +48,28 @@ export const routes = {
     },
     '/account': {
         exact: true,
+        title: 'Account',
+        component: AccountRoute,
+    },
+    '/account/:username': {
+        exact: false,
+        strict: false,
+        permissionFn: (session: User, pathname: string) => {
+            if (session.role !== 'default') return true;
+
+            // Match the path and extract the username from the path
+            const match = matchPath<{ username: string }>(pathname, {
+                path: '/account/:username',
+                exact: false,
+                strict: false,
+            });
+
+            if (match !== null) {
+                return session.username === match.params.username;
+            }
+
+            return false;
+        },
         title: 'Account',
         component: AccountRoute,
     },

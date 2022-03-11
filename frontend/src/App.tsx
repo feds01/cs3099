@@ -16,7 +16,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import type {} from '@mui/lab/themeAugmentation';
 import { ReactElement } from 'react';
 import { QueryCache, QueryClient, QueryClientProvider } from 'react-query';
-import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 // API querying client.
 const queryCache = new QueryCache();
@@ -118,9 +118,6 @@ function App(): ReactElement {
                                                 <Switch>
                                                     {Object.entries(routeConfig.routes).map(([path, config]) => {
                                                         return <PrivateRoute key={path} path={path} {...config} />;
-                                                    })}
-                                                    {routeConfig.redirects.map((redirect, index) => {
-                                                        return <Redirect exact strict {...redirect} key={index} />;
                                                     })}
                                                     <AppliedRoute exact path={'*'} component={NotFoundRoute} />
                                                 </Switch>

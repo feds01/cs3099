@@ -6,9 +6,7 @@ import Publications from '../../views/Publications';
 import { useAuth } from '../../contexts/auth';
 import Reviews from '../../views/Reviews';
 
-interface Props {}
-
-export default function Home(props: Props): ReactElement {
+export default function Home(): ReactElement {
     const auth = useAuth();
 
     return (

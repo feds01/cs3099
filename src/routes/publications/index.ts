@@ -11,6 +11,7 @@ import { makeRequest } from '../../lib/communication/fetch';
 import {
     compareUserRoles,
     verifyPublicationPermission,
+    verifyPublicationWithElevatedPermission,
     verifyUserPermission,
 } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
@@ -748,8 +749,8 @@ registerRoute(router, '/:username/:name', {
     }),
     query: z.object({ mode: ModeSchema, revision: z.string().optional() }),
     body: IPublicationPatchRequestSchema,
-    permissionVerification: verifyPublicationPermission,
-    permission: { level: IUserRole.Moderator },
+    permissionVerification: verifyPublicationWithElevatedPermission,
+    permission: { level: IUserRole.Moderator, runPermissionFn: true },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 

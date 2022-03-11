@@ -4,11 +4,16 @@ import { z } from 'zod';
 
 import * as error from '../../common/errors';
 import * as userUtils from './../../utils/users';
-import { verifyUserPermission } from '../../lib/communication/permissions';
+import {
+    compareUserRoles,
+    verifyUserPermission,
+    verifyUserWithElevatedPermission,
+} from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
-import { deleteFileResource } from '../../lib/resources/fs';
+import { deleteFileResource, resourceExists } from '../../lib/resources/fs';
 import Follower from '../../models/Follower';
 import User, { IUserRole } from '../../models/User';
+import { config } from '../../server';
 import { ResponseErrorSummary } from '../../transformers/error';
 import { joinPathsForResource } from '../../utils/resources';
 import { ModeSchema } from '../../validators/requests';
@@ -98,10 +103,26 @@ registerRoute(router, '/:username/avatar', {
         const user = await userUtils.transformUsernameIntoId(req);
 
         if (user.profilePictureUrl) {
+            const path = joinPathsForResource('avatar', user.id, 'avatar');
+
+            if (!(await resourceExists(path))) {
+                // If we can't find the avatar file on disk and the user requested it, then we should set
+                // that the user has no avatar picture set...
+                if (user.profilePictureUrl.startsWith(config.serviceEndpoint)) {
+                    await user.updateOne({ $set: { profilePictureUrl: undefined } });
+                }
+
+                return {
+                    status: 'error',
+                    code: 404,
+                    message: error.RESOURCE_NOT_FOUND,
+                };
+            }
+
             return {
                 status: 'file',
                 code: 200,
-                file: joinPathsForResource('avatar', user.id, 'avatar'),
+                file: path,
             };
         } else {
             return {
@@ -181,8 +202,8 @@ registerRoute(router, '/:username', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     body: IUserPatchRequestSchema,
-    permissionVerification: verifyUserPermission,
-    permission: { level: IUserRole.Moderator },
+    permissionVerification: verifyUserWithElevatedPermission,
+    permission: { level: IUserRole.Moderator, runPermissionFn: true },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
@@ -318,7 +339,7 @@ registerRoute(router, '/:username/role', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     permissionVerification: verifyUserPermission,
-    permission: { level: IUserRole.Administrator },
+    permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
@@ -361,9 +382,24 @@ registerRoute(router, '/:username/role', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     body: IUserRoleRequestSchema,
-    permission: { level: IUserRole.Administrator },
+    permissionVerification: verifyUserWithElevatedPermission,
+    permission: { level: IUserRole.Moderator, runPermissionFn: true },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
+
+        // Verify that the user can't elevate the privilege of this user beyond theirs
+        if (!compareUserRoles(user.role, req.body.role)) {
+            return {
+                status: 'error',
+                code: 401,
+                message: error.UNAUTHORIZED,
+                errors: {
+                    role: {
+                        message: `Can't elevate privilege to ${req.body.role}`,
+                    },
+                },
+            };
+        }
 
         const newUser = await User.findByIdAndUpdate(
             user.id,

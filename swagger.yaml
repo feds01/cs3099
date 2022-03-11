@@ -605,6 +605,18 @@ paths:
                       type: string
                   required: true
                   description: Username.
+            requestBody:
+                required: true
+                description: Provide the new role that the user should gain
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - role
+                            properties:
+                                role:
+                                    $ref: '#/components/schemas/UserRole'
             responses:
                 '200':
                     description: User role was updated successfully.
@@ -2198,6 +2210,10 @@ components:
                 email:
                     type: string
                     example: 'jon.doe@email.com'
+        UserRole:
+            type: string
+            example: 'default'
+            enum: ['default', 'moderator', 'administrator']
         UserRegistration:
             type: object
             required:
@@ -2273,9 +2289,7 @@ components:
                     type: string
                     example: 'jdoe1'
                 role:
-                    type: string
-                    example: 'default'
-                    enum: ['default', 'moderator', 'administrator']
+                    $ref: '#/components/schemas/UserRole'
                 name:
                     type: string
                     example: 'John Doe'
