@@ -4,7 +4,7 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 import Logger from '../common/logger';
 import { ExportSgPublication } from '../validators/sg';
 import Review, { IReviewStatus } from './Review';
-import User, { IUserDocument } from './User';
+import User, { IUser, IUserDocument } from './User';
 
 /** The publication document represents a publication object */
 export interface IPublication {
@@ -40,6 +40,10 @@ export interface IPublicationDocument extends IPublication, Document {}
 
 export type AugmentedPublicationDocument = Omit<IPublication, '_id'> & {
     _id: mongoose.Types.ObjectId;
+};
+
+export type PopulatedPublication = AugmentedPublicationDocument & {
+    owner: IUser;
 };
 
 interface IPublicationModel extends Model<IPublicationDocument> {

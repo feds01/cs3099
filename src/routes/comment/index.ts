@@ -2,7 +2,10 @@ import express from 'express';
 import { z } from 'zod';
 
 import * as error from '../../common/errors';
-import { verifyCommentPermission } from '../../lib/communication/permissions';
+import {
+    verifyCommentPermission,
+    verifyCommentWithElevatedPermission,
+} from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
 import Comment from '../../models/Comment';
 import { IUserDocument, IUserRole } from '../../models/User';
@@ -77,8 +80,8 @@ registerRoute(router, '/:id', {
     query: z.object({}),
     body: z.object({ contents: z.string().min(1) }),
     params: z.object({ id: ObjectIdSchema }),
-    permissionVerification: verifyCommentPermission,
-    permission: { level: IUserRole.Moderator },
+    permissionVerification: verifyCommentWithElevatedPermission,
+    permission: { level: IUserRole.Moderator, runPermissionFn: true },
     handler: async (req) => {
         // Patch the comment here and set the state of the comment as 'edited'
         const updatedComment = await Comment.findByIdAndUpdate(

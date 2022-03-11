@@ -2,7 +2,6 @@ import { usePublicationState } from '../../../contexts/publication';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
-import React from 'react';
 import Grid from '@mui/material/Grid';
 import UserCard from '../../../components/UserCard';
 

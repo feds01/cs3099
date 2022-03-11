@@ -14,6 +14,7 @@ import type {
     GetUserUsernameReviews200,
     GetUserUsernameRole200,
     PatchUserUsernameRole200,
+    PatchUserUsernameRoleBody,
     PostUserUsernameFollow200,
 } from '.././models';
 import { customInstance } from '.././mutator/custom-instance';
@@ -255,32 +256,39 @@ export const useGetUserUsernameRole = <TData = AsyncReturnType<typeof getUserUse
  * Endpoint for updating user role by id.
  * @summary Update user role
  */
-export const patchUserUsernameRole = (username: string) => {
-    return customInstance<PatchUserUsernameRole200>({ url: `/user/${username}/role`, method: 'patch' });
+export const patchUserUsernameRole = (username: string, patchUserUsernameRoleBody: PatchUserUsernameRoleBody) => {
+    return customInstance<PatchUserUsernameRole200>({
+        url: `/user/${username}/role`,
+        method: 'patch',
+        data: patchUserUsernameRoleBody,
+    });
 };
 
 export const usePatchUserUsernameRole = <TError = ApiErrorResponse, TContext = unknown>(options?: {
     mutation?: UseMutationOptions<
         AsyncReturnType<typeof patchUserUsernameRole>,
         TError,
-        { username: string },
+        { username: string; data: PatchUserUsernameRoleBody },
         TContext
     >;
 }) => {
     const { mutation: mutationOptions } = options || {};
 
-    const mutationFn: MutationFunction<AsyncReturnType<typeof patchUserUsernameRole>, { username: string }> = (
-        props,
-    ) => {
-        const { username } = props || {};
+    const mutationFn: MutationFunction<
+        AsyncReturnType<typeof patchUserUsernameRole>,
+        { username: string; data: PatchUserUsernameRoleBody }
+    > = (props) => {
+        const { username, data } = props || {};
 
-        return patchUserUsernameRole(username);
+        return patchUserUsernameRole(username, data);
     };
 
-    return useMutation<AsyncReturnType<typeof patchUserUsernameRole>, TError, { username: string }, TContext>(
-        mutationFn,
-        mutationOptions,
-    );
+    return useMutation<
+        AsyncReturnType<typeof patchUserUsernameRole>,
+        TError,
+        { username: string; data: PatchUserUsernameRoleBody },
+        TContext
+    >(mutationFn, mutationOptions);
 };
 /**
  * Endpoint for current user to follow another legit user.

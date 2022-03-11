@@ -47,7 +47,7 @@ type RegisterRoute<
     //            verification at the moment, we don't actually include in the verification
     //            of the permissions. This could be a limitation in the future, but it is hard
     //            to reason about whether it is null or not a given point,
-    permissionVerification?: PermissionVerificationFn<Params, Query>;
+    permissionVerification?: PermissionVerificationFn<Params, Query, unknown>;
     activityMetadataFn?: ActivityMetadataTransformer<Params, Query, Body | null>;
     params: z.Schema<Params, z.ZodTypeDef, Record<string, any>>;
     query: z.Schema<Query, z.ZodTypeDef, Record<string, any>>;

@@ -1,6 +1,5 @@
 import ControlledTextField from '../../components/ControlledTextField';
 import FieldLabel from '../../components/FieldLabel';
-import { useDispatchAuth } from '../../contexts/auth';
 import { useNotificationDispatch } from '../../contexts/notification';
 import { User } from '../../lib/api/models';
 import { usePatchUserUsername } from '../../lib/api/users/users';
@@ -16,12 +15,13 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 
 interface AccountUpdateFormProps {
-    session: User;
+    user: User;
+    isSelf: boolean;
+    refetch: () => void;
 }
 
-export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
+export function AccountUpdateForm({ user, isSelf, refetch }: AccountUpdateFormProps) {
     const notificationDispatcher = useNotificationDispatch();
-    const authDispatcher = useDispatchAuth();
     const {
         control,
         handleSubmit,
@@ -31,7 +31,7 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
         reValidateMode: 'onChange',
         mode: 'onChange',
         resolver: zodResolver(AccountUpdateSchema),
-        defaultValues: { ...session },
+        defaultValues: { ...user },
     });
 
     // This is the query to the backend
@@ -39,7 +39,7 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
 
     // This function will be called once the form is ready to submit
     const onSubmit: SubmitHandler<AccountUpdate> = async (data) =>
-        await mutateAsync({ username: session.username, data });
+        await mutateAsync({ username: user.username, data });
 
     useEffect(() => {
         if (isError && error) {
@@ -54,11 +54,12 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
                 item: { severity: 'error', message: "Couldn't update profile" },
             });
         } else if (!isLoading && response) {
-            authDispatcher({ type: 'data', data: response.user });
             notificationDispatcher({
                 type: 'add',
                 item: { severity: 'success', message: 'Updated profile' },
             });
+
+            refetch();
         }
     }, [isLoading, isError]);
 
@@ -75,7 +76,7 @@ export function AccountUpdateForm({ session }: AccountUpdateFormProps) {
                 </Grid>
                 <Grid item xs={12} md={7}>
                     <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        Your status
+                        {isSelf ? "Your" : "User"} status
                     </Typography>
                     <Grid item xs={12} sm={8} md={6}>
                         <ControlledTextField control={control} name="status" />

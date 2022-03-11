@@ -5,7 +5,7 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import { SuccessStatus } from '.././models';
+import { SuccessStatus, UserRole } from '.././models';
 import faker from 'faker';
 import { rest } from 'msw';
 
@@ -17,7 +17,7 @@ export const getGetSgSsoLoginMock = () => ({
         id: faker.random.word(),
         email: faker.random.word(),
         username: faker.random.word(),
-        role: faker.helpers.randomize(['default', 'moderator', 'administrator']),
+        role: faker.helpers.randomize(Object.values(UserRole)),
         name: faker.helpers.randomize([faker.random.word(), undefined]),
         createdAt: faker.datatype.number(),
         profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
