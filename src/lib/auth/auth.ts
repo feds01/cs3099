@@ -12,9 +12,9 @@ import express from 'express';
 import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
 import { ZodError } from 'zod';
 
-import Logger from '../common/logger';
-import { config } from '../server';
-import { IAuthHeaderSchema } from '../validators/auth';
+import Logger from '../../common/logger';
+import { config } from '../../server';
+import { IAuthHeaderSchema } from '../../validators/auth';
 
 export interface TokenPayload {
     token: string;

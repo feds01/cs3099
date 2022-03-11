@@ -20,6 +20,7 @@ import sgSsoRouter from './routes/sg/sso';
 import threadsRouter from './routes/threads';
 import reviewsRouter from './routes/reviews';
 import commentRouter from './routes/comment';
+import activityRouter from "./routes/activity";
 import searchRouter from './routes/search';
 import sgUsersRouter from './routes/sg/users';
 import resourcesRouter from './routes/resources';
@@ -64,6 +65,7 @@ const options = {
         './routes/sg/sso.ts',
         './routes/sg/resources.ts',
         './routes/sg/users.ts',
+        './routers/activity/index.ts',
         './routes/reviews/index.ts',
         './routes/search/index.ts',
         './routes/publications/index.ts',
@@ -94,6 +96,7 @@ app.use('(\/api)?/sg/sso', sgSsoRouter);
 app.use('(\/api)?/sg/resources', sgResourcesRouter);
 app.use('(\/api)?/sg/users', sgUsersRouter);
 app.use('(\/api)?/auth', authRouter);
+app.use('(\/api)?/activity', activityRouter);
 app.use('(\/api)?/user', userRouter);
 app.use('(\/api)?/review', reviewsRouter);
 app.use('(\/api)?/search', searchRouter);

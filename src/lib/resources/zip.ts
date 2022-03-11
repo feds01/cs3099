@@ -1,16 +1,16 @@
 import AdmZip, { IZipEntry } from 'adm-zip';
 import { promises as fs } from 'fs';
 
-import { ApiError } from '../common/errors';
-import Logger from '../common/logger';
-import { expr } from '../utils/expr';
+import { ApiError } from '../../common/errors';
+import Logger from '../../common/logger';
+import { expr } from '../../utils/expr';
 import {
     getPathBase,
     getPathComponents,
     joinPathsForResource,
     joinPathsRaw,
     stripEndingSlash,
-} from '../utils/resources';
+} from '../../utils/resources';
 
 // Interface representing either a file entry or a directory entry
 interface DirectoryEntry {
@@ -46,6 +46,16 @@ export interface ResourceIndex {
     owner: string;
     name: string;
     path?: string[];
+}
+
+/**
+ * Function to verify that the given archive (specified by file path) is not
+ * corrupt and all entries within the archive can be read
+ *
+ */
+export function testArchive(archivePath: string): boolean {
+    const archive = new AdmZip(archivePath);
+    return archive.test();
 }
 
 /**

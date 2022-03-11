@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import * as error from '../../common/errors';
 import * as userUtils from '../../utils/users';
-import registerRoute from '../../lib/requests';
+import registerRoute from '../../lib/communication/requests';
 import Follower from '../../models/Follower';
 import User, { IUser, IUserRole } from '../../models/User';
 import { PaginationQuerySchema } from '../../validators/pagination';

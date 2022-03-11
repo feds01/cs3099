@@ -34,8 +34,6 @@ export interface IComment {
     createdAt: Date;
     /** When the document was last updated */
     updatedAt: Date;
-    /** If the document is 'deleted' */
-    isDeleted: boolean;
 }
 
 export type AugmentedCommentDocument = Omit<IComment, '_id'> & {
@@ -66,7 +64,6 @@ const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
         },
         filename: { type: String },
         review: { type: mongoose.Schema.Types.ObjectId, ref: 'review' },
-        isDeleted: { type: Boolean, default: false },
     },
     { timestamps: true },
 );

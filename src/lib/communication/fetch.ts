@@ -4,10 +4,10 @@ import fetch, { FetchError } from 'node-fetch';
 import qs from 'query-string';
 import { z } from 'zod';
 
-import Logger from '../common/logger';
-import { config } from '../server';
-import { ResponseErrorSummary, transformZodErrorIntoResponseError } from '../transformers/error';
-import { joinPathsRaw } from '../utils/resources';
+import Logger from '../../common/logger';
+import { config } from '../../server';
+import { ResponseErrorSummary, transformZodErrorIntoResponseError } from '../../transformers/error';
+import { joinPathsRaw } from '../../utils/resources';
 
 const RawResponseSchema = z.union([
     z.object({ status: z.literal('error'), message: z.string() }),

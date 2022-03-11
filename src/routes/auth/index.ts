@@ -5,9 +5,9 @@ import { z } from 'zod';
 
 import * as error from '../../common/errors';
 import Logger from '../../common/logger';
-import { JwtError, createTokens, refreshTokens, verifyToken } from '../../lib/auth';
-import registerRoute from '../../lib/requests';
-import { ApiResponse } from '../../lib/response';
+import { JwtError, createTokens, refreshTokens, verifyToken } from '../../lib/auth/auth';
+import registerRoute from '../../lib/communication/requests';
+import { ApiResponse } from '../../lib/communication/response';
 import State from '../../models/State';
 import User from '../../models/User';
 import { IEmailValiditySchema, IUsernameValiditySchema } from '../../validators/auth';

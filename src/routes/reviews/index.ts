@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 import { z } from 'zod';
 
 import * as errors from '../../common/errors';
-import * as file from '../../lib/file';
-import * as zip from '../../lib/zip';
+import * as file from '../../lib/resources/file';
+import * as zip from '../../lib/resources/zip';
 import Logger from '../../common/logger';
-import { verifyReviewPermission } from '../../lib/permissions';
-import registerRoute from '../../lib/requests';
+import { verifyReviewPermission } from '../../lib/communication/permissions';
+import registerRoute from '../../lib/communication/requests';
 import Comment from '../../models/Comment';
 import { IPublication, IPublicationDocument } from '../../models/Publication';
 import Review, { IReviewStatus, PopulatedReview } from '../../models/Review';

@@ -1,7 +1,7 @@
 import express from 'express';
 import { z } from 'zod';
 
-import registerRoute from '../../lib/requests';
+import registerRoute from '../../lib/communication/requests';
 import User, { IUserDocument } from '../../models/User';
 import { PaginationQuerySchema } from '../../validators/pagination';
 

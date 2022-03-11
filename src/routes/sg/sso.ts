@@ -4,9 +4,9 @@ import qs from 'query-string';
 import { z } from 'zod';
 
 import Logger from '../../common/logger';
-import { JwtError, createTokens, verifyToken } from '../../lib/auth';
-import { makeRequest } from '../../lib/fetch';
-import registerRoute from '../../lib/requests';
+import { JwtError, createTokens, verifyToken } from '../../lib/auth/auth';
+import { makeRequest } from '../../lib/communication/fetch';
+import registerRoute from '../../lib/communication/requests';
 import State from '../../models/State';
 import User from '../../models/User';
 import { config } from '../../server';
