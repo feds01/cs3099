@@ -1,11 +1,12 @@
-import { ContentState } from '../types/requests';
-import Upload from '../static/images/upload.svg';
 import ErrorBanner from '../components/ErrorBanner';
-import React, { ReactElement, useEffect, useState } from 'react';
-import { Box, Button, LinearProgress, Typography } from '@mui/material';
-import { transformMutationIntoContentState } from '../wrappers/react-query';
-import { usePostResourceUploadPublicationId } from '../lib/api/resources/resources';
 import { ApiErrorResponse, ApiSuccessResponse, Publication } from '../lib/api/models';
+import { usePostResourceUploadPublicationId } from '../lib/api/resources/resources';
+import Upload from '../static/images/upload.svg';
+import { ContentState } from '../types/requests';
+import { transformMutationIntoContentState } from '../wrappers/react-query';
+import { Box, Button, LinearProgress, Typography } from '@mui/material';
+import React, { ReactElement, useEffect, useState } from 'react';
+
 interface Props {
     publication: Publication;
     refetchData: () => void;
@@ -23,7 +24,6 @@ export default function UploadAttachment({ publication, refetchData }: Props): R
         try {
             const file = event.target.files[0];
             await uploadFileQuery.mutateAsync({ id: publication.id, data: { file } });
-
         } catch (e: unknown) {
             setUpload({ state: 'error', error: { status: 'error', message: "Couldn't read file." } });
         }

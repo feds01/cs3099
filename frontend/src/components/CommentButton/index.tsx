@@ -42,7 +42,7 @@ export default function CommentButton({ location, filename, review, children }: 
                 }
             }}
             onMouseUp={() => {
-                if (selectionState.isDragging) {   
+                if (selectionState.isDragging) {
                     selectionDispatch({ type: 'finalise', location });
                     setShowEditor(true);
                 }

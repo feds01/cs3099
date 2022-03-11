@@ -32,7 +32,7 @@ export default function Header(): ReactElement {
                 <Link to="/" aria-label="home">
                     <img src={LogoImage} height={48} alt="Avatar" />
                 </Link>
-                <Box sx={{flexGrow: 1, pl: 1, display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+                <Box sx={{ flexGrow: 1, pl: 1, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <SearchBar />
                 </Box>
                 <div>

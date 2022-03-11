@@ -1,21 +1,21 @@
-import theme from "./theme";
-import { Component, ReactNode } from "react";
-import normalizeTokens from "../../../lib/utils/normalizeTokens";
-import themeToDict, { type ThemeDict } from "../../../lib/utils/themeToDict";
+import theme from './theme';
+import { Component, ReactNode } from 'react';
+import normalizeTokens from '../../../lib/utils/normalizeTokens';
+import themeToDict, { type ThemeDict } from '../../../lib/utils/themeToDict';
 
 import type {
-  Language,
-  Token,
-  LineInputProps,
-  LineOutputProps,
-  TokenInputProps,
-  TokenOutputProps,
-  RenderProps,
-  PrismGrammar,
-  PrismToken,
-} from "../../../types/renderer";
+    Language,
+    Token,
+    LineInputProps,
+    LineOutputProps,
+    TokenInputProps,
+    TokenOutputProps,
+    RenderProps,
+    PrismGrammar,
+    PrismToken,
+} from '../../../types/renderer';
 
-import { languages as prismLanguages, tokenize, hooks as prismHooks } from "prismjs";
+import { languages as prismLanguages, tokenize, hooks as prismHooks } from 'prismjs';
 
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-haskell';
@@ -32,204 +32,185 @@ import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-markdown';
 import 'prismjs/components/prism-toml';
 
-import { Box, CircularProgress } from "@mui/material";
-import { HighlightWorkerResult } from "../../../worker/highlight.worker";
-import { nanoid } from "nanoid";
-import { expr } from "../../../lib/utils/expr";
+import { Box, CircularProgress } from '@mui/material';
+import { HighlightWorkerResult } from '../../../worker/highlight.worker';
+import { nanoid } from 'nanoid';
+import { expr } from '../../../lib/utils/expr';
 
 type Props = {
-  language: Language,
-  code: string,
-  worker?: Worker;
-  children: (props: RenderProps) => ReactNode,
+    language: Language;
+    code: string;
+    worker?: Worker;
+    children: (props: RenderProps) => ReactNode;
 };
 
 interface HighlightState {
-  loading: boolean;
-  tokens: Token[][];
-  nonce: string;
+    loading: boolean;
+    tokens: Token[][];
+    nonce: string;
 }
 
 class Highlight extends Component<Props, HighlightState> {
-  themeDict: ThemeDict;
-  worker?: Worker;
+    themeDict: ThemeDict;
+    worker?: Worker;
 
-  constructor(props: Props) {
-    super(props);
+    constructor(props: Props) {
+        super(props);
 
-    const grammar = prismLanguages[this.props.language];
+        const grammar = prismLanguages[this.props.language];
 
-    const tokens = expr(() => {
-      if (typeof grammar === 'undefined') {
-        return normalizeTokens([this.props.code] as unknown as (string | PrismToken)[]);
-      } else {
-        return [];
-      }
-  });
+        const tokens = expr(() => {
+            if (typeof grammar === 'undefined') {
+                return normalizeTokens([this.props.code] as unknown as (string | PrismToken)[]);
+            } else {
+                return [];
+            }
+        });
 
-    this.state = {
-      loading: tokens.length === 0,
-      tokens,
-      nonce: nanoid()
+        this.state = {
+            loading: tokens.length === 0,
+            tokens,
+            nonce: nanoid(),
+        };
+
+        // Assign the worker to the running instance
+        this.worker = props.worker;
+
+        // Create the theme...
+        this.themeDict = themeToDict(theme, this.props.language);
+
+        this.getLineProps = this.getLineProps.bind(this);
+        this.getTokenProps = this.getTokenProps.bind(this);
+        this.getStyleForToken = this.getStyleForToken.bind(this);
+        this.handleWorkerError = this.handleWorkerError.bind(this);
+        this.handleWorkerMessage = this.handleWorkerMessage.bind(this);
     }
 
-    // Assign the worker to the running instance
-    this.worker = props.worker;
+    componentDidMount() {
+        const grammar = prismLanguages[this.props.language];
 
-    // Create the theme...
-    this.themeDict = themeToDict(theme, this.props.language);
+        if (typeof this.worker !== 'undefined' && typeof grammar !== 'undefined') {
+            this.worker.addEventListener('message', this.handleWorkerMessage);
+            this.worker.addEventListener('error', this.handleWorkerError);
 
-    this.getLineProps = this.getLineProps.bind(this);
-    this.getTokenProps = this.getTokenProps.bind(this);
-    this.getStyleForToken = this.getStyleForToken.bind(this);
-    this.handleWorkerError = this.handleWorkerError.bind(this);
-    this.handleWorkerMessage = this.handleWorkerMessage.bind(this);
-  }
+            this.worker.postMessage({ code: this.props.code, grammar, nonce: this.state.nonce });
+        } else if (typeof grammar !== 'undefined') {
+            const mixedTokens = grammar !== undefined ? this.tokenize(this.props.code, grammar) : [this.props.code];
 
-  componentDidMount() {
-    const grammar = prismLanguages[this.props.language];
+            const tokens = normalizeTokens(mixedTokens as unknown as (string | PrismToken)[]);
 
-      if (typeof this.worker !== 'undefined' && typeof grammar !== 'undefined') {
-        this.worker.addEventListener('message', this.handleWorkerMessage);
-        this.worker.addEventListener('error', this.handleWorkerError);
+            this.setState({
+                loading: false,
+                tokens,
+            });
+        }
+    }
 
-        this.worker.postMessage({ code: this.props.code, grammar, nonce: this.state.nonce });
-      } else if (typeof grammar !== 'undefined') { 
-        const mixedTokens =
-        grammar !== undefined
-        ? this.tokenize(this.props.code, grammar)
-        : [this.props.code];
+    componentWillUnmount() {
+        if (typeof this.worker !== 'undefined') {
+            this.worker.removeEventListener('message', this.handleWorkerMessage);
+            this.worker.removeEventListener('error', this.handleWorkerError);
+        }
+    }
 
-        const tokens = normalizeTokens(mixedTokens as unknown as (string | PrismToken)[]);
-        
+    handleWorkerMessage(event: MessageEvent<HighlightWorkerResult>) {
+        if (event.data.nonce !== this.state.nonce) return;
+
+        const { tokens } = event.data;
+
         this.setState({
-          loading: false,
-          tokens
-        })
-      }
-  }
-
-  componentWillUnmount() {
-    if (typeof this.worker !== 'undefined') {
-      this.worker.removeEventListener('message', this.handleWorkerMessage);
-      this.worker.removeEventListener('error', this.handleWorkerError);
+            loading: false,
+            tokens,
+        });
     }
-  }
 
-  handleWorkerMessage(event: MessageEvent<HighlightWorkerResult>) {
-    if (event.data.nonce !== this.state.nonce) return;
+    handleWorkerError(event: ErrorEvent) {
+        console.log(event);
+    }
 
-    const { tokens } = event.data;
+    getLineProps = ({ key, className, style, line, ...rest }: LineInputProps): LineOutputProps => {
+        const output: LineOutputProps = {
+            ...rest,
+            className: 'token-line',
+            style: undefined,
+            key: undefined,
+        };
 
-    this.setState({
-      loading: false,
-      tokens
-    });
-  }
+        if (style !== undefined) {
+            output.style = output.style !== undefined ? { ...output.style, ...style } : style;
+        }
 
-  handleWorkerError(event: ErrorEvent) {
-    console.log(event)
-  }
+        if (key !== undefined) output.key = key;
+        if (className) output.className += ` ${className}`;
 
-  getLineProps = ({
-    key,
-    className,
-    style,
-    line,
-    ...rest
-  }: LineInputProps): LineOutputProps => {
-    const output: LineOutputProps = {
-      ...rest,
-      className: "token-line",
-      style: undefined,
-      key: undefined,
+        return output;
     };
 
-    if (style !== undefined) {
-      output.style =
-        output.style !== undefined ? { ...output.style, ...style } : style;
-    }
+    getStyleForToken = ({ types, empty }: Token) => {
+        const typesSize = types.length;
 
-    if (key !== undefined) output.key = key;
-    if (className) output.className += ` ${className}`;
+        if (typesSize === 1 && types[0] === 'plain') {
+            return empty ? { display: 'inline-block' } : undefined;
+        } else if (typesSize === 1 && !empty) {
+            return this.themeDict[types[0]];
+        }
 
-    return output;
-  };
+        const baseStyle = empty ? { display: 'inline-block' } : {};
+        const typeStyles = types.map((type) => this.themeDict[type]);
 
-  getStyleForToken = ({ types, empty }: Token) => {
-    const typesSize = types.length;
-
-    if (typesSize === 1 && types[0] === "plain") {
-      return empty ? { display: "inline-block" } : undefined;
-    } else if (typesSize === 1 && !empty) {
-      return this.themeDict[types[0]];
-    }
-
-    const baseStyle = empty ? { display: "inline-block" } : {};
-    const typeStyles = types.map((type) => this.themeDict[type]);
-
-    return Object.assign(baseStyle, ...typeStyles);
-  };
-
-  getTokenProps = ({
-    key,
-    style,
-    token,
-    ...rest
-  }: TokenInputProps): TokenOutputProps => {
-    const output: TokenOutputProps = {
-      ...rest,
-      children: token.content,
-      style: this.getStyleForToken(token),
-      key: undefined,
+        return Object.assign(baseStyle, ...typeStyles);
     };
 
-    if (typeof style !== 'undefined') {
-      output.style = output.style !== undefined ? { ...output.style, ...style } : style;
-    }
+    getTokenProps = ({ key, style, token, ...rest }: TokenInputProps): TokenOutputProps => {
+        const output: TokenOutputProps = {
+            ...rest,
+            children: token.content,
+            style: this.getStyleForToken(token),
+            key: undefined,
+        };
 
-    if (key !== undefined) output.key = key;
+        if (typeof style !== 'undefined') {
+            output.style = output.style !== undefined ? { ...output.style, ...style } : style;
+        }
 
-    return output;
-  };
+        if (key !== undefined) output.key = key;
 
-  tokenize = (
-    code: string,
-    grammar: PrismGrammar,
-  ): Array<Prism.Token | string> => {
-    const env = {
-      code,
-      grammar,
-      tokens: [] as (string | Prism.Token)[],
+        return output;
     };
 
-    prismHooks.run("before-tokenize", env);
-    const tokens = (env.tokens = tokenize(env.code, env.grammar));
-    prismHooks.run("after-tokenize", env);
+    tokenize = (code: string, grammar: PrismGrammar): Array<Prism.Token | string> => {
+        const env = {
+            code,
+            grammar,
+            tokens: [] as (string | Prism.Token)[],
+        };
 
-    return tokens;
-  };
+        prismHooks.run('before-tokenize', env);
+        const tokens = (env.tokens = tokenize(env.code, env.grammar));
+        prismHooks.run('after-tokenize', env);
 
-  render() {
-    const { children } = this.props;
-    const { tokens, loading } = this.state;
+        return tokens;
+    };
 
-    if (loading) {
-      return (
-        <Box sx={{display: 'flex', justifyContent: 'center'}}>
-          <CircularProgress/>
-        </Box>
-      );
+    render() {
+        const { children } = this.props;
+        const { tokens, loading } = this.state;
+
+        if (loading) {
+            return (
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <CircularProgress />
+                </Box>
+            );
+        }
+
+        return children({
+            tokens,
+            style: this.themeDict.root,
+            getLineProps: this.getLineProps,
+            getTokenProps: this.getTokenProps,
+        });
     }
-
-
-    return children({
-      tokens,
-      style: this.themeDict.root,
-      getLineProps: this.getLineProps,
-      getTokenProps: this.getTokenProps,
-    });
-  }
 }
 
 export default Highlight;

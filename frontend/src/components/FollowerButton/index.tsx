@@ -49,7 +49,7 @@ export default function FollowerButton({ username }: Props): ReactElement {
             self: auth.session.username === username,
             following: follow.data?.following || false,
         };
-        
+
         const query = getFollowQuery(state);
         setResponse({ state: 'ok', data: { ...state, followUserQuery: query } });
     }, [username, follow.data, auth.session.username]);
@@ -58,11 +58,7 @@ export default function FollowerButton({ username }: Props): ReactElement {
         return <></>;
     } else {
         return (
-            <Button
-                variant="contained"
-                sx={{ fontWeight: 'bold' }}
-                onClick={handleClick}
-            >
+            <Button variant="contained" sx={{ fontWeight: 'bold' }} onClick={handleClick}>
                 {response.data.following ? 'Unfollow' : 'Follow'}
             </Button>
         );

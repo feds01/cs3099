@@ -39,9 +39,9 @@
     "scripts": {
         "start": "react-scripts start",
         "build": "react-scripts build",
-        "test": "react-scripts test",
+        "test": "react-scripts test --ci --coverage",
         "eject": "react-scripts eject",
-        "fmt": "prettier --write .",
+        "fmt": "prettier src --write",
         "tcheck": "tsc --noEmit",
         "version": "ts-node --skip-project scripts/versioning.ts"
     },

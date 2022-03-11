@@ -34,10 +34,10 @@ export default function UpdateAccountRoleForm({ user, refetch }: UpdateAccountRo
     };
 
     return (
-        <Select size='small' value={user.role} onChange={handleChange}>
+        <Select size="small" value={user.role} onChange={handleChange}>
             <MenuItem value="default">Default</MenuItem>
-            {session.role !== "default" && <MenuItem value="moderator">Moderator</MenuItem>}
-            {session.role === "administrator" && <MenuItem value="administrator">Administrator</MenuItem>}
+            {session.role !== 'default' && <MenuItem value="moderator">Moderator</MenuItem>}
+            {session.role === 'administrator' && <MenuItem value="administrator">Administrator</MenuItem>}
         </Select>
     );
 }
