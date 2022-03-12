@@ -1,27 +1,33 @@
+import mongoose from 'mongoose';
 import { agent as supertest } from 'supertest';
 
 import app from '../../../src/app';
+import Publication from '../../../src/models/Publication';
 import User, { IUserRole } from '../../../src/models/User';
+import { createMockedPublication } from '../../utils/factories/publication';
+import { createMockedUser } from '../../utils/factories/user';
 
 const request = supertest(app);
 
 describe('User endpoint tests ', () => {
     let testUserId: string;
 
+    const UserObject = {
+        email: 'test@email.com',
+        username: 'test',
+        name: 'test',
+        password: 'Passwordexample123!',
+        about: 'Nothing to say',
+        profilePictureUrl: 'https://nothing-to-show.com',
+    };
+
     // create a user and login before all tests
     it('should create a user', async () => {
         // call register api
-        const registerRespoinse = await request.post('/auth/register').send({
-            email: 'test@email.com',
-            username: 'test',
-            name: 'test',
-            password: 'Passwordexample123!',
-            about: 'Nothing to say',
-            profilePictureUrl: 'https://nothing-to-show.com',
-        });
+        const registerResponse = await request.post('/auth/register').send(UserObject);
 
         // expect register to be successful
-        expect(registerRespoinse.status).toBe(201);
+        expect(registerResponse.status).toBe(201);
 
         // update the user role to be administrator
         await User.findOneAndUpdate({ username: 'test' }, { role: IUserRole.Administrator });
@@ -60,13 +66,7 @@ describe('User endpoint tests ', () => {
     // fail to create a user with no username
     it('should fail to create a user with no username', async () => {
         // call register api without username field
-        const registerNewResponse = await request.post('/auth/register').send({
-            email: 'test@email.com',
-            name: 'newtest',
-            password: 'Passwordexample123!',
-            about: 'Nothing to say',
-            profilePictureUrl: 'https://nothing-to-show.com',
-        });
+        const registerNewResponse = await request.post('/auth/register').send(UserObject);
 
         // expect register to fail
         expect(registerNewResponse.status).toBe(400);
@@ -75,13 +75,7 @@ describe('User endpoint tests ', () => {
     // fail to create a user with no password
     it('should fail to create a user with no password', async () => {
         // call register api without password field
-        const registerNewResponse = await request.post('/auth/register').send({
-            email: 'test@email.com',
-            username: 'newtest',
-            name: 'newtest',
-            about: 'Nothing to say',
-            profilePictureUrl: 'https://nothing-to-show.com',
-        });
+        const registerNewResponse = await request.post('/auth/register').send(UserObject);
 
         // expect register to fail
         expect(registerNewResponse.status).toBe(400);
@@ -90,27 +84,13 @@ describe('User endpoint tests ', () => {
     // fail to create a user when username or email already taken
     it('should fail to create a user when username taken', async () => {
         // call register api with an inuse username
-        const registerUserTaken = await request.post('/auth/register').send({
-            email: 'test2@email.com',
-            username: 'test',
-            name: 'newtest',
-            password: 'Passwordexample123!',
-            about: 'Nothing to say',
-            profilePictureUrl: 'https://nothing-to-show.com',
-        });
+        const registerUserTaken = await request.post('/auth/register').send(UserObject);
 
         // expect register to fail
         expect(registerUserTaken.status).toBe(400);
 
         // call register api with an inuse email
-        const registerEmailTaken = await request.post('/auth/register').send({
-            email: 'test@email.com',
-            username: 'test2',
-            name: 'newtest2',
-            password: 'Passwordexample123!',
-            about: 'Nothing to say',
-            profilePictureUrl: 'https://nothing-to-show.com',
-        });
+        const registerEmailTaken = await request.post('/auth/register').send(UserObject);
 
         // expect register to fail
         expect(registerEmailTaken.status).toBe(400);
@@ -195,5 +175,28 @@ describe('User endpoint tests ', () => {
 
         // expect delete to be successful
         expect(deleteUserResponse.status).toBe(200);
+    });
+
+    // Deleting a user that's references as a collaborator in the database
+    // should clear it from the collaborators...
+    it('should delete collaborator references when user is deleted', async () => {
+        // We want to create a user
+        const owner = await new User({ ...createMockedUser() }).save();
+        const collaborator = await new User({ ...createMockedUser() }).save();
+
+        const ownerId = new mongoose.Types.ObjectId(owner._id);
+        const collaboratorId = new mongoose.Types.ObjectId(collaborator._id);
+
+        // Now let's create a publication with that user as being the collaborator
+        const createdPublication = await new Publication({
+            ...createMockedPublication({ owner: ownerId, collaborators: [collaboratorId] }),
+        }).save();
+
+        // Delete the user and verify that the publication has no collaborators
+        await collaborator.delete();
+
+        const publication = await Publication.findById(createdPublication._id.toString()).exec();
+        expect(publication).not.toBeNull();
+        expect(publication!.collaborators).toStrictEqual([]);
     });
 });

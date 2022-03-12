@@ -83,7 +83,7 @@ UserSchema.index({ username: 'text', about: 'text', name: 'text', status: 'text'
  * if the publication is marked for deletion.
  */
 UserSchema.post(
-    /deleteOne|findOneAndDelete$/,
+    /remove|deleteOne|findOneAndDelete$/,
     { document: true, query: true },
     async (item: AugmentedUserDocument, next) => {
         Logger.warn('Cleaning up user resources after account deletion');
