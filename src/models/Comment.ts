@@ -28,7 +28,7 @@ export interface IComment {
     thread?: mongoose.ObjectId;
     /**
      * If the comment has been edited before
-     * @@Cleanup: We should make this an array to record all the modifications that the user has made */
+     * @@Future: We should make this an array to record all the modifications that the user has made */
     edited: boolean;
     /** When the initial document was created */
     createdAt: Date;

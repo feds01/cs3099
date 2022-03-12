@@ -7,14 +7,13 @@
  * User Accounts API requests and Documents API requests.
  *
  */
-import assert from 'assert';
 import express from 'express';
 import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
-import { ZodError } from 'zod';
 
-import Logger from '../../common/logger';
+import { ApiError } from '../../common/errors';
 import { config } from '../../server';
 import { IAuthHeaderSchema } from '../../validators/auth';
+import { TokenSchema, VerifiedToken } from '../../validators/token';
 
 export interface TokenPayload {
     token: string;
@@ -23,14 +22,6 @@ export interface TokenPayload {
 
 export interface TokenData {
     id: string;
-    username: string;
-    email: string;
-}
-
-export class JwtError extends Error {
-    constructor(readonly type: 'expired' | 'unknown', readonly inner?: Error) {
-        super();
-    }
 }
 
 /**
@@ -39,24 +30,16 @@ export class JwtError extends Error {
  * @param token - The token to verify
  * @returns The token payload if the token is valid, throws an error if the token is invalid.
  */
-export async function verifyToken(token: string, secret: string): Promise<TokenData> {
+export async function verifyToken(token: string, secret: string): Promise<VerifiedToken> {
     try {
         const payload = jwt.verify(token, secret, {});
-        assert(typeof payload !== 'undefined' && typeof payload !== 'string');
-
-        return payload.data;
+        return TokenSchema.parse(payload);
     } catch (err: unknown) {
         if (err instanceof TokenExpiredError) {
-            throw new JwtError('expired', err);
+            throw new ApiError(401, 'Token expired');
         }
 
-        if (err instanceof Error) {
-            throw new JwtError('unknown', err);
-        }
-
-        // We don't know what the thrown object is, but it shouldn't get here anyway
-        // as this should always be an error...
-        throw new JwtError('unknown');
+        throw new ApiError(401, 'unknown');
     }
 }
 
@@ -67,16 +50,17 @@ export async function verifyToken(token: string, secret: string): Promise<TokenD
  * 'JWT_SECRET_KEY' whereas the 'refresh-token' is signed using the 'JWT_REFRESH_SECRET_KEY'
  * which differ in values.
  *
+ * @param {string} id - The subject id of the token
  * @param {Object} payload: string representing the user's email
  * @returns an object comprised of the token and refresh token.
  * */
-export const createTokens = (payload: TokenData): TokenPayload => {
-    const token = jwt.sign({ data: { ...payload } }, config.jwtSecret, {
+export const createTokens = <T>(id: string, payload?: T): TokenPayload => {
+    const token = jwt.sign({ sub: id, data: payload }, config.jwtSecret, {
         expiresIn: config.jwtExpiry,
     });
 
     // sign the refresh-token
-    const refreshToken = jwt.sign({ data: { ...payload } }, config.jwtRefreshSecret, {
+    const refreshToken = jwt.sign({ sub: id }, config.jwtRefreshSecret, {
         expiresIn: config.jwtRefreshExpiry,
     });
 
@@ -96,20 +80,16 @@ export const createTokens = (payload: TokenData): TokenPayload => {
  * @returns {Object} The object contains the new token, new refresh token and the decoded user data
  * @error if the refreshToken is stale, the method will return an empty object.
  * */
-export function refreshTokens(refreshToken: string): TokenPayload | string {
-    try {
-        const decodedToken = jwt.verify(refreshToken, config.jwtRefreshSecret) as JwtPayload;
-        // generate new token values to replace old token's with refreshed ones.
-        return createTokens(decodedToken.data);
-    } catch (e: unknown) {
-        if (e instanceof TokenExpiredError) {
-            return e.message;
-        }
+export function refreshTokens(refreshToken: string): TokenPayload {
+    const decodedToken = jwt.verify(refreshToken, config.jwtRefreshSecret) as JwtPayload;
 
-        // This is unexpected...
-        Logger.error(e);
-        return 'Failed to refresh tokens';
+    // Is this even required?
+    if (typeof decodedToken.sub === 'undefined') {
+        throw new ApiError(401, 'Invalid token');
     }
+
+    // generate new token values to replace old token's with refreshed ones.
+    return createTokens(decodedToken.sub);
 }
 
 /**
@@ -118,10 +98,10 @@ export function refreshTokens(refreshToken: string): TokenPayload | string {
  * to unpack the contents into an object under the namespace 'user_data'. So, the data from
  * the token is accessible by using 'req.token'.
  */
-export function getTokensFromHeader(
+export async function getTokensFromHeader(
     req: express.Request,
     res: express.Response,
-): JwtPayload | string {
+): Promise<VerifiedToken | string> {
     const bearer = req.get('Authorization');
     const refreshToken = req.get('x-refresh-token');
 
@@ -131,22 +111,16 @@ export function getTokensFromHeader(
         // Decode the sent over JWT key using our secret key stored in the process' runtime.
         // Then carry on, even if the data is incorrect for the given request, since this does
         // not interpret the validity of the request.
-        return jwt.verify(token, config.jwtSecret) as JwtPayload;
+        return await verifyToken(token, config.jwtSecret);
     } catch (e: unknown) {
-        if (e instanceof ZodError) {
-            return 'Invalid JWT provided.';
-        }
-
         if (typeof refreshToken !== 'string') {
-            return "Couldn't refresh stale token as no refresh token is provided.";
+            throw new ApiError(
+                401,
+                "Couldn't refresh stale token as no refresh token is provided.",
+            );
         }
 
         const newTokens = refreshTokens(refreshToken);
-
-        // Exit early if refreshing tokens failed...
-        if (typeof newTokens === 'string') {
-            return newTokens;
-        }
 
         // if new tokens were provided, update the access and refresh tokens
         res.set('Access-Control-Expose-Headers', 'x-token, x-refresh-token');
@@ -154,6 +128,6 @@ export function getTokensFromHeader(
         res.set('x-refresh-token', newTokens.refreshToken);
 
         // pass on the metadata which was decoded from the JWT
-        return jwt.verify(newTokens.token, config.jwtSecret) as JwtPayload;
+        return await verifyToken(newTokens.token, config.jwtSecret);
     }
 }

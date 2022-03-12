@@ -25,7 +25,7 @@ export interface Permission {
     runPermissionFn?: boolean;
 }
 
-type BodylessBasicRequest<P, Q> = Omit<BasicRequest<P, Q, unknown>, 'body'>;
+type BodylessBasicRequest<P, Q> = Omit<BasicRequest<P, Q, unknown, unknown>, 'body'>;
 
 /**
  * This is a type that represents what the permission verification function can return when
@@ -94,7 +94,7 @@ export function compareUserRoles(left: IUserRole, right: IUserRole): boolean {
 export async function ensureValidPermissions<P, Q, T>(
     permission: Permission | null,
     id: string,
-    req: Omit<BasicRequest<P, Q, unknown>, 'body'>,
+    req: Omit<BasicRequest<P, Q, unknown, unknown>, 'body'>,
     verifyPermission: PermissionVerificationFn<P, Q, T>,
 ): Promise<ResolvedPermission<T>> {
     if (permission === null) return { valid: false };

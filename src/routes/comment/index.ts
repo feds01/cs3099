@@ -26,6 +26,7 @@ registerRoute(router, '/:id', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
+    headers: z.object({}),
     permissionVerification: verifyCommentPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -78,6 +79,7 @@ registerRoute(router, '/:id', {
 registerRoute(router, '/:id', {
     method: 'patch',
     query: z.object({}),
+    headers: z.object({}),
     body: z.object({ contents: z.string().min(1) }),
     params: z.object({ id: ObjectIdSchema }),
     permissionVerification: verifyCommentWithElevatedPermission,
@@ -126,6 +128,7 @@ registerRoute(router, '/:id', {
     method: 'delete',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
+    headers: z.object({}),
     permissionVerification: verifyCommentPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {

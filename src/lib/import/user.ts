@@ -2,7 +2,7 @@ import Logger from '../../common/logger';
 import User, { IUserDocument } from '../../models/User';
 import { convertSgId, transformSgUserToInternal } from '../../transformers/sg';
 import { SgUserId, SgUserSchema } from '../../validators/sg';
-import { makeRequest } from './fetch';
+import { makeRequest } from './../communication/fetch';
 
 const GROUP_URI_MAP: Record<string, string> = {
     t06: 'https://cs3099user06.host.cs.st-andrews.ac.uk/',
@@ -13,7 +13,7 @@ const GROUP_URI_MAP: Record<string, string> = {
     t27: 'https://cs3099user27.host.cs.st-andrews.ac.uk/',
 };
 
-type ExportStatus<O> =
+export type UserImportStatus =
     | {
           status: 'error';
           message: string;
@@ -22,7 +22,8 @@ type ExportStatus<O> =
       }
     | {
           status: 'ok';
-          item: O;
+          doc: IUserDocument;
+          toSave: boolean;
       };
 
 /**
@@ -36,13 +37,14 @@ type ExportStatus<O> =
  * document. If unsuccessful, the function returns an object that represents the error that
  * occurred.
  */
-export async function importUser(externalUserId: SgUserId): Promise<ExportStatus<IUserDocument>> {
+export async function importUser(externalUserId: SgUserId): Promise<UserImportStatus> {
     const externalId = convertSgId(externalUserId);
     const user = await User.findOne({ externalId }).exec();
     if (user) {
         return {
             status: 'ok',
-            item: user,
+            doc: user,
+            toSave: false,
         };
     }
 
@@ -81,11 +83,9 @@ export async function importUser(externalUserId: SgUserId): Promise<ExportStatus
         };
     }
 
-    // create the user
-    const userDocument = await new User(transformSgUserToInternal(userData.response)).save();
-
     return {
         status: 'ok',
-        item: userDocument,
+        doc: new User(transformSgUserToInternal(userData.response)),
+        toSave: true,
     };
 }

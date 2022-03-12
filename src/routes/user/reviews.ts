@@ -26,6 +26,7 @@ registerRoute(router, '/:username/reviews', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {

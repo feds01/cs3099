@@ -34,6 +34,7 @@ registerRoute(router, '/upload/:username', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     body: z.any(),
+    headers: z.object({}),
     method: 'post',
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -100,6 +101,7 @@ registerRoute(router, '/upload/publication/:id', {
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({ revision: z.string().optional() }),
     body: z.any(),
+    headers: z.object({}),
     method: 'post',
     permissionVerification: verifyPublicationIdPermission,
     permission: { level: IUserRole.Default },
@@ -114,7 +116,7 @@ registerRoute(router, '/upload/publication/:id', {
             };
         }
 
-        // @@Security: Ensure that the actual uploaded file is sane and don't just rely on mimetype.
+        // @Security: Ensure that the actual uploaded file is sane and don't just rely on mimetype.
         // Check that the mime-type of the file upload is either a plain text file or an
         // "application/zip" representing an archive. Other mime-types are currently banned
         // and we don't allow binary data uploads (at the moment).
@@ -186,12 +188,13 @@ registerRoute(router, '/upload/publication/:id', {
  * @example
  * https://af268.cs.st-andrews.ac.uk/api/resources/upload/review/617ec2675afcca834c21b5fd
  *
- * Endpoint for uploading attachements on reviwew commetns, items such as images/files or even
+ * Endpoint for uploading attachments on review comments, items such as images/files or even
  * videos.
  */
 registerRoute(router, '/upload/review/:id', {
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({}),
+    headers: z.object({}),
     body: z.any(),
     method: 'post',
     permissionVerification: verifyReviewPermission,

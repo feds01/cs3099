@@ -10,7 +10,7 @@ export interface ActivityMetadata {
 
 export type ActivityMetadataTransformer<P, Q, B> = (
     requester: IUserDocument,
-    request: BasicRequest<P, Q, B>,
+    request: BasicRequest<P, Q, B, unknown>,
 ) => Promise<ActivityMetadata>;
 
 /**
@@ -21,7 +21,8 @@ export type ActivityMetadataTransformer<P, Q, B> = (
  * @param _req - Generic request
  * @param _user - The requesting user
  */
-export const defaultActivityMetadataFn = async <P, Q, B>(
-    _user: IUserDocument,
-    _req: BasicRequest<P, Q, B>,
-): Promise<ActivityMetadata> => ({});
+export const defaultActivityMetadataFn: ActivityMetadataTransformer<
+    unknown,
+    unknown,
+    unknown
+> = async (_user, _req) => ({});

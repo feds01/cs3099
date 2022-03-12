@@ -3,7 +3,7 @@ import { ZodError } from 'zod';
 import { expr } from '../utils/expr';
 
 export interface ResponseError {
-    message: string;
+    message: string | string[];
 }
 
 export type ResponseErrorSummary = Record<string, ResponseError>;

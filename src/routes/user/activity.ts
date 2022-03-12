@@ -28,6 +28,7 @@ registerRoute(router, '/:username/feed', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
+    headers: z.object({}),
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);

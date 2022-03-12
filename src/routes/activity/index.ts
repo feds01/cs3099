@@ -23,6 +23,7 @@ registerRoute(router, '/:id', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
+    headers: z.object({}),
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const activity = await Activity.findById(req.params.id)
@@ -61,6 +62,7 @@ registerRoute(router, '/', {
     method: 'get',
     params: z.object({}),
     query: z.object({ user: ObjectIdSchema }).merge(PaginationQuerySchema),
+    headers: z.object({}),
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const activities = await Activity.find({ owner: req.query.user })

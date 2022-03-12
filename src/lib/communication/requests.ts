@@ -21,13 +21,15 @@ type RequestMethodWithBody = 'post' | 'put' | 'patch';
 type RequestMethodWithoutBody = 'delete' | 'get';
 type RequestMethod = RequestMethodWithBody | RequestMethodWithoutBody;
 
-export interface BasicRequest<Params, Query, Body> {
+export interface BasicRequest<Params, Query, Body, Headers> {
     params: Params;
     query: Query;
     body: Body;
+    headers: Headers;
 }
 
-export interface Request<Params, Query, Requester, Body> extends BasicRequest<Params, Query, Body> {
+export interface Request<Params, Query, Requester, Headers, Body>
+    extends BasicRequest<Params, Query, Body, Headers> {
     raw: express.Request;
     requester: Requester;
 }
@@ -37,6 +39,7 @@ type RegisterRoute<
     Query,
     Method extends RequestMethod,
     Body,
+    Headers,
     RoutePermission extends Permission | null,
     Res,
 > = {
@@ -49,6 +52,7 @@ type RegisterRoute<
     //            to reason about whether it is null or not a given point,
     permissionVerification?: PermissionVerificationFn<Params, Query, unknown>;
     activityMetadataFn?: ActivityMetadataTransformer<Params, Query, Body | null>;
+    headers: z.Schema<Headers, z.ZodTypeDef, Record<string, any>>;
     params: z.Schema<Params, z.ZodTypeDef, Record<string, any>>;
     query: z.Schema<Query, z.ZodTypeDef, Record<string, any>>;
     handler: (
@@ -56,6 +60,7 @@ type RegisterRoute<
             Params,
             Query,
             RoutePermission extends null ? null : IUserDocument,
+            Headers,
             Method extends RequestMethodWithBody ? Body : null
         >,
     ) => Promise<ApiResponse<Res>>;
@@ -68,15 +73,17 @@ function registrarHasBody<
     Query,
     Method extends RequestMethod,
     Body,
+    Headers,
     RoutePermission extends Permission | null,
     Res,
 >(
-    registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
+    registrar: RegisterRoute<Params, Query, Method, Body, Headers, RoutePermission, Res>,
 ): registrar is RegisterRoute<
     Params,
     Query,
     Method & RequestMethodWithBody,
     Body,
+    Headers,
     RoutePermission,
     Res
 > {
@@ -90,17 +97,19 @@ export default function registerRoute<
     Query,
     Method extends RequestMethod,
     Body,
+    Headers,
     RoutePermission extends Permission | null,
     Res,
 >(
     router: express.Router,
     path: string,
-    registrar: RegisterRoute<Params, Query, Method, Body, RoutePermission, Res>,
+    registrar: RegisterRoute<Params, Query, Method, Body, Headers, RoutePermission, Res>,
 ) {
     const wrappedHandler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
             const params = await registrar.params.parseAsync(req.params);
             const query = await registrar.query.parseAsync(req.query);
+            const headers = await registrar.headers.parseAsync(req.headers);
 
             let body: Body | null = null;
 
@@ -110,11 +119,11 @@ export default function registerRoute<
                 body = await registrar.body.parseAsync(req.body);
             }
 
-            const basicRequest = { query, params, body };
+            const basicRequest = { query, params, body, headers };
 
             const permissions = await expr(async () => {
                 if (registrar.permission !== null) {
-                    const tokenOrError = getTokensFromHeader(req, res);
+                    const tokenOrError = await getTokensFromHeader(req, res);
 
                     // Check whether it is the error variant
                     if (typeof tokenOrError === 'string') {
@@ -125,7 +134,7 @@ export default function registerRoute<
                     // current request.
                     return await ensureValidPermissions(
                         registrar.permission,
-                        tokenOrError.data.id,
+                        tokenOrError.sub,
                         basicRequest,
                         typeof registrar.permissionVerification === 'function'
                             ? registrar.permissionVerification

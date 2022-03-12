@@ -33,6 +33,7 @@ registerRoute(router, '/:username/follow', {
     params: z.object({ username: z.string() }),
     body: z.object({}),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
@@ -93,6 +94,7 @@ registerRoute(router, '/:username/follow', {
     method: 'delete',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
@@ -134,6 +136,7 @@ registerRoute(router, '/:username/follow', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
@@ -180,6 +183,7 @@ registerRoute(router, '/:username/followers', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
+    headers: z.object({}),
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
@@ -213,6 +217,7 @@ registerRoute(router, '/:username/following', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
+    headers: z.object({}),
     permission: { kind: 'follower', level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
