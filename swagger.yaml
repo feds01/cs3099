@@ -2183,8 +2183,16 @@ components:
                 - message
             properties:
                 message:
-                    type: string
-                    example: 'This field is invalid'
+                    oneOf:
+                        - $ref: "#/components/schemas/SingleErrorMessage"
+                        - $ref: "#/components/schemas/MultipleErrorMessage"
+        SingleErrorMessage:
+            type: string
+            example: 'This field is invalid'
+        MultipleErrorMessage:
+            type: array
+            items:
+                $ref: '#/components/schemas/SingleErrorMessage'
         TokenRequest:
             type: object
             properties:

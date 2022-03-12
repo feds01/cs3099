@@ -47,6 +47,7 @@ registerRoute(router, '/:username/:name/all', {
         username: z.string(),
         name: z.string(),
     }),
+    headers: z.object({}),
     query: z.object({ mode: ModeSchema, revision: z.string() }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
@@ -136,6 +137,7 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
         sortBy: ResourceSortSchema,
         revision: z.string().optional(),
     }),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -229,6 +231,7 @@ registerRoute(router, '/', {
     params: z.object({}),
     body: IPublicationCreationSchema,
     query: z.object({}),
+    headers: z.object({}),
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const { name, collaborators } = req.body;
@@ -250,7 +253,7 @@ registerRoute(router, '/', {
 
         // @@Hack: Basically we have to verify again that the set has no null items since
         //         TypeScript can't be entirely sure if there are no nulls in the set.
-        //         This is also partly due to the fact that zod cant'c combine .transform()
+        //         This is also partly due to the fact that zod cant't combine .transform()
         //         and .refine() functions yet...
         const publication = await new Publication({
             ...req.body,
@@ -283,6 +286,7 @@ registerRoute(router, '/', {
     method: 'get',
     params: z.object({}),
     query: PaginationQuerySchema,
+    headers: z.object({}),
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const { skip, take } = req.query;
@@ -346,6 +350,7 @@ registerRoute(router, '/:username', {
     query: z
         .object({ mode: ModeSchema, pinned: FlagSchema.optional() })
         .merge(PaginationQuerySchema),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -393,6 +398,7 @@ registerRoute(router, '/:username/:name/revisions', {
     method: 'get',
     params: z.object({ username: z.string(), name: z.string() }),
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -445,6 +451,7 @@ registerRoute(router, '/:username/:name', {
         draft: FlagSchema.optional(),
         revision: z.string().optional(),
     }),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -522,8 +529,9 @@ registerRoute(router, '/:username/:name', {
 registerRoute(router, '/:username/:name/revise', {
     method: 'post',
     params: z.object({ username: z.string(), name: z.string() }),
-    query: z.object({ mode: ModeSchema }),
     body: z.object({ revision: z.string(), changelog: z.string() }),
+    query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
@@ -622,6 +630,7 @@ registerRoute(router, '/:username/:name/all', {
         name: z.string().nonempty(),
     }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
@@ -666,6 +675,7 @@ registerRoute(router, '/:username/:name', {
         mode: ModeSchema,
         revision: z.string().optional(),
     }),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
@@ -749,6 +759,7 @@ registerRoute(router, '/:username/:name', {
     }),
     query: z.object({ mode: ModeSchema, revision: z.string().optional() }),
     body: IPublicationPatchRequestSchema,
+    headers: z.object({}),
     permissionVerification: verifyPublicationWithElevatedPermission,
     permission: { level: IUserRole.Moderator, runPermissionFn: true },
     handler: async (req) => {
@@ -835,9 +846,6 @@ registerRoute(router, '/:username/:name', {
  * @description This endpoint is used to initiate the exporting process for a publication. The endpoint
  * takes to required parameters which specify to where the publication should be exported and
  * if the export should also export reviews with the publication.
- *
- * @@TODO: handle whether we export reviews or not in the form of providing permissions in the tokens
- *         that we send!
  */
 registerRoute(router, '/:username/:name/export', {
     method: 'post',
@@ -845,6 +853,7 @@ registerRoute(router, '/:username/:name/export', {
         username: z.string().nonempty(),
         name: z.string().nonempty(),
     }),
+    headers: z.object({}),
     body: z.object({}),
     query: z.object({
         mode: ModeSchema,
@@ -875,8 +884,7 @@ registerRoute(router, '/:username/:name/export', {
             };
         }
 
-        // @@ Hack: this should be done by some kind of token service...
-        const { token } = createTokens({ username: user.username, id: user.id, email: user.email });
+        const { token } = createTokens(user.id, { exportReviews: req.query.exportReviews });
 
         const result = await makeRequest(req.query.to, '/api/sg/resources/import', z.any(), {
             query: { from: config.frontendURI, token, id: publication.id },

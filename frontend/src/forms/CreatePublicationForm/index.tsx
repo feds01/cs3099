@@ -1,19 +1,20 @@
+import ControlledAutocomplete from '../../components/ControlledAutocomplete';
+import ControlledTextField from '../../components/ControlledTextField';
+import ErrorBanner from '../../components/ErrorBanner';
+import FieldLabel from '../../components/FieldLabel';
+import { useAuth } from '../../contexts/auth';
+import { usePostPublication } from '../../lib/api/publications/publications';
+import { expr } from '../../lib/utils/expr';
+import { ICreatePublication, CreatePublicationSchema } from '../../validators/publication';
+import { zodResolver } from '@hookform/resolvers/zod';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import LoadingButton from '@mui/lab/LoadingButton';
-
-import { useHistory } from 'react-router';
-import { useAuth } from '../../contexts/auth';
 import { ReactElement, useEffect } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import ErrorBanner from '../../components/ErrorBanner';
-import ControlledTextField from '../../components/ControlledTextField';
-import ControlledAutocomplete from '../../components/ControlledAutocomplete';
-import { usePostPublication } from '../../lib/api/publications/publications';
-import { ICreatePublication, CreatePublicationSchema } from '../../validators/publication';
-import FieldLabel from '../../components/FieldLabel';
+import { useHistory } from 'react-router';
+import { applyErrorsToForm } from '../../lib/utils/error';
 
 export default function CreatePublicationForm(): ReactElement {
     const auth = useAuth();
@@ -45,9 +46,7 @@ export default function CreatePublicationForm(): ReactElement {
     useEffect(() => {
         if (isError && error) {
             if (typeof error.errors !== 'undefined') {
-                for (const [errorField, errorObject] of Object.entries(error.errors)) {
-                    setError(errorField as keyof ICreatePublication, { type: 'manual', message: errorObject.message });
-                }
+                applyErrorsToForm(error.errors, setError);
             }
         } else if (data) {
             history.push({ pathname: `/${auth.session.username}/${data.publication.name}` });

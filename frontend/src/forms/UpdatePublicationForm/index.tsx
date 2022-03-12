@@ -12,6 +12,7 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import Grid from '@mui/material/Grid';
 import { ReactElement, useEffect } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { applyErrorsToForm } from '../../lib/utils/error';
 
 interface EditPublicationFormProps {
     publication: Publication;
@@ -47,18 +48,8 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
     useEffect(() => {
         if (isError && error) {
             if (typeof error.errors !== 'undefined') {
-                for (const [errorField, errorObject] of Object.entries(error.errors)) {
-                    // @@Hack: In the event if one of the collaborators is invalid, we still want to set the
-                    //         error. However, the backend will return collaborators.* as the error
-                    if (errorField.startsWith('collaborators')) {
-                        setError('collaborators', { type: 'manual', message: errorObject.message });
-                    } else {
-                        setError(errorField as keyof IEditPublication, {
-                            type: 'manual',
-                            message: errorObject.message,
-                        });
-                    }
-                }
+                // @@Investigate: collaborators.${number} might not apply to the actual field??
+                applyErrorsToForm(error.errors, setError);
             }
 
             notificationDispatcher({

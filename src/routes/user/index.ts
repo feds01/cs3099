@@ -57,6 +57,7 @@ registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -97,6 +98,7 @@ registerRoute(router, '/:username/avatar', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: null,
     handler: async (req) => {
@@ -148,6 +150,7 @@ registerRoute(router, '/:username/avatar', {
     method: 'delete',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: null,
     handler: async (req) => {
@@ -201,6 +204,7 @@ registerRoute(router, '/:username', {
     method: 'patch',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     body: IUserPatchRequestSchema,
     permissionVerification: verifyUserWithElevatedPermission,
     permission: { level: IUserRole.Moderator, runPermissionFn: true },
@@ -298,6 +302,7 @@ registerRoute(router, '/:username', {
     method: 'delete',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
@@ -338,6 +343,7 @@ registerRoute(router, '/:username/role', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -381,6 +387,7 @@ registerRoute(router, '/:username/role', {
     method: 'patch',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     body: IUserRoleRequestSchema,
     permissionVerification: verifyUserWithElevatedPermission,
     permission: { level: IUserRole.Moderator, runPermissionFn: true },

@@ -4,7 +4,7 @@ import qs from 'query-string';
 import { z } from 'zod';
 
 import Logger from '../../common/logger';
-import { JwtError, createTokens, verifyToken } from '../../lib/auth/auth';
+import { createTokens, verifyToken } from '../../lib/auth/auth';
 import { makeRequest } from '../../lib/communication/fetch';
 import registerRoute from '../../lib/communication/requests';
 import State from '../../models/State';
@@ -35,6 +35,7 @@ registerRoute(router, '/login', {
     method: 'get',
     params: z.object({}),
     query: z.object({ from: z.string().url(), state: z.string() }),
+    headers: z.object({}),
     permission: null,
     handler: async (req) => {
         const { from, state } = req.query;
@@ -66,6 +67,7 @@ registerRoute(router, '/callback', {
     method: 'get',
     params: z.object({}),
     query: z.object({ from: z.string().url(), state: z.string(), token: z.string() }),
+    headers: z.object({}),
     permission: null,
     handler: async (req) => {
         const { from, state, token } = req.query;
@@ -116,11 +118,7 @@ registerRoute(router, '/callback', {
         await State.findByIdAndDelete(stateLink.id).exec();
 
         // create the tokens
-        const tokens = createTokens({
-            id: importedUser._id,
-            email: transformedUser.email,
-            username: transformedUser.username,
-        });
+        const tokens = createTokens(importedUser._id.toString());
         const stringifiedTokens = qs.stringify(tokens);
 
         // Here we need to create or update the user and invalid the state so it can't be re-used.
@@ -155,56 +153,30 @@ registerRoute(router, '/verify', {
     params: z.object({}),
     body: z.object({}),
     query: z.object({ token: IJwtSchema }),
+    headers: z.object({}),
     permission: null,
     handler: async (req) => {
         const { token } = req.query;
 
-        try {
-            const verifiedToken = await verifyToken(token, config.jwtSecret);
+        // now look up the user that's specified in the token.
+        const { sub: id } = await verifyToken(token, config.jwtSecret);
+        const user = await User.findById(id).exec();
 
-            // now look up the user that's specified in the token.
-            const user = await User.findById(verifiedToken.id).exec();
-
-            if (!user) {
-                return {
-                    status: 'error',
-                    code: 404,
-                    message: "User doesn't exist.",
-                };
-            }
-            return {
-                status: 'ok',
-                code: 200,
-                data: {
-                    id: `${user.id}:${config.teamName}`,
-                    ...User.projectAsSg(user),
-                },
-            };
-        } catch (e: unknown) {
-            if (e instanceof JwtError) {
-                // Specifically mention that the jwt has expired.
-                if (e.type === 'expired') {
-                    return {
-                        status: 'error',
-                        code: 401,
-                        message: 'JSON web token has expired.',
-                    };
-                }
-
-                return {
-                    status: 'error',
-                    code: 401,
-                    message: 'Invalid JSON web token.',
-                };
-            }
-
-            Logger.error(e);
+        if (!user) {
             return {
                 status: 'error',
-                code: 500,
-                message: 'Internal Server Error',
+                code: 404,
+                message: "User doesn't exist.",
             };
         }
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                id: `${user.id}:${config.teamName}`,
+                ...User.projectAsSg(user),
+            },
+        };
     },
 });
 

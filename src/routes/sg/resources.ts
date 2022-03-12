@@ -1,16 +1,23 @@
+import assert from 'assert';
 import express from 'express';
 import { z } from 'zod';
 
 import * as errors from '../../common/errors';
+import * as zip from '../../lib/resources/zip';
 import Logger from '../../common/logger';
+import { verifyToken } from '../../lib/auth/auth';
 import { downloadOctetStream, makeRequest } from '../../lib/communication/fetch';
-import { importUser } from '../../lib/communication/import';
 import registerRoute from '../../lib/communication/requests';
+import { ReviewImportIssues, ReviewImportManager } from '../../lib/import/review';
+import { importUser } from '../../lib/import/user';
 import { moveResource } from '../../lib/resources/fs';
-import { archiveIndexToPath } from '../../lib/resources/zip';
 import Publication, { IPublication } from '../../models/Publication';
 import Review, { IReviewStatus, PopulatedReview } from '../../models/Review';
 import { IUser } from '../../models/User';
+import { config } from '../../server';
+import { expr } from '../../utils/expr';
+import { IAuthHeaderSchema } from '../../validators/auth';
+import { ExportPublicationOptionsSchema } from '../../validators/export';
 import { ObjectIdSchema } from '../../validators/requests';
 import { SgMetadataSchema } from '../../validators/sg';
 
@@ -37,6 +44,7 @@ registerRoute(router, '/import', {
     params: z.object({}),
     body: z.object({}),
     query: z.object({ from: z.string().url(), id: z.string(), token: z.string() }),
+    headers: z.object({}),
     permission: null,
     handler: async (req) => {
         const { from, token, id } = req.query;
@@ -100,26 +108,81 @@ registerRoute(router, '/import', {
             };
         }
 
+        // If we actually had to import the user from elsewhere, we will need to save it.
+        if (userImport.toSave) {
+            await userImport.doc.save();
+        }
+        assert(typeof userImport.doc._id !== 'undefined');
+        const ownerId = userImport.doc._id.toString();
+
+        // We have to check that the publication with 'name' and the 'ownerId' doesn't already
+        // exist, otherwise this doesn't conform to our uniqueness constraints...
+        const uniquenessCheck = await Publication.findOne({ owner: ownerId, name: publication.name }).exec();
+
+        if (uniquenessCheck !== null) {
+            return {
+                status: 'error',
+                code: 400,
+                message: "Publication already exists for the owner",
+                errors: {
+                    "publication.name": { message: "Publication name must be unique for the owner" }
+                }
+            }
+        }
+
         const doc = await new Publication({
             ...publication,
-            owner: userImport.item.id.toString(),
+            owner: ownerId,
         }).save();
 
         // now we need to move the file to it's home location...
-        const finalPath = archiveIndexToPath({
+        const index = {
             userId: doc.owner.toString(),
             name: doc.name,
-        });
+        };
 
+        const finalPath = zip.archiveIndexToPath(index);
         await moveResource(publicationArchive.response, finalPath);
 
-        //@@TODO: We have to deal with reviews here...
-        // const reviewImportErrors = []
-        for (const review of reviews) {
-            Logger.info(`Attempting to import user ${review.owner} for review`);
+        // we also need to create a archive so that we can validate the review
+        const archive = zip.loadArchive(index);
+        assert(archive !== null);
+
+        // We create a map of all the issues that occurred when trying to import the specific review
+        const importIssues = new Map<number, ReviewImportIssues>();
+
+        for (const [index, review] of reviews.entries()) {
+            const reviewManager = new ReviewImportManager(ownerId, doc, review, archive);
+            const result = await reviewManager.save();
+
+            if (result.status === 'error') {
+                Logger.info(`Failed to import review owned by user ${review.owner}`);
+                const { issues, message } = result;
+                importIssues.set(index, { issues, message });
+            }
         }
 
-        return { status: 'ok', code: 200 };
+        if (importIssues.size !== 0) {
+            const errors = new Map<string, { message: string | string[] }>();
+
+            for (const [issueIndex, importIssue] of importIssues.entries()) {
+                const errorPath = `reviews.${issueIndex}`;
+
+                errors.set(errorPath, { message: importIssue.message });
+
+                for (const [commentIndex, commentIssue] of Object.entries(importIssue.issues)) {
+                    for (const [fieldName, issues] of Object.entries(commentIssue)) {
+                        errors.set(`${errorPath}.comments.${commentIndex}.${fieldName}`, {
+                            message: issues,
+                        });
+                    }
+                }
+            }
+
+            return { status: 'partial', code: 207, errors: Object.fromEntries(errors) };
+        } else {
+            return { status: 'ok', code: 200 };
+        }
     },
 });
 
@@ -141,9 +204,14 @@ registerRoute(router, '/import', {
 registerRoute(router, '/export/:id/metadata', {
     method: 'get',
     params: z.object({ id: ObjectIdSchema }),
+    headers: z.object({ Authorization: IAuthHeaderSchema }),
     query: z.object({ from: z.string().url(), state: z.string() }),
     permission: null,
     handler: async (req) => {
+        // we need to verify the token in the headers is valid...
+        const token = await verifyToken(req.headers.Authorization, config.jwtSecret);
+        const exportOptions = ExportPublicationOptionsSchema.parse(token.data);
+
         const publication = await Publication.findById(req.params.id).exec();
 
         if (!publication || publication.draft) {
@@ -157,13 +225,19 @@ registerRoute(router, '/export/:id/metadata', {
         // Okay, let's find all the reviews that are related to the current revision
         // of the publication, for now we don't consider revisions of a publication
         // a concept at all because external groups don't know about our revision system.
-        const reviews = (await Review.find({
-            publication: publication.id,
-            status: IReviewStatus.Completed,
-        })
-            .populate<{ publication: IPublication }>('publication')
-            .populate<{ owner: IUser }>('owner')
-            .exec()) as PopulatedReview[];
+        const reviews = await expr(async () => {
+            if (exportOptions.exportReviews) {
+                return (await Review.find({
+                    publication: publication.id,
+                    status: IReviewStatus.Completed,
+                })
+                    .populate<{ publication: IPublication }>('publication')
+                    .populate<{ owner: IUser }>('owner')
+                    .exec()) as PopulatedReview[];
+            } else {
+                return [];
+            }
+        });
 
         return {
             status: 'ok',
@@ -193,9 +267,14 @@ registerRoute(router, '/export/:id/metadata', {
 registerRoute(router, '/export/:id', {
     method: 'get',
     params: z.object({ id: ObjectIdSchema }),
+    headers: z.object({ Authorization: IAuthHeaderSchema }),
     query: z.object({ from: z.string().url(), state: z.string() }),
     permission: null,
     handler: async (req) => {
+        // we need to verify the token in the headers is valid...
+        const token = await verifyToken(req.headers.Authorization, config.jwtSecret);
+        ExportPublicationOptionsSchema.parse(token.data);
+
         const publication = await Publication.findById(req.params.id);
 
         if (!publication) {
@@ -207,7 +286,7 @@ registerRoute(router, '/export/:id', {
         }
 
         const { owner, name, revision } = publication;
-        const archive = archiveIndexToPath({ userId: owner.toString(), name, revision });
+        const archive = zip.archiveIndexToPath({ userId: owner.toString(), name, revision });
 
         return {
             status: 'file',

@@ -31,7 +31,7 @@ class ActivityRecord<Params, Query, Body> {
     /** Constructor for Activity record */
     constructor(
         readonly type: ActivityType,
-        readonly request: BasicRequest<Params, Query, Body>,
+        readonly request: BasicRequest<Params, Query, Body, unknown>,
         readonly requester: IUserDocument | null,
         readonly metadataTransformFn: ActivityMetadataTransformer<Params, Query, Body>,
     ) {}

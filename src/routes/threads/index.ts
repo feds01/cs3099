@@ -24,6 +24,7 @@ registerRoute(router, '/:id', {
     method: 'get',
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({}),
+    headers: z.object({}),
     permissionVerification: verifyCommentThreadPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -61,6 +62,7 @@ registerRoute(router, '/:id', {
     method: 'delete',
     params: z.object({ id: ObjectIdSchema }),
     query: z.object({}),
+    headers: z.object({}),
     permissionVerification: verifyCommentThreadPermission,
     permission: { level: IUserRole.Moderator },
     handler: async (req) => {

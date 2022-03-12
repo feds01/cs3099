@@ -13,6 +13,7 @@ import Typography from '@mui/material/Typography';
 import { useEffect } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import { applyErrorsToForm } from '../../lib/utils/error';
 
 interface AccountUpdateFormProps {
     user: User;
@@ -36,16 +37,12 @@ export function AccountUpdateForm({ user, isSelf, refetch }: AccountUpdateFormPr
 
     // This is the query to the backend
     const { isLoading, isError, data: response, error, mutateAsync } = usePatchUserUsername();
-
-    // This function will be called once the form is ready to submit
     const onSubmit: SubmitHandler<AccountUpdate> = async (data) => await mutateAsync({ username: user.username, data });
 
     useEffect(() => {
         if (isError && error) {
             if (typeof error.errors !== 'undefined') {
-                for (const [errorField, errorObject] of Object.entries(error.errors)) {
-                    setError(errorField as keyof AccountUpdate, { type: 'manual', message: errorObject.message });
-                }
+                applyErrorsToForm(error.errors, setError);
             }
 
             notificationDispatcher({

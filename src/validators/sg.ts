@@ -85,7 +85,7 @@ export type ExportSgComment = z.infer<typeof ExportSgCommentSchema>;
 export const SgReviewSchema = z.object({
     owner: SgUserIdSchema,
     createdAt: z.number().int().nonnegative(),
-    comments: z.array(SgCommentSchema),
+    comments: z.array(SgCommentSchema).min(1),
 });
 
 export type SgReview = z.infer<typeof SgReviewSchema>;

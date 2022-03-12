@@ -28,6 +28,7 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
     method: 'get',
     params: z.object({ username: z.string(), name: z.string(), revision: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -80,6 +81,7 @@ registerRoute(router, '/:username/:name/:revision/review', {
     method: 'post',
     body: z.object({}),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     params: z.object({
         username: z.string(),
         name: z.string(),
