@@ -2,6 +2,7 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 
 import Logger from '../common/logger';
 import { config } from '../server';
+import Activity from './Activity';
 import Follower from './Follower';
 import Publication from './Publication';
 
@@ -99,6 +100,9 @@ UserSchema.post(
             { collaborators: [id] },
             { $pull: { collaborators: item._id } },
         ).exec();
+
+        // Remove any activities that the user owns
+        await Activity.deleteMany({ owner: id }).exec();
 
         next();
     },
