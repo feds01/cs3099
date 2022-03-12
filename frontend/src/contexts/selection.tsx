@@ -7,21 +7,23 @@ export type SelectionStateAction =
     | { type: 'finalise'; location: number }
     | { type: 'reset' };
 
-export type SelectionState = {
-    isDragging: true;
-    range: {
-        start: number;
-        end: number;
-    };
-    filename: string;
-} | {
-    isDragging: false
-    filename?: string;
-    range?: {
-        start: number;
-        end: number;
-    };
-};
+export type SelectionState =
+    | {
+          isDragging: true;
+          range: {
+              start: number;
+              end: number;
+          };
+          filename: string;
+      }
+    | {
+          isDragging: false;
+          filename?: string;
+          range?: {
+              start: number;
+              end: number;
+          };
+      };
 
 const initialState: SelectionState = {
     isDragging: false,
@@ -49,15 +51,15 @@ export function selectionReducer(state: SelectionState, action: SelectionStateAc
                 isDragging: false,
                 filename: action.filename,
                 range: { start: action.location, end: action.location },
-            }
+            };
         }
         case 'continue':
             return {
                 ...state,
                 range: {
                     start: state.range?.start || action.location,
-                    end: action.location
-                }
+                    end: action.location,
+                },
             };
         case 'finalise':
             return {
@@ -65,13 +67,13 @@ export function selectionReducer(state: SelectionState, action: SelectionStateAc
                 isDragging: false,
                 range: {
                     start: state.range?.start || action.location,
-                    end: action.location
-                }
+                    end: action.location,
+                },
             };
         case 'reset': {
             return {
                 isDragging: false,
-            }
+            };
         }
     }
 }

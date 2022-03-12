@@ -57,22 +57,22 @@ export default function CreatePublicationForm(): ReactElement {
     return (
         <form style={{ width: '100%', marginTop: '8px' }} onSubmit={handleSubmit(onSubmit)}>
             <Grid container maxWidth={'lg'}>
-                <Grid item xs={12} sx={{pt: 1}}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="Publication name" />
                     <Typography variant={'body2'}>This will be used to publicly identify the publication.</Typography>
                     <ControlledTextField name="name" control={control} />
                 </Grid>
-                <Grid item xs={12} sx={{pt: 1}}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="Publication title" />
                     <Typography variant={'body2'}>This is the title of the publication.</Typography>
                     <ControlledTextField name="title" control={control} />
                 </Grid>
-                <Grid item xs={12} sx={{pt: 1}}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="About" required={false} />
                     <Typography variant={'body2'}>Write a small about section for the publication</Typography>
                     <ControlledTextField name="about" control={control} />
                 </Grid>
-                <Grid item xs={12} sx={{pt: 1}}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="Introduction" required={false} />
                     <Typography variant={'body2'}>Write a introduction for the publication</Typography>
                     <ControlledTextField
@@ -84,7 +84,7 @@ export default function CreatePublicationForm(): ReactElement {
                         }}
                     />
                 </Grid>
-                <Grid item xs={12} sx={{pt: 1}}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="Revision" />
                     <Typography variant={'body2'}>Add a revision tag to the publication</Typography>
                     <ControlledTextField name="revision" control={control} />
@@ -95,7 +95,7 @@ export default function CreatePublicationForm(): ReactElement {
                     <ControlledAutocomplete name="collaborators" control={control} />
                 </Grid>
                 <Grid item xs={12}>
-                    <Box sx={{pt: 1}}>
+                    <Box sx={{ pt: 1 }}>
                         <LoadingButton
                             loading={isLoading || isSubmitting}
                             disabled={!isValid}

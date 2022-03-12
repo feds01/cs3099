@@ -32,8 +32,8 @@ export default function RegisterForm({ onSuccess }: RegisterAccountFormProps): R
             email: '',
             name: '',
             password: '',
-            confirm: ''
-        }
+            confirm: '',
+        },
     });
     const { isLoading, isError, data: response, error, mutateAsync } = usePostAuthRegister();
 

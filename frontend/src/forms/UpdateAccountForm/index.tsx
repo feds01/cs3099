@@ -38,8 +38,7 @@ export function AccountUpdateForm({ user, isSelf, refetch }: AccountUpdateFormPr
     const { isLoading, isError, data: response, error, mutateAsync } = usePatchUserUsername();
 
     // This function will be called once the form is ready to submit
-    const onSubmit: SubmitHandler<AccountUpdate> = async (data) =>
-        await mutateAsync({ username: user.username, data });
+    const onSubmit: SubmitHandler<AccountUpdate> = async (data) => await mutateAsync({ username: user.username, data });
 
     useEffect(() => {
         if (isError && error) {
@@ -76,7 +75,7 @@ export function AccountUpdateForm({ user, isSelf, refetch }: AccountUpdateFormPr
                 </Grid>
                 <Grid item xs={12} md={7}>
                     <Typography variant={'body1'} sx={{ fontWeight: 'bold' }}>
-                        {isSelf ? "Your" : "User"} status
+                        {isSelf ? 'Your' : 'User'} status
                     </Typography>
                     <Grid item xs={12} sm={8} md={6}>
                         <ControlledTextField control={control} name="status" />

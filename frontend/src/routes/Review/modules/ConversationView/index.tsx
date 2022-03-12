@@ -65,7 +65,7 @@ export default function ConversionView(_props: ConversationViewProps) {
         <Container maxWidth="md" sx={{ pt: 2 }}>
             <Box sx={{ pb: 1 }}>
                 <Typography variant={'h4'}>
-                    Review on {<PublicationLink username={review.publication.owner.username} {...review.publication} />}
+                    Review on <PublicationLink {...review.publication} />
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <Typography>

@@ -27,7 +27,7 @@ export default function DeletePublicationForm({ username }: DeleteUserAccountFor
             setDialogueOpen(false);
 
             // Remove the user session as soon as we have deleted the account
-            authDispatcher({ type: "logout"});
+            authDispatcher({ type: 'logout' });
         }
     }, [isLoading, isError, isSuccess]);
 

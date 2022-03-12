@@ -46,11 +46,7 @@ export default function PublicationCard({ publication }: PublicationCardProps): 
                             />
                         )}{' '}
                         <Typography variant={'h5'} sx={{ fontWeight: 'bold', display: 'inline-block' }}>
-                            <PublicationLink
-                                style={{ color: theme.palette.text.primary }}
-                                username={publication.owner.username}
-                                {...publication}
-                            />
+                            <PublicationLink style={{ color: theme.palette.text.primary }} {...publication} />
                         </Typography>
                         <Typography variant={'body1'} sx={{ lineHeight: '28px !important' }}>
                             {publication.about && <>&nbsp;- </>}

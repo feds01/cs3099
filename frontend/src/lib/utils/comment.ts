@@ -1,7 +1,7 @@
 import { Comment, CommentAnchor } from '../api/models';
 
-/** 
- * Type representing a comment thread. This type is used to group comments that 
+/**
+ * Type representing a comment thread. This type is used to group comments that
  * belong to the same thread.
  */
 export type CommentThread = {
@@ -15,13 +15,12 @@ export type CommentThread = {
     id: string;
 };
 
-
 /**
- * This function is used to sort an array of comments into a hash map that represents a mapping 
- * between a thread id and the comment. It collects comments into lists that are associative to 
- * their thread. This is done so that they can be rendered by a singular component and provide 
+ * This function is used to sort an array of comments into a hash map that represents a mapping
+ * between a thread id and the comment. It collects comments into lists that are associative to
+ * their thread. This is done so that they can be rendered by a singular component and provide
  * additional styling in regards to the thread.
- * 
+ *
  * @param comments - List of comments to be sorted using the comment thread id
  * @returns A mapping between a thread id and its comments.
  */
@@ -63,10 +62,10 @@ export function sortCommentsIntoThreads(comments: Comment[]): Map<string, Commen
 }
 
 /**
- * This function is used to sort comments by their filenames into a map representing the filename and comment 
+ * This function is used to sort comments by their filenames into a map representing the filename and comment
  * threads. The function takes in a map of thread ids to comment threads. It will create a new map representing
  * the threads and their associative files
- * 
+ *
  * @param commentThreads The map representing sorted comments by thread id
  * @returns A map of comment threads to filenames
  */
@@ -89,9 +88,9 @@ export function sortCommentsIntoFileMap(commentThreads: Map<string, CommentThrea
 }
 
 /**
- * This function will take any comment threads that have no associative file or file source as these 
+ * This function will take any comment threads that have no associative file or file source as these
  * comments need to be handled separately from files
- * 
+ *
  * @param commentThreads The map representing sorted comments by thread id
  * @returns A list of general comment threads.
  */
@@ -100,7 +99,7 @@ export function extractGeneralCommentsFromThreads(commentThreads: Map<string, Co
 
     for (const thread of commentThreads.values()) {
         if (typeof thread.filename !== 'string') {
-            generalComments.push(thread)
+            generalComments.push(thread);
         }
     }
 

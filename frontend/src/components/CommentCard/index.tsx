@@ -28,7 +28,7 @@ export default function CommentCard({ comment }: CommentCardProps): ReactElement
     const { review } = useReviewState();
     const notificationDispatcher = useNotificationDispatch();
 
-    // Permissions on the comment 
+    // Permissions on the comment
     const [permissions] = useState<Permission>(computeUserPermission(comment.author.id, session));
 
     // Comment card editing menu

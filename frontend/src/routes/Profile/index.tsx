@@ -66,24 +66,31 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                     <Skeleton variant="text" width={200} />
                 </Box>
             );
-            case 'error':
-                throw content.error;
-            case 'ok':
-                    const profileData = content.data;
-                    const permission = computeUserPermission(content.data.user.id, session);
+        case 'error':
+            throw content.error;
+        case 'ok':
+            const profileData = content.data;
+            const permission = computeUserPermission(content.data.user.id, session);
             return (
                 <Box sx={{ pt: 2, width: '100%' }}>
                     <Box
                         sx={{
                             display: 'flex',
                             flexDirection: 'row',
-                            justifyContent: "flex-end",
+                            justifyContent: 'flex-end',
                             width: '100%',
                         }}
                     >
                         {permission.modify && (
                             <Link to={`/account/${profileData.user.username}`}>
-                                <Button sx={{mr: profileData.user.username === session.username ? 0 : 1, fontWeight: 'bold'}}>User Settings</Button>
+                                <Button
+                                    sx={{
+                                        mr: profileData.user.username === session.username ? 0 : 1,
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    User Settings
+                                </Button>
                             </Link>
                         )}
                         <FollowerButton username={profileData.user.username} />

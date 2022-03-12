@@ -178,7 +178,13 @@ export default function FileViewer({ contents, filename, id, review, threads, wo
                 </AccordionSummary>
                 <AccordionDetails>
                     {renderSources ? (
-                        <CodeRenderer worker={worker} contents={contents} filename={filename} commentMap={commentMap} review={review} />
+                        <CodeRenderer
+                            worker={worker}
+                            contents={contents}
+                            filename={filename}
+                            commentMap={commentMap}
+                            review={review}
+                        />
                     ) : (
                         <>
                             <FileSkeleton sx={{ p: 1, zIndex: 10, width: '100%' }} />

@@ -1,9 +1,9 @@
-import VoidImage from '../static/images/void.svg';
 import ActivityCard from '../components/ActivityCard';
 import ErrorBanner from '../components/ErrorBanner';
 import SkeletonList from '../components/SkeletonList';
 import { useGetUserUsernameFeed } from '../lib/api/activity/activity';
 import { ApiErrorResponse, GetUserUsernameFeed200 } from '../lib/api/models';
+import VoidImage from '../static/images/void.svg';
 import { ContentState } from '../types/requests';
 import { transformQueryIntoContentState } from '../wrappers/react-query';
 import Box from '@mui/material/Box';

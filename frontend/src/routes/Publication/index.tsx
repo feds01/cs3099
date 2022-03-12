@@ -136,7 +136,7 @@ function getCanonicalName(location: string, username: string, name: string): [st
     const components = location.split(`/${username}/${name}`);
 
     if (typeof components[1] === 'undefined') {
-        throw new Error("Invalid path in canonical name")
+        throw new Error('Invalid path in canonical name');
     }
 
     const component = components[1];

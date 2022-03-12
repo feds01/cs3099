@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import React, { useState, ReactElement } from 'react';
 import Close from '@mui/icons-material/Close';
-import Box from '@mui/material/Box/Box';
+import Box from '@mui/material/Box';
 import Snackbar from '@mui/material/Snackbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';

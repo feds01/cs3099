@@ -38,7 +38,7 @@ interface TabProps {
 }
 
 const FileTab: TabProps = {
-    label: "Files",
+    label: 'Files',
     icon: <BiFile size={16} />,
     component: () => <FileView />,
 };
@@ -47,14 +47,14 @@ const TabMap = ({ review, comments }: TabMapProps): Record<string, TabProps> =>
     review.status === 'completed'
         ? {
               [`/review/${review.id}`]: {
-                label: (
-                    <>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                            Conversation
-                        </Typography>
-                        <Chip size="small" sx={{ ml: 0.5 }} label={comments.length} />
-                    </>
-                ),
+                  label: (
+                      <>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                              Conversation
+                          </Typography>
+                          <Chip size="small" sx={{ ml: 0.5 }} label={comments.length} />
+                      </>
+                  ),
                   icon: <BiConversation size={16} />,
                   component: () => <ConversationView />,
               },

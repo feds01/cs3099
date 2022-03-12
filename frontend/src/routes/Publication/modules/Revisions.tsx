@@ -60,10 +60,15 @@ function Revision({ item, session, refetchRevisions }: RevisionProps) {
                             {formatDistance(item.createdAt, new Date(), { addSuffix: true })}
                         </Typography>
                     </Box>
-                    {permission.delete && <DeletePublicationForm publication={item} onCompletion={async () => { 
-                        await refetchRevisions();
-                        refetch();
-                    }} />}
+                    {permission.delete && (
+                        <DeletePublicationForm
+                            publication={item}
+                            onCompletion={async () => {
+                                await refetchRevisions();
+                                refetch();
+                            }}
+                        />
+                    )}
                 </Box>
                 <Divider />
                 <Box sx={{ pt: 1 }}>
@@ -120,11 +125,22 @@ export default function Revisions() {
                     <Box sx={{ width: '100%' }}>
                         <Timeline>
                             {revisions.map((item) => {
-                                return <Revision key={item.id} session={session} item={item} refetchRevisions={revisionQuery.refetch} />;
+                                return (
+                                    <Revision
+                                        key={item.id}
+                                        session={session}
+                                        item={item}
+                                        refetchRevisions={revisionQuery.refetch}
+                                    />
+                                );
                             })}
                         </Timeline>
                     </Box>
-                    <RevisePublicationForm isOpen={revisePublicationDialogOpen} onClose={() => setRevisePublicationDialogOpen(false)} onCompletion={revisionQuery.refetch}/>
+                    <RevisePublicationForm
+                        isOpen={revisePublicationDialogOpen}
+                        onClose={() => setRevisePublicationDialogOpen(false)}
+                        onCompletion={revisionQuery.refetch}
+                    />
                 </Box>
             );
         }
