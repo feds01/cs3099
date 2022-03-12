@@ -85,14 +85,20 @@ UserSchema.index({ username: 'text', about: 'text', name: 'text', status: 'text'
 UserSchema.post(
     /deleteOne|findOneAndDelete$/,
     { document: true, query: true },
-    async (item: IUserDocument, next) => {
+    async (item: AugmentedUserDocument, next) => {
         Logger.warn('Cleaning up user resources after account deletion');
 
-        const id = item.id as string;
+        const id = item._id.toString();
         await Publication.deleteMany({ owner: id }).exec();
 
         // Now we need to delete any follower entries that contain the current user's id
         await Follower.deleteMany({ $or: [{ following: id }, { follower: id }] }).exec();
+
+        // We also need to clear any collaborators that are stored for any publication
+        await Publication.updateMany(
+            { collaborators: [id] },
+            { $pull: { collaborators: item._id } },
+        ).exec();
 
         next();
     },
