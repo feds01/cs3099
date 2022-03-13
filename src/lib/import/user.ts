@@ -83,9 +83,11 @@ export async function importUser(externalUserId: SgUserId): Promise<UserImportSt
         };
     }
 
+    const userDoc = await transformSgUserToInternal(userData.response);
+
     return {
         status: 'ok',
-        doc: new User(transformSgUserToInternal(userData.response)),
+        doc: new User(userDoc),
         toSave: true,
     };
 }
