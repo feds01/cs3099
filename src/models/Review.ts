@@ -67,7 +67,7 @@ const ReviewSchema = new Schema<IReview, IReviewModel, IReview>(
  * if the publication is marked for deletion.
  */
 ReviewSchema.post(
-    /deleteOne|findOneAndDelete$/,
+    /remove|deleteOne|findOneAndDelete$/,
     { document: true, query: true },
     async (item: AugmentedReviewDocument, next) => {
         await Comment.deleteMany({ review: item._id.toString() });
