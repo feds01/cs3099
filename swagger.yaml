@@ -2315,9 +2315,6 @@ components:
                 status:
                     type: string
                     example: "I'm working"
-                password:
-                    type: string
-                    example: 'Password1!'
         UserLogin:
             type: object
             description: The username can either be the actual username or the user's email.
