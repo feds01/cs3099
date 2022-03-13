@@ -22,21 +22,21 @@ const getOptionLabel = (option: string | User): string => {
     } else {
         return option.username;
     }
-}
+};
 
 const getOptionIcon = (option: string | User, sx?: SxProps<Theme>) => {
     if (typeof option === 'string') {
-        return <PureUserAvatar size={24} username={option} sx={sx} />
+        return <PureUserAvatar size={24} username={option} sx={sx} />;
     } else {
-        return <PureUserAvatar size={24} {...option} sx={sx}/>;
+        return <PureUserAvatar size={24} {...option} sx={sx} />;
     }
-}
+};
 
 const getOptionDescription = (option: string | User): string | undefined => {
     if (typeof option !== 'string') {
         return option.about;
     }
-}
+};
 
 export default function CollaboratorInput<T>({
     name,

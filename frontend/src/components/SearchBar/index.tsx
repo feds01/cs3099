@@ -1,6 +1,6 @@
 import { Publication, User } from '../../lib/api/models';
 import { getSearchPublication, getSearchUser } from '../../lib/api/search/search';
-import UserAvatar, { PureUserAvatar } from '../UserAvatar';
+import { PureUserAvatar } from '../UserAvatar';
 import SearchIcon from '@mui/icons-material/Search';
 import { Typography } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
