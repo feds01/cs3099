@@ -117,17 +117,22 @@ registerRoute(router, '/import', {
 
         // We have to check that the publication with 'name' and the 'ownerId' doesn't already
         // exist, otherwise this doesn't conform to our uniqueness constraints...
-        const uniquenessCheck = await Publication.findOne({ owner: ownerId, name: publication.name }).exec();
+        const uniquenessCheck = await Publication.findOne({
+            owner: ownerId,
+            name: publication.name,
+        }).exec();
 
         if (uniquenessCheck !== null) {
             return {
                 status: 'error',
                 code: 400,
-                message: "Publication already exists for the owner",
+                message: 'Publication already exists for the owner',
                 errors: {
-                    "publication.name": { message: "Publication name must be unique for the owner" }
-                }
-            }
+                    'publication.name': {
+                        message: 'Publication name must be unique for the owner',
+                    },
+                },
+            };
         }
 
         const doc = await new Publication({

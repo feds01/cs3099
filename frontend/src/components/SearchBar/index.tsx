@@ -1,6 +1,6 @@
 import { Publication, User } from '../../lib/api/models';
 import { getSearchPublication, getSearchUser } from '../../lib/api/search/search';
-import UserAvatar from '../UserAvatar';
+import UserAvatar, { PureUserAvatar } from '../UserAvatar';
 import SearchIcon from '@mui/icons-material/Search';
 import { Typography } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -25,6 +25,40 @@ type SearchResponse =
           type: 'query';
           data: string;
       };
+
+const getOptionLabel = (option: SearchResponse) => {
+    if (option.type === 'publication') {
+        return option.data.name;
+    } else if (option.type === 'user') {
+        return option.data.username;
+    } else if (option.type === 'query') {
+        return option.data !== '' ? `Search '${option.data}' on Iamus` : `Search...`;
+    }
+
+    return 'Search...';
+};
+
+const getOptionIcon = (option: SearchResponse) => {
+    switch (option.type) {
+        case 'publication':
+            return <BsJournalCode />;
+        case 'user':
+            return <PureUserAvatar size={28} {...option.data} />;
+        case 'query':
+            return <SearchIcon />;
+    }
+};
+
+const getOptionDescription = (option: SearchResponse): string | undefined => {
+    switch (option.type) {
+        case 'publication':
+            return option.data.about || `posted by ${option.data.owner.username}`;
+        case 'user':
+            return option.data.about;
+        case 'query':
+            return;
+    }
+};
 
 function SearchBar() {
     const history = useHistory();
@@ -65,40 +99,6 @@ function SearchBar() {
     useEffect(() => {
         debouncedSearch(input);
     }, [input]);
-
-    const getOptionLabel = (option: SearchResponse) => {
-        if (option.type === 'publication') {
-            return option.data.name;
-        } else if (option.type === 'user') {
-            return option.data.username;
-        } else if (option.type === 'query') {
-            return option.data !== '' ? `Search '${option.data}' on Iamus` : `Search...`;
-        }
-
-        return 'Search...';
-    };
-
-    const getOptionIcon = (option: SearchResponse) => {
-        switch (option.type) {
-            case 'publication':
-                return <BsJournalCode />;
-            case 'user':
-                return <UserAvatar size={28} {...option.data} />;
-            case 'query':
-                return <SearchIcon />;
-        }
-    };
-
-    const getOptionDescription = (option: SearchResponse): string | undefined => {
-        switch (option.type) {
-            case 'publication':
-                return option.data.about || `posted by ${option.data.owner.username}`;
-            case 'user':
-                return option.data.about;
-            case 'query':
-                return;
-        }
-    };
 
     return (
         <Autocomplete

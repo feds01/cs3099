@@ -24,7 +24,7 @@ export function transformSgUserToInternal(
     const { name, email, id, profilePictureUrl } = user;
 
     return {
-        username: id.id, // TODO: this is somewhat flaky since what if the username is already taken?
+        username: id.id,
         name,
         password: '',
         profilePictureUrl,

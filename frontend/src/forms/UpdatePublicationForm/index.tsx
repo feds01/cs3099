@@ -1,4 +1,4 @@
-import ControlledAutocomplete from '../../components/ControlledAutocomplete';
+import CollaboratorInput from '../../components/CollaboratorInput';
 import ControlledTextField from '../../components/ControlledTextField';
 import ErrorBanner from '../../components/ErrorBanner';
 import FieldLabel from '../../components/FieldLabel';
@@ -95,7 +95,11 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
                 </Grid>
                 <Grid item xs={12}>
                     <FieldLabel label="Collaborators" required={false} />
-                    <ControlledAutocomplete name="collaborators" control={control} />
+                    <CollaboratorInput
+                        name="collaborators"
+                        collaborators={publication.collaborators}
+                        control={control}
+                    />
                 </Grid>
                 <Grid item xs={12}>
                     <LoadingButton
