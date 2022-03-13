@@ -111,6 +111,7 @@ function SearchBar() {
             onClose={() => {
                 setOpen(false);
             }}
+            filterOptions={(x) => x}
             groupBy={(option) => option.type}
             renderGroup={(option) => {
                 return (

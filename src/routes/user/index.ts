@@ -117,7 +117,7 @@ registerRoute(router, '/', {
             status: 'ok',
             code: 200,
             data: {
-                users: result.data.map((user) => User.project(user)),
+                users: result.data.map((user) => User.project(user, false)),
                 total: result.total ?? 0,
                 skip,
                 take,

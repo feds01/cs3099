@@ -44,7 +44,7 @@ registerRoute(router, '/:username/feed', {
             {
                 $facet: {
                     data: [
-                        { $match: { draft: false } },
+                        { $match: { isLive: true } },
                         { $sort: { _id: -1 } },
                         { $skip: skip },
                         { $limit: take },

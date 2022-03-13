@@ -1,19 +1,20 @@
 import { User } from '../../lib/api/models';
+import { getUser } from '../../lib/api/users/users';
 import { PureUserAvatar } from '../UserAvatar';
+import { SxProps, Theme } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
+import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import TextField, { TextFieldProps } from '@mui/material/TextField';
-import { ReactElement } from 'react';
-import { Control, Path, useController } from 'react-hook-form';
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import { SxProps, Theme } from '@mui/material';
+import { throttle } from 'lodash';
+import { ReactElement, useCallback, useEffect, useState } from 'react';
+import { Control, Path, useController } from 'react-hook-form';
 
 interface CollaboratorInputProps<T> {
     name: Path<T>;
     control: Control<T>;
     textFieldProps?: TextFieldProps;
-    collaborators: User[];
 }
 
 const getOptionLabel = (option: string | User): string => {
@@ -38,11 +39,14 @@ const getOptionDescription = (option: string | User): string | undefined => {
     }
 };
 
+const getUsernamesFromOptions = (values: (User | string)[]): string[] => {
+    return values.map(getOptionLabel);
+};
+
 export default function CollaboratorInput<T>({
     name,
     control,
     textFieldProps,
-    collaborators,
 }: CollaboratorInputProps<T>): ReactElement {
     const {
         field: { ref, onChange, value, ...inputProps },
@@ -53,21 +57,41 @@ export default function CollaboratorInput<T>({
         rules: { required: true },
     });
 
-    const userNames = collaborators.map((collaborator) => collaborator.username);
+    const [inputValue, setInputValue] = useState('');
+    const [searchResults, setSearchResults] = useState<User[]>([]);
+
+    async function searchForUser(input: string) {
+        try {
+            const result = await getUser({ search: input, take: 10 });
+            const values = new Set([...getUsernamesFromOptions(value as (User | string)[])]);
+
+            // We don't want to add search results that have already been selected.
+            setSearchResults(result.users.filter((x) => !values.has(x.username)));
+        } catch (e: unknown) {}
+    }
+    // We want to wrap the search function in lodash.debounce so it's not thrashed
+    const debouncedSearch = useCallback(throttle(searchForUser, 50), []);
+
+    useEffect(() => {
+        if (inputValue === '') {
+            setSearchResults([]);
+        } else {
+            debouncedSearch(inputValue);
+        }
+    }, [inputValue]);
+
+    const userNames = value as (string | User)[];
 
     return (
         <Autocomplete
             multiple
-            options={[...collaborators]}
-            value={[
-                ...collaborators.filter((x) => (value as string[]).includes(x.username)),
-                ...(value as string[]).filter((x) => !userNames.includes(x)),
-            ]}
+            options={[...userNames, ...searchResults]}
+            value={userNames}
             getOptionLabel={(option) => (typeof option === 'string' ? option : option.username)}
+            filterOptions={(x) => x}
             freeSolo
-            onChange={(e, data) => {
-                onChange(data.map(getOptionLabel));
-            }}
+            onChange={(e, data) => onChange(data)}
+            onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
             renderOption={(props, option) => {
                 const label = getOptionLabel(option);
                 const icon = getOptionIcon(option);

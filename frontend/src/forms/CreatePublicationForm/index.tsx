@@ -39,7 +39,15 @@ export default function CreatePublicationForm(): ReactElement {
 
     const { isLoading, isError, data, error, mutateAsync } = usePostPublication();
 
-    const onSubmit: SubmitHandler<ICreatePublication> = async (data) => await mutateAsync({ data });
+    const onSubmit: SubmitHandler<ICreatePublication> = async (data) => {
+        const { collaborators, ...rest } = data;
+        await mutateAsync({
+            data: {
+                ...rest,
+                collaborators: collaborators.map((x) => (typeof x === 'string' ? x : x.username)),
+            },
+        });
+    };
 
     // When the request completes, we want to re-direct the user to the publication page
     useEffect(() => {
@@ -90,7 +98,7 @@ export default function CreatePublicationForm(): ReactElement {
                 <Grid item xs={12}>
                     <FieldLabel label="Collaborators" required={false} />
                     <Typography variant={'body2'}>Add collaborators to publication</Typography>
-                    <CollaboratorInput name="collaborators" collaborators={[]} control={control} />
+                    <CollaboratorInput name="collaborators" control={control} />
                 </Grid>
                 <Grid item xs={12}>
                     <Box sx={{ pt: 1 }}>
