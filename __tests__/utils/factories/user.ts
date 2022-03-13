@@ -16,6 +16,7 @@ export function createMockedUser(baseDto?: Partial<IUser>): IUser {
         email: faker.internet.email(),
         username: faker.internet.userName(),
         name: faker.name.findName(),
+        about: faker.lorem.sentence(),
         password: faker.internet.password(),
         role: faker.random.arrayElement(Object.values(IUserRole)),
         createdAt: faker.date.recent(),
