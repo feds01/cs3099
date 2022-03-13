@@ -15,6 +15,11 @@ def validate_zipfile(
     return value
 
 
+def call_upload_api(api, body, headers):
+    res = requests.post(api, files=body, headers=headers)
+    return res.json()
+
+
 @click.command()
 @click.option(
     "--file",
@@ -56,10 +61,10 @@ def upload(
     if not all([id_, name]):
         return
 
+    # upload
     upload_api = f"{base_url}/resource/upload/publication/{id_}"
     upload_body = {"file": (file, open(file, "rb"), "application/zip")}
-    upload_res = requests.post(upload_api, files=upload_body, headers=headers).json()
-
+    upload_res = call_upload_api(upload_api, upload_body, headers)
     if upload_res["status"] == "ok":
         click.echo(f"Success: File uploaded to {name}({id_})")
         return
@@ -67,19 +72,25 @@ def upload(
     click.echo(f"Error: {upload_res['message']}")
     if (
         upload_res["message"]
-        == "Cannot modify publication sources that aren't marked as draft."
+        != "Cannot modify publication sources that aren't marked as draft."
+        or click.confirm("Do you want to upload it to a new revision?") is False
     ):
-        click.confirm("Do you want to upload it to a new revision?", abort=True)
-        new_id = ctx.invoke(
-            revise, id_=id_, name=name, username=username, headers=headers
-        )
-        if new_id is None:
-            return
-        upload_api = f"{base_url}/resource/upload/publication/{new_id}"
-        upload_res = requests.post(
-            upload_api, files=upload_body, headers=headers
-        ).json()
-        if upload_res["status"] == "ok":
-            click.echo(f"Success: File uploaded to {name}({new_id})")
-        else:
-            click.echo(f"Error: {upload_res['message']}")
+        return
+
+    # revise
+    revision = click.prompt("Revision number", type=str)
+    changelog = click.prompt("Changelog", type=str)
+
+    new_id = ctx.invoke(
+        revise, id_=id_, name=name, revision=revision, changelog=changelog
+    )
+    if new_id is None:
+        return
+
+    # upload again
+    upload_api = f"{base_url}/resource/upload/publication/{new_id}"
+    upload_res = call_upload_api(upload_api, upload_body, headers)
+    if upload_res["status"] == "ok":
+        click.echo(f"Success: File uploaded to {name}({new_id})")
+    else:
+        click.echo(f"Error: {upload_res['message']}")

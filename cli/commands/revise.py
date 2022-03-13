@@ -6,6 +6,8 @@ from utils.publication import get_id_name
 
 
 @click.command()
+@click.option("--revision", prompt="Revision Number", help="Revision Number", type=str)
+@click.option("--log", "changelog", prompt="Change Log", help="Change Log", type=str)
 @click.option(
     "--id",
     "id_",
@@ -27,6 +29,8 @@ from utils.publication import get_id_name
 @authenticated
 def revise(
     ctx: click.core.Context,
+    revision: str,
+    changelog: str,
     id_: str = None,
     name: str = None,
     username: str = None,
@@ -39,8 +43,6 @@ def revise(
         return
 
     revise_api = f"{base_url}/publication/{username}/{name}/revise"
-    revision = click.prompt("Revision number", type=str)
-    changelog = click.prompt("Changelog", type=str)
     data = {"revision": revision, "changelog": changelog}
 
     try:
