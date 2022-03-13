@@ -34,5 +34,6 @@ class LogoutTest(unittest.TestCase):
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(result.output, "You are not logged in\n")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

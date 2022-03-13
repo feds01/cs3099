@@ -51,6 +51,7 @@ class UploadTest(unittest.TestCase):
     #         result.output == f"Success: File uploaded to {publication_id}\n"
     #         or result.output.startswith(f"Error: ")
     #     )
-    
+
+
 if __name__ == "__main__":
     unittest.main()
