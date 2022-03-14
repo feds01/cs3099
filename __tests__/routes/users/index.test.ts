@@ -160,6 +160,42 @@ describe('User endpoint tests ', () => {
         expect(response.status).toBe(401);
     });
 
+        
+    // Provile avatar tests
+
+    // uploading a new file for profile picture is successfull
+    it('should upload a new file for profile avatar', async () => {
+        
+        const avatarUpload = await request.post('/resource/upload/test')
+        .attach('file','__tests__/routes/users/logo.png');
+
+        expect(avatarUpload.status).toBe(200);
+    });
+
+    // fails to accept upload of SVG avatar
+    it('should fail to upload a SVG file for profile avatar', async () => {
+        
+        const avatarUpload = await request.post('/resource/upload/test')
+        .attach('file','__tests__/routes/users/logo.svg');
+
+        expect(avatarUpload.status).toBe(400);
+    });
+
+    // TODO JG: Fail when file size too large
+    it('should upload a new file for profile avatar', async () => {
+        
+        const avatarUpload = await request.post('/resource/upload/test')
+        .attach('file','__tests__/routes/users/largeLogoFile.png');
+
+        expect(avatarUpload.status).toBe(400);
+    });
+
+    // TODO JG: Fail when unauthorised
+        // achieve by setting up new request as a different user
+
+});
+
+
     // delete the test user after all tests
     it('should delete the test user', async () => {
         // call delete user api
@@ -191,4 +227,5 @@ describe('User endpoint tests ', () => {
         expect(publication).not.toBeNull();
         expect(publication!.collaborators).toStrictEqual([]);
     });
-});
+
+

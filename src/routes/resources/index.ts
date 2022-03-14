@@ -59,6 +59,15 @@ registerRoute(router, '/upload/:username', {
             };
         }
 
+        // check file size is no bigger than 300kb
+        if (file.size > 300000) {
+            return {
+                status: 'error',
+                code: 400,
+                message: "File size too large. Must be less than 300Kb",
+            };
+        }
+
         const uploadPath = joinPathsForResource('avatar', user.id, 'avatar');
 
         // Move the file into it's appropriate storage location
