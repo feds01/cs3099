@@ -1,10 +1,10 @@
-import ControlledAutocomplete from '../../components/ControlledAutocomplete';
+import CollaboratorInput from '../../components/CollaboratorInput';
 import ControlledTextField from '../../components/ControlledTextField';
 import ErrorBanner from '../../components/ErrorBanner';
 import FieldLabel from '../../components/FieldLabel';
 import { useAuth } from '../../contexts/auth';
 import { usePostPublication } from '../../lib/api/publications/publications';
-import { expr } from '../../lib/utils/expr';
+import { applyErrorsToForm } from '../../lib/utils/error';
 import { ICreatePublication, CreatePublicationSchema } from '../../validators/publication';
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -14,7 +14,6 @@ import Typography from '@mui/material/Typography';
 import { ReactElement, useEffect } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
-import { applyErrorsToForm } from '../../lib/utils/error';
 
 export default function CreatePublicationForm(): ReactElement {
     const auth = useAuth();
@@ -40,7 +39,15 @@ export default function CreatePublicationForm(): ReactElement {
 
     const { isLoading, isError, data, error, mutateAsync } = usePostPublication();
 
-    const onSubmit: SubmitHandler<ICreatePublication> = async (data) => await mutateAsync({ data });
+    const onSubmit: SubmitHandler<ICreatePublication> = async (data) => {
+        const { collaborators, ...rest } = data;
+        await mutateAsync({
+            data: {
+                ...rest,
+                collaborators: collaborators.map((x) => (typeof x === 'string' ? x : x.username)),
+            },
+        });
+    };
 
     // When the request completes, we want to re-direct the user to the publication page
     useEffect(() => {
@@ -91,7 +98,7 @@ export default function CreatePublicationForm(): ReactElement {
                 <Grid item xs={12}>
                     <FieldLabel label="Collaborators" required={false} />
                     <Typography variant={'body2'}>Add collaborators to publication</Typography>
-                    <ControlledAutocomplete name="collaborators" control={control} />
+                    <CollaboratorInput name="collaborators" control={control} />
                 </Grid>
                 <Grid item xs={12}>
                     <Box sx={{ pt: 1 }}>

@@ -387,6 +387,59 @@ paths:
                     $ref: '#/components/responses/UserAuthResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
+    /user:
+        get:
+            summary: Paginated Users
+            description: Get a paginated list of users with optional search query.
+            tags:
+                - users
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: query
+                  name: search
+                  schema:
+                      type: string
+                  description: Optional search query.
+                - in: query
+                  name: skip
+                  schema:
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
+                - in: query
+                  name: take
+                  schema:
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - users
+                                    - total
+                                    - skip
+                                    - take
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    users:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/User'
+                                    skip:
+                                        $ref: '#/components/schemas/SkipQuery'
+                                    take:
+                                        $ref: '#/components/schemas/TakeQuery'
+                                    total:
+                                        type: number
+                                        example: 12
+                default:
+                    $ref: '#/components/responses/ApiError'
     /user/{username}:
         delete:
             summary: Account deletion
@@ -788,7 +841,7 @@ paths:
                   name: username
                   schema:
                       type: string
-                  required: true 
+                  required: true
                   description: Username.
                 - in: query
                   name: skip
@@ -2184,8 +2237,8 @@ components:
             properties:
                 message:
                     oneOf:
-                        - $ref: "#/components/schemas/SingleErrorMessage"
-                        - $ref: "#/components/schemas/MultipleErrorMessage"
+                        - $ref: '#/components/schemas/SingleErrorMessage'
+                        - $ref: '#/components/schemas/MultipleErrorMessage'
         SingleErrorMessage:
             type: string
             example: 'This field is invalid'
@@ -2262,9 +2315,6 @@ components:
                 status:
                     type: string
                     example: "I'm working"
-                password:
-                    type: string
-                    example: 'Password1!'
         UserLogin:
             type: object
             description: The username can either be the actual username or the user's email.

@@ -5,11 +5,7 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
+import type { SkipQuery } from './skipQuery';
+import type { TakeQuery } from './takeQuery';
 
-export interface UserPatchRequest {
-    email?: string;
-    name?: string;
-    username?: string;
-    about?: string;
-    status?: string;
-}
+export type GetUserParams = { search?: string; skip?: SkipQuery; take?: TakeQuery };

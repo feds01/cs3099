@@ -1,3 +1,4 @@
+import assert from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 import Logger from '../common/logger';
@@ -117,9 +118,10 @@ UserSchema.post(
  */
 UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
     const { profilePictureUrl, about, name, status } = user;
+    assert(typeof user._id !== 'undefined');
 
     return {
-        ...(!omitId && { id: user.id as string }),
+        ...(!omitId && { id: user._id.toString() }),
         email: user.email,
         username: user.username,
         createdAt: user.createdAt.getTime(),
