@@ -20,7 +20,7 @@ def cli(ctx: click.core.Context) -> None:
     ctx.ensure_object(dict)
 
     ctx.obj["CLI_PATH"] = cli_path
-    config_file = cli_path / "./config/config.json"
+    config_file = cli_path / "config/config.json"
     try:
         with open(config_file, "r") as f:
             config = json.load(f)

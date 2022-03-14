@@ -19,7 +19,7 @@ def login(ctx: click.core.Context, username: str, password: str) -> None:
             "token": login_res["token"],
             "refreshToken": login_res["refreshToken"],
         }
-        auth_file = ctx.obj["CLI_PATH"] / "./config/auth.json"
+        auth_file = ctx.obj["CLI_PATH"] / "config/auth.json"
         with open(auth_file, "w") as f:
             json.dump(data, f)
         click.echo("Login successfully")

@@ -41,7 +41,7 @@ def authenticated(func):
     @wraps(func)
     def wrapper(ctx: click.core.Context, *args, **kwargs):
         base_url = ctx.obj["BASE_URL"]
-        auth_file = ctx.obj["CLI_PATH"] / "./config/auth.json"
+        auth_file = ctx.obj["CLI_PATH"] / "config/auth.json"
         username, headers = get_auth(auth_file, base_url)
         if username is None or headers is None:
             print("Please login first")
