@@ -9,7 +9,7 @@ import User, { IUser, IUserDocument } from './User';
 /** The publication document represents a publication object */
 export interface IPublication {
     /** Revision string of the publication */
-    revision?: string;
+    revision: string;
     /** Owner ID of the publication */
     owner: mongoose.Types.ObjectId;
     /** Publication title */
@@ -83,7 +83,7 @@ PublicationSchema.index({ title: 'text', introduction: 'text', name: 'text' });
  * if the publication is marked for deletion.
  */
 PublicationSchema.post(
-    /deleteOne|findOneAndDelete$/,
+    /remove|deleteOne|findOneAndDelete$/,
     { document: true, query: true },
     async (item: AugmentedPublicationDocument, next) => {
         Logger.warn('Cleaning up publication orphaned reviews (deleteOne)');
