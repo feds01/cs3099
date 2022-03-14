@@ -1,6 +1,6 @@
 import click
-import requests
 from utils.custom import Mutex
+from utils.call_api import call_api
 from utils.auth import authenticated
 from utils.publication import get_id_name
 
@@ -46,7 +46,7 @@ def revise(
     data = {"revision": revision, "changelog": changelog}
 
     try:
-        revise_res = requests.post(revise_api, data=data, headers=headers).json()
+        revise_res = call_api("POST", revise_api, data=data, headers=headers)
         new_id = revise_res["publication"]["id"]
         click.echo(
             f"Success: Revision {revision} of {name}({id_}) created as {name}({new_id})"
@@ -55,4 +55,6 @@ def revise(
     except KeyError:
         click.echo(f"Error: {revise_res['message']}")
         click.echo(revise_res["errors"])
-    return
+    except Exception as e:
+        click.echo(f"Unexpected error occurs: {e}")
+        exit(1)

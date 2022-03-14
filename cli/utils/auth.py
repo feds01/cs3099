@@ -1,9 +1,9 @@
 import json
 import click
 import pathlib
-import requests
-from functools import wraps
 from typing import Tuple
+from functools import wraps
+from utils.call_api import call_api
 
 
 def get_auth(auth_file: pathlib.PosixPath, base_url: str) -> Tuple[str, dict[str, str]]:
@@ -13,13 +13,17 @@ def get_auth(auth_file: pathlib.PosixPath, base_url: str) -> Tuple[str, dict[str
             data = json.load(f)
             username = data.pop("username")
 
-            # refresh the token
-            refresh_res = requests.post(f"{base_url}/auth/session", data=data).json()
-            new_token, new_refresh_token = (
-                refresh_res["token"],
-                refresh_res["refreshToken"],
-            )
-            headers = {"Authorization": f"Bearer {new_token}"}
+        # refresh the token
+        refresh_api = f"{base_url}/auth/session"
+        refresh_res = call_api("POST", refresh_api, data=data)
+
+        new_token, new_refresh_token = (
+            refresh_res["token"],
+            refresh_res["refreshToken"],
+        )
+        headers = {"Authorization": f"Bearer {new_token}"}
+
+        # update the auth file
         with open(auth_file, "w") as f:
             json.dump(
                 {
@@ -33,6 +37,9 @@ def get_auth(auth_file: pathlib.PosixPath, base_url: str) -> Tuple[str, dict[str
         print("Auth file not found")
     except KeyError:
         print("Refresh token expired")
+    except Exception as e:
+        print(f"Unexpected error occurs: {e}")
+        exit(1)    
 
     return username, headers
 

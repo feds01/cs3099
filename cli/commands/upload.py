@@ -1,8 +1,8 @@
 import click
-import requests
 from .revise import revise
 from zipfile import is_zipfile
 from utils.custom import Mutex
+from utils.call_api import call_api
 from utils.auth import authenticated
 from utils.publication import get_id_name
 
@@ -13,11 +13,6 @@ def validate_zipfile(
     if not is_zipfile(value):
         raise click.BadParameter("File must be a zip file")
     return value
-
-
-def call_upload_api(api, body, headers):
-    res = requests.post(api, files=body, headers=headers)
-    return res.json()
 
 
 @click.command()
@@ -64,7 +59,12 @@ def upload(
     # upload
     upload_api = f"{base_url}/resource/upload/publication/{id_}"
     upload_body = {"file": (file, open(file, "rb"), "application/zip")}
-    upload_res = call_upload_api(upload_api, upload_body, headers)
+    try:
+        upload_res = call_api("POST", upload_api, files=upload_body, headers=headers)
+    except Exception as e:
+        click.echo(f"Unexpected error occurs: {e}")
+        exit(1)
+
     if upload_res["status"] == "ok":
         click.echo(f"Success: File uploaded to {name}({id_})")
         return
@@ -89,7 +89,12 @@ def upload(
 
     # upload again
     upload_api = f"{base_url}/resource/upload/publication/{new_id}"
-    upload_res = call_upload_api(upload_api, upload_body, headers)
+    try:
+        upload_res = call_api("POST", upload_api, files=upload_body, headers=headers)
+    except Exception as e:
+        click.echo(f"Unexpected error occurs: {e}")
+        exit(1)
+
     if upload_res["status"] == "ok":
         click.echo(f"Success: File uploaded to {name}({new_id})")
     else:
