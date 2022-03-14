@@ -1,6 +1,7 @@
 import json
 import click
 from utils.call_api import call_api
+from urllib.parse import urljoin
 
 
 @click.command()
@@ -13,7 +14,8 @@ def login(ctx: click.core.Context, username: str, password: str) -> None:
     base_url = ctx.obj["BASE_URL"]
     login_body = {"username": username, "password": password}
     try:
-        login_res = call_api("POST", f"{base_url}/auth/login", data=login_body)
+        login_api = urljoin(base_url, "auth/login")
+        login_res = call_api("POST", login_api, data=login_body)
     except Exception as e:
         click.echo(f"Unexpected error occurs: {e}")
         exit(1)

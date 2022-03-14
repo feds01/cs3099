@@ -3,6 +3,7 @@ import click
 import pathlib
 from typing import Tuple
 from functools import wraps
+from urllib.parse import urljoin
 from utils.call_api import call_api
 
 
@@ -14,7 +15,7 @@ def get_auth(auth_file: pathlib.PosixPath, base_url: str) -> Tuple[str, dict[str
             username = data.pop("username")
 
         # refresh the token
-        refresh_api = f"{base_url}/auth/session"
+        refresh_api = urljoin(base_url, "auth/session")
         refresh_res = call_api("POST", refresh_api, data=data)
 
         new_token, new_refresh_token = (

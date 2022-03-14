@@ -1,5 +1,6 @@
 import click
 from utils.custom import Mutex
+from urllib.parse import urljoin
 from utils.call_api import call_api
 from utils.auth import authenticated
 from utils.publication import get_id_name
@@ -42,7 +43,7 @@ def revise(
     if not all([id_, name]):
         return
 
-    revise_api = f"{base_url}/publication/{username}/{name}/revise"
+    revise_api = urljoin(base_url, f"publication/{username}/{name}/revise")
     data = {"revision": revision, "changelog": changelog}
 
     try:

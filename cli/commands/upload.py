@@ -2,6 +2,7 @@ import click
 from .revise import revise
 from zipfile import is_zipfile
 from utils.custom import Mutex
+from urllib.parse import urljoin
 from utils.call_api import call_api
 from utils.auth import authenticated
 from utils.publication import get_id_name
@@ -57,7 +58,7 @@ def upload(
         return
 
     # upload
-    upload_api = f"{base_url}/resource/upload/publication/{id_}"
+    upload_api = urljoin(base_url, f"resource/upload/publication/{id_}")
     upload_body = {"file": (file, open(file, "rb"), "application/zip")}
     try:
         upload_res = call_api("POST", upload_api, files=upload_body, headers=headers)
@@ -88,7 +89,7 @@ def upload(
         return
 
     # upload again
-    upload_api = f"{base_url}/resource/upload/publication/{new_id}"
+    upload_api = urljoin(base_url, f"resource/upload/publication/{new_id}")
     try:
         upload_res = call_api("POST", upload_api, files=upload_body, headers=headers)
     except Exception as e:

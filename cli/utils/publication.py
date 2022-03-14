@@ -1,4 +1,5 @@
 from typing import Tuple
+from urllib.parse import urljoin
 from .call_api import call_api
 
 
@@ -9,10 +10,8 @@ def get_id_name(
     id_: str = None,
     name: str = None,
 ) -> Tuple[str, str]:
-    if name:
-        get_pub_api = f"{base_url}/publication/{username}/{name}"
-    else:
-        get_pub_api = f"{base_url}/publication/{id_}"
+    parameter = "{username}/{name}" if name else "{id_}"
+    get_pub_api = urljoin(base_url, f"publication/{parameter}")
 
     try:
         get_pub_res = call_api("GET", get_pub_api, headers=headers)

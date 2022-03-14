@@ -1,4 +1,5 @@
 import click
+from urllib.parse import urljoin
 from utils.call_api import call_api
 from utils.auth import authenticated
 
@@ -11,7 +12,7 @@ def show(
 ) -> None:
     base_url = ctx.obj["BASE_URL"]
 
-    show_api = f"{base_url}/publication/{username}"
+    show_api = urljoin(base_url, f"publication/{username}")
     try:
         show_res = call_api("GET", show_api, headers=headers)
     except Exception as e:
