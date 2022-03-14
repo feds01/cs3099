@@ -70,7 +70,7 @@ describe('User endpoint tests ', () => {
         const registrationResponse = await request.post('/auth/register').send(amendedRequestDto);
 
         expect(registrationResponse.status).toBe(400);
-        expect(registrationResponse.body.errors).toHaveProperty("username");
+        expect(registrationResponse.body.errors).toHaveProperty('username');
     });
 
     // fail to create a user with no password
@@ -79,7 +79,7 @@ describe('User endpoint tests ', () => {
         const registrationResponse = await request.post('/auth/register').send(amendedRequestDto);
 
         expect(registrationResponse.status).toBe(400);
-        expect(registrationResponse.body.errors).toHaveProperty("password");
+        expect(registrationResponse.body.errors).toHaveProperty('password');
     });
 
     // fail to create a user when username or email already taken
@@ -87,13 +87,15 @@ describe('User endpoint tests ', () => {
         // call register api with an inuse username
         const registerUserTaken = await request.post('/auth/register').send(UserObject);
         expect(registerUserTaken.status).toBe(400);
-        expect(registerUserTaken.body.errors).toHaveProperty("username");
+        expect(registerUserTaken.body.errors).toHaveProperty('username');
 
         // call register api with an inuse email
         const { username, ...registerDto } = UserObject;
-        const registerEmailTaken = await request.post('/auth/register').send({ ...registerDto, username: faker.internet.userName() });
+        const registerEmailTaken = await request
+            .post('/auth/register')
+            .send({ ...registerDto, username: faker.internet.userName() });
         expect(registerEmailTaken.status).toBe(400);
-        expect(registerEmailTaken.body.errors).toHaveProperty("email");
+        expect(registerEmailTaken.body.errors).toHaveProperty('email');
     });
 
     // Tests for querying users
@@ -160,72 +162,67 @@ describe('User endpoint tests ', () => {
         expect(response.status).toBe(401);
     });
 
-        
     // Provile avatar tests
 
     // uploading a new file for profile picture is successfull
     it('should upload a new file for profile avatar', async () => {
-        
-        const avatarUpload = await request.post('/resource/upload/test')
-        .attach('file','__tests__/routes/users/logo.png');
+        const avatarUpload = await request
+            .post('/resource/upload/test')
+            .attach('file', '__tests__/routes/users/logo.png');
 
         expect(avatarUpload.status).toBe(200);
     });
 
     // fails to accept upload of SVG avatar
     it('should fail to upload a SVG file for profile avatar', async () => {
-        
-        const avatarUpload = await request.post('/resource/upload/test')
-        .attach('file','__tests__/routes/users/logo.svg');
+        const avatarUpload = await request
+            .post('/resource/upload/test')
+            .attach('file', '__tests__/routes/users/logo.svg');
 
         expect(avatarUpload.status).toBe(400);
     });
 
     // TODO JG: Fail when file size too large
     it('should upload a new file for profile avatar', async () => {
-        
-        const avatarUpload = await request.post('/resource/upload/test')
-        .attach('file','__tests__/routes/users/largeLogoFile.png');
+        const avatarUpload = await request
+            .post('/resource/upload/test')
+            .attach('file', '__tests__/routes/users/largeLogoFile.png');
 
         expect(avatarUpload.status).toBe(400);
     });
 
     // TODO JG: Fail when unauthorised
-        // achieve by setting up new request as a different user
-
+    // achieve by setting up new request as a different user
 });
 
+// delete the test user after all tests
+it('should delete the test user', async () => {
+    // call delete user api
+    const deleteUserResponse = await request.delete('/user/test');
 
-    // delete the test user after all tests
-    it('should delete the test user', async () => {
-        // call delete user api
-        const deleteUserResponse = await request.delete('/user/test');
+    // expect delete to be successful
+    expect(deleteUserResponse.status).toBe(200);
+});
 
-        // expect delete to be successful
-        expect(deleteUserResponse.status).toBe(200);
-    });
+// Deleting a user that's references as a collaborator in the database
+// should clear it from the collaborators...
+it('should delete collaborator references when user is deleted', async () => {
+    // We want to create a user
+    const owner = await new User({ ...createMockedUser() }).save();
+    const collaborator = await new User({ ...createMockedUser() }).save();
 
-    // Deleting a user that's references as a collaborator in the database
-    // should clear it from the collaborators...
-    it('should delete collaborator references when user is deleted', async () => {
-        // We want to create a user
-        const owner = await new User({ ...createMockedUser() }).save();
-        const collaborator = await new User({ ...createMockedUser() }).save();
+    const ownerId = new mongoose.Types.ObjectId(owner._id);
+    const collaboratorId = new mongoose.Types.ObjectId(collaborator._id);
 
-        const ownerId = new mongoose.Types.ObjectId(owner._id);
-        const collaboratorId = new mongoose.Types.ObjectId(collaborator._id);
+    // Now let's create a publication with that user as being the collaborator
+    const createdPublication = await new Publication({
+        ...createMockedPublication({ owner: ownerId, collaborators: [collaboratorId] }),
+    }).save();
 
-        // Now let's create a publication with that user as being the collaborator
-        const createdPublication = await new Publication({
-            ...createMockedPublication({ owner: ownerId, collaborators: [collaboratorId] }),
-        }).save();
+    // Delete the user and verify that the publication has no collaborators
+    await collaborator.delete();
 
-        // Delete the user and verify that the publication has no collaborators
-        await collaborator.delete();
-
-        const publication = await Publication.findById(createdPublication._id.toString()).exec();
-        expect(publication).not.toBeNull();
-        expect(publication!.collaborators).toStrictEqual([]);
-    });
-
-
+    const publication = await Publication.findById(createdPublication._id.toString()).exec();
+    expect(publication).not.toBeNull();
+    expect(publication!.collaborators).toStrictEqual([]);
+});

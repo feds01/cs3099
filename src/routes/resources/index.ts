@@ -64,7 +64,7 @@ registerRoute(router, '/upload/:username', {
             return {
                 status: 'error',
                 code: 400,
-                message: "File size too large. Must be less than 300Kb",
+                message: 'File size too large. Must be less than 300Kb',
             };
         }
 
