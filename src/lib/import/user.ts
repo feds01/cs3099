@@ -65,7 +65,7 @@ export async function importUser(externalUserId: SgUserId): Promise<UserImportSt
     // Make a request to the external service in order to import the external user...
     const userData = await makeRequest(
         userFrom,
-        `/api/sg/users/${externalUserId.id}/`,
+        `/api/sg/users/${externalUserId.id}:${externalUserId.group}`,
         SgUserSchema,
     );
 

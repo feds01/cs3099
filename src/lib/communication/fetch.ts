@@ -164,6 +164,7 @@ export async function makeRequest<I, O>(
         const rawResponse = await fetch(url, {
             ...(typeof additional?.headers !== 'undefined' && { headers: additional.headers }),
             ...(typeof additional?.method !== 'undefined' && { method: additional.method }),
+            timeout: 30000, // 30 seconds
         });
 
         const json: unknown = await rawResponse.json();
