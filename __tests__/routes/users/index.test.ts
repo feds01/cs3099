@@ -183,7 +183,7 @@ describe('User endpoint tests ', () => {
     });
 
     // TODO JG: Fail when file size too large
-    it('should upload a new file for profile avatar', async () => {
+    it('should fail to upload files over 300Kb', async () => {
         const avatarUpload = await request
             .post('/resource/upload/test')
             .attach('file', '__tests__/routes/users/largeLogoFile.png');
