@@ -5,7 +5,7 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import { SuccessStatus, UserRole } from '.././models';
+import { SuccessStatus, UserRole, ReviewStatus } from '.././models';
 import faker from 'faker';
 import { rest } from 'msw';
 
@@ -119,7 +119,7 @@ export const getGetUserUsernameReviewsMock = () => ({
         },
         createdAt: faker.datatype.number(),
         updatedAt: faker.datatype.number(),
-        status: faker.helpers.randomize(['started', 'completed']),
+        status: faker.helpers.randomize(Object.values(ReviewStatus)),
         id: faker.random.word(),
     })),
 });
