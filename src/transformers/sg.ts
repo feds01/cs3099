@@ -20,10 +20,13 @@ export function convertSgId(external: SgUserId): string {
  * can be saved in the database.
  *
  * @param user - The Supergroup user
+ * @param username - Whether or not we should be using an already existant
+ * username instead of generating a new one.
  * @returns - Internal user model.
  */
 export async function transformSgUserToInternal(
     user: SgUser,
+    username?: string,
 ): Promise<Partial<IUserDocument> & { username: string; email: string }> {
     const { name, email, id, profilePictureUrl } = user;
 
@@ -36,13 +39,15 @@ export async function transformSgUserToInternal(
     };
 
     const chosenName = await expr(async () => {
+        if (typeof username === 'string') return username;
+
         /* eslint-disable no-await-in-loop */
         while (true) {
-            const username = uniqueNamesGenerator(customConfig);
-            const doc = await User.findOne({ username }).exec();
+            const generatedUsername = uniqueNamesGenerator(customConfig);
+            const doc = await User.findOne({ username: generatedUsername }).exec();
 
             if (doc === null) {
-                return username;
+                return generatedUsername;
             }
         }
         /* eslint-enable no-await-in-loop */

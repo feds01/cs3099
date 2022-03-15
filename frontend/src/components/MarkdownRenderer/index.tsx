@@ -39,8 +39,6 @@ export default function MarkdownRenderer(props: MarkdownRendererProps): ReactEle
                     {
                         repository: 'iamus/iamus',
                         buildUrl: (opt: BuildUrlValues) => {
-                            console.log(opt);
-
                             if (opt.type === 'mention' && opt.user.match(/^[a-zA-Z0-9._~-]*$/)) {
                                 return process.env.REACT_APP_SERVICE_URI + `/user/${opt.user}`;
                             }
