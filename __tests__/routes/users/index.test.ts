@@ -168,7 +168,7 @@ describe('User endpoint tests ', () => {
     it('should upload a new file for profile avatar', async () => {
         const avatarUpload = await request
             .post('/resource/upload/test')
-            .attach('file', '__tests__/routes/users/logo.png');
+            .attach('file', '__tests__/resources/logo.png');
 
         expect(avatarUpload.status).toBe(200);
     });
@@ -177,7 +177,7 @@ describe('User endpoint tests ', () => {
     it('should fail to upload a SVG file for profile avatar', async () => {
         const avatarUpload = await request
             .post('/resource/upload/test')
-            .attach('file', '__tests__/routes/users/logo.svg');
+            .attach('file', '__tests__/resources/logo.svg');
 
         expect(avatarUpload.status).toBe(400);
     });
@@ -186,7 +186,7 @@ describe('User endpoint tests ', () => {
     it('should fail to upload files over 300Kb', async () => {
         const avatarUpload = await request
             .post('/resource/upload/test')
-            .attach('file', '__tests__/routes/users/largeLogoFile.png');
+            .attach('file', '__tests__/resources/largeLogoFile.png');
 
         expect(avatarUpload.status).toBe(400);
     });
