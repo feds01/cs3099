@@ -1,11 +1,11 @@
 import click
 from .revise import revise
 from zipfile import is_zipfile
-from utils.custom import Mutex
 from urllib.parse import urljoin
 from utils.call_api import call_api
 from utils.auth import authenticated
 from utils.publication import get_id_name
+from utils.mutually_exclusive_options import MutuallyExclusiveOptions
 
 
 def validate_zipfile(
@@ -29,7 +29,7 @@ def validate_zipfile(
     "id_",
     prompt="Publication ID",
     help="Publication ID",
-    cls=Mutex,
+    cls=MutuallyExclusiveOptions,
     type=str,
     not_required_if=["name"],
 )
@@ -37,7 +37,7 @@ def validate_zipfile(
     "--name",
     prompt="Publication Name",
     help="Publication Name",
-    cls=Mutex,
+    cls=MutuallyExclusiveOptions,
     type=str,
     not_required_if=["id_"],
 )

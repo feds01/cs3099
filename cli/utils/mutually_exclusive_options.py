@@ -2,7 +2,22 @@ import click
 
 
 # Copied from https://stackoverflow.com/a/51235564
-class Mutex(click.Option):
+class MutuallyExclusiveOptions(click.Option):
+    """
+    Custom class allowing click option to be required only when other options
+    specified in 'not_required_if' are not present.
+
+    Example:
+        @click.option(
+            "--name",
+            prompt="Publication Name",
+            help="Publication Name",
+            cls=MutuallyExclusiveOptions
+            type=str,
+            not_required_if=["id_"],
+        )
+    """
+
     def __init__(self, *args, **kwargs):
         self.not_required_if: list = kwargs.pop("not_required_if")
 
@@ -13,7 +28,7 @@ class Mutex(click.Option):
             + ", ".join(self.not_required_if)
             + ")."
         ).strip()
-        super(Mutex, self).__init__(*args, **kwargs)
+        super(MutuallyExclusiveOptions, self).__init__(*args, **kwargs)
 
     def handle_parse_result(self, ctx, opts, args):
         current_opt: bool = self.name in opts
@@ -29,4 +44,6 @@ class Mutex(click.Option):
                     )
                 else:
                     self.prompt = None
-        return super(Mutex, self).handle_parse_result(ctx, opts, args)
+        return super(MutuallyExclusiveOptions, self).handle_parse_result(
+            ctx, opts, args
+        )

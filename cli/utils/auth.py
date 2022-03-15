@@ -40,7 +40,7 @@ def get_auth(auth_file: pathlib.PosixPath, base_url: str) -> Tuple[str, dict[str
         print("Refresh token expired")
     except Exception as e:
         print(f"Unexpected error occurs: {e}")
-        exit(1)    
+        exit(1)
 
     return username, headers
 

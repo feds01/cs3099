@@ -10,7 +10,7 @@ def get_id_name(
     id_: str = None,
     name: str = None,
 ) -> Tuple[str, str]:
-    parameter = "{username}/{name}" if name else "{id_}"
+    parameter = f"{username}/{name}" if name else f"{id_}"
     get_pub_api = urljoin(base_url, f"publication/{parameter}")
 
     try:

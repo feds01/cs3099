@@ -1,9 +1,9 @@
 import click
-from utils.custom import Mutex
 from urllib.parse import urljoin
 from utils.call_api import call_api
 from utils.auth import authenticated
 from utils.publication import get_id_name
+from utils.mutually_exclusive_options import MutuallyExclusiveOptions
 
 
 @click.command()
@@ -14,7 +14,7 @@ from utils.publication import get_id_name
     "id_",
     prompt="Publication ID",
     help="Publication ID",
-    cls=Mutex,
+    cls=MutuallyExclusiveOptions,
     type=str,
     not_required_if=["name"],
 )
@@ -22,7 +22,7 @@ from utils.publication import get_id_name
     "--name",
     prompt="Publication Name",
     help="Publication Name",
-    cls=Mutex,
+    cls=MutuallyExclusiveOptions,
     type=str,
     not_required_if=["id_"],
 )
