@@ -2,8 +2,8 @@ import express from 'express';
 import { z } from 'zod';
 
 import * as userUtils from '../../utils/users';
-import { verifyUserPermission } from '../../lib/permissions';
-import registerRoute from '../../lib/requests';
+import { verifyUserPermission } from '../../lib/communication/permissions';
+import registerRoute from '../../lib/communication/requests';
 import { IPublication } from '../../models/Publication';
 import Review, { IReviewStatus } from '../../models/Review';
 import { IUser, IUserRole } from '../../models/User';
@@ -26,6 +26,7 @@ registerRoute(router, '/:username/reviews', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {

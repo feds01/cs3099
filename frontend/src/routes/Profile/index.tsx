@@ -10,13 +10,15 @@ import Overview from '../../views/Overview';
 import Publications from '../../views/Publications';
 import Reviews from '../../views/Reviews';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import { Divider, Skeleton, Tab, Tabs } from '@mui/material';
+import { Button, Divider, Skeleton, Tab, Tabs } from '@mui/material';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { format } from 'date-fns';
 import { ReactElement, useEffect, useState } from 'react';
 import { Route, Switch, useLocation, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
+import { computeUserPermission } from '../../lib/utils/roles';
+import { useAuth } from '../../contexts/auth';
 
 const TabMap = (user: User) => {
     return {
@@ -52,6 +54,8 @@ interface IProfileLayout {
 }
 
 function ProfileLayout({ content }: IProfileLayout): ReactElement {
+    const { session } = useAuth();
+
     switch (content.state) {
         case 'loading':
             return (
@@ -66,16 +70,29 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
             throw content.error;
         case 'ok':
             const profileData = content.data;
+            const permission = computeUserPermission(content.data.user.id, session);
             return (
                 <Box sx={{ pt: 2, width: '100%' }}>
                     <Box
                         sx={{
                             display: 'flex',
                             flexDirection: 'row',
-                            justifyContent: "flex-end",
+                            justifyContent: 'flex-end',
                             width: '100%',
                         }}
                     >
+                        {permission.modify && (
+                            <Link to={`/account/${profileData.user.username}`}>
+                                <Button
+                                    sx={{
+                                        mr: profileData.user.username === session.username ? 0 : 1,
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    User Settings
+                                </Button>
+                            </Link>
+                        )}
                         <FollowerButton username={profileData.user.username} />
                     </Box>
                     <UserAvatar {...profileData.user} size={80}>
@@ -127,16 +144,13 @@ type ProfileData = { user: User; follows: { followers: number; following: number
 
 export default function ProfilePage(): ReactElement {
     const location = useLocation();
-
-    // Get the user data
     const { id }: { id: string } = useParams();
+
     const content = useGetUserUsername(id);
-
-
     const [profileData, setProfileData] = useState<ContentState<ProfileData, any>>({ state: 'loading' });
 
     useEffect(() => {
-        setProfileData({ state: 'loading' });
+        content.refetch();
     }, [id]);
 
     useEffect(() => {

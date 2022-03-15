@@ -28,14 +28,12 @@ export interface IComment {
     thread?: mongoose.ObjectId;
     /**
      * If the comment has been edited before
-     * @@Cleanup: We should make this an array to record all the modifications that the user has made */
+     * @@Future: We should make this an array to record all the modifications that the user has made */
     edited: boolean;
     /** When the initial document was created */
     createdAt: Date;
     /** When the document was last updated */
     updatedAt: Date;
-    /** If the document is 'deleted' */
-    isDeleted: boolean;
 }
 
 export type AugmentedCommentDocument = Omit<IComment, '_id'> & {
@@ -66,7 +64,6 @@ const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
         },
         filename: { type: String },
         review: { type: mongoose.Schema.Types.ObjectId, ref: 'review' },
-        isDeleted: { type: Boolean, default: false },
     },
     { timestamps: true },
 );

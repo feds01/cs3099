@@ -35,23 +35,20 @@ export default function PublicationCard({ publication }: PublicationCardProps): 
                             lineHeight: '28px !important',
                         }}
                     >
+                        <Typography variant={'h5'} sx={{ fontWeight: 'bold', display: 'inline-block' }}>
+                            <PublicationLink style={{ color: theme.palette.text.primary }} {...publication} />
+                        </Typography>
                         {publication.draft && (
                             <Chip
                                 sx={{
                                     fontWeight: 'bold',
+                                    ml: 1,
                                 }}
                                 label="draft"
                                 color="primary"
                                 size="small"
                             />
-                        )}{' '}
-                        <Typography variant={'h5'} sx={{ fontWeight: 'bold', display: 'inline-block' }}>
-                            <PublicationLink
-                                style={{ color: theme.palette.text.primary }}
-                                username={publication.owner.username}
-                                {...publication}
-                            />
-                        </Typography>
+                        )}
                         <Typography variant={'body1'} sx={{ lineHeight: '28px !important' }}>
                             {publication.about && <>&nbsp;- </>}
                             {publication.about}

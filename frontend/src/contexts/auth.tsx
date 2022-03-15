@@ -1,7 +1,7 @@
-import { User } from '../lib/api/models';
 import { usePostAuthSession } from '../lib/api/auth/auth';
-import React, { Dispatch, FC, useContext, useEffect, useReducer } from 'react';
+import { User } from '../lib/api/models';
 import { SessionSchema } from '../validators/session';
+import React, { Dispatch, FC, useContext, useEffect, useReducer } from 'react';
 
 export type AuthStateAction =
     | { type: 'login'; rememberUser: boolean; data: { session: User; token: string; refreshToken: string } }

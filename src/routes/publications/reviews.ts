@@ -4,8 +4,8 @@ import { z } from 'zod';
 import * as errors from '../../common/errors';
 import * as userUtils from '../../utils/users';
 import Logger from '../../common/logger';
-import { verifyPublicationPermission } from '../../lib/permissions';
-import registerRoute from '../../lib/requests';
+import { verifyPublicationPermission } from '../../lib/communication/permissions';
+import registerRoute from '../../lib/communication/requests';
 import Publication, { IPublication } from '../../models/Publication';
 import Review, { IReviewStatus } from '../../models/Review';
 import { IUser, IUserRole } from '../../models/User';
@@ -28,6 +28,7 @@ registerRoute(router, '/:username/:name/:revision/reviews', {
     method: 'get',
     params: z.object({ username: z.string(), name: z.string(), revision: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -80,6 +81,7 @@ registerRoute(router, '/:username/:name/:revision/review', {
     method: 'post',
     body: z.object({}),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     params: z.object({
         username: z.string(),
         name: z.string(),

@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import { useEffect } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
+import { applyErrorsToForm } from '../../lib/utils/error';
 
 type RevisePublicationFormProps = {
     onClose: () => void;
@@ -52,12 +53,8 @@ export default function RevisePublicationForm({ isOpen, onClose, onCompletion }:
 
     // When the request completes, we want to re-direct the user to the publication page
     useEffect(() => {
-        if (isError && error) {
-            if (typeof error.errors !== 'undefined') {
-                for (const [errorField, errorObject] of Object.entries(error.errors)) {
-                    setError(errorField as keyof IRevisePublication, { type: 'manual', message: errorObject.message });
-                }
-            }
+        if (isError && error && typeof error.errors !== 'undefined') {
+            applyErrorsToForm(error.errors, setError);
         } else if (data) {
             onClose();
 

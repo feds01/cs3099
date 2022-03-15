@@ -1,9 +1,10 @@
-import { ReactElement } from 'react';
-import remarkGfm from 'remark-gfm';
-import { Box, Theme } from '@mui/material';
-import ReactMarkdown from 'react-markdown';
 import CodeRenderer from '../CodeRenderer';
+import { Box, Theme } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
+import { ReactElement } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkGithub, { BuildUrlValues, DefaultBuildUrl } from 'remark-github';
 
 interface MarkdownRendererProps {
     contents: string;
@@ -31,7 +32,24 @@ export default function MarkdownRenderer(props: MarkdownRendererProps): ReactEle
 
     return (
         <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
+            remarkPlugins={[
+                [remarkGfm],
+                [
+                    remarkGithub,
+                    {
+                        repository: 'iamus/iamus',
+                        buildUrl: (opt: BuildUrlValues) => {
+                            console.log(opt);
+
+                            if (opt.type === 'mention' && opt.user.match(/^[a-zA-Z0-9._~-]*$/)) {
+                                return process.env.REACT_APP_SERVICE_URI + `/user/${opt.user}`;
+                            }
+
+                            return;
+                        },
+                    },
+                ],
+            ]}
             className={classes.wrapper}
             components={{
                 code({ node, inline, className, children, ...props }) {

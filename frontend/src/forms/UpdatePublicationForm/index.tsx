@@ -1,4 +1,4 @@
-import ControlledAutocomplete from '../../components/ControlledAutocomplete';
+import CollaboratorInput from '../../components/CollaboratorInput';
 import ControlledTextField from '../../components/ControlledTextField';
 import ErrorBanner from '../../components/ErrorBanner';
 import FieldLabel from '../../components/FieldLabel';
@@ -6,7 +6,11 @@ import { useNotificationDispatch } from '../../contexts/notification';
 import { usePublicationDispatch } from '../../contexts/publication';
 import { Publication } from '../../lib/api/models';
 import { usePatchPublicationUsernameName } from '../../lib/api/publications/publications';
-import { IEditPublication, EditPublicationSchema } from '../../validators/publication';
+import { applyErrorsToForm } from '../../lib/utils/error';
+import {
+    IEditPublication as IUpdatePublication,
+    EditPublicationSchema as UpdatePublicationSchema,
+} from '../../validators/publication';
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Grid from '@mui/material/Grid';
@@ -32,14 +36,11 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
         handleSubmit,
         setError,
         formState: { isValid, isSubmitting },
-    } = useForm<IEditPublication>({
-        resolver: zodResolver(EditPublicationSchema),
+    } = useForm<IUpdatePublication>({
+        resolver: zodResolver(UpdatePublicationSchema),
         reValidateMode: 'onChange',
         mode: 'onChange',
-        defaultValues: {
-            ...publication,
-            collaborators: publication.collaborators.map((item) => item.username)
-        },
+        defaultValues: publication,
     });
 
     const { isLoading, isError, data, error, mutateAsync } = usePatchPublicationUsernameName();
@@ -47,18 +48,8 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
     useEffect(() => {
         if (isError && error) {
             if (typeof error.errors !== 'undefined') {
-                for (const [errorField, errorObject] of Object.entries(error.errors)) {
-                    // @@Hack: In the event if one of the collaborators is invalid, we still want to set the
-                    //         error. However, the backend will return collaborators.* as the error
-                    if (errorField.startsWith('collaborators')) {
-                        setError('collaborators', { type: 'manual', message: errorObject.message });
-                    } else {
-                        setError(errorField as keyof IEditPublication, {
-                            type: 'manual',
-                            message: errorObject.message,
-                        });
-                    }
-                }
+                // @@Investigate: collaborators.${number} might not apply to the actual field??
+                applyErrorsToForm(error.errors, setError);
             }
 
             notificationDispatcher({
@@ -74,7 +65,17 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
         }
     }, [isLoading, isError, data]);
 
-    const onSubmit: SubmitHandler<IEditPublication> = async (data) => await mutateAsync({ username, name, data });
+    const onSubmit: SubmitHandler<IUpdatePublication> = async (data) => {
+        const { collaborators, ...rest } = data;
+        await mutateAsync({
+            username,
+            name,
+            data: {
+                ...rest,
+                collaborators: collaborators?.map((x) => (typeof x === 'string' ? x : x.username)),
+            },
+        });
+    };
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%', marginTop: '8px' }}>
@@ -104,7 +105,7 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
                 </Grid>
                 <Grid item xs={12}>
                     <FieldLabel label="Collaborators" required={false} />
-                    <ControlledAutocomplete name="collaborators" control={control} />
+                    <CollaboratorInput name="collaborators" control={control} />
                 </Grid>
                 <Grid item xs={12}>
                     <LoadingButton

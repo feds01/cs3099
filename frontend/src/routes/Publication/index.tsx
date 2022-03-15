@@ -1,7 +1,7 @@
 import ErrorBanner from '../../components/ErrorBanner';
 import PageLayout from '../../components/PageLayout';
 import SkeletonList from '../../components/SkeletonList';
-import UserAvatar from '../../components/UserAvatar';
+import UserAvatar, { PureUserAvatar } from '../../components/UserAvatar';
 import UserLink from '../../components/UserLink';
 import ExportDialog from '../../forms/ExportPublicationForm';
 import { useAuth } from '../../contexts/auth';
@@ -136,7 +136,7 @@ function getCanonicalName(location: string, username: string, name: string): [st
     const components = location.split(`/${username}/${name}`);
 
     if (typeof components[1] === 'undefined') {
-        throw new Error("Invalid path in canonical name")
+        throw new Error('Invalid path in canonical name');
     }
 
     const component = components[1];
@@ -271,7 +271,7 @@ function PublicationView() {
                                     <Typography sx={{ lineHeight: '28px !important' }}>&nbsp;{'and '}</Typography>
                                     <AvatarGroup max={6} sx={{ ml: 0.5, mr: 0.5 }}>
                                         {publication.collaborators.map((collaborator) => {
-                                            return <UserAvatar size={24} key={collaborator.id} {...collaborator} />;
+                                            return <PureUserAvatar key={collaborator.id} {...collaborator} size={24} />;
                                         })}
                                     </AvatarGroup>
                                 </Box>

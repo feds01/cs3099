@@ -19,7 +19,7 @@ dist/
 swagger.json
 
 # Server saved files
-resources/
+/resources/
 tmp/
 
 # Python cache files

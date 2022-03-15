@@ -1,52 +1,52 @@
 import cors from 'cors';
-import path from 'path';
-import helmet from 'helmet';
 import express from 'express';
 import fileUpload from 'express-fileupload';
-
+import helmet from 'helmet';
+import path from 'path';
 // Import relevant modules to Swagger UI
 import Swagger from 'swagger-jsdoc';
 import SwaggerUI from 'swagger-ui-express';
 
-import Logger from './common/logger';
+import * as SwaggerOptions from '../swagger.json';
 import * as errors from './common/errors';
 import manifest from './../package.json';
-import * as SwaggerOptions from '../swagger.json';
-
+import Logger from './common/logger';
+import morganMiddleware from './config/morganMiddleware';
+import activityRouter from './routes/activity';
+import authRouter from './routes/auth';
+import commentRouter from './routes/comment';
+import publicationsRouter from './routes/publications';
+import resourcesRouter from './routes/resources';
+import reviewsRouter from './routes/reviews';
+import searchRouter from './routes/search';
+import sgResourcesRouter from './routes/sg/resources';
+import sgSsoRouter from './routes/sg/sso';
+import sgUsersRouter from './routes/sg/users';
+import threadsRouter from './routes/threads';
 // Routers
 import userRouter from './routes/user';
-import authRouter from './routes/auth';
-import sgSsoRouter from './routes/sg/sso';
-import threadsRouter from './routes/threads';
-import reviewsRouter from './routes/reviews';
-import commentRouter from './routes/comment';
-import searchRouter from './routes/search';
-import sgUsersRouter from './routes/sg/users';
-import resourcesRouter from './routes/resources';
-import sgResourcesRouter from './routes/sg/resources';
-import publicationsRouter from './routes/publications';
-import morganMiddleware from './config/morganMiddleware';
-
 
 // Create the express application
 const app = express();
 
 // File uploads
-app.use(fileUpload({
-    useTempFiles: true,
-    tempFileDir: path.join(__dirname, '..', 'tmp'),
-    createParentPath: true,
-    limits: {
-        fileSize: 1024 * 1024 * 10,
-    },
-    limitHandler: (_, res) => {
-        res.sendStatus(413).json({
-            status: "error",
-            message: "The file sent is too large; limit is 10MiB.",
-            errors: {}
-        })
-    }
-}));
+app.use(
+    fileUpload({
+        useTempFiles: true,
+        tempFileDir: path.join(__dirname, '..', 'tmp'),
+        createParentPath: true,
+        limits: {
+            fileSize: 1024 * 1024 * 10,
+        },
+        limitHandler: (_, res) => {
+            res.sendStatus(413).json({
+                status: 'error',
+                message: 'The file sent is too large; limit is 10MiB.',
+                errors: {},
+            });
+        },
+    }),
+);
 
 // Setup express middleware
 app.use(helmet());
@@ -64,6 +64,7 @@ const options = {
         './routes/sg/sso.ts',
         './routes/sg/resources.ts',
         './routes/sg/users.ts',
+        './routers/activity/index.ts',
         './routes/reviews/index.ts',
         './routes/search/index.ts',
         './routes/publications/index.ts',
@@ -73,34 +74,35 @@ const options = {
 };
 
 const specs = Swagger(options);
-app.use('(\/api)?/docs', SwaggerUI.serve, SwaggerUI.setup(specs));
+app.use('(/api)?/docs', SwaggerUI.serve, SwaggerUI.setup(specs));
 
-app.get('(\/api)?/version', (_req: express.Request, res: express.Response) => {
+app.get('(/api)?/version', (_req: express.Request, res: express.Response) => {
     res.status(200).json({
-        status: "ok",
+        status: 'ok',
         version: manifest.version,
     });
 });
 
-app.get('(\/api)?/openapi', (_req: express.Request, res: express.Response) => {
+app.get('(/api)?/openapi', (_req: express.Request, res: express.Response) => {
     res.status(200).json({
-        status: "ok",
-        schema: SwaggerOptions
+        status: 'ok',
+        schema: SwaggerOptions,
     });
 });
 
 // Setup the specific API routes
-app.use('(\/api)?/sg/sso', sgSsoRouter);
-app.use('(\/api)?/sg/resources', sgResourcesRouter);
-app.use('(\/api)?/sg/users', sgUsersRouter);
-app.use('(\/api)?/auth', authRouter);
-app.use('(\/api)?/user', userRouter);
-app.use('(\/api)?/review', reviewsRouter);
-app.use('(\/api)?/search', searchRouter);
-app.use('(\/api)?/resource', resourcesRouter);
-app.use('(\/api)?/publication', publicationsRouter);
-app.use('(\/api)?/thread', threadsRouter);
-app.use('(\/api)?/comment', commentRouter);
+app.use('(/api)?/sg/sso', sgSsoRouter);
+app.use('(/api)?/sg/resources', sgResourcesRouter);
+app.use('(/api)?/sg/users', sgUsersRouter);
+app.use('(/api)?/auth', authRouter);
+app.use('(/api)?/activity', activityRouter);
+app.use('(/api)?/user', userRouter);
+app.use('(/api)?/review', reviewsRouter);
+app.use('(/api)?/search', searchRouter);
+app.use('(/api)?/resource', resourcesRouter);
+app.use('(/api)?/publication', publicationsRouter);
+app.use('(/api)?/thread', threadsRouter);
+app.use('(/api)?/comment', commentRouter);
 
 app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     // This check makes sure this is a JSON parsing issue, but it might be
@@ -115,7 +117,7 @@ app.use((err: any, _req: express.Request, res: express.Response, next: express.N
 
         // Bad request
         return res.status(400).json({
-            status: "error",
+            status: 'error',
             message: errors.BAD_REQUEST,
         });
     }
@@ -126,9 +128,9 @@ app.use((err: any, _req: express.Request, res: express.Response, next: express.N
         Logger.error(err);
 
         return res.status(500).json({
-            status: "error",
+            status: 'error',
             message: errors.INTERNAL_SERVER_ERROR,
-        })
+        });
     }
 
     next();
@@ -138,8 +140,8 @@ app.use((err: any, _req: express.Request, res: express.Response, next: express.N
 // catch 404 and forward to error handler
 app.use((_req: express.Request, res: express.Response) => {
     res.status(404).send({
-        status: "error",
-        message: errors.RESOURCE_NOT_FOUND
+        status: 'error',
+        message: errors.RESOURCE_NOT_FOUND,
     });
 });
 

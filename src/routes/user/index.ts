@@ -4,15 +4,24 @@ import { z } from 'zod';
 
 import * as error from '../../common/errors';
 import * as userUtils from './../../utils/users';
-import { deleteFileResource } from '../../lib/fs';
-import { verifyUserPermission } from '../../lib/permissions';
-import registerRoute from '../../lib/requests';
+import {
+    compareUserRoles,
+    verifyUserPermission,
+    verifyUserWithElevatedPermission,
+} from '../../lib/communication/permissions';
+import registerRoute from '../../lib/communication/requests';
+import { deleteFileResource, resourceExists } from '../../lib/resources/fs';
 import Follower from '../../models/Follower';
-import User, { IUserRole } from '../../models/User';
+import User, { AugmentedUserDocument, IUserRole } from '../../models/User';
+import { config } from '../../server';
 import { ResponseErrorSummary } from '../../transformers/error';
+import { expr } from '../../utils/expr';
+import { escapeRegExp } from '../../utils/regex';
 import { joinPathsForResource } from '../../utils/resources';
+import { PaginationQuerySchema } from '../../validators/pagination';
 import { ModeSchema } from '../../validators/requests';
 import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
+import activityRouter from './activity';
 import followerRouter from './followers';
 import reviewRouter from './reviews';
 
@@ -20,6 +29,102 @@ const router = express.Router();
 
 router.use('/', followerRouter);
 router.use('/', reviewRouter);
+router.use('/', activityRouter);
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/user
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/user?take=10
+ *
+ * >>> response:
+ * {
+ *  "status": "ok",
+ *  "users": [
+ *    {
+ *      "name": "william"
+ *      ...
+ *    },
+ *    ...
+ *  ],
+ *  skip: 0,
+ *  total: 3,
+ *  take: 10
+ * }
+ *
+ * @description This route is used get a paginated list of users on the platform. This
+ * is primarily used when searching for items across the platform
+ *
+ * @error {UNAUTHORIZED} if the request does not contain a token or refreshToken
+ * */
+registerRoute(router, '/', {
+    method: 'get',
+    params: z.object({}),
+    query: z.object({ search: z.string().optional() }).merge(PaginationQuerySchema),
+    headers: z.object({}),
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const { take, skip } = req.query;
+        const regex = expr(() => {
+            if (typeof req.query.search !== 'undefined') {
+                return new RegExp(escapeRegExp(req.query.search), 'i');
+            }
+            return undefined;
+        });
+
+        type UserAggregation = {
+            data: AugmentedUserDocument[];
+            total?: number;
+        };
+
+        // We want to find all users that might match the provided search query
+        // in either username or name
+        const aggregation = (await User.aggregate([
+            {
+                $facet: {
+                    data: [
+                        {
+                            $match:
+                                typeof regex !== 'undefined'
+                                    ? {
+                                          $or: [
+                                              { username: { $regex: regex } },
+                                              { name: { $regex: regex } },
+                                          ],
+                                      }
+                                    : {},
+                        },
+                        { $sort: { _id: -1 } },
+                        { $skip: skip },
+                        { $limit: take },
+                    ],
+                    total: [{ $count: 'total' }],
+                },
+            },
+            {
+                $project: {
+                    data: 1,
+                    // Get total from the first element of the metadata array
+                    total: { $arrayElemAt: ['$total.total', 0] },
+                },
+            },
+        ])) as unknown as [UserAggregation];
+
+        const result = aggregation[0];
+
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                users: result.data.map((user) => User.project(user, false)),
+                total: result.total ?? 0,
+                skip,
+                take,
+            },
+        };
+    },
+});
 
 /**
  * @version v1.0.0
@@ -50,6 +155,7 @@ registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -90,16 +196,33 @@ registerRoute(router, '/:username/avatar', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: null,
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
         if (user.profilePictureUrl) {
+            const path = joinPathsForResource('avatar', user.id, 'avatar');
+
+            if (!(await resourceExists(path))) {
+                // If we can't find the avatar file on disk and the user requested it, then we should set
+                // that the user has no avatar picture set...
+                if (user.profilePictureUrl.startsWith(config.serviceEndpoint)) {
+                    await user.updateOne({ $set: { profilePictureUrl: undefined } });
+                }
+
+                return {
+                    status: 'error',
+                    code: 404,
+                    message: error.RESOURCE_NOT_FOUND,
+                };
+            }
+
             return {
                 status: 'file',
                 code: 200,
-                file: joinPathsForResource('avatar', user.id, 'avatar'),
+                file: path,
             };
         } else {
             return {
@@ -125,6 +248,7 @@ registerRoute(router, '/:username/avatar', {
     method: 'delete',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: null,
     handler: async (req) => {
@@ -178,9 +302,10 @@ registerRoute(router, '/:username', {
     method: 'patch',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     body: IUserPatchRequestSchema,
-    permissionVerification: verifyUserPermission,
-    permission: { level: IUserRole.Moderator },
+    permissionVerification: verifyUserWithElevatedPermission,
+    permission: { level: IUserRole.Moderator, runPermissionFn: true },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
@@ -275,6 +400,7 @@ registerRoute(router, '/:username', {
     method: 'delete',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
@@ -315,8 +441,9 @@ registerRoute(router, '/:username/role', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
-    permission: { level: IUserRole.Administrator },
+    permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
@@ -358,10 +485,26 @@ registerRoute(router, '/:username/role', {
     method: 'patch',
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     body: IUserRoleRequestSchema,
-    permission: { level: IUserRole.Administrator },
+    permissionVerification: verifyUserWithElevatedPermission,
+    permission: { level: IUserRole.Moderator, runPermissionFn: true },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
+
+        // Verify that the user can't elevate the privilege of this user beyond theirs
+        if (!compareUserRoles(user.role, req.body.role)) {
+            return {
+                status: 'error',
+                code: 401,
+                message: error.UNAUTHORIZED,
+                errors: {
+                    role: {
+                        message: `Can't elevate privilege to ${req.body.role}`,
+                    },
+                },
+            };
+        }
 
         const newUser = await User.findByIdAndUpdate(
             user.id,

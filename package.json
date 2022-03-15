@@ -12,7 +12,7 @@
         "test:coverage": "jest --collect-coverage --ci",
         "lint": "eslint src/*/**.ts",
         "tcheck": "tsc --noEmit",
-        "fmt": "prettier --write src/**/*.ts src/**/**/*.ts frontend/src/**/*.ts __tests__/**/*.ts __tests__/**/**/*.ts",
+        "fmt": "prettier src/ __tests__/ --write",
         "generate-client": "orval",
         "transform-yaml": "yaml2json swagger.yaml > swagger.json"
     },
@@ -23,6 +23,7 @@
     "author": "",
     "license": "MIT",
     "devDependencies": {
+        "@faker-js/faker": "^6.0.0-beta.0",
         "@trivago/prettier-plugin-sort-imports": "^3.2.0",
         "@types/adm-zip": "^0.4.34",
         "@types/bcryptjs": "^2.4.2",
@@ -75,6 +76,7 @@
         "query-string": "^7.1.1",
         "swagger-jsdoc": "^6.1.0",
         "swagger-ui-express": "^4.3.0",
+        "unique-names-generator": "^4.7.1",
         "winston": "^3.6.0",
         "zod": "^3.12.0"
     }

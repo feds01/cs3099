@@ -1,19 +1,19 @@
+import CollaboratorInput from '../../components/CollaboratorInput';
+import ControlledTextField from '../../components/ControlledTextField';
+import ErrorBanner from '../../components/ErrorBanner';
+import FieldLabel from '../../components/FieldLabel';
+import { useAuth } from '../../contexts/auth';
+import { usePostPublication } from '../../lib/api/publications/publications';
+import { applyErrorsToForm } from '../../lib/utils/error';
+import { ICreatePublication, CreatePublicationSchema } from '../../validators/publication';
+import { zodResolver } from '@hookform/resolvers/zod';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import LoadingButton from '@mui/lab/LoadingButton';
-
-import { useHistory } from 'react-router';
-import { useAuth } from '../../contexts/auth';
 import { ReactElement, useEffect } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import ErrorBanner from '../../components/ErrorBanner';
-import ControlledTextField from '../../components/ControlledTextField';
-import ControlledAutocomplete from '../../components/ControlledAutocomplete';
-import { usePostPublication } from '../../lib/api/publications/publications';
-import { ICreatePublication, CreatePublicationSchema } from '../../validators/publication';
-import FieldLabel from '../../components/FieldLabel';
+import { useHistory } from 'react-router';
 
 export default function CreatePublicationForm(): ReactElement {
     const auth = useAuth();
@@ -39,15 +39,21 @@ export default function CreatePublicationForm(): ReactElement {
 
     const { isLoading, isError, data, error, mutateAsync } = usePostPublication();
 
-    const onSubmit: SubmitHandler<ICreatePublication> = async (data) => await mutateAsync({ data });
+    const onSubmit: SubmitHandler<ICreatePublication> = async (data) => {
+        const { collaborators, ...rest } = data;
+        await mutateAsync({
+            data: {
+                ...rest,
+                collaborators: collaborators.map((x) => (typeof x === 'string' ? x : x.username)),
+            },
+        });
+    };
 
     // When the request completes, we want to re-direct the user to the publication page
     useEffect(() => {
         if (isError && error) {
             if (typeof error.errors !== 'undefined') {
-                for (const [errorField, errorObject] of Object.entries(error.errors)) {
-                    setError(errorField as keyof ICreatePublication, { type: 'manual', message: errorObject.message });
-                }
+                applyErrorsToForm(error.errors, setError);
             }
         } else if (data) {
             history.push({ pathname: `/${auth.session.username}/${data.publication.name}` });
@@ -57,22 +63,22 @@ export default function CreatePublicationForm(): ReactElement {
     return (
         <form style={{ width: '100%', marginTop: '8px' }} onSubmit={handleSubmit(onSubmit)}>
             <Grid container maxWidth={'lg'}>
-                <Grid item xs={12} sx={{pt: 1}}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="Publication name" />
                     <Typography variant={'body2'}>This will be used to publicly identify the publication.</Typography>
                     <ControlledTextField name="name" control={control} />
                 </Grid>
-                <Grid item xs={12} sx={{pt: 1}}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="Publication title" />
                     <Typography variant={'body2'}>This is the title of the publication.</Typography>
                     <ControlledTextField name="title" control={control} />
                 </Grid>
-                <Grid item xs={12} sx={{pt: 1}}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="About" required={false} />
                     <Typography variant={'body2'}>Write a small about section for the publication</Typography>
                     <ControlledTextField name="about" control={control} />
                 </Grid>
-                <Grid item xs={12} sx={{pt: 1}}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="Introduction" required={false} />
                     <Typography variant={'body2'}>Write a introduction for the publication</Typography>
                     <ControlledTextField
@@ -84,7 +90,7 @@ export default function CreatePublicationForm(): ReactElement {
                         }}
                     />
                 </Grid>
-                <Grid item xs={12} sx={{pt: 1}}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="Revision" />
                     <Typography variant={'body2'}>Add a revision tag to the publication</Typography>
                     <ControlledTextField name="revision" control={control} />
@@ -92,10 +98,10 @@ export default function CreatePublicationForm(): ReactElement {
                 <Grid item xs={12}>
                     <FieldLabel label="Collaborators" required={false} />
                     <Typography variant={'body2'}>Add collaborators to publication</Typography>
-                    <ControlledAutocomplete name="collaborators" control={control} />
+                    <CollaboratorInput name="collaborators" control={control} />
                 </Grid>
                 <Grid item xs={12}>
-                    <Box sx={{pt: 1}}>
+                    <Box sx={{ pt: 1 }}>
                         <LoadingButton
                             loading={isLoading || isSubmitting}
                             disabled={!isValid}

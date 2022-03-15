@@ -4,13 +4,11 @@ import { nanoid } from 'nanoid';
 import { z } from 'zod';
 
 import * as error from '../../common/errors';
-import Logger from '../../common/logger';
-import { JwtError, createTokens, refreshTokens, verifyToken } from '../../lib/auth';
-import registerRoute from '../../lib/requests';
-import { ApiResponse } from '../../lib/response';
+import { createTokens, refreshTokens, verifyToken } from '../../lib/auth/auth';
+import registerRoute from '../../lib/communication/requests';
+import { ApiResponse } from '../../lib/communication/response';
 import State from '../../models/State';
 import User from '../../models/User';
-import { IEmailValiditySchema, IUsernameValiditySchema } from '../../validators/auth';
 import { IUserLoginRequestSchema, IUserRegisterRequestSchema } from '../../validators/user';
 import { config } from './../../server';
 
@@ -40,9 +38,12 @@ const router = express.Router();
  * */
 registerRoute(router, '/username_validity', {
     method: 'post',
-    body: IUsernameValiditySchema,
+    body: z.object({
+        username: z.string().regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric'),
+    }),
     params: z.object({}),
     query: z.object({}),
+    headers: z.object({}),
     permission: null,
     handler: async (req) => {
         const result = await User.findOne({
@@ -82,9 +83,12 @@ registerRoute(router, '/username_validity', {
  * */
 registerRoute(router, '/email_validity', {
     method: 'post',
-    body: IEmailValiditySchema,
+    body: z.object({
+        email: z.string().email(),
+    }),
     params: z.object({}),
     query: z.object({}),
+    headers: z.object({}),
     permission: null,
     handler: async (req) => {
         const result = await User.findOne({
@@ -115,59 +119,34 @@ registerRoute(router, '/session', {
     body: z.object({ token: z.string(), refreshToken: z.string() }),
     params: z.object({}),
     query: z.object({}),
+    headers: z.object({}),
     permission: null,
     handler: async (req) => {
         const { token, refreshToken } = req.body;
 
         async function attemptToRefreshTokens(token: string): Promise<ApiResponse<unknown>> {
-            try {
-                const { id } = await verifyToken(token, config.jwtRefreshSecret);
-                const refreshedTokensOrError = refreshTokens(token);
+            const { sub: id } = await verifyToken(token, config.jwtRefreshSecret);
+            const refreshedTokens = refreshTokens(token);
 
-                // find the user with this token information
-                const user = await User.findById(id);
+            // find the user with this token information
+            const user = await User.findById(id);
 
-                if (!user) {
-                    return {
-                        status: 'error',
-                        code: 400,
-                        message: 'Invalid JWT',
-                    };
-                }
-
-                // Check if refreshing the tokens failed so that we can return it earlier
-                if (typeof refreshedTokensOrError === 'string') {
-                    return {
-                        status: 'error',
-                        code: 400,
-                        message: refreshedTokensOrError,
-                    };
-                }
-
-                return {
-                    status: 'ok',
-                    code: 200,
-                    data: {
-                        user: User.project(user),
-                        ...refreshedTokensOrError,
-                    },
-                };
-            } catch (e: unknown) {
-                if (e instanceof JwtError) {
-                    return {
-                        status: 'error',
-                        code: 400,
-                        message: e.type,
-                    };
-                }
-
-                Logger.error(`Server encountered an unexpected error:\n${e}`);
+            if (!user) {
                 return {
                     status: 'error',
-                    code: 500,
-                    message: error.INTERNAL_SERVER_ERROR,
+                    code: 400,
+                    message: 'Invalid JWT',
                 };
             }
+
+            return {
+                status: 'ok',
+                code: 200,
+                data: {
+                    user: User.project(user),
+                    ...refreshedTokens,
+                },
+            };
         }
 
         // attempt to refresh the tokens and create a user state from it.
@@ -176,24 +155,13 @@ registerRoute(router, '/session', {
 
             return attemptToRefreshTokens(refreshToken);
         } catch (e: unknown) {
-            if (e instanceof JwtError) {
-                if (e.type === 'expired') {
+            if (e instanceof error.ApiError) {
+                if (e.message === 'Token expired') {
                     return attemptToRefreshTokens(refreshToken);
                 }
-
-                return {
-                    status: 'error',
-                    code: 400,
-                    message: e.type,
-                };
             }
 
-            Logger.error(`Server encountered an unexpected error:\n${e}`);
-            return {
-                status: 'error',
-                code: 500,
-                message: error.INTERNAL_SERVER_ERROR,
-            };
+            throw e;
         }
     },
 });
@@ -219,11 +187,11 @@ registerRoute(router, '/sso', {
     query: z.object({ to: z.string().url(), path: z.string().optional() }),
     params: z.object({}),
     body: z.object({}),
+    headers: z.object({}),
     handler: async (req) => {
         const { to, path } = req.query;
 
-        // @@Security: assert that the to URL is valid and exists in the supergroup service map.
-
+        // @Security: assert that the to URL is valid and exists in the supergroup service map.
         // create a new state using nano-id for url safe random strings
         const stateString = nanoid();
 
@@ -290,6 +258,7 @@ registerRoute(router, '/register', {
     body: IUserRegisterRequestSchema,
     params: z.object({}),
     query: z.object({}),
+    headers: z.object({}),
     permission: null,
     handler: async (req) => {
         // generate the salt for the new user account;
@@ -297,13 +266,7 @@ registerRoute(router, '/register', {
         const hash = await bcrypt.hash(req.body.password, salt);
 
         const savedUser = await new User({ ...req.body, password: hash }).save();
-
-        const { email, username } = req.body;
-        const { token, refreshToken } = await createTokens({
-            email,
-            username,
-            id: savedUser.id,
-        });
+        const { token, refreshToken } = createTokens(savedUser.id);
 
         return {
             status: 'ok',
@@ -362,6 +325,7 @@ registerRoute(router, '/login', {
     body: IUserLoginRequestSchema,
     params: z.object({}),
     query: z.object({}),
+    headers: z.object({}),
     permission: null,
     handler: async (req) => {
         const { username, password, isEmail } = req.body;
@@ -388,11 +352,7 @@ registerRoute(router, '/login', {
         // token and refreshToken JWT's . Also, update the 'last_login' timestamp and record
         // an entry for the user logging in into the system.
         if (passwordEqual) {
-            const { token, refreshToken } = createTokens({
-                email: result.email,
-                username: result.username,
-                id: result.id,
-            });
+            const { token, refreshToken } = createTokens(result.id);
 
             return {
                 status: 'ok',

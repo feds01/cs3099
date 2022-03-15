@@ -7,7 +7,7 @@ module.exports = {
             client: 'react-query',
             mock: true,
             prettier: true,
-            clean: true,
+            clean: ["!(*/custom-instance.ts)"],
             override: {
                 mutator: {
                     path: './frontend/src/lib/api/mutator/custom-instance.ts',

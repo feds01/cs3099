@@ -76,7 +76,7 @@ export default function CodeRenderer({
                                 <CommentButton key={i} review={review} location={i} filename={filename}>
                                     <Line {...getLineProps({ line })}>
                                         {lineNumbers && <LineNo>{i + 1 + lineOffset}</LineNo>}
-                                        <LineContent sx={{userSelect: selectionState.isDragging ? "none" : "auto"}}>
+                                        <LineContent sx={{ userSelect: selectionState.isDragging ? 'none' : 'auto' }}>
                                             {line.map((token, key) => (
                                                 <span key={key} {...getTokenProps({ token, key })} />
                                             ))}

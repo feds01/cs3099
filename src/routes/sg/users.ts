@@ -2,7 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 
 import * as errors from '../../common/errors';
-import registerRoute from '../../lib/requests';
+import registerRoute from '../../lib/communication/requests';
 import User from '../../models/User';
 import { config } from '../../server';
 import { convertSgId } from '../../transformers/sg';
@@ -32,10 +32,11 @@ const router = express.Router();
  *
  * @return sends the user object to the client.
  * */
-registerRoute(router, '/export/:id/metadata', {
+registerRoute(router, '/:id', {
     method: 'get',
     params: z.object({ id: SgUserIdSchema }),
     query: z.object({}),
+    headers: z.object({}),
     permission: null,
     handler: async (req) => {
         const { id, group } = req.params.id;

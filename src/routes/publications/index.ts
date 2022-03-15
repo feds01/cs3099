@@ -2,19 +2,20 @@ import assert from 'assert';
 import express from 'express';
 import { z } from 'zod';
 
-import * as zip from '../../lib/zip';
+import * as zip from '../../lib/resources/zip';
 import * as errors from './../../common/errors';
 import * as userUtils from './../../utils/users';
 import Logger from '../../common/logger';
-import { createTokens } from '../../lib/auth';
-import { makeRequest } from '../../lib/fetch';
-import { deleteResource, moveResource, resourceExists } from '../../lib/fs';
+import { createTokens } from '../../lib/auth/auth';
+import { makeRequest } from '../../lib/communication/fetch';
 import {
     compareUserRoles,
     verifyPublicationPermission,
+    verifyPublicationWithElevatedPermission,
     verifyUserPermission,
-} from '../../lib/permissions';
-import registerRoute from '../../lib/requests';
+} from '../../lib/communication/permissions';
+import registerRoute from '../../lib/communication/requests';
+import { deleteResource, moveResource, resourceExists } from '../../lib/resources/fs';
 import Publication, { AugmentedPublicationDocument } from '../../models/Publication';
 import { IUserRole } from '../../models/User';
 import { config } from '../../server';
@@ -46,6 +47,7 @@ registerRoute(router, '/:username/:name/all', {
         username: z.string(),
         name: z.string(),
     }),
+    headers: z.object({}),
     query: z.object({ mode: ModeSchema, revision: z.string() }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
@@ -135,6 +137,7 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
         sortBy: ResourceSortSchema,
         revision: z.string().optional(),
     }),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -210,9 +213,10 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
  * @method POST
  * @url /api/publication
  * @example
- * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication
  * >>> body:
  * {
+ *   "name": "trinity",
  *   "revision": "v1",
  *   "title": "Test",
  *   "introduction": "Introduction here",
@@ -228,6 +232,7 @@ registerRoute(router, '/', {
     params: z.object({}),
     body: IPublicationCreationSchema,
     query: z.object({}),
+    headers: z.object({}),
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const { name, collaborators } = req.body;
@@ -244,12 +249,17 @@ registerRoute(router, '/', {
                 status: 'error',
                 code: 400,
                 message: 'Publication with the same name already exists',
+                errors: {
+                    name: {
+                        message: 'Publication name already taken',
+                    },
+                },
             };
         }
 
         // @@Hack: Basically we have to verify again that the set has no null items since
         //         TypeScript can't be entirely sure if there are no nulls in the set.
-        //         This is also partly due to the fact that zod cant'c combine .transform()
+        //         This is also partly due to the fact that zod cant't combine .transform()
         //         and .refine() functions yet...
         const publication = await new Publication({
             ...req.body,
@@ -282,6 +292,7 @@ registerRoute(router, '/', {
     method: 'get',
     params: z.object({}),
     query: PaginationQuerySchema,
+    headers: z.object({}),
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const { skip, take } = req.query;
@@ -345,6 +356,7 @@ registerRoute(router, '/:username', {
     query: z
         .object({ mode: ModeSchema, pinned: FlagSchema.optional() })
         .merge(PaginationQuerySchema),
+    headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -382,7 +394,7 @@ registerRoute(router, '/:username', {
 /**
  * @version v1.0.0
  * @method GET
- * @url /api/publication/:id/revisions
+ * @url /api/publication/:username/:name/revisions
  * @example
  * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/507f1f77bcf86cd799439011
  *
@@ -392,6 +404,7 @@ registerRoute(router, '/:username/:name/revisions', {
     method: 'get',
     params: z.object({ username: z.string(), name: z.string() }),
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -444,6 +457,7 @@ registerRoute(router, '/:username/:name', {
         draft: FlagSchema.optional(),
         revision: z.string().optional(),
     }),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -521,8 +535,9 @@ registerRoute(router, '/:username/:name', {
 registerRoute(router, '/:username/:name/revise', {
     method: 'post',
     params: z.object({ username: z.string(), name: z.string() }),
-    query: z.object({ mode: ModeSchema }),
     body: z.object({ revision: z.string(), changelog: z.string() }),
+    query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
@@ -621,6 +636,7 @@ registerRoute(router, '/:username/:name/all', {
         name: z.string().nonempty(),
     }),
     query: z.object({ mode: ModeSchema }),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
@@ -665,6 +681,7 @@ registerRoute(router, '/:username/:name', {
         mode: ModeSchema,
         revision: z.string().optional(),
     }),
+    headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
@@ -748,8 +765,9 @@ registerRoute(router, '/:username/:name', {
     }),
     query: z.object({ mode: ModeSchema, revision: z.string().optional() }),
     body: IPublicationPatchRequestSchema,
-    permissionVerification: verifyPublicationPermission,
-    permission: { level: IUserRole.Moderator },
+    headers: z.object({}),
+    permissionVerification: verifyPublicationWithElevatedPermission,
+    permission: { level: IUserRole.Moderator, runPermissionFn: true },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
@@ -827,16 +845,13 @@ registerRoute(router, '/:username/:name', {
 /**
  * @version v1.0.0
  * @method POST
- * @url /api/publication/:id/export
+ * @url /api/publication/:username/:name/export
  * @example
  * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/507f1f77bcf86cd799439011/export
  *
  * @description This endpoint is used to initiate the exporting process for a publication. The endpoint
  * takes to required parameters which specify to where the publication should be exported and
  * if the export should also export reviews with the publication.
- *
- * @@TODO: handle whether we export reviews or not in the form of providing permissions in the tokens
- *         that we send!
  */
 registerRoute(router, '/:username/:name/export', {
     method: 'post',
@@ -844,6 +859,7 @@ registerRoute(router, '/:username/:name/export', {
         username: z.string().nonempty(),
         name: z.string().nonempty(),
     }),
+    headers: z.object({}),
     body: z.object({}),
     query: z.object({
         mode: ModeSchema,
@@ -874,8 +890,7 @@ registerRoute(router, '/:username/:name/export', {
             };
         }
 
-        // @@ Hack: this should be done by some kind of token service...
-        const { token } = createTokens({ username: user.username, id: user.id, email: user.email });
+        const { token } = createTokens(user.id, { exportReviews: req.query.exportReviews });
 
         const result = await makeRequest(req.query.to, '/api/sg/resources/import', z.any(), {
             query: { from: config.frontendURI, token, id: publication.id },

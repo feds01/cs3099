@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 import { z } from 'zod';
 
 import * as errors from '../../common/errors';
-import * as file from '../../lib/file';
-import * as zip from '../../lib/zip';
+import * as file from '../../lib/resources/file';
+import * as zip from '../../lib/resources/zip';
 import Logger from '../../common/logger';
-import { verifyReviewPermission } from '../../lib/permissions';
-import registerRoute from '../../lib/requests';
+import { verifyReviewPermission } from '../../lib/communication/permissions';
+import registerRoute from '../../lib/communication/requests';
 import Comment from '../../models/Comment';
 import { IPublication, IPublicationDocument } from '../../models/Publication';
 import Review, { IReviewStatus, PopulatedReview } from '../../models/Review';
@@ -36,6 +36,7 @@ registerRoute(router, '/:id/comment', {
     body: ICommentCreationSchema,
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
+    headers: z.object({}),
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -183,7 +184,7 @@ registerRoute(router, '/:id/comment', {
  * @description This endpoint is used to list the comments on a particular review specified
  * by the id of the review.
  *
- * @@TODO: Should be able to specify some filtration parameters with regards to which comments
+ * @@Future: Should be able to specify some filtration parameters with regards to which comments
  * should be listed from this endpoint. More specifically, we want to filter by owner, thread,
  * file, etc.
  */
@@ -191,6 +192,7 @@ registerRoute(router, '/:id/comments', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
+    headers: z.object({}),
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -255,6 +257,7 @@ registerRoute(router, '/:id/complete', {
     body: z.object({}),
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
+    headers: z.object({}),
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
@@ -292,6 +295,7 @@ registerRoute(router, '/:id', {
     method: 'get',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
+    headers: z.object({}),
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Moderator },
     handler: async (req) => {
@@ -334,6 +338,7 @@ registerRoute(router, '/:id', {
     method: 'delete',
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
+    headers: z.object({}),
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {

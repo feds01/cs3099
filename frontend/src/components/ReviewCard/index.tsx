@@ -15,7 +15,6 @@ interface Props {
 export default function ReviewCard({ review }: Props): ReactElement {
     const { session } = useAuth();
 
-    const { username } = review.publication.owner;
     const isOwner = session.username === review.publication.owner.username;
     const isComplete = review.status === 'completed';
 
@@ -40,20 +39,12 @@ export default function ReviewCard({ review }: Props): ReactElement {
                             {isComplete ? (
                                 <>
                                     {' '}
-                                    reviewed <PublicationLink
-                                        username={username}
-                                        {...review.publication}
-                                    />{' '}
-                                    publication{' '}
+                                    reviewed <PublicationLink {...review.publication} /> publication{' '}
                                 </>
                             ) : (
                                 <>
                                     {' '}
-                                    began reviewing{' '}
-                                    <PublicationLink
-                                        username={username}
-                                        {...review.publication}
-                                    /> publication{' '}
+                                    began reviewing <PublicationLink {...review.publication} /> publication{' '}
                                 </>
                             )}
                             {formatDistance(review.updatedAt, new Date(), { addSuffix: true })}.

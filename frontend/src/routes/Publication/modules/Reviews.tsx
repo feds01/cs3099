@@ -42,7 +42,9 @@ export default function Reviews(): ReactElement {
             <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Typography variant="h4">Reviews</Typography>
                 <Box>
-                    <Button disabled={publication.draft} onClick={createReview}>Add a review</Button>
+                    <Button disabled={publication.draft} onClick={createReview}>
+                        Add a review
+                    </Button>
                 </Box>
             </Box>
             <Divider />

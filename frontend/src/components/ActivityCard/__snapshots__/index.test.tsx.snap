@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ActivityCard tests renders message with reference at the end 1`] = `
+<DocumentFragment>
+  <div
+    class="MuiBox-root css-ryqbz"
+  >
+    <p
+      class="MuiTypography-root MuiTypography-body1 css-1b7aal1-MuiTypography-root"
+    >
+      did something 
+      <a
+        class="makeStyles-wrapper-6"
+        data-mui-internal-clone-element="true"
+        href="/profile/primary"
+      >
+        @primary
+      </a>
+    </p>
+  </div>
+</DocumentFragment>
+`;

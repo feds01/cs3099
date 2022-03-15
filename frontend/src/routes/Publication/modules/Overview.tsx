@@ -13,8 +13,7 @@ export default function Overview(): ReactElement {
                 <MarkdownRenderer contents={publication.introduction} />
             ) : (
                 <>
-                    <UserLink user={publication.owner} /> hasn't provided an introduction for this
-                    publication
+                    <UserLink user={publication.owner} /> hasn't provided an introduction for this publication
                 </>
             )}
         </Box>

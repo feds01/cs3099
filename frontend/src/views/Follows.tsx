@@ -1,13 +1,13 @@
-import Grid from '@mui/material/Grid';
-import { useAuth } from '../contexts/auth';
-import { ContentState } from '../types/requests';
 import ErrorBanner from '../components/ErrorBanner';
-import { Container, Typography } from '@mui/material';
-import Astronaut from '../static/images/spacewalk.svg';
-import { ApiErrorResponse, User } from '../lib/api/models';
-import { ReactElement, useEffect, useState } from 'react';
 import UserCard, { UserCardSkeleton } from '../components/UserCard';
+import { useAuth } from '../contexts/auth';
 import { useGetUserUsernameFollowers, useGetUserUsernameFollowing } from '../lib/api/followers/followers';
+import { ApiErrorResponse, User } from '../lib/api/models';
+import Astronaut from '../static/images/spacewalk.svg';
+import { ContentState } from '../types/requests';
+import { Container, Typography } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import { ReactElement, useEffect, useState } from 'react';
 
 interface Props {
     type: 'followers' | 'following';

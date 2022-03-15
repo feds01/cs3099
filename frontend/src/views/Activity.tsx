@@ -1,26 +1,34 @@
+import ActivityCard from '../components/ActivityCard';
+import ErrorBanner from '../components/ErrorBanner';
+import SkeletonList from '../components/SkeletonList';
+import { useGetUserUsernameFeed } from '../lib/api/activity/activity';
+import { ApiErrorResponse, GetUserUsernameFeed200 } from '../lib/api/models';
+import VoidImage from '../static/images/void.svg';
+import { ContentState } from '../types/requests';
+import { transformQueryIntoContentState } from '../wrappers/react-query';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
-import { ReactElement, useState } from 'react';
 import Typography from '@mui/material/Typography';
-import { ContentState } from '../types/requests';
-import Stars from '../static/images/stars.svg';
-import ErrorBanner from '../components/ErrorBanner';
+import { ReactElement, useEffect, useState } from 'react';
 
-interface Props {
+interface ActivityViewProps {
     username: string;
     limit?: number;
     title: string;
 }
 
-// TODO: This is a temporary filler type
-type UserActivity = {
-    title: string;
-};
+export default function ActivityView({ title, username, limit = 20 }: ActivityViewProps): ReactElement {
+    const [feedResponse, setFeedResponse] = useState<ContentState<GetUserUsernameFeed200, ApiErrorResponse>>({
+        state: 'loading',
+    });
 
-export default function Activity({ title, username, limit = 20 }: Props): ReactElement {
-    const [activities] = useState<ContentState<UserActivity[], Error>>({ state: 'loading' });
+    const activityFeedQuery = useGetUserUsernameFeed(username, { take: limit });
 
-    switch (activities.state) {
+    useEffect(() => {
+        setFeedResponse(transformQueryIntoContentState(activityFeedQuery));
+    }, [activityFeedQuery.data, activityFeedQuery.isError]);
+
+    switch (feedResponse.state) {
         case 'loading':
             return (
                 <div>
@@ -35,22 +43,42 @@ export default function Activity({ title, username, limit = 20 }: Props): ReactE
                             flexDirection: 'column',
                         }}
                     >
-                        <img src={Stars} height={96} width={96} alt="unavailable" />
-                        <Typography variant="body2">Service is unavailable.</Typography>
+                        <SkeletonList rows={3} />
                     </Box>
                 </div>
             );
         case 'error':
-            return <ErrorBanner message={activities.error.message} />;
+            return <ErrorBanner message={feedResponse.error.message} />;
         case 'ok':
             return (
                 <div>
                     <Typography variant="h4">Activity</Typography>
                     <Divider />
                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                        {activities.data.map((activity) => {
-                            return <p>{activity.title}</p>;
-                        })}
+                        {feedResponse.data.activities.length === 0 ? (
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    width: '100%',
+                                    pt: 2,
+                                }}
+                            >
+                                <img src={VoidImage} height={96} width={96} alt={'nothing'} />
+                                <Typography variant="body2">No activity yet.</Typography>
+                            </Box>
+                        ) : (
+                            feedResponse.data.activities.map((activity) => {
+                                return (
+                                    <ActivityCard
+                                        key={activity.id}
+                                        message={activity.message}
+                                        references={activity.references}
+                                    />
+                                );
+                            })
+                        )}
                     </Box>
                 </div>
             );

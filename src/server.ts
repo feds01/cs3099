@@ -1,17 +1,18 @@
-import app from './app';
-import path from "path";
 import { createServer } from 'http';
-import { AddressInfo } from 'net';
 import mongoose from 'mongoose';
+import { AddressInfo } from 'net';
+import path from 'path';
 import { ZodError } from 'zod';
+
+import app from './app';
 import Logger from './common/logger';
-import { ConfigSchema } from './validators/config';
 import program from './config/commander';
 import PublicationModel from './models/Publication';
 import UserModel from './models/User';
+import { ConfigSchema } from './validators/config';
 
 require('dotenv').config({
-    path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env'
+    path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
 }); // Import our environment variables
 
 // Here we create a config object and try to validate it using the config validator...
@@ -22,7 +23,7 @@ const rawConfig = {
     jwtSecret: process.env.JWT_SECRET_KEY,
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET_KEY,
     resourcesFolder: process.env.RESOURCES_FOLDER,
-    tempFolder: path.resolve(__dirname + "/../tmp"),
+    tempFolder: path.resolve(__dirname + '/../tmp'),
     teamName: 't06',
     port: process.env.PORT,
     frontendURI: process.env.FRONT_END_URI,
@@ -61,7 +62,7 @@ function startServer() {
             `Server started on ${port}! (environment: ${process.env['NODE_ENV'] || 'dev'})`,
         );
         Logger.info('Attempting connection with MongoDB service');
-        
+
         mongoose.connect(
             config.mongoURI,
             {
@@ -75,7 +76,7 @@ function startServer() {
 
                 Logger.info('Established connection with MongoDB service');
                 // Now create/ensure that the indexes for publications and users exist...
-                Logger.info("Verifying that search indexes exist...");
+                Logger.info('Verifying that search indexes exist...');
 
                 await PublicationModel.createIndexes();
                 await UserModel.createIndexes();

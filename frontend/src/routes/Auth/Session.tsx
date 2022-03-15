@@ -1,9 +1,9 @@
-import { z } from 'zod';
-import qs from 'query-string';
-import { useHistory, useLocation } from 'react-router-dom';
 import { useDispatchAuth } from '../../contexts/auth';
-import { ReactElement, useEffect, useState } from 'react';
 import { usePostAuthSession } from '../../lib/api/auth/auth';
+import qs from 'query-string';
+import { ReactElement, useEffect, useState } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
+import { z } from 'zod';
 
 const SessionSchema = z.object({
     redirect: z.string(), // @@Cleanup: validate using regex for resource path?
@@ -28,8 +28,10 @@ export default function Session(): ReactElement {
         if (!validator.success) {
             history.push({ pathname: '/login' });
         } else {
-            setRedirect(validator.data.redirect);
-            sessionQuery.mutate({ data: validator.data }); // @@Cleanup: We shouldn't be passing 'redirect' into this type. But because typescript is dumb and doesn't consider this as  problem.
+            const { redirect, token, refreshToken } = validator.data;
+
+            setRedirect(redirect);
+            sessionQuery.mutate({ data: { token, refreshToken } });
         }
     }, []);
 

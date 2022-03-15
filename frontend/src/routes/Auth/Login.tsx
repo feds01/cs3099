@@ -51,7 +51,7 @@ function Login(props: Props): ReactElement {
         if (validator.success) {
             const { state, from } = validator.data;
 
-            const query = qs.stringify({ from: window.location.protocol + window.location.hostname, token, state });
+            const query = qs.stringify({ from: process.env.REACT_APP_SERVICE_URI, token, state });
 
             // Paths are stupid!
             const fromUrl = new URL(from);
