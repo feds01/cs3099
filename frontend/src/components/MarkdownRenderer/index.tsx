@@ -4,7 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { ReactElement } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import remarkGithub, { BuildUrlValues, DefaultBuildUrl } from 'remark-github';
+import remarkGithub, { BuildUrlValues } from 'remark-github';
 
 interface MarkdownRendererProps {
     contents: string;
