@@ -49,9 +49,9 @@ def revise(
     try:
         revise_res = call_api("POST", revise_api, data=data, headers=headers)
         new_id = revise_res["publication"]["id"]
-        click.echo(
-            f"Success: Revision {revision} of {name}({id_}) created as {name}({new_id})"
-        )
+        old_pub_url = urljoin(base_url, f"publication/{id_}")
+        new_pub_url = urljoin(base_url, f"publication/{new_id}")
+        click.echo(f"Success: Revision of {name}({old_pub_url}) is now at {new_pub_url}")
         return new_id
     except KeyError:
         click.echo(f"Error: {revise_res['message']}")

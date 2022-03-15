@@ -21,8 +21,9 @@ def show(
 
     if show_res["status"] == "ok":
         publications = show_res["publications"]
-        print("Listing all publications available:")
+        print("Listing all publications of the latest version:")
         for pub in publications:
-            print(f"{pub['title']} ({pub['revision']}) : {pub['id']}")
+            pub_url = urljoin(base_url, f"publication/{pub['id']}")
+            print(f"{pub['title']} ({pub['revision']}) - {pub_url}")
     else:
         print("No publications found")

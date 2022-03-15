@@ -42,7 +42,7 @@ class ShowTest(unittest.TestCase):
         result = self.runner.invoke(show, [], obj=self.obj)
         self.assertEqual(result.exit_code, 0)
         self.assertTrue(
-            result.output.startswith("Listing all publications available:\n")
+            result.output.startswith("Listing all publications of the latest version:\n")
             or result.output == "No publications found\n"
         )
 

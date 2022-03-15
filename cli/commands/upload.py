@@ -67,7 +67,8 @@ def upload(
         exit(1)
 
     if upload_res["status"] == "ok":
-        click.echo(f"Success: File uploaded to {name}({id_})")
+        pub_url = urljoin(base_url, f"publication/{id_}")
+        click.echo(f"Success: File uploaded to {name}({pub_url})")
         return
 
     click.echo(f"Error: {upload_res['message']}")
@@ -97,6 +98,7 @@ def upload(
         exit(1)
 
     if upload_res["status"] == "ok":
-        click.echo(f"Success: File uploaded to {name}({new_id})")
+        pub_url = urljoin(base_url, f"publication/{new_id}")
+        click.echo(f"Success: File uploaded to {name}({pub_url})")
     else:
         click.echo(f"Error: {upload_res['message']}")
