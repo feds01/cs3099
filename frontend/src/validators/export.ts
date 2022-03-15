@@ -1,10 +1,7 @@
 import { z } from 'zod';
 
-// Schema for describing whether a given flag is toggled or not
-export const FlagSchema = z.enum(['false', 'true']).transform((f) => f === 'true');
-
 export const ExportPublicationSchema = z.object({
-    exportReviews: FlagSchema,
+    exportReviews: z.boolean(),
     to: z.string().nonempty(),
 });
 

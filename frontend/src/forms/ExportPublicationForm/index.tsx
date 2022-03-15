@@ -1,3 +1,5 @@
+import ErrorBanner from '../../components/ErrorBanner';
+import { useNotificationDispatch } from '../../contexts/notification';
 import { usePostPublicationUsernameNameExport } from '../../lib/api/publications/publications';
 import { ExportPublicationSchema, IExportPublication } from '../../validators/export';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,7 +12,7 @@ import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import { ReactElement } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 interface ExportDialogProps {
@@ -33,6 +35,8 @@ const journalUrls = {
 
 export default function ExportDialog({ username, name, revision, open, onClose }: ExportDialogProps): ReactElement {
     const exportPub = usePostPublicationUsernameNameExport();
+    const notificationDispatcher = useNotificationDispatch();
+    const [error, setError] = useState<string | null>(null);
 
     const {
         control,
@@ -47,6 +51,19 @@ export default function ExportDialog({ username, name, revision, open, onClose }
             exportReviews: false,
         },
     });
+
+    useEffect(() => {
+        if (exportPub.isError && exportPub.error) {
+            // Here, we don't really use 'errors' because the endpoint shouldn't return these errors
+            setError(exportPub.error.message);
+        } else if (!exportPub.isLoading && exportPub.data) {
+            notificationDispatcher({
+                type: 'add',
+                item: { severity: 'success', message: 'Successfully export publication' },
+            });
+            onClose();
+        }
+    }, [exportPub.isError, exportPub.isLoading, exportPub.data]);
 
     const onSubmit: SubmitHandler<IExportPublication> = async (data) => {
         await exportPub.mutateAsync({
@@ -98,6 +115,7 @@ export default function ExportDialog({ username, name, revision, open, onClose }
                             )}
                         />
                     </FormControl>
+                    {error && <ErrorBanner message={error} />}
                 </DialogContent>
                 <DialogActions>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
