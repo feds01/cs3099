@@ -38,35 +38,29 @@ export const getGetThreadIdMock = () => ({
 
 export const getGetCommentIdMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
-    comment: faker.helpers.randomize([
-        {
+    comment: {
+        id: faker.random.word(),
+        edited: faker.datatype.boolean(),
+        filename: faker.helpers.randomize([faker.random.word(), undefined]),
+        anchor: faker.helpers.randomize([{ start: faker.datatype.number(), end: faker.datatype.number() }, undefined]),
+        contents: faker.random.word(),
+        thread: faker.random.word(),
+        review: faker.random.word(),
+        replying: faker.helpers.randomize([faker.random.word(), undefined]),
+        author: {
             id: faker.random.word(),
-            edited: faker.datatype.boolean(),
-            filename: faker.helpers.randomize([faker.random.word(), undefined]),
-            anchor: faker.helpers.randomize([
-                { start: faker.datatype.number(), end: faker.datatype.number() },
-                undefined,
-            ]),
-            contents: faker.random.word(),
-            thread: faker.random.word(),
-            review: faker.random.word(),
-            replying: faker.helpers.randomize([faker.random.word(), undefined]),
-            author: {
-                id: faker.random.word(),
-                email: faker.random.word(),
-                username: faker.random.word(),
-                role: faker.helpers.randomize(Object.values(UserRole)),
-                name: faker.helpers.randomize([faker.random.word(), undefined]),
-                createdAt: faker.datatype.number(),
-                profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
-                status: faker.helpers.randomize([faker.random.word(), undefined]),
-                about: faker.helpers.randomize([faker.random.word(), undefined]),
-            },
+            email: faker.random.word(),
+            username: faker.random.word(),
+            role: faker.helpers.randomize(Object.values(UserRole)),
+            name: faker.helpers.randomize([faker.random.word(), undefined]),
             createdAt: faker.datatype.number(),
-            updatedAt: faker.datatype.number(),
+            profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+            status: faker.helpers.randomize([faker.random.word(), undefined]),
+            about: faker.helpers.randomize([faker.random.word(), undefined]),
         },
-        undefined,
-    ]),
+        createdAt: faker.datatype.number(),
+        updatedAt: faker.datatype.number(),
+    },
 });
 
 export const getPatchCommentIdMock = () => ({

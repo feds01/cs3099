@@ -1,7 +1,7 @@
 import { useDispatchSelection, useSelectionState } from '../../contexts/selection';
 import { Review } from '../../lib/api/models';
 import CommentEditor from '../CommentEditor';
-import Box from '@mui/material/Box/Box';
+import Box from '@mui/material/Box';
 import React, { createRef, ReactElement, useState } from 'react';
 import { BiMessageAltAdd } from 'react-icons/bi';
 import 'react-mde/lib/styles/css/react-mde-all.css';

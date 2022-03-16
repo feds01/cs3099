@@ -10,5 +10,5 @@ import type { SuccessStatus } from './successStatus';
 
 export type GetCommentId200 = {
     status: SuccessStatus;
-    comment?: Comment;
+    comment: Comment;
 };
