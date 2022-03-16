@@ -95,7 +95,7 @@ registerRoute(router, '/import', {
             };
         }
 
-        const { publication, reviews } = metadata.response.data;
+        const { publication, reviews } = metadata.response;
 
         // So here's where it gets pretty complicated. We need to check if the publication
         // owner which is a global id exists in our external id. If it does, then we can just

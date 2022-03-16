@@ -199,10 +199,8 @@ export async function makeRequest<I, O>(
             };
         }
 
-        const { status: _, ...rest } = response;
-
         // Now let's validate the object with the provided schema
-        const bodyValidation = schema.safeParse(rest);
+        const bodyValidation = schema.safeParse(json);
 
         if (bodyValidation.success) {
             return { status: 'ok', response: bodyValidation.data };
