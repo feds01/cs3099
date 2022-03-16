@@ -20,7 +20,6 @@ describe('User endpoint tests ', () => {
         name: 'test',
         password: 'Passwordexample123!',
         about: 'Nothing to say',
-        profilePictureUrl: 'https://nothing-to-show.com',
     };
 
     // create a user and login before all tests
@@ -162,7 +161,7 @@ describe('User endpoint tests ', () => {
         expect(response.status).toBe(401);
     });
 
-    // delete the test user after all tests
+    // User deletion tests
     it('should delete the test user', async () => {
         // call delete user api
         const deleteUserResponse = await request.delete('/user/test');
@@ -192,5 +191,58 @@ describe('User endpoint tests ', () => {
         const publication = await Publication.findById(createdPublication._id.toString()).exec();
         expect(publication).not.toBeNull();
         expect(publication!.collaborators).toStrictEqual([]);
+    });
+});
+
+// Profile avatar tests
+describe('Profile avatar tests', () => {
+    const UserObject = {
+        email: 'test@email.com',
+        username: 'test',
+        name: 'test',
+        password: 'password',
+        about: 'Nothing to say',
+    };
+
+    // Create a user test account before any test is run
+    beforeAll(async () => {
+        const registerResponse = await request.post('/auth/register').send(UserObject);
+        expect(registerResponse.status).toBe(201);
+
+        const loginResponse = await request.post('/auth/login').send({
+            username: 'test',
+            password: 'password',
+        });
+        expect(loginResponse.status).toBe(200);
+
+        request.auth(loginResponse.body.token, { type: 'bearer' });
+        request.set({ 'x-refresh-token': loginResponse.body.refreshToken });
+    });
+
+    // uploading a new file for profile picture is successfull
+    it('should upload a new file for profile avatar', async () => {
+        const avatarUpload = await request
+            .post('/resource/upload/test')
+            .attach('file', '__tests__/resources/logo.png');
+
+        expect(avatarUpload.status).toBe(200);
+    });
+
+    // fails to accept upload of SVG avatar
+    it('should fail to upload a SVG file for profile avatar', async () => {
+        const avatarUpload = await request
+            .post('/resource/upload/test')
+            .attach('file', '__tests__/resources/logo.svg');
+
+        expect(avatarUpload.status).toBe(400);
+    });
+
+    // Fail when file size too large
+    it('should fail to upload files over 300Kb', async () => {
+        const avatarUpload = await request
+            .post('/resource/upload/test')
+            .attach('file', '__tests__/resources/largeLogoFile.png');
+
+        expect(avatarUpload.status).toBe(400);
     });
 });
