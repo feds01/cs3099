@@ -160,38 +160,6 @@ describe('User endpoint tests ', () => {
         });
         expect(response.status).toBe(401);
     });
-
-    // Provile avatar tests
-
-    // uploading a new file for profile picture is successfull
-    it('should upload a new file for profile avatar', async () => {
-        const avatarUpload = await request
-            .post('/resource/upload/test')
-            .attach('file', '__tests__/resources/logo.png');
-
-        expect(avatarUpload.status).toBe(200);
-    });
-
-    // fails to accept upload of SVG avatar
-    it('should fail to upload a SVG file for profile avatar', async () => {
-        const avatarUpload = await request
-            .post('/resource/upload/test')
-            .attach('file', '__tests__/resources/logo.svg');
-
-        expect(avatarUpload.status).toBe(400);
-    });
-
-    // Fail when file size too large
-    it('should fail to upload files over 300Kb', async () => {
-        const avatarUpload = await request
-            .post('/resource/upload/test')
-            .attach('file', '__tests__/resources/largeLogoFile.png');
-
-        expect(avatarUpload.status).toBe(400);
-    });
-
-    // TODO JG: Fail when unauthorised
-    // achieve by setting up new request as a different user
 });
 
 // delete the test user after all tests
@@ -224,4 +192,59 @@ it('should delete collaborator references when user is deleted', async () => {
     const publication = await Publication.findById(createdPublication._id.toString()).exec();
     expect(publication).not.toBeNull();
     expect(publication!.collaborators).toStrictEqual([]);
+});
+
+// Provile avatar tests
+
+describe('Profile avatar tests', () => {
+    const UserObject = {
+        email: 'test@email.com',
+        username: 'test',
+        name: 'test',
+        password: 'password',
+        about: 'Nothing to say',
+    };
+
+    // Create a user test account before any test is run
+    beforeAll(async () => {
+        const registerResponse = await request.post('/auth/register').send(UserObject);
+        expect(registerResponse.status).toBe(201);
+        
+        const loginResponse = await request.post('/auth/login').send({
+            username: 'test',
+            password: 'password',
+        });
+        expect(loginResponse.status).toBe(200);
+
+        request.auth(loginResponse.body.token, { type: 'bearer' });
+        request.set({ 'x-refresh-token': loginResponse.body.refreshToken });
+    });
+
+    // uploading a new file for profile picture is successfull
+    it('should upload a new file for profile avatar', async () => {
+        const avatarUpload = await request
+            .post('/resource/upload/test')
+            .attach('file', '__tests__/resources/logo.png');
+
+        expect(avatarUpload.status).toBe(200);
+    });
+
+    // fails to accept upload of SVG avatar
+    it('should fail to upload a SVG file for profile avatar', async () => {
+        const avatarUpload = await request
+            .post('/resource/upload/test')
+            .attach('file', '__tests__/resources/logo.svg');
+
+        expect(avatarUpload.status).toBe(400);
+    });
+
+    // Fail when file size too large
+    it('should fail to upload files over 300Kb', async () => {
+        const avatarUpload = await request
+            .post('/resource/upload/test')
+            .attach('file', '__tests__/resources/largeLogoFile.png');
+
+        expect(avatarUpload.status).toBe(400);
+    });
+
 });
