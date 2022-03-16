@@ -51,10 +51,12 @@ def revise(
         new_id = revise_res["publication"]["id"]
         old_pub_url = urljoin(base_url, f"publication/{id_}")
         new_pub_url = urljoin(base_url, f"publication/{new_id}")
-        click.echo(f"Success: Revision of {name}({old_pub_url}) is now at {new_pub_url}")
+        click.echo(
+            f"Success: Revision of {name}({old_pub_url}) is now at {new_pub_url}"
+        )
         return new_id
     except KeyError:
-        click.echo(f"Error: {revise_res['message']}")
+        click.echo(f"Response Error: {revise_res['message']}")
         click.echo(revise_res["errors"])
     except Exception as e:
         click.echo(f"Unexpected error occurs: {e}")

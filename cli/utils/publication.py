@@ -17,7 +17,7 @@ def get_id_name(
         get_pub_res = call_api("GET", get_pub_api, headers=headers)
         id_, name = get_pub_res["publication"]["id"], get_pub_res["publication"]["name"]
     except KeyError:
-        print(f"Error: {get_pub_res['message']}")
+        print(f"Response Error: {get_pub_res['message']}")
     except Exception as e:
         print(f"Unexpected error occurs: {e}")
         exit(1)

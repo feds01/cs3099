@@ -16,6 +16,26 @@ def validate_zipfile(
     return value
 
 
+def call_upload_api(
+    base_url: str, id_: str, file: str, headers: dict[str, str], name: str
+):
+    upload_api = urljoin(base_url, f"resource/upload/publication/{id_}")
+    upload_body = {"file": (file, open(file, "rb"), "application/zip")}
+    try:
+        upload_res = call_api("POST", upload_api, files=upload_body, headers=headers)
+    except Exception as e:
+        click.echo(f"Unexpected error occurs: {e}")
+        exit(1)
+
+    if upload_res["status"] == "ok":
+        pub_url = urljoin(base_url, f"publication/{id_}")
+        click.echo(f"Success: File uploaded to {name}({pub_url})")
+        exit(0)
+
+    click.echo(f"Response Error: {upload_res['message']}")
+    return upload_res
+
+
 @click.command()
 @click.option(
     "--file",
@@ -58,20 +78,7 @@ def upload(
         return
 
     # upload
-    upload_api = urljoin(base_url, f"resource/upload/publication/{id_}")
-    upload_body = {"file": (file, open(file, "rb"), "application/zip")}
-    try:
-        upload_res = call_api("POST", upload_api, files=upload_body, headers=headers)
-    except Exception as e:
-        click.echo(f"Unexpected error occurs: {e}")
-        exit(1)
-
-    if upload_res["status"] == "ok":
-        pub_url = urljoin(base_url, f"publication/{id_}")
-        click.echo(f"Success: File uploaded to {name}({pub_url})")
-        return
-
-    click.echo(f"Error: {upload_res['message']}")
+    upload_res = call_upload_api(base_url, id_, file, headers, name)
     if (
         upload_res["message"]
         != "Cannot modify publication sources that aren't marked as draft."
@@ -89,16 +96,5 @@ def upload(
     if new_id is None:
         return
 
-    # upload again
-    upload_api = urljoin(base_url, f"resource/upload/publication/{new_id}")
-    try:
-        upload_res = call_api("POST", upload_api, files=upload_body, headers=headers)
-    except Exception as e:
-        click.echo(f"Unexpected error occurs: {e}")
-        exit(1)
-
-    if upload_res["status"] == "ok":
-        pub_url = urljoin(base_url, f"publication/{new_id}")
-        click.echo(f"Success: File uploaded to {name}({pub_url})")
-    else:
-        click.echo(f"Error: {upload_res['message']}")
+    # upload to the new publication
+    call_upload_api(base_url, new_id, file, headers, name)

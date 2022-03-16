@@ -1,6 +1,8 @@
 import json
 import click
+import requests
 from pathlib import Path
+from urllib.parse import urljoin
 
 from commands.show import show
 from commands.login import login
@@ -25,8 +27,18 @@ def cli(ctx: click.core.Context) -> None:
         with open(config_file, "r") as f:
             config = json.load(f)
             ctx.obj["BASE_URL"] = config["baseUrl"]
+
+        # chekc if base url is reachable:
+        version_api = urljoin(ctx.obj["BASE_URL"], "version")
+        requests.get(version_api)
     except FileNotFoundError:
         click.echo("No config.json found. Please create one.")
+        exit(1)
+    except requests.exceptions.RequestException as e:
+        click.echo("Base URL is not reachable")
+        exit(1)
+    except Exception as e:
+        click.echo(f"Unexpected error occurs: {e}")
         exit(1)
 
 
