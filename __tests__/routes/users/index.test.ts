@@ -182,7 +182,7 @@ describe('User endpoint tests ', () => {
         expect(avatarUpload.status).toBe(400);
     });
 
-    // TODO JG: Fail when file size too large
+    // Fail when file size too large
     it('should fail to upload files over 300Kb', async () => {
         const avatarUpload = await request
             .post('/resource/upload/test')
