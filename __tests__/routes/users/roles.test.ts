@@ -21,6 +21,36 @@ describe('User role tests', () => {
         expect(registerResponse.status).toBe(201);
     });
 
+    it('should fail to update other users profile details', async () => {
+        const userDto = createMockedUser({ username: 'a-user' });
+
+        const registerOther = await request.post('/auth/register').send(userDto);
+        expect(registerOther.status).toBe(201);
+
+        const loginOther = await request.post('/auth/login').send({
+            username: userDto.username,
+            password: userDto.password,
+        });
+        expect(loginOther.status).toBe(200);
+
+        request.auth(loginOther.body.token, { type: 'bearer' });
+        request.set({ 'x-refresh-token': loginOther.body.refreshToken });
+
+        const mockedUser = createMockedUser();
+        const requestDto = {
+            email: mockedUser.email,
+            username: mockedUser.username,
+            name: mockedUser.name,
+            about: mockedUser.about,
+        };
+
+        const response = await request.patch('/user/test').send(requestDto);
+        expect(response.status).toBe(401);
+
+        const deleteMockUser = await request.delete(`/user/${userDto.username}`);
+        expect(deleteMockUser.status).toBe(200);
+    });
+
     it('should fail to update other users profile avatar', async () => {
         const userDto = createMockedUser({ username: 'a-user' });
 
@@ -45,5 +75,8 @@ describe('User role tests', () => {
             .attach('file', '__tests__/resources/logo.png');
 
         expect(avatarUpload.status).toBe(401);
+        
+        const deleteMockUser = await request.delete(`/user/${userDto.username}`);
+        expect(deleteMockUser.status).toBe(200);
     });
 });
