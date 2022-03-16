@@ -10,6 +10,7 @@ import Logger from '../../common/logger';
 import {
     verifyPublicationIdPermission,
     verifyReviewPermission,
+    verifyUserPermission,
 } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
 import Publication from '../../models/Publication';
@@ -36,7 +37,8 @@ registerRoute(router, '/upload/:username', {
     body: z.any(),
     headers: z.object({}),
     method: 'post',
-    permission: { level: IUserRole.Default },
+    permission: { level: IUserRole.Moderator },
+    permissionVerification: verifyUserPermission,
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
         const file = extractFile(req.raw);
@@ -56,6 +58,15 @@ registerRoute(router, '/upload/:username', {
                 status: 'error',
                 code: 400,
                 message: "Invalid file mimetype sent. Image upload only accepts 'png' or 'jpeg'.",
+            };
+        }
+
+        // check file size is no bigger than 300kb
+        if (file.size > 300000) {
+            return {
+                status: 'error',
+                code: 400,
+                message: 'File size too large. Must be less than 300Kb',
             };
         }
 
@@ -103,8 +114,8 @@ registerRoute(router, '/upload/publication/:id', {
     body: z.any(),
     headers: z.object({}),
     method: 'post',
+    permission: { level: IUserRole.Moderator },
     permissionVerification: verifyPublicationIdPermission,
-    permission: { level: IUserRole.Default },
     handler: async (req) => {
         const file = extractFile(req.raw);
 
@@ -198,7 +209,7 @@ registerRoute(router, '/upload/review/:id', {
     body: z.any(),
     method: 'post',
     permissionVerification: verifyReviewPermission,
-    permission: { level: IUserRole.Default },
+    permission: { level: IUserRole.Moderator },
     handler: async (_req) => {
         return {
             status: 'error',

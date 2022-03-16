@@ -164,6 +164,7 @@ export async function makeRequest<I, O>(
         const rawResponse = await fetch(url, {
             ...(typeof additional?.headers !== 'undefined' && { headers: additional.headers }),
             ...(typeof additional?.method !== 'undefined' && { method: additional.method }),
+            timeout: 30000, // 30 seconds
         });
 
         const json: unknown = await rawResponse.json();
@@ -198,10 +199,8 @@ export async function makeRequest<I, O>(
             };
         }
 
-        const { status: _, ...rest } = response;
-
         // Now let's validate the object with the provided schema
-        const bodyValidation = schema.safeParse(rest);
+        const bodyValidation = schema.safeParse(json);
 
         if (bodyValidation.success) {
             return { status: 'ok', response: bodyValidation.data };

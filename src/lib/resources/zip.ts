@@ -54,8 +54,12 @@ export interface ResourceIndex {
  *
  */
 export function testArchive(archivePath: string): boolean {
-    const archive = new AdmZip(archivePath);
-    return archive.test();
+    try {
+        const archive = new AdmZip(archivePath);
+        return archive.test();
+    } catch (e: unknown) {
+        return false;
+    }
 }
 
 /**
