@@ -10,7 +10,7 @@ import type { ReviewStatus } from './reviewStatus';
 import type { User } from './user';
 
 export interface Review {
-    publication: Publication;
+    publication: Publication; 
     owner: User;
     createdAt: number;
     updatedAt: number;
