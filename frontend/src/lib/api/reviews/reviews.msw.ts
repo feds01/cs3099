@@ -156,7 +156,7 @@ export const getPutReviewIdCommentMock = () => ({
 export const getGetReviewIdMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
     review: {
-        publication: { 
+        publication: {
             id: faker.random.word(),
             name: faker.random.word(),
             title: faker.random.word(),
