@@ -109,7 +109,17 @@ export default function registerRoute<
         try {
             const params = await registrar.params.parseAsync(req.params);
             const query = await registrar.query.parseAsync(req.query);
-            const headers = await registrar.headers.parseAsync(req.headers);
+
+            // RFC 2616: So we have to essentially convert the name of the headers into
+            // a Capitalised format because requests might send it as case-insensitive
+            // which means that the schema won't be able to find those requests
+            const headers = await registrar.headers.parseAsync(
+                Object.fromEntries(
+                    Object.entries(req.headers).map(([key, value]) => {
+                        return [key.toLowerCase(), value];
+                    }),
+                ),
+            );
 
             let body: Body | null = null;
 

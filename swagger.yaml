@@ -2605,12 +2605,14 @@ components:
                     type: number
                     example: 1636065460
                 status:
-                    type: string
-                    example: 'started'
-                    enum: ['started', 'completed']
+                    $ref: '#/components/schemas/ReviewStatus'
                 id:
                     type: string
                     example: ABCDE921312DAB23AE
+        ReviewStatus:
+            type: string
+            example: 'started'
+            enum: ['started', 'completed']
         Comment:
             type: object
             required:

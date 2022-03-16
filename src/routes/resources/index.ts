@@ -10,6 +10,7 @@ import Logger from '../../common/logger';
 import {
     verifyPublicationIdPermission,
     verifyReviewPermission,
+    verifyUserPermission,
 } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
 import Publication from '../../models/Publication';
@@ -36,7 +37,8 @@ registerRoute(router, '/upload/:username', {
     body: z.any(),
     headers: z.object({}),
     method: 'post',
-    permission: { level: IUserRole.Default },
+    permission: { level: IUserRole.Moderator },
+    permissionVerification: verifyUserPermission,
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
         const file = extractFile(req.raw);
@@ -112,8 +114,8 @@ registerRoute(router, '/upload/publication/:id', {
     body: z.any(),
     headers: z.object({}),
     method: 'post',
+    permission: { level: IUserRole.Moderator },
     permissionVerification: verifyPublicationIdPermission,
-    permission: { level: IUserRole.Default },
     handler: async (req) => {
         const file = extractFile(req.raw);
 
@@ -207,7 +209,7 @@ registerRoute(router, '/upload/review/:id', {
     body: z.any(),
     method: 'post',
     permissionVerification: verifyReviewPermission,
-    permission: { level: IUserRole.Default },
+    permission: { level: IUserRole.Moderator },
     handler: async (_req) => {
         return {
             status: 'error',
