@@ -10,8 +10,10 @@ import { createTokens } from '../../lib/auth/auth';
 import { makeRequest } from '../../lib/communication/fetch';
 import {
     compareUserRoles,
+    defaultPermissionVerifier,
     verifyPublicationPermission,
     verifyPublicationWithElevatedPermission,
+    verifyRevisonlessPublicationPermission,
     verifyUserPermission,
 } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
@@ -58,7 +60,7 @@ registerRoute(router, '/:username/:name/all', {
         const { revision } = req.query;
 
         const publication = await Publication.findOne({
-            owner: user.id,
+            owner: user._id.toString(),
             name,
             revision,
         })
@@ -74,7 +76,7 @@ registerRoute(router, '/:username/:name/all', {
         }
 
         let archiveIndex = {
-            userId: user.id!,
+            userId: user._id.toString()!,
             name,
             ...(!publication.current && { revision }),
         };
@@ -147,7 +149,7 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
         const { revision } = req.query;
 
         const publication = await Publication.findOne({
-            owner: user.id,
+            owner: user._id.toString(),
             name,
             ...(typeof revision !== 'undefined' && { revision }),
         })
@@ -163,7 +165,7 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
         }
 
         let archive = {
-            userId: user.id!,
+            userId: user._id.toString()!,
             name,
             ...(!publication.current && typeof revision !== 'undefined' && { revision }),
         };
@@ -233,6 +235,7 @@ registerRoute(router, '/', {
     body: IPublicationCreationSchema,
     query: z.object({}),
     headers: z.object({}),
+    permissionVerification: defaultPermissionVerifier,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const { name, collaborators } = req.body;
@@ -293,6 +296,7 @@ registerRoute(router, '/', {
     params: z.object({}),
     query: PaginationQuerySchema,
     headers: z.object({}),
+    permissionVerification: defaultPermissionVerifier,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const { skip, take } = req.query;
@@ -365,7 +369,7 @@ registerRoute(router, '/:username', {
         const { pinned, skip, take } = req.query;
 
         const result = await Publication.find({
-            owner: user.id,
+            owner: user._id.toString(),
             ...(typeof pinned !== 'undefined' && {
                 $or: [...(!pinned ? [{ pinned: { $exists: false } }] : []), { pinned }],
             }),
@@ -405,14 +409,14 @@ registerRoute(router, '/:username/:name/revisions', {
     params: z.object({ username: z.string(), name: z.string() }),
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     headers: z.object({}),
-    permissionVerification: verifyPublicationPermission,
+    permissionVerification: verifyRevisonlessPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
         const { skip, take } = req.query;
         const result = await Publication.find({
-            owner: user.id,
+            owner: user._id.toString(),
             name: req.params.name,
         })
             .sort({ _id: -1 })
@@ -467,7 +471,7 @@ registerRoute(router, '/:username/:name', {
         const { revision, draft } = req.query;
 
         const publication = await Publication.findOne({
-            owner: user.id,
+            owner: user._id.toString(),
             name,
             ...(typeof draft !== 'undefined' && { draft }),
             ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
@@ -538,14 +542,14 @@ registerRoute(router, '/:username/:name/revise', {
     body: z.object({ revision: z.string(), changelog: z.string() }),
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
-    permissionVerification: verifyPublicationPermission,
+    permissionVerification: verifyRevisonlessPublicationPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
         // Fetch the current publication
         const currentPublication = await Publication.findOne({
-            owner: user.id,
+            owner: user._id.toString(),
             name: req.params.name,
             current: true,
         }).exec();
@@ -561,7 +565,7 @@ registerRoute(router, '/:username/:name/revise', {
         // Verify that the provided revision number isn't attempting to use a 'revision' tag that's already used
         // by the current publication tree.
         const revisionCheck = await Publication.findOne({
-            owner: user.id,
+            owner: user._id.toString(),
             name: req.params.name,
             revision: req.body.revision,
         });
@@ -637,18 +641,18 @@ registerRoute(router, '/:username/:name/all', {
     }),
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
-    permissionVerification: verifyPublicationPermission,
+    permissionVerification: verifyRevisonlessPublicationPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
         const name = req.params.name.toLowerCase();
 
         // Since we have cascading deletes, all reviews and comments are deleted.
-        await Publication.deleteMany({ owner: user.id, name }).exec();
+        await Publication.deleteMany({ owner: user._id.toString(), name }).exec();
 
         const publicationPath = zip.resourceIndexToPath({
             type: 'publication',
-            owner: user.id,
+            owner: user._id.toString(),
             name,
         });
 
@@ -692,7 +696,7 @@ registerRoute(router, '/:username/:name', {
 
         // Since we have cascading deletes, all the reviews on the publication are deleted as well.
         const publication = await Publication.findOneAndDelete({
-            owner: user.id,
+            owner: user._id.toString(),
             name,
             ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
         }).exec();
@@ -717,7 +721,9 @@ registerRoute(router, '/:username/:name', {
         // If the deleted publication is current, we need to essentially set the last publication in the
         // set of publications at the current one...
         if (publication.current) {
-            const publications = await Publication.find({ owner: user.id, name }).sort({ _id: -1 });
+            const publications = await Publication.find({ owner: user._id.toString(), name }).sort({
+                _id: -1,
+            });
 
             // Update the most recent publication as the current one...
             if (publications.length > 0) {
@@ -775,7 +781,7 @@ registerRoute(router, '/:username/:name', {
         const { revision } = req.query;
 
         const publication = await Publication.findOne({
-            owner: user.id,
+            owner: user._id.toString(),
             name: name.toLowerCase(),
             ...(typeof revision !== 'undefined' && { revision }),
         }).exec();
@@ -793,7 +799,7 @@ registerRoute(router, '/:username/:name', {
         // by the current publication tree.
         if (req.body.revision && publication.revision !== req.body.revision) {
             const revisionCheck = await Publication.findOne({
-                owner: user.id,
+                owner: user._id.toString(),
                 name: req.params.name,
                 revision: req.body.revision,
             });
@@ -877,7 +883,7 @@ registerRoute(router, '/:username/:name/export', {
         const { revision, exportReviews } = req.query;
 
         const publication = await Publication.findOne({
-            owner: user.id,
+            owner: user._id.toString(),
             name,
             ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
         }).exec();
@@ -890,7 +896,7 @@ registerRoute(router, '/:username/:name/export', {
             };
         }
 
-        const { token } = createTokens(user.id, { exportReviews });
+        const { token } = createTokens(user._id.toString(), { exportReviews });
 
         const result = await makeRequest(req.query.to, '/api/sg/resources/import', z.any(), {
             query: { from: config.frontendURI, token, id: publication.id },

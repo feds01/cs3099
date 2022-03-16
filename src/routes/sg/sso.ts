@@ -38,6 +38,7 @@ registerRoute(router, '/login', {
     query: z.object({ from: z.string().url(), state: z.string() }),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const { from, state } = req.query;
 
@@ -70,6 +71,7 @@ registerRoute(router, '/callback', {
     query: z.object({ from: z.string().url(), state: z.string(), token: z.string() }),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const { from, state, token } = req.query;
         Logger.info(`Processing request from: ${from} with state: ${state}`);
@@ -163,6 +165,7 @@ registerRoute(router, '/verify', {
     query: z.object({ token: IJwtSchema }),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const { token } = req.query;
 

@@ -46,6 +46,7 @@ registerRoute(router, '/import', {
     query: z.object({ from: z.string().url(), id: z.string(), token: z.string() }),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const { from, token, id } = req.query;
 
@@ -233,6 +234,7 @@ registerRoute(router, '/export/:id/metadata', {
     headers: z.object({ authorization: IAuthHeaderSchema }),
     query: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         // we need to verify the token in the headers is valid...
         const token = await verifyToken(req.headers.authorization, config.jwtSecret);
@@ -296,6 +298,7 @@ registerRoute(router, '/export/:id', {
     headers: z.object({ authorization: IAuthHeaderSchema }),
     query: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         // we need to verify the token in the headers is valid...
         const token = await verifyToken(req.headers.authorization, config.jwtSecret);

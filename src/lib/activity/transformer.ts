@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import { IUserDocument } from '../../models/User';
+import { AugmentedUserDocument } from '../../models/User';
 import { BasicRequest } from '../communication/requests';
 
 export interface ActivityMetadata {
@@ -9,7 +9,7 @@ export interface ActivityMetadata {
 }
 
 export type ActivityMetadataTransformer<P, Q, B> = (
-    requester: IUserDocument,
+    requester: AugmentedUserDocument,
     request: BasicRequest<P, Q, B, unknown>,
 ) => Promise<ActivityMetadata>;
 

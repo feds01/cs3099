@@ -101,7 +101,7 @@ export function refreshTokens(refreshToken: string): TokenPayload {
 export async function getTokensFromHeader(
     req: express.Request,
     res: express.Response,
-): Promise<VerifiedToken | string> {
+): Promise<VerifiedToken> {
     const bearer = req.get('Authorization');
     const refreshToken = req.get('x-refresh-token');
 
