@@ -1,8 +1,5 @@
 import CodeRenderer from '.';
-import { mockPublication } from '../../test-utils/mocks/publication';
-import { mockUser } from '../../test-utils/mocks/user';
 import { mockReview } from '../../test-utils/mocks/review';
-import { getGetReviewIdMock } from '../../lib/api/reviews/reviews.msw';
 import renderWithWrapper from '../../test-utils/render';
 
 describe('CodeRenderer tests', () => {
