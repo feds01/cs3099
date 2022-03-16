@@ -493,7 +493,7 @@ registerRoute(router, '/:username/role', {
         const user = await userUtils.transformUsernameIntoId(req);
 
         // Verify that the user can't elevate the privilege of this user beyond theirs
-        if (!compareUserRoles(user.role, req.body.role)) {
+        if (!compareUserRoles(req.requester.role, req.body.role)) {
             return {
                 status: 'error',
                 code: 401,
