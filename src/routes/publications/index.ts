@@ -213,9 +213,10 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
  * @method POST
  * @url /api/publication
  * @example
- * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication
  * >>> body:
  * {
+ *   "name": "trinity",
  *   "revision": "v1",
  *   "title": "Test",
  *   "introduction": "Introduction here",
@@ -248,6 +249,11 @@ registerRoute(router, '/', {
                 status: 'error',
                 code: 400,
                 message: 'Publication with the same name already exists',
+                errors: {
+                    name: {
+                        message: 'Publication name already taken',
+                    },
+                },
             };
         }
 

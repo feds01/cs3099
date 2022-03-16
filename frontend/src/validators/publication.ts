@@ -1,5 +1,17 @@
 import { z } from 'zod';
 
+const UserSchema = z.object({
+    id: z.string(),
+    email: z.string(),
+    username: z.string(),
+    role: z.enum(['default', 'moderator', 'administrator']),
+    name: z.string().optional(),
+    createdAt: z.number(),
+    profilePictureUrl: z.string().optional(),
+    status: z.string().optional(),
+    about: z.string().optional(),
+});
+
 /** This schema is used to validate requests to create a publication */
 export const CreatePublicationSchema = z.object({
     name: z
@@ -13,7 +25,7 @@ export const CreatePublicationSchema = z.object({
         .string()
         .min(1)
         .regex(/^[a-zA-Z0-9._~-]*$/, { message: 'Revision tag must be URL safe.' }),
-    collaborators: z.array(z.string()),
+    collaborators: z.array(z.union([z.string(), UserSchema])),
 });
 
 export type ICreatePublication = z.infer<typeof CreatePublicationSchema>;
