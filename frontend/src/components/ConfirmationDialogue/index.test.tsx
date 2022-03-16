@@ -1,11 +1,6 @@
-import { mockComment } from '../../test-utils/mocks/comment';
-import { mockPublication } from '../../test-utils/mocks/publication';
-import { mockUser } from '../../test-utils/mocks/user';
-import renderWithWrapper from '../../test-utils/render';
-import { format } from 'date-fns';
 import ConfirmationDialogue from '.';
-import { find } from 'lodash';
-import { fireEvent } from '@testing-library/dom/types/events';
+import { fireEvent } from '@testing-library/react';
+import renderWithWrapper from '../../test-utils/render';
 
 describe('ConfirmationDialogue tests', () => {
     it('clicking confirm does correct thing, dialog renders correctly', () => {

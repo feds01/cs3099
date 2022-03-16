@@ -1,0 +1,50 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CodeRenderer tests Code is rendered 1`] = `
+<DocumentFragment>
+  <pre
+    class="css-11fbl0n"
+    style="color: rgb(57, 58, 52); background-color: rgb(246, 248, 250);"
+  >
+    <div
+      class="token-line css-1j6x6lr"
+    >
+      <span
+        class="css-8xmhzg"
+      >
+        6
+      </span>
+      <span
+        class="css-f5iui0"
+      >
+        <span
+          style="color: rgb(0, 0, 159);"
+        >
+          let
+        </span>
+        <span>
+           x 
+        </span>
+        <span
+          style="color: rgb(57, 58, 52);"
+        >
+          =
+        </span>
+        <span>
+           
+        </span>
+        <span
+          style="color: rgb(54, 172, 170);"
+        >
+          5
+        </span>
+        <span
+          style="color: rgb(57, 58, 52);"
+        >
+          ;
+        </span>
+      </span>
+    </div>
+  </pre>
+</DocumentFragment>
+`;

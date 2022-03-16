@@ -5,7 +5,7 @@ jest.mock('../../contexts/auth');
 
 describe('PageLayout tests', () => {
     it('Renders simple paragraph', () => {
-        const text = "Rendered text";
+        const text = 'Rendered text';
 
         const { getByText } = renderWithWrapper(
             <PageLayout sidebar={true} drawerWidth={240}>
