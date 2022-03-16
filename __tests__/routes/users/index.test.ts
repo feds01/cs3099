@@ -20,7 +20,6 @@ describe('User endpoint tests ', () => {
         name: 'test',
         password: 'Passwordexample123!',
         about: 'Nothing to say',
-        profilePictureUrl: 'https://nothing-to-show.com',
     };
 
     // create a user and login before all tests
