@@ -100,7 +100,7 @@ registerRoute(router, '/callback', {
         }
 
         const { email, id } = userData.response;
-        const transformedUser = await transformSgUserToInternal(userData.response);
+        const transformedUser = transformSgUserToInternal(userData.response);
 
         // try to find the user, if the user is marked as deleted, we essentially
         // have to revert this because we can't create a new document for them.

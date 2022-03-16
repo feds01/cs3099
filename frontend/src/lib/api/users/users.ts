@@ -6,10 +6,8 @@
  * OpenAPI spec version: 1.0.0
  */
 import type {
-    GetUser200,
-    ApiErrorResponse,
-    GetUserParams,
     ApiSuccessResponse,
+    ApiErrorResponse,
     GetUserUsername200,
     PatchUserUsername200,
     UserPatchRequest,
@@ -33,34 +31,6 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AsyncReturnType<T extends (...args: any) => Promise<any>> = T extends (...args: any) => Promise<infer R> ? R : any;
-
-/**
- * Get a paginated list of users with optional search query.
- * @summary Paginated Users
- */
-export const getUser = (params?: GetUserParams) => {
-    return customInstance<GetUser200>({ url: `/user`, method: 'get', params });
-};
-
-export const getGetUserQueryKey = (params?: GetUserParams) => [`/user`, ...(params ? [params] : [])];
-
-export const useGetUser = <TData = AsyncReturnType<typeof getUser>, TError = ApiErrorResponse>(
-    params?: GetUserParams,
-    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getUser>, TError, TData> },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-    const { query: queryOptions } = options || {};
-
-    const queryKey = queryOptions?.queryKey ?? getGetUserQueryKey(params);
-
-    const queryFn: QueryFunction<AsyncReturnType<typeof getUser>> = () => getUser(params);
-
-    const query = useQuery<AsyncReturnType<typeof getUser>, TError, TData>(queryKey, queryFn, queryOptions);
-
-    return {
-        queryKey,
-        ...query,
-    };
-};
 
 /**
  * User account deletion endpoint, delete a user by the id.

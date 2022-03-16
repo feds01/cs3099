@@ -12,4 +12,5 @@ export interface UserPatchRequest {
     username?: string;
     about?: string;
     status?: string;
+    password?: string;
 }

@@ -41,7 +41,7 @@ export default function RegisterForm({ onSuccess }: RegisterAccountFormProps): R
     useEffect(() => {
         // Check here if an error occurred, otherwise call the onSuccess function...
         if (isError && error && typeof error.errors !== 'undefined') {
-            applyErrorsToForm(error.errors, setError);
+                applyErrorsToForm(error.errors, setError);
         } else if (!isLoading && response) {
             onSuccess(response.user, response.token, response.refreshToken);
         }

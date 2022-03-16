@@ -5,27 +5,9 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import { SuccessStatus, UserRole, ReviewStatus } from '.././models';
+import { SuccessStatus, UserRole } from '.././models';
 import faker from 'faker';
 import { rest } from 'msw';
-
-export const getGetUserMock = () => ({
-    status: faker.helpers.randomize(Object.values(SuccessStatus)),
-    users: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
-        id: faker.random.word(),
-        email: faker.random.word(),
-        username: faker.random.word(),
-        role: faker.helpers.randomize(Object.values(UserRole)),
-        name: faker.helpers.randomize([faker.random.word(), undefined]),
-        createdAt: faker.datatype.number(),
-        profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
-        status: faker.helpers.randomize([faker.random.word(), undefined]),
-        about: faker.helpers.randomize([faker.random.word(), undefined]),
-    })),
-    skip: faker.datatype.number(),
-    take: faker.datatype.number(),
-    total: faker.datatype.number(),
-});
 
 export const getDeleteUserUsernameMock = () => ({ status: faker.helpers.randomize(Object.values(SuccessStatus)) });
 
@@ -119,7 +101,7 @@ export const getGetUserUsernameReviewsMock = () => ({
         },
         createdAt: faker.datatype.number(),
         updatedAt: faker.datatype.number(),
-        status: faker.helpers.randomize(Object.values(ReviewStatus)),
+        status: faker.helpers.randomize(['started', 'completed']),
         id: faker.random.word(),
     })),
 });
@@ -141,9 +123,6 @@ export const getDeleteUserUsernameFollowMock = () => ({
 });
 
 export const getUsersMSW = () => [
-    rest.get('*/user', (_req, res, ctx) => {
-        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetUserMock()));
-    }),
     rest.delete('*/user/:username', (_req, res, ctx) => {
         return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getDeleteUserUsernameMock()));
     }),

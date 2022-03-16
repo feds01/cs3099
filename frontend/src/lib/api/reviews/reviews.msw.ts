@@ -5,7 +5,7 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import { SuccessStatus, ReviewStatus, UserRole } from '.././models';
+import { SuccessStatus, UserRole } from '.././models';
 import faker from 'faker';
 import { rest } from 'msw';
 
@@ -63,7 +63,7 @@ export const getPostPublicationUsernameNameRevisionReviewMock = () => ({
         },
         createdAt: faker.datatype.number(),
         updatedAt: faker.datatype.number(),
-        status: faker.helpers.randomize(Object.values(ReviewStatus)),
+        status: faker.helpers.randomize(['started', 'completed']),
         id: faker.random.word(),
     },
 });
@@ -121,7 +121,7 @@ export const getGetPublicationUsernameNameRevisionReviewsMock = () => ({
         },
         createdAt: faker.datatype.number(),
         updatedAt: faker.datatype.number(),
-        status: faker.helpers.randomize(Object.values(ReviewStatus)),
+        status: faker.helpers.randomize(['started', 'completed']),
         id: faker.random.word(),
     })),
 });
@@ -207,7 +207,7 @@ export const getGetReviewIdMock = () => ({
         },
         createdAt: faker.datatype.number(),
         updatedAt: faker.datatype.number(),
-        status: faker.helpers.randomize(Object.values(ReviewStatus)),
+        status: faker.helpers.randomize(['started', 'completed']),
         id: faker.random.word(),
     },
 });

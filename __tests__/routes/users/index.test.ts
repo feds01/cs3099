@@ -1,35 +1,27 @@
-import faker from '@faker-js/faker';
-import assert from 'assert';
-import mongoose from 'mongoose';
 import { agent as supertest } from 'supertest';
 
 import app from '../../../src/app';
-import Publication from '../../../src/models/Publication';
 import User, { IUserRole } from '../../../src/models/User';
-import { createMockedPublication } from '../../utils/factories/publication';
-import { createMockedUser } from '../../utils/factories/user';
 
 const request = supertest(app);
 
 describe('User endpoint tests ', () => {
     let testUserId: string;
 
-    const UserObject = {
-        email: 'test@email.com',
-        username: 'test',
-        name: 'test',
-        password: 'Passwordexample123!',
-        about: 'Nothing to say',
-        profilePictureUrl: 'https://nothing-to-show.com',
-    };
-
     // create a user and login before all tests
     it('should create a user', async () => {
         // call register api
-        const registerResponse = await request.post('/auth/register').send(UserObject);
+        const registerRespoinse = await request.post('/auth/register').send({
+            email: 'test@email.com',
+            username: 'test',
+            name: 'test',
+            password: 'Passwordexample123!',
+            about: 'Nothing to say',
+            profilePictureUrl: 'https://nothing-to-show.com',
+        });
 
         // expect register to be successful
-        expect(registerResponse.status).toBe(201);
+        expect(registerRespoinse.status).toBe(201);
 
         // update the user role to be administrator
         await User.findOneAndUpdate({ username: 'test' }, { role: IUserRole.Administrator });
@@ -51,7 +43,7 @@ describe('User endpoint tests ', () => {
             password: 'Passwordexample123!',
         });
 
-        // expect login with email to be successful
+        // expect login with email to be sucessfull
         expect(loginResponseEmail.status).toBe(200);
         expect(loginResponseEmail.body.token).toBeDefined();
         expect(loginResponseEmail.body.refreshToken).toBeDefined();
@@ -63,40 +55,69 @@ describe('User endpoint tests ', () => {
         testUserId = loginResponse.body.user.id;
     });
 
+    // Tests for POST /auth/register
+
     // fail to create a user with no username
     it('should fail to create a user with no username', async () => {
         // call register api without username field
-        const { username, ...amendedRequestDto } = UserObject;
-        const registrationResponse = await request.post('/auth/register').send(amendedRequestDto);
+        const registerNewResponse = await request.post('/auth/register').send({
+            email: 'test@email.com',
+            name: 'newtest',
+            password: 'Passwordexample123!',
+            about: 'Nothing to say',
+            profilePictureUrl: 'https://nothing-to-show.com',
+        });
 
-        expect(registrationResponse.status).toBe(400);
-        expect(registrationResponse.body.errors).toHaveProperty("username");
+        // expect register to fail
+        expect(registerNewResponse.status).toBe(400);
     });
 
     // fail to create a user with no password
     it('should fail to create a user with no password', async () => {
-        const { password, ...amendedRequestDto } = UserObject;
-        const registrationResponse = await request.post('/auth/register').send(amendedRequestDto);
+        // call register api without password field
+        const registerNewResponse = await request.post('/auth/register').send({
+            email: 'test@email.com',
+            username: 'newtest',
+            name: 'newtest',
+            about: 'Nothing to say',
+            profilePictureUrl: 'https://nothing-to-show.com',
+        });
 
-        expect(registrationResponse.status).toBe(400);
-        expect(registrationResponse.body.errors).toHaveProperty("password");
+        // expect register to fail
+        expect(registerNewResponse.status).toBe(400);
     });
 
     // fail to create a user when username or email already taken
     it('should fail to create a user when username taken', async () => {
         // call register api with an inuse username
-        const registerUserTaken = await request.post('/auth/register').send(UserObject);
+        const registerUserTaken = await request.post('/auth/register').send({
+            email: 'test2@email.com',
+            username: 'test',
+            name: 'newtest',
+            password: 'Passwordexample123!',
+            about: 'Nothing to say',
+            profilePictureUrl: 'https://nothing-to-show.com',
+        });
+
+        // expect register to fail
         expect(registerUserTaken.status).toBe(400);
-        expect(registerUserTaken.body.errors).toHaveProperty("username");
 
         // call register api with an inuse email
-        const { username, ...registerDto } = UserObject;
-        const registerEmailTaken = await request.post('/auth/register').send({ ...registerDto, username: faker.internet.userName() });
+        const registerEmailTaken = await request.post('/auth/register').send({
+            email: 'test@email.com',
+            username: 'test2',
+            name: 'newtest2',
+            password: 'Passwordexample123!',
+            about: 'Nothing to say',
+            profilePictureUrl: 'https://nothing-to-show.com',
+        });
+
+        // expect register to fail
         expect(registerEmailTaken.status).toBe(400);
-        expect(registerEmailTaken.body.errors).toHaveProperty("email");
     });
 
-    // Tests for querying users
+    // Tests for  GET /user/:username
+
     it('Getting Non-existing user with name', async () => {
         const response = await request.get('/user/notexist');
         expect(response.status).toBe(404);
@@ -118,27 +139,34 @@ describe('User endpoint tests ', () => {
     });
 
     // Tests for PATCH /user/:username
+
     it("Updating user and check if user's information is updated", async () => {
-        const mockedUser = createMockedUser();
-
-        const requestDto = {
-            email: mockedUser.email,
-            username: mockedUser.username,
-            name: mockedUser.name,
-            about: mockedUser.about,
-        };
-
         // call API to patch user details
-        const response = await request.patch('/user/test').send(requestDto);
+        const response = await request.patch('/user/test').send({
+            email: 'testUPDATED@email.com',
+            username: 'testUPDATED',
+            name: 'testUPDATED',
+            about: 'Something to say',
+        });
+
+        // expect patch to succeed
         expect(response.status).toBe(200);
 
         // find user with new username
-        const user = await User.findOne({ username: mockedUser.username });
-        expect(user).toMatchObject(requestDto);
+        const user = await User.findOne({ username: 'testUPDATED' });
+
+        // expect all updated to be correct
+        expect(user?.email).toBe('testUPDATED@email.com');
+        expect(user?.username).toBe('testUPDATED');
+        expect(user?.name).toBe('testUPDATED');
+        expect(user?.about).toBe('Something to say');
 
         // reset username and email (for the purpose of further testing)
-        assert(user !== null);
-        await user.updateOne({ email: UserObject.email, username: UserObject.username }).exec();
+        const reset = await request.patch('/user/testUPDATED').send({
+            email: 'test@email.com',
+            username: 'test',
+        });
+        expect(reset.status).toBe(200);
     });
 
     // Tests for PATCH /user/:username/role
@@ -167,28 +195,5 @@ describe('User endpoint tests ', () => {
 
         // expect delete to be successful
         expect(deleteUserResponse.status).toBe(200);
-    });
-
-    // Deleting a user that's references as a collaborator in the database
-    // should clear it from the collaborators...
-    it('should delete collaborator references when user is deleted', async () => {
-        // We want to create a user
-        const owner = await new User({ ...createMockedUser() }).save();
-        const collaborator = await new User({ ...createMockedUser() }).save();
-
-        const ownerId = new mongoose.Types.ObjectId(owner._id);
-        const collaboratorId = new mongoose.Types.ObjectId(collaborator._id);
-
-        // Now let's create a publication with that user as being the collaborator
-        const createdPublication = await new Publication({
-            ...createMockedPublication({ owner: ownerId, collaborators: [collaboratorId] }),
-        }).save();
-
-        // Delete the user and verify that the publication has no collaborators
-        await collaborator.delete();
-
-        const publication = await Publication.findById(createdPublication._id.toString()).exec();
-        expect(publication).not.toBeNull();
-        expect(publication!.collaborators).toStrictEqual([]);
     });
 });

@@ -8,36 +8,36 @@ import ActivityRecord from '../activity';
 export type ApiResponse<T> =
     /** Request was successful */
     | {
-          status: 'ok';
-          code: 200 | 201 | 204;
-          data?: T;
-      }
+        status: 'ok';
+        code: 200 | 201 | 204;
+        data?: T;
+    }
     /** Request was overall successful, but it encountered 'recoverable' errors */
     | {
-          status: 'partial';
-          code: 207;
-          data?: T;
-          errors?: ResponseErrorSummary;
-      }
+        status: 'partial';
+        code: 207;
+        data?: T;
+        errors?: ResponseErrorSummary;
+    }
     /** Request failed with some 4XX or 5XX error code */
     | {
-          status: 'error';
-          code: 400 | 401 | 404 | 500 | 503;
-          message: string;
-          errors?: ResponseErrorSummary;
-      }
+        status: 'error';
+        code: 400 | 401 | 404 | 500 | 503;
+        message: string;
+        errors?: ResponseErrorSummary;
+    }
     /** Request prompts for a redirect, status code 301 */
     | {
-          status: 'redirect';
-          url: string;
-      }
+        status: 'redirect';
+        url: string;
+    }
     /** Request was successful, but handler will send a file */
     | {
-          status: 'file';
-          code: 200;
-          /** The path of the file that is to be sent to the server */
-          file: string;
-      };
+        status: 'file';
+        code: 200;
+        /** The path of the file that is to be sent to the server */
+        file: string;
+    };
 
 /**
  * Function that handles the returned endpoint from a response and makes a call to the express
@@ -64,7 +64,7 @@ export async function handleResponse<T, P, Q, B>(
             });
             return;
         case 'partial':
-            // Partial status signals that the response did succeed, but it there were some
+            // Partial status signals that the response did succeed, but it there were some 
             // errors so not all of the parameters/expectations of the request may of succeeded.
             // This is only really used when importing reviews, because some reviews might fail
             // because we can't query foreign users, or comment data doesn't make sense... etc.

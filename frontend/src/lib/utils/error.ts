@@ -1,5 +1,5 @@
-import { Path, UseFormSetError } from 'react-hook-form';
-import { ApiErrorResponseErrors } from '../api/models';
+import { Path, UseFormSetError } from "react-hook-form";
+import { ApiErrorResponseErrors } from "../api/models";
 
 export function applyErrorsToForm<T>(errors: ApiErrorResponseErrors, setError: UseFormSetError<T>) {
     for (const [errorField, errorObject] of Object.entries(errors)) {

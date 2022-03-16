@@ -1,9 +1,7 @@
-import assert from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
 import Logger from '../common/logger';
 import { config } from '../server';
-import Activity from './Activity';
 import Follower from './Follower';
 import Publication from './Publication';
 
@@ -85,25 +83,16 @@ UserSchema.index({ username: 'text', about: 'text', name: 'text', status: 'text'
  * if the publication is marked for deletion.
  */
 UserSchema.post(
-    /remove|deleteOne|findOneAndDelete$/,
+    /deleteOne|findOneAndDelete$/,
     { document: true, query: true },
-    async (item: AugmentedUserDocument, next) => {
+    async (item: IUserDocument, next) => {
         Logger.warn('Cleaning up user resources after account deletion');
 
-        const id = item._id.toString();
+        const id = item.id as string;
         await Publication.deleteMany({ owner: id }).exec();
 
         // Now we need to delete any follower entries that contain the current user's id
         await Follower.deleteMany({ $or: [{ following: id }, { follower: id }] }).exec();
-
-        // We also need to clear any collaborators that are stored for any publication
-        await Publication.updateMany(
-            { collaborators: [id] },
-            { $pull: { collaborators: item._id } },
-        ).exec();
-
-        // Remove any activities that the user owns
-        await Activity.deleteMany({ owner: id }).exec();
 
         next();
     },
@@ -118,10 +107,9 @@ UserSchema.post(
  */
 UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
     const { profilePictureUrl, about, name, status } = user;
-    assert(typeof user._id !== 'undefined');
 
     return {
-        ...(!omitId && { id: user._id.toString() }),
+        ...(!omitId && { id: user.id as string }),
         email: user.email,
         username: user.username,
         createdAt: user.createdAt.getTime(),

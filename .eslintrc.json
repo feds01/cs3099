@@ -70,12 +70,7 @@
         "@typescript-eslint/no-implicit-any-catch": "error",
         "@typescript-eslint/no-misused-promises": "off",
         "@typescript-eslint/no-namespace": "off",
-        "@typescript-eslint/no-unnecessary-condition": [
-            "warn",
-            {
-                "allowConstantLoopConditions": true
-            }
-        ],
+        "@typescript-eslint/no-unnecessary-condition": "warn",
         "@typescript-eslint/no-unnecessary-type-assertion": "warn",
         "@typescript-eslint/no-unnecessary-type-constraint": "warn",
         "no-fallthrough": "off",

@@ -1,4 +1,4 @@
-import CollaboratorInput from '../../components/CollaboratorInput';
+import ControlledAutocomplete from '../../components/ControlledAutocomplete';
 import ControlledTextField from '../../components/ControlledTextField';
 import ErrorBanner from '../../components/ErrorBanner';
 import FieldLabel from '../../components/FieldLabel';
@@ -6,16 +6,13 @@ import { useNotificationDispatch } from '../../contexts/notification';
 import { usePublicationDispatch } from '../../contexts/publication';
 import { Publication } from '../../lib/api/models';
 import { usePatchPublicationUsernameName } from '../../lib/api/publications/publications';
-import { applyErrorsToForm } from '../../lib/utils/error';
-import {
-    IEditPublication as IUpdatePublication,
-    EditPublicationSchema as UpdatePublicationSchema,
-} from '../../validators/publication';
+import { IEditPublication, EditPublicationSchema } from '../../validators/publication';
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Grid from '@mui/material/Grid';
 import { ReactElement, useEffect } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { applyErrorsToForm } from '../../lib/utils/error';
 
 interface EditPublicationFormProps {
     publication: Publication;
@@ -36,11 +33,14 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
         handleSubmit,
         setError,
         formState: { isValid, isSubmitting },
-    } = useForm<IUpdatePublication>({
-        resolver: zodResolver(UpdatePublicationSchema),
+    } = useForm<IEditPublication>({
+        resolver: zodResolver(EditPublicationSchema),
         reValidateMode: 'onChange',
         mode: 'onChange',
-        defaultValues: publication,
+        defaultValues: {
+            ...publication,
+            collaborators: publication.collaborators.map((item) => item.username),
+        },
     });
 
     const { isLoading, isError, data, error, mutateAsync } = usePatchPublicationUsernameName();
@@ -65,17 +65,7 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
         }
     }, [isLoading, isError, data]);
 
-    const onSubmit: SubmitHandler<IUpdatePublication> = async (data) => {
-        const { collaborators, ...rest } = data;
-        await mutateAsync({
-            username,
-            name,
-            data: {
-                ...rest,
-                collaborators: collaborators?.map((x) => (typeof x === 'string' ? x : x.username)),
-            },
-        });
-    };
+    const onSubmit: SubmitHandler<IEditPublication> = async (data) => await mutateAsync({ username, name, data });
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%', marginTop: '8px' }}>
@@ -105,7 +95,7 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
                 </Grid>
                 <Grid item xs={12}>
                     <FieldLabel label="Collaborators" required={false} />
-                    <CollaboratorInput name="collaborators" control={control} />
+                    <ControlledAutocomplete name="collaborators" control={control} />
                 </Grid>
                 <Grid item xs={12}>
                     <LoadingButton
