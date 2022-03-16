@@ -10,7 +10,7 @@ import { downloadOctetStream, makeRequest } from '../../lib/communication/fetch'
 import registerRoute from '../../lib/communication/requests';
 import { ReviewImportIssues, ReviewImportManager } from '../../lib/import/review';
 import { importUser } from '../../lib/import/user';
-import { deleteFileResource, moveResource } from '../../lib/resources/fs';
+import { moveResource } from '../../lib/resources/fs';
 import Publication, { IPublication } from '../../models/Publication';
 import Review, { IReviewStatus, PopulatedReview } from '../../models/Review';
 import { IUser } from '../../models/User';
@@ -56,15 +56,13 @@ registerRoute(router, '/import', {
         // the metadata endpoint
         const publicationArchive = await downloadOctetStream(
             from,
-            `/api/sg/resources/export/${id}`,
+            `/api/sg/export/publication/${id}`,
             {
                 headers: { ...headers, 'Content-Type': 'application/zip' },
             },
         );
 
         if (publicationArchive.status === 'error') {
-            Logger.warn(publicationArchive.errors);
-
             return {
                 status: 'error',
                 code: 400,
@@ -76,7 +74,7 @@ registerRoute(router, '/import', {
         // Attempt to fetch the metadata of the review
         const metadata = await makeRequest(
             from,
-            `/api/sg/resources/export/${id}/metadata`,
+            `/api/sg/export/publication/${id}/metadata`,
             SgMetadataSchema,
             { headers },
         );
@@ -95,7 +93,7 @@ registerRoute(router, '/import', {
             };
         }
 
-        const { publication, reviews } = metadata.response;
+        const { publication, reviews } = metadata.response.data;
 
         // So here's where it gets pretty complicated. We need to check if the publication
         // owner which is a global id exists in our external id. If it does, then we can just
@@ -137,31 +135,8 @@ registerRoute(router, '/import', {
             };
         }
 
-        // we also need to create a archive so that we can validate the review
-        const archive = zip.loadArchiveFromPath(publicationArchive.response);
-        assert(archive !== null);
-
-        if (!archive.test()) {
-            Logger.warn(`Received invalid archive`);
-            Logger.info('Removing malformed archive');
-            deleteFileResource(publicationArchive.response);
-
-            return {
-                status: 'error',
-                code: 400,
-                message: 'Received Invalid ZIP archive',
-                errors: {
-                    resource: {
-                        message: 'Invalid ZIP archive',
-                    },
-                },
-            };
-        }
-
         const doc = await new Publication({
             ...publication,
-            draft: false,
-            current: true,
             owner: ownerId,
         }).save();
 
@@ -173,6 +148,10 @@ registerRoute(router, '/import', {
 
         const finalPath = zip.archiveIndexToPath(index);
         await moveResource(publicationArchive.response, finalPath);
+
+        // we also need to create a archive so that we can validate the review
+        const archive = zip.loadArchive(index);
+        assert(archive !== null);
 
         // We create a map of all the issues that occurred when trying to import the specific review
         const importIssues = new Map<number, ReviewImportIssues>();
@@ -230,12 +209,12 @@ registerRoute(router, '/import', {
 registerRoute(router, '/export/:id/metadata', {
     method: 'get',
     params: z.object({ id: ObjectIdSchema }),
-    headers: z.object({ authorization: IAuthHeaderSchema }),
-    query: z.object({}),
+    headers: z.object({ Authorization: IAuthHeaderSchema }),
+    query: z.object({ from: z.string().url(), state: z.string() }),
     permission: null,
     handler: async (req) => {
         // we need to verify the token in the headers is valid...
-        const token = await verifyToken(req.headers.authorization, config.jwtSecret);
+        const token = await verifyToken(req.headers.Authorization, config.jwtSecret);
         const exportOptions = ExportPublicationOptionsSchema.parse(token.data);
 
         const publication = await Publication.findById(req.params.id).exec();
@@ -293,12 +272,12 @@ registerRoute(router, '/export/:id/metadata', {
 registerRoute(router, '/export/:id', {
     method: 'get',
     params: z.object({ id: ObjectIdSchema }),
-    headers: z.object({ authorization: IAuthHeaderSchema }),
-    query: z.object({}),
+    headers: z.object({ Authorization: IAuthHeaderSchema }),
+    query: z.object({ from: z.string().url(), state: z.string() }),
     permission: null,
     handler: async (req) => {
         // we need to verify the token in the headers is valid...
-        const token = await verifyToken(req.headers.authorization, config.jwtSecret);
+        const token = await verifyToken(req.headers.Authorization, config.jwtSecret);
         ExportPublicationOptionsSchema.parse(token.data);
 
         const publication = await Publication.findById(req.params.id);
@@ -311,12 +290,8 @@ registerRoute(router, '/export/:id', {
             };
         }
 
-        const { owner, name, revision, current } = publication;
-        const archive = zip.archiveIndexToPath({
-            userId: owner.toString(),
-            name,
-            ...(!current && { revision }),
-        });
+        const { owner, name, revision } = publication;
+        const archive = zip.archiveIndexToPath({ userId: owner.toString(), name, revision });
 
         return {
             status: 'file',

@@ -247,9 +247,7 @@ function PublicationView() {
                                 </Typography>
                             </Box>
                             <Box>
-                                {!publication.draft && (
-                                    <Button onClick={() => setExportDialogOpen(true)}>Export</Button>
-                                )}
+                                <Button onClick={() => setExportDialogOpen(true)}>Export</Button>
                                 <ExportDialog
                                     username={username}
                                     name={name}

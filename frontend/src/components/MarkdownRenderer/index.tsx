@@ -4,7 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { ReactElement } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import remarkGithub, { BuildUrlValues } from 'remark-github';
+import remarkGithub, { BuildUrlValues, DefaultBuildUrl } from 'remark-github';
 
 interface MarkdownRendererProps {
     contents: string;
@@ -39,6 +39,8 @@ export default function MarkdownRenderer(props: MarkdownRendererProps): ReactEle
                     {
                         repository: 'iamus/iamus',
                         buildUrl: (opt: BuildUrlValues) => {
+                            console.log(opt);
+
                             if (opt.type === 'mention' && opt.user.match(/^[a-zA-Z0-9._~-]*$/)) {
                                 return process.env.REACT_APP_SERVICE_URI + `/user/${opt.user}`;
                             }

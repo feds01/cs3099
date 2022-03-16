@@ -865,7 +865,7 @@ registerRoute(router, '/:username/:name/export', {
         mode: ModeSchema,
         to: z.string().url(),
         revision: z.string().optional(),
-        exportReviews: FlagSchema,
+        exportReviews: z.boolean(),
     }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
@@ -874,7 +874,7 @@ registerRoute(router, '/:username/:name/export', {
 
         // Get the publication
         const name = req.params.name.toLowerCase();
-        const { revision, exportReviews } = req.query;
+        const { revision } = req.query;
 
         const publication = await Publication.findOne({
             owner: user.id,
@@ -890,7 +890,7 @@ registerRoute(router, '/:username/:name/export', {
             };
         }
 
-        const { token } = createTokens(user.id, { exportReviews });
+        const { token } = createTokens(user.id, { exportReviews: req.query.exportReviews });
 
         const result = await makeRequest(req.query.to, '/api/sg/resources/import', z.any(), {
             query: { from: config.frontendURI, token, id: publication.id },
@@ -898,7 +898,7 @@ registerRoute(router, '/:username/:name/export', {
         });
 
         if (result.status === 'error') {
-            Logger.warn(`Failed to export a publication:`, result.errors);
+            Logger.warn(`Failed to export a review: ${result.errors}`);
 
             return {
                 status: 'error',

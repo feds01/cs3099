@@ -62,7 +62,7 @@ export interface IUserModel extends Model<IUserDocument> {
 
 const UserSchema = new Schema<IUser, IUserModel, IUser>(
     {
-        email: { type: String, required: true },
+        email: { type: String, required: true, unique: true },
         username: { type: String, required: true, unique: true },
         name: { type: String },
         password: { type: String, default: '' },
@@ -80,8 +80,6 @@ const UserSchema = new Schema<IUser, IUserModel, IUser>(
 // Create the text index schema for searching users.
 UserSchema.index({ username: 'text', about: 'text', name: 'text', status: 'text' });
 
-// Create an index to enforce that username and `isExternalUser` are unique
-UserSchema.index({ email: 1, externalId: 1 }, { unique: true });
 /**
  * This function is a hook to remove any comments that are on a review
  * if the publication is marked for deletion.
