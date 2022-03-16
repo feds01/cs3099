@@ -70,7 +70,7 @@ describe('User endpoint tests ', () => {
         const registrationResponse = await request.post('/auth/register').send(amendedRequestDto);
 
         expect(registrationResponse.status).toBe(400);
-        expect(registrationResponse.body.errors).toHaveProperty('username');
+        expect(registrationResponse.body.errors).toHaveProperty("username");
     });
 
     // fail to create a user with no password
@@ -79,7 +79,7 @@ describe('User endpoint tests ', () => {
         const registrationResponse = await request.post('/auth/register').send(amendedRequestDto);
 
         expect(registrationResponse.status).toBe(400);
-        expect(registrationResponse.body.errors).toHaveProperty('password');
+        expect(registrationResponse.body.errors).toHaveProperty("password");
     });
 
     // fail to create a user when username or email already taken
@@ -87,15 +87,13 @@ describe('User endpoint tests ', () => {
         // call register api with an inuse username
         const registerUserTaken = await request.post('/auth/register').send(UserObject);
         expect(registerUserTaken.status).toBe(400);
-        expect(registerUserTaken.body.errors).toHaveProperty('username');
+        expect(registerUserTaken.body.errors).toHaveProperty("username");
 
         // call register api with an inuse email
         const { username, ...registerDto } = UserObject;
-        const registerEmailTaken = await request
-            .post('/auth/register')
-            .send({ ...registerDto, username: faker.internet.userName() });
+        const registerEmailTaken = await request.post('/auth/register').send({ ...registerDto, username: faker.internet.userName() });
         expect(registerEmailTaken.status).toBe(400);
-        expect(registerEmailTaken.body.errors).toHaveProperty('email');
+        expect(registerEmailTaken.body.errors).toHaveProperty("email");
     });
 
     // Tests for querying users
