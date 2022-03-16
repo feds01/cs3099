@@ -33,7 +33,7 @@ export const getGetUserUsernameMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
     user: {
         id: faker.random.word(),
-        email: faker.random.word(), 
+        email: faker.random.word(),
         username: faker.random.word(),
         role: faker.helpers.randomize(Object.values(UserRole)),
         name: faker.helpers.randomize([faker.random.word(), undefined]),

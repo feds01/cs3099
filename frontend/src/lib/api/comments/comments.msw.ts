@@ -45,7 +45,7 @@ export const getGetCommentIdMock = () => ({
             filename: faker.helpers.randomize([faker.random.word(), undefined]),
             anchor: faker.helpers.randomize([
                 { start: faker.datatype.number(), end: faker.datatype.number() },
-                undefined, 
+                undefined,
             ]),
             contents: faker.random.word(),
             thread: faker.random.word(),
