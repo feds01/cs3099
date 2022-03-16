@@ -1635,6 +1635,7 @@ paths:
                                 type: object
                                 required:
                                     - status
+                                    - comment
                                 properties:
                                     status:
                                         $ref: '#/components/schemas/SuccessStatus'
