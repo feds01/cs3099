@@ -160,42 +160,41 @@ describe('User endpoint tests ', () => {
         });
         expect(response.status).toBe(401);
     });
+
+    // User deletion tests
+    it('should delete the test user', async () => {
+        // call delete user api
+        const deleteUserResponse = await request.delete('/user/test');
+
+        // expect delete to be successful
+        expect(deleteUserResponse.status).toBe(200);
+    });
+
+    // Deleting a user that's references as a collaborator in the database
+    // should clear it from the collaborators...
+    it('should delete collaborator references when user is deleted', async () => {
+        // We want to create a user
+        const owner = await new User({ ...createMockedUser() }).save();
+        const collaborator = await new User({ ...createMockedUser() }).save();
+
+        const ownerId = new mongoose.Types.ObjectId(owner._id);
+        const collaboratorId = new mongoose.Types.ObjectId(collaborator._id);
+
+        // Now let's create a publication with that user as being the collaborator
+        const createdPublication = await new Publication({
+            ...createMockedPublication({ owner: ownerId, collaborators: [collaboratorId] }),
+        }).save();
+
+        // Delete the user and verify that the publication has no collaborators
+        await collaborator.delete();
+
+        const publication = await Publication.findById(createdPublication._id.toString()).exec();
+        expect(publication).not.toBeNull();
+        expect(publication!.collaborators).toStrictEqual([]);
+    });
 });
 
-// delete the test user after all tests
-it('should delete the test user', async () => {
-    // call delete user api
-    const deleteUserResponse = await request.delete('/user/test');
-
-    // expect delete to be successful
-    expect(deleteUserResponse.status).toBe(200);
-});
-
-// Deleting a user that's references as a collaborator in the database
-// should clear it from the collaborators...
-it('should delete collaborator references when user is deleted', async () => {
-    // We want to create a user
-    const owner = await new User({ ...createMockedUser() }).save();
-    const collaborator = await new User({ ...createMockedUser() }).save();
-
-    const ownerId = new mongoose.Types.ObjectId(owner._id);
-    const collaboratorId = new mongoose.Types.ObjectId(collaborator._id);
-
-    // Now let's create a publication with that user as being the collaborator
-    const createdPublication = await new Publication({
-        ...createMockedPublication({ owner: ownerId, collaborators: [collaboratorId] }),
-    }).save();
-
-    // Delete the user and verify that the publication has no collaborators
-    await collaborator.delete();
-
-    const publication = await Publication.findById(createdPublication._id.toString()).exec();
-    expect(publication).not.toBeNull();
-    expect(publication!.collaborators).toStrictEqual([]);
-});
-
-// Provile avatar tests
-
+// Profile avatar tests
 describe('Profile avatar tests', () => {
     const UserObject = {
         email: 'test@email.com',
@@ -209,7 +208,7 @@ describe('Profile avatar tests', () => {
     beforeAll(async () => {
         const registerResponse = await request.post('/auth/register').send(UserObject);
         expect(registerResponse.status).toBe(201);
-        
+
         const loginResponse = await request.post('/auth/login').send({
             username: 'test',
             password: 'password',
@@ -246,5 +245,4 @@ describe('Profile avatar tests', () => {
 
         expect(avatarUpload.status).toBe(400);
     });
-
 });
