@@ -25,11 +25,6 @@ export interface Permission {
     runPermissionFn?: boolean;
 }
 
-export interface PermissionContext {
-    minimum: IUserRole;
-    satisfied: boolean;
-}
-
 type BodylessBasicRequest<P, Q> = Omit<BasicRequest<P, Q, unknown, unknown>, 'body'>;
 
 /**
@@ -56,7 +51,6 @@ export type ResolvedPermission<T> =
 export type PermissionVerificationFn<P, Q, T> = (
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
-    context: PermissionContext,
 ) => Promise<ResolvedPermission<T>>;
 
 /**
@@ -110,20 +104,18 @@ export async function ensureValidPermissions<P, Q, T>(
 
     if (!user) return { valid: false };
 
-    const context = {
-        minimum: permission.level,
-        satisfied: compareUserRoles(user.role, permission.level),
-    };
+    const requiredPermission = userRoleToInt(permission.level);
+    const acquiredPermission = userRoleToInt(user.role);
 
-    if (context.satisfied) {
+    if (acquiredPermission >= requiredPermission) {
         if (typeof permission.runPermissionFn !== 'undefined' && permission.runPermissionFn) {
-            return await verifyPermission(user, req, context);
+            return await verifyPermission(user, req);
         }
 
         return { valid: true, user };
     }
 
-    return await verifyPermission(user, req, context);
+    return await verifyPermission(user, req);
 }
 
 /**
@@ -138,7 +130,6 @@ export async function ensureValidPermissions<P, Q, T>(
 export const defaultPermissionVerifier = async <P, Q>(
     _user: IUserDocument,
     _req: BodylessBasicRequest<P, Q>,
-    _context: PermissionContext,
 ): Promise<ResolvedPermission<undefined>> => ({ valid: false });
 
 /**
@@ -177,7 +168,6 @@ interface UserQueryRequest {
 export const verifyUserPermission = async <P extends UserParamsRequest, Q extends UserQueryRequest>(
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
-    _context: PermissionContext,
 ): Promise<ResolvedPermission<undefined>> => {
     // Check if the user id/username is the same as the requester
     if (req.query.mode === 'id') {
@@ -206,7 +196,6 @@ export const verifyUserWithElevatedPermission = async <
 >(
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
-    context: PermissionContext,
 ): Promise<ResolvedPermission<undefined>> => {
     const queriedUser = await expr(async () => {
         if (req.query.mode === 'id') {
@@ -220,12 +209,8 @@ export const verifyUserWithElevatedPermission = async <
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
     }
 
-    if (queriedUser._id?.toString() === user._id?.toString()) {
-        return { valid: true, user };
-    }
-
-    // Ensure that the user has higher or the same privileges as the queried user;
-    if (!context.satisfied || !compareUserRoles(user.role, queriedUser.role)) {
+    // Ensure that the user has higher or the same privileges as the queried user
+    if (!compareUserRoles(user.role, queriedUser.role)) {
         return { valid: false };
     }
 
@@ -243,7 +228,6 @@ export const verifyUserWithElevatedPermission = async <
 export const verifyCommentPermission = async <P extends IdRequest, Q>(
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
-    _context: PermissionContext,
 ): Promise<ResolvedPermission<undefined>> => {
     const comment = await Comment.findById(req.params.id).exec();
 
@@ -268,7 +252,6 @@ export const verifyCommentPermission = async <P extends IdRequest, Q>(
 export const verifyCommentWithElevatedPermission = async <P extends IdRequest, Q>(
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
-    _context: PermissionContext,
 ): Promise<ResolvedPermission<undefined>> => {
     const comment = await Comment.findById(req.params.id)
         .populate<{ owner: IUser }>('owner')
@@ -297,7 +280,6 @@ export const verifyCommentWithElevatedPermission = async <P extends IdRequest, Q
 export const verifyCommentThreadPermission = async <P extends IdRequest, Q>(
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
-    _context: PermissionContext,
 ): Promise<ResolvedPermission<undefined>> => {
     const commentThread = await Comment.findOne({ thread: req.params.id, replying: null }).exec();
 
@@ -322,7 +304,6 @@ export const verifyCommentThreadPermission = async <P extends IdRequest, Q>(
 export const verifyReviewPermission = async <P extends IdRequest, Q>(
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
-    _context: PermissionContext,
 ): Promise<ResolvedPermission<undefined>> => {
     const review = await Review.findById(req.params.id).exec();
 
@@ -351,7 +332,6 @@ export const verifyReviewPermission = async <P extends IdRequest, Q>(
 export const verifyPublicationPermission = async <P extends PublicationRequest, Q>(
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
-    _context: PermissionContext,
 ): Promise<ResolvedPermission<undefined>> => {
     const publication = await Publication.findOne({
         owner: user.id as string,
@@ -382,7 +362,6 @@ export const verifyPublicationPermission = async <P extends PublicationRequest, 
 export const verifyPublicationWithElevatedPermission = async <P extends PublicationRequest, Q>(
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
-    context: PermissionContext,
 ): Promise<ResolvedPermission<PopulatedPublication>> => {
     const publication = await Publication.findOne({
         owner: user.id as string,
@@ -395,13 +374,8 @@ export const verifyPublicationWithElevatedPermission = async <P extends Publicat
         return { valid: false, message: errors.RESOURCE_NOT_FOUND, code: 404 };
     }
 
-    // if this is the owner of the publication, this is an allowed modification
-    if (publication.owner._id?.toString() === user._id?.toString()) {
-        return { valid: true, user };
-    }
-
     // Ensure that the user has higher or the same privileges as the queried user
-    if (!context.satisfied || !compareUserRoles(user.role, publication.owner.role)) {
+    if (!compareUserRoles(user.role, publication.owner.role)) {
         return { valid: false };
     }
 
@@ -419,7 +393,6 @@ export const verifyPublicationWithElevatedPermission = async <P extends Publicat
 export const verifyPublicationIdPermission = async <P extends IdRequest, Q>(
     user: IUserDocument,
     req: BodylessBasicRequest<P, Q>,
-    _context: PermissionContext,
 ): Promise<ResolvedPermission<AugmentedPublicationDocument>> => {
     const publication = await Publication.findById(req.params.id).exec();
 
