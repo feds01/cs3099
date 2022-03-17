@@ -16,11 +16,6 @@ import { BasicRequest } from './requests';
 export interface Permission {
     /** The expected level of permissions that the endpoint requires */
     level: IUserRole;
-    /**
-     * Even if the user has appropriate permissions, we still want to run the permission function to perform
-     * further verification.
-     */
-    runPermissionFn?: boolean;
 }
 
 export interface PermissionContext {
@@ -258,8 +253,9 @@ export const verifyCommentPermission: PermissionVerificationFn<
  * on the given comment using @see verifyCommentPermission, and further verifies that
  * the requester has equal or elevated permissions than the owner of the comment.
  *
- * @param user
- * @param req
+ * @param user - The requester
+ * @param req - Object representing the parameters and query of the request.
+ * @returns Whether or not the request to modify user endpoints is valid
  */
 export const verifyCommentWithElevatedPermission: PermissionVerificationFn<
     IdRequest,
@@ -354,43 +350,9 @@ export const verifyReviewPermission: PermissionVerificationFn<
 /**
  * Function to verify that the requester has permissions to perform operations on
  * a given publication by using the name of the publication and the owner username of the
- * publication.
- *
- * @param user - The requester
- * @param req - Object representing the parameters and query of the request.
- * @returns Whether or not the request to modify user endpoints is valid
- */
-export const verifyPublicationPermission: PermissionVerificationFn<
-    PublicationRequest & UserParamsRequest,
-    PublicationQueryRequest & UserQueryRequest,
-    PopulatedPublication
-> = async (user, req, context) => {
-    const { revision } = req.query;
-
-    const owner = await transformUsernameIntoId(req);
-    const publication = await Publication.findOne({
-        owner: owner._id.toString(),
-        name: req.params.name.toLowerCase(),
-        ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
-    })
-        .populate<{ owner: IUserDocument }>('owner')
-        .exec();
-
-    if (!publication) {
-        return { valid: false, message: errors.RESOURCE_NOT_FOUND, code: 404 };
-    }
-
-    if (!context.satisfied && publication.owner._id.toString() !== user._id.toString()) {
-        return { valid: false };
-    }
-
-    return { valid: true, user, data: publication };
-};
-
-/**
- * Function to verify that the requester has permissions to perform operations on
- * a given publication by using the name of the publication and the owner username of the
- * publication.
+ * publication. This permission function does not require the request to contain
+ * a 'revision' identifier since these operations are likely to be carried out on a
+ * collection of publications rather than a single one.
  *
  * @param user - The requester
  * @param req - Object representing the parameters and query of the request.
@@ -421,23 +383,26 @@ export const verifyRevisonlessPublicationPermission: PermissionVerificationFn<
 };
 
 /**
- *
- * Function that verifies that the requester can perform operations on a publications
- * via a @see verifyPublicationPermission, and further verifies that the requester has
- * the same or elevated privileges than the owner of the document.
+ * Function to verify that the requester has permissions to perform operations on
+ * a given publication by using the name of the publication and the owner username of the
+ * publication.
  *
  * @param user - The requester
  * @param req - Object representing the parameters and query of the request.
  * @returns Whether or not the request to modify user endpoints is valid
  */
-export const verifyPublicationWithElevatedPermission: PermissionVerificationFn<
-    PublicationRequest,
-    unknown,
+export const verifyPublicationPermission: PermissionVerificationFn<
+    PublicationRequest & UserParamsRequest,
+    PublicationQueryRequest & UserQueryRequest,
     PopulatedPublication
 > = async (user, req, context) => {
+    const { revision } = req.query;
+
+    const owner = await transformUsernameIntoId(req);
     const publication = await Publication.findOne({
-        owner: user._id?.toString(),
+        owner: owner._id.toString(),
         name: req.params.name.toLowerCase(),
+        ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
     })
         .populate<{ owner: IUser }>('owner')
         .exec();
@@ -473,13 +438,20 @@ export const verifyPublicationIdPermission: PermissionVerificationFn<
     PopulatedPublication
 > = async (user, req, context) => {
     const publication = await Publication.findById(req.params.id)
-        .populate<{ owner: IUserDocument }>('owner')
+        .populate<{ owner: IUser }>('owner')
         .exec();
 
     if (!publication) {
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
     }
-    if (!context.satisfied && publication.owner.toString() !== user._id.toString()) {
+
+    // if this is the owner of the publication, this is an allowed modification
+    if (publication.owner._id?.toString() === user._id?.toString()) {
+        return { valid: true, user, data: publication };
+    }
+
+    // Ensure that the user has higher or the same privileges as the queried user
+    if (!context.satisfied || !compareUserRoles(user.role, publication.owner.role)) {
         return { valid: false };
     }
 

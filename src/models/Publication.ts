@@ -38,7 +38,7 @@ export interface IPublication {
 
 export interface IPublicationDocument extends IPublication, Document {}
 
-export type AugmentedPublicationDocument = Omit<IPublication, '_id'> & {
+export type AugmentedPublicationDocument = Omit<IPublicationDocument, '_id'> & {
     _id: mongoose.Types.ObjectId;
 };
 

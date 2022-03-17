@@ -307,7 +307,7 @@ registerRoute(router, '/:username', {
     headers: z.object({}),
     body: IUserPatchRequestSchema,
     permissionVerification: verifyUserWithElevatedPermission,
-    permission: { level: IUserRole.Moderator, runPermissionFn: true },
+    permission: { level: IUserRole.Moderator },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
@@ -490,7 +490,7 @@ registerRoute(router, '/:username/role', {
     headers: z.object({}),
     body: IUserRoleRequestSchema,
     permissionVerification: verifyUserWithElevatedPermission,
-    permission: { level: IUserRole.Moderator, runPermissionFn: true },
+    permission: { level: IUserRole.Moderator },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
