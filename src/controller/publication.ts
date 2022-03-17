@@ -11,11 +11,11 @@ import { ApiResponse } from '../lib/communication/response';
 import { deleteResource, moveResource, resourceExists } from '../lib/resources/fs';
 import { PublicationPathContent } from '../lib/resources/zip';
 import Publication, { AugmentedPublicationDocument, IPublication } from '../models/Publication';
+import Review, { AugmentedReviewDocument, IReview, IReviewStatus } from '../models/Review';
+import { IUser } from '../models/User';
 import { config } from '../server';
 import { IUserPatchRequest } from '../validators/publications';
 import { ResourceSortOrder } from '../validators/requests';
-import Review, { AugmentedReviewDocument, IReview, IReviewStatus } from '../models/Review';
-import { IUser } from '../models/User';
 
 /** Response denoting the return of a publication object */
 interface PublicationResponse {
@@ -382,7 +382,7 @@ export default class PublicationController {
 
     /**
      * Method to list reviews on a publication
-     * 
+     *
      * @returns A list of reviews that exist on the specific publication
      */
     async reviews(): Promise<ApiResponse<ReviewList>> {
@@ -403,11 +403,10 @@ export default class PublicationController {
         };
     }
 
-
     /**
-     * Method to create a review on a publication from the perspective of the 
+     * Method to create a review on a publication from the perspective of the
      * the requester.
-     * 
+     *
      * @param requesterId - User ID of the requester
      * @returns Response from creating a review.
      */
@@ -422,7 +421,7 @@ export default class PublicationController {
         }
 
         const docParams = {
-            publication: this.publication.id,
+            publication: this.publication._id.toString(),
             owner: requesterId,
             status: IReviewStatus.Started,
         };

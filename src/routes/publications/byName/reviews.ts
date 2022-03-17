@@ -1,11 +1,11 @@
 import express from 'express';
 import { z } from 'zod';
 
+import PublicationController from '../../../controller/publication';
 import { verifyPublicationPermission } from '../../../lib/communication/permissions';
 import registerRoute from '../../../lib/communication/requests';
 import { IUserRole } from '../../../models/User';
 import { ModeSchema } from '../../../validators/requests';
-import PublicationController from '../../../controller/publication';
 
 const router = express.Router();
 
@@ -29,7 +29,7 @@ registerRoute(router, '/:username/:name/reviews', {
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const controller = new PublicationController(req.permissionData);
-        return await controller.reviews();    
+        return await controller.reviews();
     },
 });
 
@@ -51,7 +51,7 @@ registerRoute(router, '/:username/:name/review', {
     headers: z.object({}),
     params: z.object({
         username: z.string(),
-        name: z.string()
+        name: z.string(),
     }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
@@ -59,7 +59,7 @@ registerRoute(router, '/:username/:name/review', {
         const controller = new PublicationController(req.permissionData);
         const requesterId = req.requester._id!.toString();
 
-        return await controller.createReview(requesterId);    
+        return await controller.createReview(requesterId);
     },
 });
 

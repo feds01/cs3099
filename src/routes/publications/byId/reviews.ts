@@ -1,11 +1,11 @@
 import express from 'express';
 import { z } from 'zod';
 
+import PublicationController from '../../../controller/publication';
 import { verifyPublicationIdPermission } from '../../../lib/communication/permissions';
 import registerRoute from '../../../lib/communication/requests';
 import { IUserRole } from '../../../models/User';
 import { ObjectIdSchema } from '../../../validators/requests';
-import PublicationController from '../../../controller/publication';
 
 const router = express.Router();
 
