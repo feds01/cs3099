@@ -4,9 +4,9 @@ import SkeletonList from '../components/SkeletonList';
 import {
     ApiErrorResponse,
     Publication,
-    GetPublicationUsernameNameRevisionReviews200 as ReviewResponse,
+    GetPublicationUsernameNameReviews200 as ReviewResponse,
 } from '../lib/api/models';
-import { useGetPublicationUsernameNameRevisionReviews as useGetReviews } from '../lib/api/reviews/reviews';
+import { useGetPublicationUsernameNameReviews as useGetReviews } from '../lib/api/reviews/reviews';
 import VoidImage from '../static/images/void.svg';
 import { ContentState } from '../types/requests';
 import { transformQueryIntoContentState } from '../wrappers/react-query';
@@ -22,7 +22,7 @@ interface Props {
 export default function PublicationReviews({ publication }: Props): ReactElement {
     const { owner, name, revision } = publication;
 
-    const getReviewsQuery = useGetReviews(owner.username, name, revision);
+    const getReviewsQuery = useGetReviews(owner.username, name, { revision });
     const [reviews, setReviews] = useState<ContentState<ReviewResponse, ApiErrorResponse>>({ state: 'loading' });
 
     useEffect(() => {

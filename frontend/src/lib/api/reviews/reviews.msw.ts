@@ -9,7 +9,7 @@ import { SuccessStatus, ReviewStatus, UserRole } from '.././models';
 import faker from 'faker';
 import { rest } from 'msw';
 
-export const getPostPublicationUsernameNameRevisionReviewMock = () => ({
+export const getPostPublicationUsernameNameReviewMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
     review: {
         publication: {
@@ -68,7 +68,124 @@ export const getPostPublicationUsernameNameRevisionReviewMock = () => ({
     },
 });
 
-export const getGetPublicationUsernameNameRevisionReviewsMock = () => ({
+export const getGetPublicationUsernameNameReviewsMock = () => ({
+    status: faker.helpers.randomize(Object.values(SuccessStatus)),
+    reviews: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
+        publication: {
+            id: faker.random.word(),
+            name: faker.random.word(),
+            title: faker.random.word(),
+            introduction: faker.helpers.randomize([faker.random.word(), undefined]),
+            changelog: faker.helpers.randomize([faker.random.word(), undefined]),
+            about: faker.helpers.randomize([faker.random.word(), undefined]),
+            revision: faker.random.word(),
+            pinned: faker.datatype.boolean(),
+            draft: faker.datatype.boolean(),
+            current: faker.datatype.boolean(),
+            owner: {
+                id: faker.random.word(),
+                email: faker.random.word(),
+                username: faker.random.word(),
+                role: faker.helpers.randomize(Object.values(UserRole)),
+                name: faker.helpers.randomize([faker.random.word(), undefined]),
+                createdAt: faker.datatype.number(),
+                profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+                status: faker.helpers.randomize([faker.random.word(), undefined]),
+                about: faker.helpers.randomize([faker.random.word(), undefined]),
+            },
+            attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
+            collaborators: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
+                id: faker.random.word(),
+                email: faker.random.word(),
+                username: faker.random.word(),
+                role: faker.helpers.randomize(Object.values(UserRole)),
+                name: faker.helpers.randomize([faker.random.word(), undefined]),
+                createdAt: faker.datatype.number(),
+                profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+                status: faker.helpers.randomize([faker.random.word(), undefined]),
+                about: faker.helpers.randomize([faker.random.word(), undefined]),
+            })),
+            createdAt: faker.datatype.number(),
+            updatedAt: faker.datatype.number(),
+        },
+        owner: {
+            id: faker.random.word(),
+            email: faker.random.word(),
+            username: faker.random.word(),
+            role: faker.helpers.randomize(Object.values(UserRole)),
+            name: faker.helpers.randomize([faker.random.word(), undefined]),
+            createdAt: faker.datatype.number(),
+            profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+            status: faker.helpers.randomize([faker.random.word(), undefined]),
+            about: faker.helpers.randomize([faker.random.word(), undefined]),
+        },
+        createdAt: faker.datatype.number(),
+        updatedAt: faker.datatype.number(),
+        status: faker.helpers.randomize(Object.values(ReviewStatus)),
+        id: faker.random.word(),
+    })),
+});
+
+export const getPostPublicationbyidIdReviewMock = () => ({
+    status: faker.helpers.randomize(Object.values(SuccessStatus)),
+    review: {
+        publication: {
+            id: faker.random.word(),
+            name: faker.random.word(),
+            title: faker.random.word(),
+            introduction: faker.helpers.randomize([faker.random.word(), undefined]),
+            changelog: faker.helpers.randomize([faker.random.word(), undefined]),
+            about: faker.helpers.randomize([faker.random.word(), undefined]),
+            revision: faker.random.word(),
+            pinned: faker.datatype.boolean(),
+            draft: faker.datatype.boolean(),
+            current: faker.datatype.boolean(),
+            reviews: faker.datatype.number(),
+            owner: {
+                id: faker.random.word(),
+                email: faker.random.word(),
+                username: faker.random.word(),
+                role: faker.helpers.randomize(Object.values(UserRole)),
+                name: faker.helpers.randomize([faker.random.word(), undefined]),
+                createdAt: faker.datatype.number(),
+                profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+                status: faker.helpers.randomize([faker.random.word(), undefined]),
+                about: faker.helpers.randomize([faker.random.word(), undefined]),
+            },
+            attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
+            collaborators: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
+                id: faker.random.word(),
+                email: faker.random.word(),
+                username: faker.random.word(),
+                role: faker.helpers.randomize(Object.values(UserRole)),
+                name: faker.helpers.randomize([faker.random.word(), undefined]),
+                createdAt: faker.datatype.number(),
+                profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+                status: faker.helpers.randomize([faker.random.word(), undefined]),
+                about: faker.helpers.randomize([faker.random.word(), undefined]),
+            })),
+            createdAt: faker.datatype.number(),
+            updatedAt: faker.datatype.number(),
+        },
+        owner: {
+            id: faker.random.word(),
+            email: faker.random.word(),
+            username: faker.random.word(),
+            role: faker.helpers.randomize(Object.values(UserRole)),
+            name: faker.helpers.randomize([faker.random.word(), undefined]),
+            createdAt: faker.datatype.number(),
+            profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+            status: faker.helpers.randomize([faker.random.word(), undefined]),
+            about: faker.helpers.randomize([faker.random.word(), undefined]),
+        },
+        createdAt: faker.datatype.number(),
+        updatedAt: faker.datatype.number(),
+        status: faker.helpers.randomize(Object.values(ReviewStatus)),
+        id: faker.random.word(),
+    },
+});
+
+export const getGetPublicationbyidIdReviewsMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
     reviews: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
         publication: {
@@ -240,19 +357,25 @@ export const getGetReviewIdCommentsMock = () => ({
 });
 
 export const getReviewsMSW = () => [
-    rest.post('*/publication/:username/:name/:revision/review', (_req, res, ctx) => {
+    rest.post('*/publication/:username/:name/review', (_req, res, ctx) => {
         return res(
             ctx.delay(1000),
             ctx.status(200, 'Mocked status'),
-            ctx.json(getPostPublicationUsernameNameRevisionReviewMock()),
+            ctx.json(getPostPublicationUsernameNameReviewMock()),
         );
     }),
-    rest.get('*/publication/:username/:name/:revision/reviews', (_req, res, ctx) => {
+    rest.get('*/publication/:username/:name/reviews', (_req, res, ctx) => {
         return res(
             ctx.delay(1000),
             ctx.status(200, 'Mocked status'),
-            ctx.json(getGetPublicationUsernameNameRevisionReviewsMock()),
+            ctx.json(getGetPublicationUsernameNameReviewsMock()),
         );
+    }),
+    rest.post('*/publication-by-id/:id/review', (_req, res, ctx) => {
+        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPostPublicationbyidIdReviewMock()));
+    }),
+    rest.get('*/publication-by-id/:id/reviews', (_req, res, ctx) => {
+        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetPublicationbyidIdReviewsMock()));
     }),
     rest.put('*/review/:id/comment', (_req, res, ctx) => {
         return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPutReviewIdCommentMock()));

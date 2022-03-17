@@ -1,14 +1,16 @@
 import express from 'express';
 import { z } from 'zod';
 
-import PublicationController from '../../controller/publication';
-import { verifyPublicationIdPermission } from '../../lib/communication/permissions';
-import registerRoute from '../../lib/communication/requests';
-import { IUserRole } from '../../models/User';
-import { IPublicationPatchRequestSchema } from '../../validators/publications';
-import { FlagSchema, ObjectIdSchema, ResourceSortSchema } from '../../validators/requests';
+import PublicationController from '../../../controller/publication';
+import { verifyPublicationIdPermission } from '../../../lib/communication/permissions';
+import registerRoute from '../../../lib/communication/requests';
+import { IUserRole } from '../../../models/User';
+import { IPublicationPatchRequestSchema } from '../../../validators/publications';
+import { FlagSchema, ObjectIdSchema, ResourceSortSchema } from '../../../validators/requests';
+import reviewRouter from './reviews';
 
 const router = express.Router();
+router.use('/', reviewRouter);
 
 /**
  * @version v1.0.0

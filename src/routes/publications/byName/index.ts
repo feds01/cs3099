@@ -1,21 +1,21 @@
 import express from 'express';
 import { z } from 'zod';
 
-import * as zip from '../../lib/resources/zip';
-import * as userUtils from './../../utils/users';
-import PublicationController from '../../controller/publication';
+import * as zip from '../../../lib/resources/zip';
+import * as userUtils from '../../../utils/users';
+import PublicationController from '../../../controller/publication';
 import {
     verifyPublicationPermission,
     verifyRevisonlessPublicationPermission,
     verifyUserPermission,
-} from '../../lib/communication/permissions';
-import registerRoute from '../../lib/communication/requests';
-import { deleteResource } from '../../lib/resources/fs';
-import Publication from '../../models/Publication';
-import { IUserRole } from '../../models/User';
-import { PaginationQuerySchema } from '../../validators/pagination';
-import { IPublicationPatchRequestSchema } from '../../validators/publications';
-import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../validators/requests';
+} from '../../../lib/communication/permissions';
+import registerRoute from '../../../lib/communication/requests';
+import { deleteResource } from '../../../lib/resources/fs';
+import Publication from '../../../models/Publication';
+import { IUserRole } from '../../../models/User';
+import { PaginationQuerySchema } from '../../../validators/pagination';
+import { IPublicationPatchRequestSchema } from '../../../validators/publications';
+import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../../validators/requests';
 import reviewRouter from './reviews';
 
 const router = express.Router();

@@ -10,10 +10,12 @@ import { makeRequest } from '../lib/communication/fetch';
 import { ApiResponse } from '../lib/communication/response';
 import { deleteResource, moveResource, resourceExists } from '../lib/resources/fs';
 import { PublicationPathContent } from '../lib/resources/zip';
-import Publication, { AugmentedPublicationDocument } from '../models/Publication';
+import Publication, { AugmentedPublicationDocument, IPublication } from '../models/Publication';
 import { config } from '../server';
 import { IUserPatchRequest } from '../validators/publications';
 import { ResourceSortOrder } from '../validators/requests';
+import Review, { AugmentedReviewDocument, IReview, IReviewStatus } from '../models/Review';
+import { IUser } from '../models/User';
 
 /** Response denoting the return of a publication object */
 interface PublicationResponse {
@@ -34,6 +36,17 @@ interface PublicationArchiveResponse {
         filename: string;
     }[];
 }
+
+/** Response returned when listing reviews on a publication */
+interface ReviewList {
+    reviews: Partial<AugmentedReviewDocument>[];
+}
+
+/** Data returned when creating a review */
+interface CreateReview {
+    review: Partial<IReview>;
+}
+
 export default class PublicationController {
     constructor(readonly publication: AugmentedPublicationDocument) {}
 
@@ -363,6 +376,86 @@ export default class PublicationController {
                             filename: entry.entryName,
                         };
                     }),
+            },
+        };
+    }
+
+    /**
+     * Method to list reviews on a publication
+     * 
+     * @returns A list of reviews that exist on the specific publication
+     */
+    async reviews(): Promise<ApiResponse<ReviewList>> {
+        const result = await Review.find({
+            publication: this.publication._id.toString(),
+            status: IReviewStatus.Completed,
+        })
+            .populate<{ publication: IPublication }>('publication')
+            .populate<{ owner: IUser }>('owner')
+            .exec();
+
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                reviews: await Promise.all(result.map(Review.project)),
+            },
+        };
+    }
+
+
+    /**
+     * Method to create a review on a publication from the perspective of the 
+     * the requester.
+     * 
+     * @param requesterId - User ID of the requester
+     * @returns Response from creating a review.
+     */
+    async createReview(requesterId: string): Promise<ApiResponse<CreateReview>> {
+        // Check that the publication isn't currently in draft mode...
+        if (this.publication.draft) {
+            return {
+                status: 'error',
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
+        }
+
+        const docParams = {
+            publication: this.publication.id,
+            owner: requesterId,
+            status: IReviewStatus.Started,
+        };
+
+        const doc = await Review.findOne(docParams)
+            .populate<{ publication: IPublication }>('publication')
+            .populate<{ owner: IUser }>('owner')
+            .exec();
+
+        // If the user tries to creat ea new review whilst another pending review exists, that review
+        // is returned instead of making a new review...
+        if (doc) {
+            Logger.info('Using pre-created review for user instead of creating a new one...');
+            return {
+                status: 'ok',
+                code: 200,
+                data: {
+                    review: await Review.project(doc),
+                },
+            };
+        }
+
+        const newDoc = await new Review(docParams).save();
+
+        const populated = await (
+            await newDoc.populate<{ publication: IPublication }>('publication')
+        ).populate<{ owner: IUser }>('owner');
+
+        return {
+            status: 'ok',
+            code: 201,
+            data: {
+                review: await Review.project(populated),
             },
         };
     }

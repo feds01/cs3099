@@ -8,7 +8,7 @@ import { IUserRole } from '../../models/User';
 import { PaginationQuerySchema } from '../../validators/pagination';
 import { IPublicationCreationSchema } from '../../validators/publications';
 import nameRouter from './byName';
-import reviewRouter from './reviews';
+import reviewRouter from './byName/reviews';
 
 const router = express.Router();
 
