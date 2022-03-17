@@ -4,14 +4,17 @@ import { expr } from '../utils/expr';
 
 export interface ResponseError {
     message: string | string[];
+    code?: number;
 }
 
 export type ResponseErrorSummary = Record<string, ResponseError>;
 
 /**
+ * Function that is used to transform @see ZodError that are returned from any
+ * failed @see ZodSchema are transformed into an internal error subject
  *
- * @param error
- * @returns
+ * @param error - Any ZodError from a schema
+ * @returns A transformed readable error map
  */
 export function transformZodErrorIntoResponseError<T>(error: ZodError<T>): ResponseErrorSummary {
     const errorMap = new Map();

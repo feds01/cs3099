@@ -2236,6 +2236,10 @@ components:
             required:
                 - message
             properties:
+                code:
+                    description: Specific error code identifier. 
+                    type: number
+                    example: 100
                 message:
                     oneOf:
                         - $ref: '#/components/schemas/SingleErrorMessage'
