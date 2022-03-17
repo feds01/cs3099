@@ -2,6 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 
 import * as error from '../../common/errors';
+import { defaultPermissionVerifier } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
 import Activity from '../../models/Activity';
 import { IUserDocument, IUserRole } from '../../models/User';
@@ -25,6 +26,7 @@ registerRoute(router, '/:id', {
     params: z.object({ id: ObjectIdSchema }),
     headers: z.object({}),
     permission: { level: IUserRole.Default },
+    permissionVerification: defaultPermissionVerifier,
     handler: async (req) => {
         const activity = await Activity.findById(req.params.id)
             .populate<{ owner: IUserDocument }>('owner')
@@ -64,6 +66,7 @@ registerRoute(router, '/', {
     query: z.object({ user: ObjectIdSchema }).merge(PaginationQuerySchema),
     headers: z.object({}),
     permission: { level: IUserRole.Default },
+    permissionVerification: defaultPermissionVerifier,
     handler: async (req) => {
         const activities = await Activity.find({ owner: req.query.user })
             .populate<{ owner: IUserDocument }>('owner')

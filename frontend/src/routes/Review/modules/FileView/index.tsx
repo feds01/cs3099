@@ -1,7 +1,7 @@
 import ErrorBanner from '../../../../components/ErrorBanner';
 import { useReviewState } from '../../../../contexts/review';
-import { ApiErrorResponse, GetPublicationUsernameNameAll200 } from '../../../../lib/api/models';
-import { useGetPublicationUsernameNameAll } from '../../../../lib/api/publications/publications';
+import { ApiErrorResponse, GetPublicationUsernameNameSources200 } from '../../../../lib/api/models';
+import { useGetPublicationUsernameNameSources } from '../../../../lib/api/publications/publications';
 import { ContentState } from '../../../../types/requests';
 import { transformQueryIntoContentState } from '../../../../wrappers/react-query';
 import SourceList from './SourceList';
@@ -15,12 +15,12 @@ export default function ReviewEditor(): ReactElement {
         review: { publication, status },
     } = useReviewState();
 
-    const fileQuery = useGetPublicationUsernameNameAll(publication.owner.username, publication.name, {
+    const fileQuery = useGetPublicationUsernameNameSources(publication.owner.username, publication.name, {
         revision: publication.revision,
     });
 
     const [resourceResponse, setResourceResponse] = useState<
-        ContentState<GetPublicationUsernameNameAll200, ApiErrorResponse>
+        ContentState<GetPublicationUsernameNameSources200, ApiErrorResponse>
     >({
         state: 'loading',
     });

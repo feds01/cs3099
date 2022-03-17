@@ -6,7 +6,7 @@ import Activity, {
     IActivityOperationKind,
     IActivityType,
 } from '../../models/Activity';
-import { IUserDocument } from '../../models/User';
+import { AugmentedUserDocument } from '../../models/User';
 import { BasicRequest } from '../communication/requests';
 import { ActivityMetadataTransformer } from './transformer';
 
@@ -32,7 +32,7 @@ class ActivityRecord<Params, Query, Body> {
     constructor(
         readonly type: ActivityType,
         readonly request: BasicRequest<Params, Query, Body, unknown>,
-        readonly requester: IUserDocument | null,
+        readonly requester: AugmentedUserDocument | null,
         readonly metadataTransformFn: ActivityMetadataTransformer<Params, Query, Body>,
     ) {}
 

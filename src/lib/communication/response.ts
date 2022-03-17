@@ -19,10 +19,10 @@ export type ApiResponse<T> =
           data?: T;
           errors?: ResponseErrorSummary;
       }
-    /** Request failed with some 4XX or 5XX error code */
+    /** Request failed with some 4XX or 5XX error codes */
     | {
           status: 'error';
-          code: 400 | 401 | 404 | 500 | 503;
+          code: 400 | 401 | 404 | 415 | 500 | 503;
           message: string;
           errors?: ResponseErrorSummary;
       }

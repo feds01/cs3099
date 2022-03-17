@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import * as error from '../../common/errors';
 import * as userUtils from '../../utils/users';
+import { verifyUserPermission } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
 import Follower from '../../models/Follower';
 import User, { IUser, IUserRole } from '../../models/User';
@@ -34,6 +35,7 @@ registerRoute(router, '/:username/follow', {
     body: z.object({}),
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
+    permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
@@ -95,6 +97,7 @@ registerRoute(router, '/:username/follow', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
+    permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
@@ -137,6 +140,7 @@ registerRoute(router, '/:username/follow', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
+    permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
@@ -184,6 +188,7 @@ registerRoute(router, '/:username/followers', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     headers: z.object({}),
+    permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
@@ -218,7 +223,8 @@ registerRoute(router, '/:username/following', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     headers: z.object({}),
-    permission: { kind: 'follower', level: IUserRole.Default },
+    permissionVerification: verifyUserPermission,
+    permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 

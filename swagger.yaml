@@ -951,6 +951,58 @@ paths:
 
                 default:
                     $ref: '#/components/responses/ApiError'
+    /publication/{username}:
+        get:
+            summary: Get a user's publications
+            description: Get a list of publications that the user owns.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: query
+                  required: false
+                  name: pinned
+                  schema:
+                      type: string
+                      example: 'false'
+                      enum: ['true', 'false']
+                      description: Filter by pinned used publications.
+                - in: query
+                  name: skip
+                  schema:
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
+                - in: query
+                  name: take
+                  schema:
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
+            responses:
+                '200':
+                    description: Returns the requested publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - publications
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    publications:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Publication'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}:
         delete:
             summary: Delete a publication
@@ -1068,58 +1120,6 @@ paths:
                                         $ref: '#/components/schemas/SuccessStatus'
                                     publication:
                                         $ref: '#/components/schemas/Publication'
-                default:
-                    $ref: '#/components/responses/ApiError'
-    /publication/{username}:
-        get:
-            summary: Get a user's publications
-            description: Get a list of publications that the user owns.
-            tags:
-                - publications
-            security:
-                - BearerAuth: []
-            parameters:
-                - in: path
-                  name: username
-                  schema:
-                      type: string
-                  required: true
-                  description: Username.
-                - in: query
-                  required: false
-                  name: pinned
-                  schema:
-                      type: string
-                      example: 'false'
-                      enum: ['true', 'false']
-                      description: Filter by pinned used publications.
-                - in: query
-                  name: skip
-                  schema:
-                      $ref: '#/components/schemas/SkipQuery'
-                  description: If the query should skip ahead a number of documents
-                - in: query
-                  name: take
-                  schema:
-                      $ref: '#/components/schemas/TakeQuery'
-                  description: The number of items the query should take
-            responses:
-                '200':
-                    description: Returns the requested publications.
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                required:
-                                    - status
-                                    - publications
-                                properties:
-                                    status:
-                                        $ref: '#/components/schemas/SuccessStatus'
-                                    publications:
-                                        type: array
-                                        items:
-                                            $ref: '#/components/schemas/Publication'
                 default:
                     $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/export:
@@ -1287,7 +1287,7 @@ paths:
                     $ref: '#/components/responses/ResourceResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
-    /publication/{username}/{name}/all:
+    /publication/{username}/{name}/sources:
         get:
             summary: Get a paginated list of sources for a publication
             tags:
@@ -1332,7 +1332,41 @@ paths:
                                             $ref: '#/components/schemas/FileResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
-    /publication/{username}/{name}/{revision}/review:
+    /publication/{username}/{name}/all:
+        delete:
+            summary: Delete all publications in a given set of revisions
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+            responses:
+                '200':
+                    description: Returns the requested publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication/{username}/{name}/review:
         post:
             summary: Create a review on a publication.
             description: Begin a review process on a publication.
@@ -1348,17 +1382,17 @@ paths:
                   required: true
                   description: Username.
                 - in: path
-                  name: revision
-                  schema:
-                      type: string
-                  required: true
-                  description: The revision of the publication.
-                - in: path
                   name: name
                   schema:
                       type: string
                   required: true
                   description: The name of the publication for the current user.
+                - in: query
+                  name: revision
+                  schema:
+                      type: string
+                  required: true
+                  description: The revision of the publication.
             responses:
                 '200':
                     description: Created a new review.
@@ -1376,7 +1410,7 @@ paths:
                                         $ref: '#/components/schemas/Review'
                 default:
                     $ref: '#/components/responses/ApiError'
-    /publication/{username}/{name}/{revision}/reviews:
+    /publication/{username}/{name}/reviews:
         get:
             summary: Get a list of reviews on a publication
             description: Get a paginated list of publication reviews.
@@ -1397,12 +1431,283 @@ paths:
                       type: string
                   required: true
                   description: The name of the publication for the current user.
-                - in: path
+                - in: query
                   name: revision
                   schema:
                       type: string
                   required: true
                   description: The revision of the publication.
+                - in: query
+                  name: skip
+                  schema:
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
+                - in: query
+                  name: take
+                  schema:
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
+            responses:
+                '200':
+                    description: Returns the requested publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - reviews
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    reviews:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Review'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication-by-id/{id}:
+        delete:
+            summary: Delete a publication
+            description: Delete the publication resource.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: Publication ID.
+            responses:
+                '200':
+                    $ref: '#/components/responses/ApiSuccess'
+                default:
+                    $ref: '#/components/responses/ApiError'
+        patch:
+            summary: Patch an existing publication
+            description: Patch the publication resource.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                description: Provide information about the upload
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PatchPublicationRequest'
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: Publication ID.
+            responses:
+                '200':
+                    $ref: '#/components/responses/CreatePublicationResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
+        get:
+            summary: Get a publication
+            description: Get a publication resource for a given user account with the specified name. This will return the most recent publication revision.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: Publication ID.
+            responses:
+                '200':
+                    description: Returns the requested publication.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - publication
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    publication:
+                                        $ref: '#/components/schemas/Publication'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication-by-id/{id}/export:
+        post:
+            summary: Export a publication
+            description: Begin a transactional request to export a publication.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: Publication ID.
+                - in: query
+                  required: true
+                  name: to
+                  schema:
+                      type: string
+                      description: URL of the service to export the publication to.
+                - in: query
+                  required: true
+                  name: exportReviews
+                  schema:
+                      type: boolean
+                      description: Whether to export reviews or not to export reviews.
+            responses:
+                '200':
+                    $ref: '#/components/responses/ApiSuccess'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication-by-id/{id}/revise:
+        post:
+            summary: Revise a publication
+            description: Revise the current version of a publication
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            requestBody:
+                required: true
+                description: Provide the new revision tag to use when revising a publication.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RevisePublicationRequest'
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: Publication ID.
+            responses:
+                '200':
+                    $ref: '#/components/responses/CreatePublicationResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication-by-id/{id}/tree/{path}:
+        get:
+            summary: Get a file from a publication
+            description: Get a publication resource file for a given user account with the specified name. This will return the most recent publication revision.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: Publication ID.
+                - in: path
+                  name: path
+                  schema:
+                      type: string
+                      example: 'src/server.ts'
+                  required: true
+            responses:
+                '200':
+                    $ref: '#/components/responses/ResourceResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication-by-id/{id}/sources:
+        get:
+            summary: Get a paginated list of sources for a publication
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: Publication ID.
+            responses:
+                '200':
+                    description: Returns the requested publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - entries
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    entries:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/FileResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication-by-id/{id}/review:
+        post:
+            summary: Create a review on a publication.
+            description: Begin a review process on a publication.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: Publication ID.
+            responses:
+                '200':
+                    description: Created a new review.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - review
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    review:
+                                        $ref: '#/components/schemas/Review'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication-by-id/{id}/reviews:
+        get:
+            summary: Get a list of reviews on a publication
+            description: Get a paginated list of publication reviews.
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: Publication ID.
                 - in: query
                   name: skip
                   schema:
@@ -2236,6 +2541,10 @@ components:
             required:
                 - message
             properties:
+                code:
+                    description: Specific error code identifier. 
+                    type: number
+                    example: 100
                 message:
                     oneOf:
                         - $ref: '#/components/schemas/SingleErrorMessage'

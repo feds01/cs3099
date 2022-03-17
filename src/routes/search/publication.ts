@@ -23,6 +23,7 @@ registerRoute(router, '/', {
     query: z.object({ query: z.string() }).merge(PaginationQuerySchema),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const { query, take, skip } = req.query;
 

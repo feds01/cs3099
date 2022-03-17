@@ -1,13 +1,13 @@
-import { useHistory } from 'react-router';
+import { useNotificationDispatch } from '../../../contexts/notification';
+import { usePublicationState } from '../../../contexts/publication';
+import { usePostPublicationUsernameNameReview as useCreateReview } from '../../../lib/api/reviews/reviews';
+import PublicationReviews from '../../../views/PublicationReviews';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import { ReactElement, useEffect } from 'react';
-import PublicationReviews from '../../../views/PublicationReviews';
-import { useNotificationDispatch } from '../../../contexts/notification';
-import { usePostPublicationUsernameNameRevisionReview as useCreateReview } from '../../../lib/api/reviews/reviews';
-import { usePublicationState } from '../../../contexts/publication';
+import { useHistory } from 'react-router';
 
 export default function Reviews(): ReactElement {
     const history = useHistory();
@@ -18,7 +18,7 @@ export default function Reviews(): ReactElement {
         publication,
     } = usePublicationState();
     const createReviewQuery = useCreateReview();
-    const createReview = () => createReviewQuery.mutate({ username: owner.username, name, revision });
+    const createReview = () => createReviewQuery.mutate({ username: owner.username, name, params: { revision } });
 
     // If the review was successfully created, we re-direct the user
     // to their review page.

@@ -2,6 +2,7 @@ import express from 'express';
 import { z } from 'zod';
 
 import * as userUtils from '../../utils/users';
+import { defaultPermissionVerifier } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
 import Activity, { AugmentedActivityDocument } from '../../models/Activity';
 import { IUserRole } from '../../models/User';
@@ -29,6 +30,7 @@ registerRoute(router, '/:username/feed', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     headers: z.object({}),
+    permissionVerification: defaultPermissionVerifier,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);

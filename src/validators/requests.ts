@@ -17,3 +17,5 @@ export type UserRequestMode = z.infer<typeof ModeSchema>;
 
 const sorts = ['directory', 'file'] as const;
 export const ResourceSortSchema = z.enum(sorts).optional();
+
+export type ResourceSortOrder = z.infer<typeof ResourceSortSchema>;

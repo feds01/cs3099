@@ -6,6 +6,7 @@ import * as error from '../../common/errors';
 import * as userUtils from './../../utils/users';
 import {
     compareUserRoles,
+    defaultPermissionVerifier,
     verifyUserPermission,
     verifyUserWithElevatedPermission,
 } from '../../lib/communication/permissions';
@@ -63,6 +64,7 @@ registerRoute(router, '/', {
     params: z.object({}),
     query: z.object({ search: z.string().optional() }).merge(PaginationQuerySchema),
     headers: z.object({}),
+    permissionVerification: defaultPermissionVerifier,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const { take, skip } = req.query;
@@ -197,8 +199,8 @@ registerRoute(router, '/:username/avatar', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
-    permissionVerification: verifyUserPermission,
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
@@ -249,8 +251,8 @@ registerRoute(router, '/:username/avatar', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
-    permissionVerification: verifyUserPermission,
-    permission: null,
+    permissionVerification: verifyUserWithElevatedPermission,
+    permission: { level: IUserRole.Administrator },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
@@ -305,7 +307,7 @@ registerRoute(router, '/:username', {
     headers: z.object({}),
     body: IUserPatchRequestSchema,
     permissionVerification: verifyUserWithElevatedPermission,
-    permission: { level: IUserRole.Moderator, runPermissionFn: true },
+    permission: { level: IUserRole.Moderator },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 
@@ -488,7 +490,7 @@ registerRoute(router, '/:username/role', {
     headers: z.object({}),
     body: IUserRoleRequestSchema,
     permissionVerification: verifyUserWithElevatedPermission,
-    permission: { level: IUserRole.Moderator, runPermissionFn: true },
+    permission: { level: IUserRole.Moderator },
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
 

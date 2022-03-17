@@ -43,3 +43,8 @@ export const UNAUTHORIZED = "User doesn't have permissions to perform this actio
 export const BAD_REQUEST = 'The API request is malformed or invalid';
 export const RESOURCE_NOT_FOUND = 'Resource could not be found.';
 export const INTERNAL_SERVER_ERROR = 'Internal Server Error.';
+
+// Error codes map for specific cases
+export const CODES = {
+    PUBLICATION_ARCHIVE_EXISTS: 100,
+};

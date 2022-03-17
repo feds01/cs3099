@@ -1,5 +1,5 @@
 import * as errors from '../common/errors';
-import User, { IUserDocument } from '../models/User';
+import User, { AugmentedUserDocument } from '../models/User';
 import { ObjectIdSchema, UserRequestMode } from '../validators/requests';
 
 export interface RequestParameters<P, Q> {
@@ -23,11 +23,12 @@ interface UsernameQueryReq {
  */
 export async function transformUsernameIntoId<P extends UsernameReq, Q extends UsernameQueryReq>(
     req: RequestParameters<P, Q>,
-): Promise<IUserDocument> {
+): Promise<AugmentedUserDocument> {
     const { mode } = req.query;
     const { username } = req.params;
 
-    let user;
+    let user: AugmentedUserDocument | null = null;
+
     if (mode === 'username' || typeof mode === 'undefined') {
         user = await User.findOne({ username });
     } else {

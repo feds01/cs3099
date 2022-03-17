@@ -44,7 +44,8 @@
         "eject": "react-scripts eject",
         "fmt": "prettier src --write",
         "tcheck": "tsc --noEmit",
-        "version": "ts-node --skip-project scripts/versioning.ts"
+        "version": "ts-node --skip-project scripts/versioning.ts",
+        "serve": "serve -s -p $PORT --cors build/"
     },
     "eslintConfig": {
         "extends": [
