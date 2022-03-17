@@ -36,7 +36,10 @@ describe('User role tests', () => {
             password: userDto.password,
         });
         expect(loginOther.status).toBe(200);
-        await User.findOneAndUpdate({ username: userDto.username }, { role: IUserRole.Administrator });
+        await User.findOneAndUpdate(
+            { username: userDto.username },
+            { role: IUserRole.Administrator },
+        );
 
         const registerResponse = await request.delete(`/user/${UserObject.username}`);
         expect(registerResponse.status).toBe(200);
@@ -85,8 +88,11 @@ describe('User role tests', () => {
     });
 
     // Tests for PATCH /user/:username
-    it("moderator can update other account personal info", async () => {
-        await User.findOneAndUpdate({ username: userDto.username }, { role: IUserRole.Administrator });
+    it('moderator can update other account personal info', async () => {
+        await User.findOneAndUpdate(
+            { username: userDto.username },
+            { role: IUserRole.Administrator },
+        );
         const loginOther = await request.post('/auth/login').send({
             username: userDto.username,
             password: userDto.password,
@@ -131,7 +137,10 @@ describe('User role tests', () => {
     });
 
     it('moderator can delete other users account', async () => {
-        await User.findOneAndUpdate({ username: userDto.username }, { role: IUserRole.Administrator });
+        await User.findOneAndUpdate(
+            { username: userDto.username },
+            { role: IUserRole.Administrator },
+        );
         const loginOther = await request.post('/auth/login').send({
             username: userDto.username,
             password: userDto.password,
@@ -150,5 +159,4 @@ describe('User role tests', () => {
         const registerResponse = await request.post('/auth/register').send(UserObject);
         expect(registerResponse.status).toBe(201);
     });
-
 });
