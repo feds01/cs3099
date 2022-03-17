@@ -33,6 +33,13 @@ describe('User endpoint tests ', () => {
         // update the user role to be administrator
         await User.findOneAndUpdate({ username: 'test' }, { role: IUserRole.Administrator });
 
+        // call login api with wrong password
+        const loginResponseFail = await request.post('/auth/login').send({
+            username: 'test',
+            password: 'badPassword',
+        });
+        expect(loginResponseFail.status).toBe(401);
+
         // call login api with username
         const loginResponse = await request.post('/auth/login').send({
             username: 'test',
