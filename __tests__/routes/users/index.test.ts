@@ -127,21 +127,15 @@ describe('User endpoint tests ', () => {
 
     // Tests for PATCH /user/:username
     it("Updating user and check if user's information is updated", async () => {
-        const mockedUser = createMockedUser();
-
-        const requestDto = {
-            email: mockedUser.email,
-            username: mockedUser.username,
-            name: mockedUser.name,
-            about: mockedUser.about,
-        };
+        const { email, username, name, about } = createMockedUser();
+        const requestDto = { email, username, name, about };   
 
         // call API to patch user details
         const response = await request.patch('/user/test').send(requestDto);
         expect(response.status).toBe(200);
 
         // find user with new username
-        const user = await User.findOne({ username: mockedUser.username });
+        const user = await User.findOne({ username: requestDto.username });
         expect(user).toMatchObject(requestDto);
 
         // reset username and email (for the purpose of further testing)

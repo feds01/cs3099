@@ -88,7 +88,35 @@ describe('User role tests', () => {
     });
 
     // Tests for PATCH /user/:username
-    it('moderator can update other account personal info', async () => {
+    it('moderators can update other account personal info', async () => {
+        await User.findOneAndUpdate(
+            { username: userDto.username },
+            { role: IUserRole.Moderator },
+        );
+        const loginOther = await request.post('/auth/login').send({
+            username: userDto.username,
+            password: userDto.password,
+        });
+        request.auth(loginOther.body.token, { type: 'bearer' });
+        request.set({ 'x-refresh-token': loginOther.body.refreshToken });
+
+        const { email, username, name, about } = createMockedUser();
+        const requestDto = { email, username, name, about };    
+
+        // call API to patch user details
+        const response = await request.patch('/user/test').send(requestDto);
+        expect(response.status).toBe(200);
+
+        // find user with new username
+        const user = await User.findOne({ username: requestDto.username });
+        expect(user).toMatchObject(requestDto);
+
+        // reset username and email (for the purpose of further testing)
+        assert(user !== null);
+        await user.updateOne({ email: UserObject.email, username: UserObject.username }).exec();
+    });
+
+    it('administrators can update other account personal info', async () => {
         await User.findOneAndUpdate(
             { username: userDto.username },
             { role: IUserRole.Administrator },
@@ -100,20 +128,15 @@ describe('User role tests', () => {
         request.auth(loginOther.body.token, { type: 'bearer' });
         request.set({ 'x-refresh-token': loginOther.body.refreshToken });
 
-        const mockedUser = createMockedUser();
-        const requestDto = {
-            email: mockedUser.email,
-            username: mockedUser.username,
-            name: mockedUser.name,
-            about: mockedUser.about,
-        };
+        const { email, username, name, about } = createMockedUser();
+        const requestDto = { email, username, name, about };    
 
         // call API to patch user details
         const response = await request.patch('/user/test').send(requestDto);
         expect(response.status).toBe(200);
 
         // find user with new username
-        const user = await User.findOne({ username: mockedUser.username });
+        const user = await User.findOne({ username: requestDto.username });
         expect(user).toMatchObject(requestDto);
 
         // reset username and email (for the purpose of further testing)
@@ -121,7 +144,8 @@ describe('User role tests', () => {
         await user.updateOne({ email: UserObject.email, username: UserObject.username }).exec();
     });
 
-    it('should fail to delete other users account', async () => {
+    // Tests for DELETE /user/:username
+    it('user should fail to delete other users account', async () => {
         const loginOther = await request.post('/auth/login').send({
             username: userDto.username,
             password: userDto.password,
@@ -136,7 +160,27 @@ describe('User role tests', () => {
         expect(response.status).toBe(401);
     });
 
-    it('moderator can delete other users account', async () => {
+    it('moderator should fail to delete other users account', async () => {
+        await User.findOneAndUpdate(
+            { username: userDto.username },
+            { role: IUserRole.Moderator },
+        );
+        const loginOther = await request.post('/auth/login').send({
+            username: userDto.username,
+            password: userDto.password,
+        });
+
+        expect(loginOther.status).toBe(200);
+
+        request.auth(loginOther.body.token, { type: 'bearer' });
+        request.set({ 'x-refresh-token': loginOther.body.refreshToken });
+
+        // Expect delete to fail
+        const response = await request.delete('/user/test');
+        expect(response.status).toBe(401);
+    });
+
+    it('administrator can delete other users account', async () => {
         await User.findOneAndUpdate(
             { username: userDto.username },
             { role: IUserRole.Administrator },
