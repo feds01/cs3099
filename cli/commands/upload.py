@@ -79,12 +79,15 @@ def upload(
 
     # upload
     upload_res = call_upload_api(base_url, id_, file, headers, name)
-    if (
-        upload_res["message"]
-        != "Cannot modify publication sources that aren't marked as draft."
-        or click.confirm("Do you want to upload it to a new revision?") is False
-    ):
+    try:
+        assert upload_res['errors']['file']['code'] == 100
+    except KeyError:
         return
+    except AssertionError:
+        click.echo(f"Error: {upload_res['errors']['file']['message']}")
+        return
+
+    click.confirm("Do you want to upload it to a new revision?", abort=True)
 
     # revise
     revision = click.prompt("Revision number", type=str)
