@@ -140,7 +140,7 @@ export default class PublicationController {
      * @returns
      */
     async revise(revision: string, changelog: string): Promise<ApiResponse<PublicationResponse>> {
-        if ((await this.performRevisionCheck(revision))) {
+        if (await this.performRevisionCheck(revision)) {
             return {
                 status: 'error',
                 code: 400,
@@ -201,7 +201,7 @@ export default class PublicationController {
         // Verify that the provided revision number isn't attempting to use a 'revision' tag that's already used
         // by the current publication tree.
         if (typeof patch.revision !== 'undefined' && this.publication.revision !== patch.revision) {
-            if ((await this.performRevisionCheck(patch.revision))) {
+            if (await this.performRevisionCheck(patch.revision)) {
                 return {
                     status: 'error',
                     code: 400,

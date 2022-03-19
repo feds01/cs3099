@@ -1,7 +1,7 @@
 import { tokenize } from '../lib/prismjs';
 import normalizeTokens from '../lib/utils/normalizeTokens';
 import { PrismToken, Token } from '../types/renderer';
-import type Prism from "prismjs";
+import type Prism from 'prismjs';
 
 // eslint-disable-next-line no-restricted-globals
 const ctx: Worker = self as any;

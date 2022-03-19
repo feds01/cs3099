@@ -41,11 +41,11 @@
         "start": "react-scripts start",
         "build": "react-scripts build",
         "test": "react-scripts test --ci --coverage",
-        "eject": "react-scripts eject",
         "fmt": "prettier src --write",
         "tcheck": "tsc --noEmit",
         "version": "ts-node --skip-project scripts/versioning.ts",
-        "serve": "serve -s -p $PORT --cors build/"
+        "serve": "serve -s -p $PORT --cors build/",
+        "serve-default": "serve -s -p 3000 --cors build/"
     },
     "eslintConfig": {
         "extends": [

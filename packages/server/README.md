@@ -55,6 +55,8 @@ RESOURCES_FOLDER=./resources
 # Communication with the frontend
 FRONT_END_URI=http://localhost:3000
 ```
+**Note**: `sample.env` has an example copy of a partial configuration.
+
 
 Some of these options have 'sensible' defaults such as the `RESOURCES_FOLDER` that will use 
 `./resources` as the folder to save uploaded files into a specific directory structure.

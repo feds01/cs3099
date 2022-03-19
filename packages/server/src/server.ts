@@ -46,7 +46,7 @@ function validateConfig() {
             const errorMessages = [];
 
             for (const error of e.errors) {
-                errorMessages.push(`  • '${error.path.join('.')}': ${error.message}.`)
+                errorMessages.push(`  • '${error.path.join('.')}': ${error.message}.`);
             }
             Logger.error(`Server config validation failed:\n${errorMessages.join('\n')}`);
         }
@@ -62,10 +62,10 @@ const server = createServer(app);
 function startServer() {
     server.on('error', (err: NodeJS.ErrnoException) => {
         if ('code' in err && err.code === 'EADDRINUSE') {
-            Logger.error("Server port is in use, try another or free the port.");
+            Logger.error('Server port is in use, try another or free the port.');
             process.exit(1);
         }
-    })
+    });
 
     server.listen(config.port, async () => {
         const port = (server.address() as AddressInfo).port;

@@ -1,6 +1,49 @@
-# Getting Started with Create React App
+# Iamus Web Frontend
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+
+
+## Configuration 
+
+The frontend uses environment variables to store some configuration parameters that are
+environment specific. The file that is used by the server is called `.env`. It should 
+be created in the root of the disk and this is the contents that should be within the 
+disk:
+```
+# API Endpoint
+REACT_APP_API_URI=
+REACT_APP_SERVICE_URI=
+```
+**Note**: `sample.env` has an example copy of a partial configuration.
+
+
+The `REACT_APP_API_URI` is the URI of the API server running. If you have a local
+instance running, simply provide the URL to and set the variable to it like so:
+```
+REACT_APP_API_URI=http://localhost:5000
+```
+
+If the variable is not set, the web frontend will not be able to communicate with the 
+backend API server.
+
+### Additional debug info
+
+If you are a developer and you want to distribute a packaged version of the app with 
+some metadata information about the compiled version, you can use the utility 
+command to append some additional information to the build using:
+
+```
+yarn run version
+```
+
+This will generate the following details in the file `.env.local` that when starting the 
+server or building a production version can use to help debugging:
+```
+REACT_APP_NAME='Iamus'
+REACT_APP_VERSION='1.0.0'
+REACT_APP_VERSION_BRANCH='docs'
+REACT_APP_DEV_VERSION='87496fa9b57ff8b5a9db9f7bf657e172a2411e70'
+```
 
 ## Available Scripts
 
@@ -29,15 +72,28 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `yarn eject`
+### `yarn fmt`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Run the formatting tools on the project sources.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### `yarn serve`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Run the production version of the web frontend by specifying the port. The command should be 
+invoked by presetting the `PORT` environment variable before like so:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+```
+PORT=3000 yarn serve
+```
+
+### `yarn serve-default`
+
+An analogous command to `yarn serve` but always assumes that the production server should run on port
+`3000`.
+
+### `yarn tcheck`
+
+Run static typechecking on the project to verify that the project doesn't contains any build errors
+before building or running the project. This is a utility command added to save time during development.
 
 ## Learn More
 
