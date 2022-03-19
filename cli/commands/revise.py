@@ -11,7 +11,7 @@ from utils.mutually_exclusive_options import MutuallyExclusiveOptions
 @click.option("--log", "changelog", prompt="Change Log", help="Change Log", type=str)
 @click.option(
     "--id",
-    "id_",
+    "pub_id",
     prompt="Publication ID",
     help="Publication ID",
     cls=MutuallyExclusiveOptions,
@@ -24,7 +24,7 @@ from utils.mutually_exclusive_options import MutuallyExclusiveOptions
     help="Publication Name",
     cls=MutuallyExclusiveOptions,
     type=str,
-    not_required_if=["id_"],
+    not_required_if=["pub_id"],
 )
 @click.pass_context
 @authenticated
@@ -32,15 +32,15 @@ def revise(
     ctx: click.core.Context,
     revision: str,
     changelog: str,
-    id_: str = None,
+    pub_id: str = None,
     name: str = None,
     username: str = None,
     headers: dict[str, str] = None,
 ) -> None:
     base_url = ctx.obj["BASE_URL"]
 
-    id_, name = get_id_name(base_url, username, headers, id_, name)
-    if not all([id_, name]):
+    pub_id, name = get_id_name(base_url, username, headers, pub_id, name)
+    if not all([pub_id, name]):
         return
 
     revise_api = urljoin(base_url, f"publication/{username}/{name}/revise")
@@ -49,7 +49,7 @@ def revise(
     try:
         revise_res = call_api("POST", revise_api, data=data, headers=headers)
         new_id = revise_res["publication"]["id"]
-        old_pub_url = urljoin(base_url, f"publication/{id_}")
+        old_pub_url = urljoin(base_url, f"publication/{pub_id}")
         new_pub_url = urljoin(base_url, f"publication/{new_id}")
         click.echo(
             f"Success: Revision of {name}({old_pub_url}) is now at {new_pub_url}"

@@ -14,7 +14,7 @@ class MutuallyExclusiveOptions(click.Option):
             help="Publication Name",
             cls=MutuallyExclusiveOptions
             type=str,
-            not_required_if=["id_"],
+            not_required_if=["pub_id"],
         )
     """
 
