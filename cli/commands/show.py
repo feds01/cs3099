@@ -1,23 +1,29 @@
 import click
-import requests
+from urllib.parse import urljoin
+from utils.call_api import call_api
 from utils.auth import authenticated
 
 
 @click.command()
-@click.pass_obj
+@click.pass_context
 @authenticated
 def show(
-    obj: dict[str, str], username: str = None, headers: dict[str, str] = None
+    ctx: click.core.Context, username: str = None, headers: dict[str, str] = None
 ) -> None:
-    base_url = obj["BASE_URL"]
+    base_url = ctx.obj["BASE_URL"]
 
-    publications_res = requests.get(
-        f"{base_url}/publication/{username}", headers=headers
-    ).json()
-    if publications_res["status"] is True:
-        publications = publications_res["data"]
-        print("Listing all publications available:")
+    show_api = urljoin(base_url, f"publication/{username}")
+    try:
+        show_res = call_api("GET", show_api, headers=headers)
+    except Exception as e:
+        click.echo(f"Unexpected error occurs: {e}")
+        exit(1)
+
+    if show_res["status"] == "ok":
+        publications = show_res["publications"]
+        print("Listing all publications of the latest version:")
         for pub in publications:
-            print(f"{pub['title']} ({pub['revision']}) : {pub['id']}")
+            pub_url = urljoin(base_url, f"publication/{pub['id']}")
+            print(f"{pub['title']} ({pub['revision']}) - {pub_url}")
     else:
         print("No publications found")

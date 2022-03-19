@@ -11,7 +11,7 @@ class LogoutTest(unittest.TestCase):
         cls.test_dir = Path(__file__).parent
         cls.obj = {"CLI_PATH": cls.test_dir}
         cls.runner = CliRunner()
-        cls.dummy_auth_file = cls.test_dir / "./config/auth.json"
+        cls.dummy_auth_file = cls.test_dir / "config/auth.json"
 
     def setUp(self):
         if self.dummy_auth_file.exists():
@@ -34,5 +34,6 @@ class LogoutTest(unittest.TestCase):
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(result.output, "You are not logged in\n")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
