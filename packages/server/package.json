@@ -13,6 +13,7 @@
         "lint": "eslint src/*/**.ts",
         "tcheck": "tsc --noEmit",
         "fmt": "prettier src/ __tests__/ --write",
+        "fmt-check": "prettier --check src __tests__",
         "generate-client": "orval",
         "transform-yaml": "yaml2json swagger.yaml > swagger.json"
     },

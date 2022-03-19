@@ -42,6 +42,7 @@
         "build": "react-scripts build",
         "test": "react-scripts test --ci --coverage",
         "fmt": "prettier src --write",
+        "fmt-check": "prettier --check src",
         "tcheck": "tsc --noEmit",
         "version": "ts-node --skip-project scripts/versioning.ts",
         "serve": "serve -s -p $PORT --cors build/",
