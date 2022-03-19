@@ -36,14 +36,19 @@ function validateConfig() {
     const options = program.opts();
 
     try {
-        Logger.info('Loading server configuration');
+        Logger.info('Loading server configuration...');
         return ConfigSchema.parse({
             ...rawConfig,
             ...(typeof options.port !== 'undefined' && { port: options.port }),
         });
     } catch (e) {
         if (e instanceof ZodError) {
-            Logger.error(`Server config validation failed: ${e}`);
+            const errorMessages = [];
+
+            for (const error of e.errors) {
+                errorMessages.push(`  • '${error.path.join('.')}': ${error.message}.`)
+            }
+            Logger.error(`Server config validation failed:\n${errorMessages.join('\n')}`);
         }
         process.exit(1);
     }
@@ -55,6 +60,13 @@ export const config = validateConfig();
 const server = createServer(app);
 
 function startServer() {
+    server.on('error', (err: NodeJS.ErrnoException) => {
+        if ('code' in err && err.code === 'EADDRINUSE') {
+            Logger.error("Server port is in use, try another or free the port.");
+            process.exit(1);
+        }
+    })
+
     server.listen(config.port, async () => {
         const port = (server.address() as AddressInfo).port;
 
