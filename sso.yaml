@@ -14,9 +14,11 @@ tags:
       description: SSO Authentication endpoints.
     - name: resources
       description: Resource management endpoints.
+    - name: users
+      description: User information endpoints.
 paths:
-    /sg/sso/login:
-        post:
+    /api/sg/sso/login:
+        get:
             summary: External login endpoint
             description: Endpoint for external services to authenticate with this service.
             tags:
@@ -28,19 +30,13 @@ paths:
                   schema:
                       type: string
                       description: Callback URL of where to respond
+                      example: https://t01.example.com
                 - in: query
                   required: true
                   name: state
                   schema:
                       type: string
                       description: Session state
-            requestBody:
-                required: true
-                description: Login endpoint for external services
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UserLogin'
             responses:
                 '200':
                     $ref: '#/components/responses/UserAuthResponse'
@@ -50,7 +46,7 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                 '500':
                     $ref: '#/components/responses/InternalServerError'
-    /sg/sso/verify:
+    /api/sg/sso/verify:
         post:
             summary: Refresh user session
             description: Endpoint to refresh a JWT token
@@ -72,9 +68,8 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                 '500':
                     $ref: '#/components/responses/InternalServerError'
-
-    /sg/sso/callback:
-        post:
+    /api/sg/sso/callback:
+        get:
             summary: Successful external login endpoint.
             description: This endpoint is used to notify the journal that the external login was successful and we should proceed with authenticating the external user. This might mean that there is an internal process of registering the user on the platform.
             tags:
@@ -86,18 +81,57 @@ paths:
                   schema:
                       type: string
                       description: Callback URL of where to respond
+                      example: https://t01.example.com
                 - in: query
                   required: true
                   name: state
                   schema:
                       type: string
                       description: Session state
+                - in: query
+                  required: true
+                  name: token
+                  schema:
+                      type: string
+                      description: Generated token
             responses:
                 '204':
-                    description: No Content
+                    $ref: '#/components/responses/NoContent'
                 '500':
                     $ref: '#/components/responses/InternalServerError'
-    /sg/resources/export/{id}:
+    /api/sg/resources/import:
+        post:
+            summary: Endpoint to initiate an import of a submission
+            parameters:
+                - in: query
+                  required: true
+                  name: from
+                  schema:
+                      type: string
+                      description: Callback URL of where to respond
+                      example: https://t01.example.com
+                - in: query
+                  required: true
+                  name: token
+                  schema:
+                      type: string
+                      description: JWT to check
+                - in: query
+                  required: true
+                  name: id
+                  schema:
+                      type: string
+                      description: ID of the submission to import.
+            tags:
+                - resources
+            responses:
+                '204':
+                    $ref: '#/components/responses/NoContent'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
+    /api/sg/resources/export/{id}:
         get:
             summary: Endpoint to download an archive representing the publication sources.
             tags:
@@ -120,8 +154,7 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                 '500':
                     $ref: '#/components/responses/InternalServerError'
-
-    /sg/resources/export/{id}/metadata:
+    /api/sg/resources/export/{id}/metadata:
         get:
             summary: Endpoint to download the publication metadata
             tags:
@@ -144,6 +177,28 @@ paths:
                     $ref: '#/components/responses/Unauthorized'
                 '500':
                     $ref: '#/components/responses/InternalServerError'
+    /api/sg/users/{id}:
+        get:
+            summary: Endpoint to fetch user information about a particular user.
+            tags:
+                - users
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                      example: 'ABCDE921312DAB23AE:t06'
+                  required: true
+                  description: The identifier of the publication.
+            responses:
+                '200':
+                    $ref: '#/components/responses/UserDataResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '500':
+                    $ref: '#/components/responses/InternalServerError'
 
 components:
     securitySchemes:
@@ -151,6 +206,8 @@ components:
             type: http
             scheme: bearer
     responses:
+        NoContent:
+            description: No Content. Server acknowledges request but has no return body.
         BadRequest:
             description: Bad Request. Provided request parameters were invalid.
             content:
@@ -235,43 +292,25 @@ components:
                         type: object
                         required:
                             - status
-                            - data
+                            - publication
+                            - reviews
                         properties:
                             status:
                                 type: string
                                 example: 'ok'
                                 enum: ['ok']
-                            data:
-                                type: object
-                                required:
-                                    - publication
-                                    - reviews
-                                properties:
-                                    publication:
-                                        $ref: '#/components/schemas/Publication'
-                                    reviews:
-                                        type: array
-                                        items:
-                                            $ref: '#/components/schemas/Review'
+                            publication:
+                                $ref: '#/components/schemas/Publication'
+                            reviews:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Review'
         TokenVerificationResponse:
             description: Response from fetching publication information.
             content:
                 application/json:
                     schema:
-                        type: object
-                        required:
-                            - status
-                            - message
-                        properties:
-                            status:
-                                type: string
-                                example: 'ok'
-                                enum: ['ok']
-                            message:
-                                type: string
-                                example: 'Token is valid'
-                            user:
-                                $ref: '#/components/schemas/User'
+                        $ref: '#/components/schemas/UserData'
         UserAuthResponse:
             description: Authentication tokens with user information.
             content:
@@ -285,8 +324,9 @@ components:
                             - refreshToken
                         properties:
                             status:
-                                type: boolean
-                                example: true
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
                             token:
                                 type: string
                                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
@@ -295,50 +335,42 @@ components:
                                 example: ABCDE921312DAB23AE
                             user:
                                 $ref: '#/components/schemas/User'
-
+        UserDataResponse:
+            description: Information about the user.
+            content:
+                application/json:
+                    schema:
+                        $ref: '#/components/schemas/UserData'
     schemas:
-        UserLogin:
-            type: object
-            description: The username can either be the actual username or the user's email.
-            required:
-                - password
-                - username
-            properties:
-                username:
-                    type: string
-                    example: 'jdoe1'
-                password:
-                    type: string
-                    example: 'Password1!'
         User:
+            type: string
+            example: 'ABCDE921312DAB23AE:t06'
+
+        UserData:
             type: object
+            description: 'User information object'
             required:
-                - id
-                - email
-                - username
                 - name
+                - email
+                - id
+                - status
             properties:
-                id:
-                    type: string
-                    example: '507f1f77bcf86cd799439011'
-                email:
-                    type: string
-                    example: 'jon.doe@email.com'
-                username:
-                    type: string
-                    example: 'jdoe1'
-                name:
-                    type: string
-                    example: 'John Doe'
-                profilePictureUrl:
-                    type: string
-                    example: https://some-cdn.some-company.com/profiles/avatar.jpg
                 status:
                     type: string
-                    example: "I'm working!"
-                about:
+                    example: 'ok'
+                    enum: ['ok']
+                name:
                     type: string
-                    example: 'Professor at Example University'
+                    example: 'John Smith'
+                profilePictureUrl:
+                    type: string
+                    example: 'https://example.com/some-avatar.jpg'
+                email:
+                    type: string
+                    example: 'john.smith@example.com'
+                id:
+                    type: string
+                    example: 'ABCDE921312DAB23AE:t06'
         Publication:
             type: object
             required:
@@ -356,8 +388,7 @@ components:
                     type: string
                     example: 'Journal: A code journals.'
                 owner:
-                    type: string
-                    example: 'username'
+                    $ref: '#/components/schemas/User'
                 introduction:
                     type: string
                     example: 'This is a platform for managing code journals...'
@@ -376,25 +407,30 @@ components:
                 - createdAt
             properties:
                 owner:
-                    $ref: '#/components/schemas/User'
+                    type: string
+                    example: 'ABCDE921312DAB23AE:t06'
                 createdAt:
                     type: number
                     example: 1636065460
-                threads:
+                comments:
                     type: array
                     items:
-                        type: array
-                        items:
-                            $ref: '#/components/schemas/Comment'
+                        $ref: '#/components/schemas/Comment'
         Comment:
             type: object
             required:
-                - filename
+                - id
                 - contents
                 - thread
                 - author
                 - postedAt
             properties:
+                id:
+                    type: number
+                    example: 1
+                replying:
+                    type: number
+                    example: 0
                 filename:
                     type: string
                     example: 'src/server.ts'
@@ -413,9 +449,6 @@ components:
                 contents:
                     type: string
                     example: 'This is a comment'
-                thread:
-                    type: number
-                    example: 0
                 author:
                     $ref: '#/components/schemas/User'
                 postedAt:

@@ -16,6 +16,7 @@ import activityRouter from './routes/activity';
 import authRouter from './routes/auth';
 import commentRouter from './routes/comment';
 import publicationsRouter from './routes/publications';
+import publicationsByIdRouter from './routes/publications/byId';
 import resourcesRouter from './routes/resources';
 import reviewsRouter from './routes/reviews';
 import searchRouter from './routes/search';
@@ -68,6 +69,7 @@ const options = {
         './routes/reviews/index.ts',
         './routes/search/index.ts',
         './routes/publications/index.ts',
+        './routes/publications/byName.ts',
         './routes/threads/index.ts',
         './routes/comment/index.ts',
     ],
@@ -101,6 +103,7 @@ app.use('(/api)?/review', reviewsRouter);
 app.use('(/api)?/search', searchRouter);
 app.use('(/api)?/resource', resourcesRouter);
 app.use('(/api)?/publication', publicationsRouter);
+app.use('(/api)?/publication-by-id', publicationsByIdRouter);
 app.use('(/api)?/thread', threadsRouter);
 app.use('(/api)?/comment', commentRouter);
 

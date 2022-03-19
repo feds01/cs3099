@@ -19,10 +19,12 @@ interface DirectoryEntry {
     updatedAt: number;
 }
 
-// Interface representing a particular publication entry. If the entry is a file,
-// then the contents of the file will be stored in the type. If the entry type is a
-// directory, then the directory's contents are listed using a directory entry.
-type PublicationPathContent =
+/**
+ * Interface representing a particular publication entry. If the entry is a file,
+ * then the contents of the file will be stored in the type. If the entry type is a
+ * directory, then the directory's contents are listed using a directory entry.
+ * */
+export type PublicationPathContent =
     | {
           type: 'file';
           contents: string; // UTF8 text file
@@ -32,15 +34,17 @@ type PublicationPathContent =
           entries: DirectoryEntry[];
       };
 
-// Interface representing the physical location of an archive on the filesystem using
-// the owner's user id, archive name and revision number to locate the physical archive.
+/**
+ * Interface representing the physical location of an archive on the filesystem using
+ * the owner's user id, archive name and revision number to locate the physical archive.
+ */
 export interface ArchiveIndex {
     userId: string;
     name: string;
     revision?: string;
 }
 
-// Type representing any resource that can be stored on disk
+/**  Type representing any resource that can be stored on disk */
 export interface ResourceIndex {
     type: 'avatar' | 'attachment' | 'publication';
     owner: string;
@@ -54,8 +58,12 @@ export interface ResourceIndex {
  *
  */
 export function testArchive(archivePath: string): boolean {
-    const archive = new AdmZip(archivePath);
-    return archive.test();
+    try {
+        const archive = new AdmZip(archivePath);
+        return archive.test();
+    } catch (e: unknown) {
+        return false;
+    }
 }
 
 /**

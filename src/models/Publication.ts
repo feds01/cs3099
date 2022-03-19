@@ -4,7 +4,7 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 import Logger from '../common/logger';
 import { ExportSgPublication } from '../validators/sg';
 import Review, { IReviewStatus } from './Review';
-import User, { IUser, IUserDocument } from './User';
+import User, { AugmentedUserDocument, IUser, IUserDocument } from './User';
 
 /** The publication document represents a publication object */
 export interface IPublication {
@@ -38,7 +38,7 @@ export interface IPublication {
 
 export interface IPublicationDocument extends IPublication, Document {}
 
-export type AugmentedPublicationDocument = Omit<IPublication, '_id'> & {
+export type AugmentedPublicationDocument = Omit<IPublicationDocument, '_id'> & {
     _id: mongoose.Types.ObjectId;
 };
 
@@ -53,7 +53,7 @@ interface IPublicationModel extends Model<IPublicationDocument> {
     ) => Promise<Partial<IPublication>>;
     projectWith: (
         publication: AugmentedPublicationDocument,
-        user: IUserDocument,
+        user: IUserDocument | AugmentedUserDocument,
     ) => Promise<Partial<IPublication>>;
     projectAsSg: (publication: IPublicationDocument) => Promise<ExportSgPublication>;
 }

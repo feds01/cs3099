@@ -11,6 +11,7 @@ import State from '../../models/State';
 import User from '../../models/User';
 import { config } from '../../server';
 import { convertSgId, transformSgUserToInternal } from '../../transformers/sg';
+import { expr } from '../../utils/expr';
 import { IJwtSchema } from '../../validators/auth';
 import { SgUserSchema } from '../../validators/sg';
 
@@ -37,6 +38,7 @@ registerRoute(router, '/login', {
     query: z.object({ from: z.string().url(), state: z.string() }),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const { from, state } = req.query;
 
@@ -69,6 +71,7 @@ registerRoute(router, '/callback', {
     query: z.object({ from: z.string().url(), state: z.string(), token: z.string() }),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const { from, state, token } = req.query;
         Logger.info(`Processing request from: ${from} with state: ${state}`);
@@ -100,21 +103,28 @@ registerRoute(router, '/callback', {
         }
 
         const { email, id } = userData.response;
-        const transformedUser = await transformSgUserToInternal(userData.response);
 
         // try to find the user, if the user is marked as deleted, we essentially
         // have to revert this because we can't create a new document for them.
         // If, we can't find them, then we create a new document with the specified values.
-        const importedUser = await User.findOneAndUpdate(
-            {
-                email,
-                externalId: convertSgId(id),
-            },
-            { $set: { ...transformedUser } },
-            { upsert: true },
-        ).exec();
+        const user = await User.findOneAndUpdate({
+            email,
+            externalId: convertSgId(id),
+        });
 
-        assert(importedUser !== null && typeof importedUser._id !== 'undefined');
+        const transformedUser = await transformSgUserToInternal(userData.response, user?.username);
+
+        // We need to create the document...
+        const importedUser = await expr(async () => {
+            if (user === null) {
+                return await new User({ ...transformedUser }).save();
+            } else {
+                await user.updateOne({ $set: { ...transformedUser } });
+                return user;
+            }
+        });
+
+        assert(typeof importedUser._id !== 'undefined');
         await State.findByIdAndDelete(stateLink.id).exec();
 
         // create the tokens
@@ -155,6 +165,7 @@ registerRoute(router, '/verify', {
     query: z.object({ token: IJwtSchema }),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const { token } = req.query;
 

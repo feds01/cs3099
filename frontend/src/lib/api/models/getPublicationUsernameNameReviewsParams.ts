@@ -5,10 +5,7 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
-import type { Review } from './review';
-import type { SuccessStatus } from './successStatus';
+import type { SkipQuery } from './skipQuery';
+import type { TakeQuery } from './takeQuery';
 
-export type GetPublicationUsernameNameRevisionReviews200 = {
-    status: SuccessStatus;
-    reviews: Review[];
-};
+export type GetPublicationUsernameNameReviewsParams = { revision: string; skip?: SkipQuery; take?: TakeQuery };

@@ -38,6 +38,7 @@ registerRoute(router, '/:id', {
     query: z.object({}),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const { id, group } = req.params.id;
 

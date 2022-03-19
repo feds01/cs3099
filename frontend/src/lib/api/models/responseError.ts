@@ -8,5 +8,7 @@
 import type { ResponseErrorMessage } from './responseErrorMessage';
 
 export interface ResponseError {
+    /** Specific error code identifier. */
+    code?: number;
     message: ResponseErrorMessage;
 }

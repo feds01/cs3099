@@ -10,11 +10,13 @@ import Logger from '../../common/logger';
 import {
     verifyPublicationIdPermission,
     verifyReviewPermission,
+    verifyUserPermission,
 } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
 import Publication from '../../models/Publication';
 import User, { IUserRole } from '../../models/User';
 import { config } from '../../server';
+import { ResponseErrorSummary } from '../../transformers/error';
 import { extractFile, joinPathsForResource, joinPathsRaw } from '../../utils/resources';
 import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
 
@@ -36,7 +38,8 @@ registerRoute(router, '/upload/:username', {
     body: z.any(),
     headers: z.object({}),
     method: 'post',
-    permission: { level: IUserRole.Default },
+    permission: { level: IUserRole.Moderator },
+    permissionVerification: verifyUserPermission,
     handler: async (req) => {
         const user = await userUtils.transformUsernameIntoId(req);
         const file = extractFile(req.raw);
@@ -55,7 +58,27 @@ registerRoute(router, '/upload/:username', {
             return {
                 status: 'error',
                 code: 400,
-                message: "Invalid file mimetype sent. Image upload only accepts 'png' or 'jpeg'.",
+                message: errors.BAD_REQUEST,
+                errors: {
+                    file: {
+                        message:
+                            "Invalid file mimetype sent. Image upload only accepts 'png' or 'jpeg'.",
+                    },
+                },
+            };
+        }
+
+        // check file size is no bigger than 300kb
+        if (file.size > 300000) {
+            return {
+                status: 'error',
+                code: 400,
+                message: errors.BAD_REQUEST,
+                errors: {
+                    file: {
+                        message: 'File size too large. Must be less than 300Kb',
+                    },
+                },
             };
         }
 
@@ -103,8 +126,8 @@ registerRoute(router, '/upload/publication/:id', {
     body: z.any(),
     headers: z.object({}),
     method: 'post',
+    permission: { level: IUserRole.Moderator },
     permissionVerification: verifyPublicationIdPermission,
-    permission: { level: IUserRole.Default },
     handler: async (req) => {
         const file = extractFile(req.raw);
 
@@ -112,7 +135,12 @@ registerRoute(router, '/upload/publication/:id', {
             return {
                 status: 'error',
                 code: 400,
-                message: 'Bad Request. No file sent',
+                message: errors.BAD_REQUEST,
+                errors: {
+                    file: {
+                        message: 'No file sent',
+                    },
+                },
             };
         }
 
@@ -123,20 +151,30 @@ registerRoute(router, '/upload/publication/:id', {
         if (file.mimetype !== 'application/zip') {
             return {
                 status: 'error',
-                code: 400,
-                message:
-                    "Invalid file mimetype sent. Publication uploads only accepts 'application/zip' mime-type.",
+                code: 415,
+                message: errors.BAD_REQUEST,
+                errors: {
+                    file: {
+                        message:
+                            "Invalid file mimetype sent. Publication uploads only accepts 'application/zip' mime-type.",
+                    },
+                },
             };
         }
 
         // Verify that the zip file isn't corrupted by loading it using the zip file
         // library. We will try to list the root entries of the archive to see if there
-        // are any problems with the arhive
+        // are any problems with the archive
         if (!zip.testArchive(file.tempFilePath)) {
             return {
                 status: 'error',
-                code: 400,
-                message: 'Provided ZIP Archive is corrupt or malformed',
+                code: 415,
+                message: errors.BAD_REQUEST,
+                errors: {
+                    file: {
+                        message: 'Provided ZIP Archive is corrupt or malformed',
+                    },
+                },
             };
         }
 
@@ -165,7 +203,13 @@ registerRoute(router, '/upload/publication/:id', {
             return {
                 status: 'error',
                 code: 400,
-                message: "Cannot modify publication sources that aren't marked as draft.",
+                message: errors.BAD_REQUEST,
+                errors: {
+                    file: {
+                        code: errors.CODES.PUBLICATION_ARCHIVE_EXISTS,
+                        message: "Cannot modify publication sources that aren't marked as draft.",
+                    },
+                } as ResponseErrorSummary,
             };
         }
 
@@ -198,7 +242,7 @@ registerRoute(router, '/upload/review/:id', {
     body: z.any(),
     method: 'post',
     permissionVerification: verifyReviewPermission,
-    permission: { level: IUserRole.Default },
+    permission: { level: IUserRole.Moderator },
     handler: async (_req) => {
         return {
             status: 'error',

@@ -83,7 +83,7 @@ registerRoute(router, '/:id', {
     body: z.object({ contents: z.string().min(1) }),
     params: z.object({ id: ObjectIdSchema }),
     permissionVerification: verifyCommentWithElevatedPermission,
-    permission: { level: IUserRole.Moderator, runPermissionFn: true },
+    permission: { level: IUserRole.Moderator },
     handler: async (req) => {
         // Patch the comment here and set the state of the comment as 'edited'
         const updatedComment = await Comment.findByIdAndUpdate(

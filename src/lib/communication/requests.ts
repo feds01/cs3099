@@ -1,3 +1,4 @@
+import assert from 'assert';
 import express from 'express';
 import { ZodError, z } from 'zod';
 
@@ -9,12 +10,7 @@ import { expr } from '../../utils/expr';
 import ActivityRecord, { ActivityType } from '../activity';
 import { ActivityMetadataTransformer, defaultActivityMetadataFn } from '../activity/transformer';
 import { getTokensFromHeader } from '../auth/auth';
-import {
-    Permission,
-    PermissionVerificationFn,
-    defaultPermissionVerifier,
-    ensureValidPermissions,
-} from './permissions';
+import { Permission, PermissionVerificationFn, ensureValidPermissions } from './permissions';
 import { ApiResponse, handleResponse } from './response';
 
 type RequestMethodWithBody = 'post' | 'put' | 'patch';
@@ -28,10 +24,11 @@ export interface BasicRequest<Params, Query, Body, Headers> {
     headers: Headers;
 }
 
-export interface Request<Params, Query, Requester, Headers, Body>
+export interface Request<Params, Query, Requester, Headers, PermissionMeta, Body>
     extends BasicRequest<Params, Query, Body, Headers> {
     raw: express.Request;
     requester: Requester;
+    permissionData: PermissionMeta;
 }
 
 type RegisterRoute<
@@ -41,6 +38,7 @@ type RegisterRoute<
     Body,
     Headers,
     RoutePermission extends Permission | null,
+    PermissionMeta,
     Res,
 > = {
     method: Method;
@@ -50,7 +48,9 @@ type RegisterRoute<
     //            verification at the moment, we don't actually include in the verification
     //            of the permissions. This could be a limitation in the future, but it is hard
     //            to reason about whether it is null or not a given point,
-    permissionVerification?: PermissionVerificationFn<Params, Query, unknown>;
+    permissionVerification: RoutePermission extends null
+        ? undefined
+        : PermissionVerificationFn<Params, Query, PermissionMeta>;
     activityMetadataFn?: ActivityMetadataTransformer<Params, Query, Body | null>;
     headers: z.Schema<Headers, z.ZodTypeDef, Record<string, any>>;
     params: z.Schema<Params, z.ZodTypeDef, Record<string, any>>;
@@ -61,6 +61,7 @@ type RegisterRoute<
             Query,
             RoutePermission extends null ? null : IUserDocument,
             Headers,
+            PermissionMeta,
             Method extends RequestMethodWithBody ? Body : null
         >,
     ) => Promise<ApiResponse<Res>>;
@@ -75,9 +76,19 @@ function registrarHasBody<
     Body,
     Headers,
     RoutePermission extends Permission | null,
+    PermissionMeta,
     Res,
 >(
-    registrar: RegisterRoute<Params, Query, Method, Body, Headers, RoutePermission, Res>,
+    registrar: RegisterRoute<
+        Params,
+        Query,
+        Method,
+        Body,
+        Headers,
+        RoutePermission,
+        PermissionMeta,
+        Res
+    >,
 ): registrar is RegisterRoute<
     Params,
     Query,
@@ -85,6 +96,7 @@ function registrarHasBody<
     Body,
     Headers,
     RoutePermission,
+    PermissionMeta,
     Res
 > {
     return (
@@ -99,17 +111,37 @@ export default function registerRoute<
     Body,
     Headers,
     RoutePermission extends Permission | null,
+    PermissionMeta,
     Res,
 >(
     router: express.Router,
     path: string,
-    registrar: RegisterRoute<Params, Query, Method, Body, Headers, RoutePermission, Res>,
+    registrar: RegisterRoute<
+        Params,
+        Query,
+        Method,
+        Body,
+        Headers,
+        RoutePermission,
+        PermissionMeta,
+        Res
+    >,
 ) {
     const wrappedHandler = async (req: express.Request, res: express.Response): Promise<void> => {
         try {
             const params = await registrar.params.parseAsync(req.params);
             const query = await registrar.query.parseAsync(req.query);
-            const headers = await registrar.headers.parseAsync(req.headers);
+
+            // RFC 2616: So we have to essentially convert the name of the headers into
+            // a Capitalised format because requests might send it as case-insensitive
+            // which means that the schema won't be able to find those requests
+            const headers = await registrar.headers.parseAsync(
+                Object.fromEntries(
+                    Object.entries(req.headers).map(([key, value]) => {
+                        return [key.toLowerCase(), value];
+                    }),
+                ),
+            );
 
             let body: Body | null = null;
 
@@ -125,10 +157,7 @@ export default function registerRoute<
                 if (registrar.permission !== null) {
                     const tokenOrError = await getTokensFromHeader(req, res);
 
-                    // Check whether it is the error variant
-                    if (typeof tokenOrError === 'string') {
-                        return tokenOrError;
-                    }
+                    assert(typeof registrar.permissionVerification !== 'undefined');
 
                     // Validate the permissions, but skip it if there are no specified permissions for the
                     // current request.
@@ -136,18 +165,12 @@ export default function registerRoute<
                         registrar.permission,
                         tokenOrError.sub,
                         basicRequest,
-                        typeof registrar.permissionVerification === 'function'
-                            ? registrar.permissionVerification
-                            : defaultPermissionVerifier,
+                        registrar.permissionVerification,
                     );
                 }
 
                 return null;
             });
-
-            if (typeof permissions === 'string') {
-                throw new errors.ApiError(401, permissions);
-            }
 
             // Report a more informative error if the information is available
             if (permissions !== null && !permissions.valid) {
@@ -180,12 +203,22 @@ export default function registerRoute<
 
             await activity?.begin();
 
+            // @ts-ignore
             const result = await registrar.handler({
                 ...basicRequest,
                 // @@Cleanup: would be nice if we could get rid of this!
                 raw: req,
-                // @ts-ignore
-                requester: permissions?.user ?? null,
+                ...(registrar.permission !== null && permissions !== null
+                    ? {
+                          requester: permissions.user,
+                          ...('data' in permissions && {
+                              permissionData: permissions.data,
+                          }),
+                      }
+                    : {
+                          requester: null,
+                          permissionData: undefined,
+                      }),
             });
 
             return await handleResponse(res, result, activity);

@@ -45,6 +45,7 @@ registerRoute(router, '/username_validity', {
     query: z.object({}),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const result = await User.findOne({
             name: req.body.username,
@@ -90,6 +91,7 @@ registerRoute(router, '/email_validity', {
     query: z.object({}),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const result = await User.findOne({
             email: req.body.email,
@@ -121,6 +123,7 @@ registerRoute(router, '/session', {
     query: z.object({}),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const { token, refreshToken } = req.body;
 
@@ -183,11 +186,12 @@ registerRoute(router, '/session', {
  */
 registerRoute(router, '/sso', {
     method: 'post',
-    permission: null,
     query: z.object({ to: z.string().url(), path: z.string().optional() }),
     params: z.object({}),
     body: z.object({}),
     headers: z.object({}),
+    permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const { to, path } = req.query;
 
@@ -260,6 +264,7 @@ registerRoute(router, '/register', {
     query: z.object({}),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         // generate the salt for the new user account;
         const salt = await bcrypt.genSalt();
@@ -327,6 +332,7 @@ registerRoute(router, '/login', {
     query: z.object({}),
     headers: z.object({}),
     permission: null,
+    permissionVerification: undefined,
     handler: async (req) => {
         const { username, password, isEmail } = req.body;
 

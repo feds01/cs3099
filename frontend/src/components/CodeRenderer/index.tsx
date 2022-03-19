@@ -5,7 +5,7 @@ import CommentButton from '../CommentButton';
 import CommentThreadRenderer from '../CommentThreadRenderer';
 import Highlight from './PrismRenderer';
 import { styled } from '@mui/material';
-import Box from '@mui/material/Box/Box';
+import Box from '@mui/material/Box';
 import React, { ReactElement } from 'react';
 import { useSelectionState } from '../../contexts/selection';
 
