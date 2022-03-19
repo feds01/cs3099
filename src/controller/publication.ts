@@ -55,7 +55,7 @@ export default class PublicationController {
      * field on itself or another document, that the revision tag is not taken.
      *
      * @param revision - The new tag that is to be used when amending a revision
-     * @returns
+     * @returns true if a publication has been found with the revision, false otherwise.
      */
     private async performRevisionCheck(revision: string): Promise<boolean> {
         // Verify that the provided revision number isn't attempting to use a 'revision' tag that's already used
@@ -140,7 +140,7 @@ export default class PublicationController {
      * @returns
      */
     async revise(revision: string, changelog: string): Promise<ApiResponse<PublicationResponse>> {
-        if (!(await this.performRevisionCheck(revision))) {
+        if ((await this.performRevisionCheck(revision))) {
             return {
                 status: 'error',
                 code: 400,
@@ -201,7 +201,7 @@ export default class PublicationController {
         // Verify that the provided revision number isn't attempting to use a 'revision' tag that's already used
         // by the current publication tree.
         if (typeof patch.revision !== 'undefined' && this.publication.revision !== patch.revision) {
-            if (!(await this.performRevisionCheck(patch.revision))) {
+            if ((await this.performRevisionCheck(patch.revision))) {
                 return {
                     status: 'error',
                     code: 400,
