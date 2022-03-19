@@ -88,7 +88,7 @@ export default class PublicationController {
         await this.publication.delete();
 
         const publicationPath = zip.archiveIndexToPath({
-            userId: this.publication.owner.toString(),
+            userId: this.publication.owner._id.toString(),
             name: this.publication.name,
             ...(!this.publication.current && { revision: this.publication.revision }),
         });
@@ -114,7 +114,7 @@ export default class PublicationController {
                 // Move the resource of the publication from `<publication_name>/<revision>/publication.zip`
                 // to `<publication_name>/publication.zip`
                 const archiveIndex = {
-                    userId: newCurrentPublication.owner.toString(),
+                    userId: newCurrentPublication.owner._id.toString(),
                     name: newCurrentPublication.name,
                 };
 
