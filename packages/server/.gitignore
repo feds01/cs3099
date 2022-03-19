@@ -1,0 +1,29 @@
+# Node modules for backend and frontend.
+node_modules/
+frontend/node_modules/*
+
+# VS-Code settings
+.vscode/*
+.idea/*
+
+# Produces server files
+dist/
+
+
+# Environment files
+.env
+.env.*
+!.env.test
+
+# Generated Swagger JSON file
+swagger.json
+
+# Server saved files
+/resources/
+tmp/
+
+# Python cache files
+__pycache__/
+
+# CLI config files
+cli/config/*
