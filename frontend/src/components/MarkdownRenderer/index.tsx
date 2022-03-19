@@ -25,6 +25,14 @@ const useStyles = makeStyles<Theme, MarkdownRendererProps>((theme) => ({
         borderRadius: 6,
         margin: '0 !important',
     },
+    blockQuote: {
+        borderLeft: "0.25em solid #ddd",
+        color: "#777",
+        marginLeft: 0,
+        padding: "0 1em",
+        display: 'inline-flex',
+        marginBottom: "16px !important",
+    }
 }));
 
 export default function MarkdownRenderer(props: MarkdownRendererProps): ReactElement {
@@ -66,6 +74,9 @@ export default function MarkdownRenderer(props: MarkdownRendererProps): ReactEle
                         <code className={classes.inlineCode}>{children}</code>
                     );
                 },
+                blockquote({ node, children, ...props}) {
+                    return <blockquote {...props} className={classes.blockQuote}>{children}</blockquote>;
+                }
             }}
         >
             {props.contents}
