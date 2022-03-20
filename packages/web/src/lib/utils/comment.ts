@@ -31,10 +31,8 @@ export function sortCommentsIntoThreads(comments: Comment[]): Map<string, Commen
     comments.forEach((comment) => {
         if (commentThreads.has(comment.thread)) {
             let thread = commentThreads.get(comment.thread)!;
-
             thread.comments.push(comment);
 
-            // @@Cleanup: is this even necessary?
             if (typeof thread.filename === 'undefined' || typeof thread.anchor === 'undefined') {
                 if (typeof comment.replying === 'undefined') {
                     thread = {

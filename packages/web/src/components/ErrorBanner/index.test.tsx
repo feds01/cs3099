@@ -1,6 +1,4 @@
 import ErrorBanner from '.';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
 import renderWithWrapper from '../../test-utils/render';
 
 describe('ErrorBanner tests', () => {

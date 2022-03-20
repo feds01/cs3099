@@ -6,7 +6,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { z } from 'zod';
 
 const SessionSchema = z.object({
-    redirect: z.string(), // @@Cleanup: validate using regex for resource path?
+    redirect: z.string(),
     token: z.string(),
     refreshToken: z.string(),
 });
