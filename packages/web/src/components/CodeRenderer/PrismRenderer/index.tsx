@@ -31,6 +31,8 @@ import 'prismjs/components/prism-v';
 import 'prismjs/components/prism-yaml';
 import 'prismjs/components/prism-markdown';
 import 'prismjs/components/prism-toml';
+import 'prismjs/components/prism-julia';
+import 'prismjs/components/prism-core';
 
 import { Box, CircularProgress } from '@mui/material';
 import { HighlightWorkerResult } from '../../../worker/highlight.worker';
