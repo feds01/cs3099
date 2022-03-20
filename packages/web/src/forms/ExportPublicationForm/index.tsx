@@ -14,6 +14,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import { ReactElement, useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { ApiErrorResponse } from '../../lib/api/models';
 
 interface ExportDialogProps {
     open: boolean;
@@ -36,7 +37,7 @@ const journalUrls = {
 export default function ExportDialog({ username, name, revision, open, onClose }: ExportDialogProps): ReactElement {
     const exportPub = usePostPublicationUsernameNameExport();
     const notificationDispatcher = useNotificationDispatch();
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<ApiErrorResponse | null>(null);
 
     const {
         control,
@@ -55,7 +56,7 @@ export default function ExportDialog({ username, name, revision, open, onClose }
     useEffect(() => {
         if (exportPub.isError && exportPub.error) {
             // Here, we don't really use 'errors' because the endpoint shouldn't return these errors
-            setError(exportPub.error.message);
+            setError(exportPub.error);
         } else if (!exportPub.isLoading && exportPub.data) {
             notificationDispatcher({
                 type: 'add',
@@ -115,7 +116,7 @@ export default function ExportDialog({ username, name, revision, open, onClose }
                             )}
                         />
                     </FormControl>
-                    {error && <ErrorBanner message={error} />}
+                    {error && <ErrorBanner message={error.message} errors={error.errors} />}
                 </DialogContent>
                 <DialogActions>
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>

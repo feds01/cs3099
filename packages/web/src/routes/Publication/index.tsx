@@ -236,7 +236,7 @@ function PublicationView() {
                     {publication.draft && (
                         <Alert severity="warning">
                             <AlertTitle>Warning</AlertTitle>
-                            This publication isn't visible until you upload sources to it
+                            This publication isn't visible and non-exportable until you upload sources to it
                         </Alert>
                     )}
                     <Box sx={{ mb: 1, pt: 1 }}>

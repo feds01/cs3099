@@ -9,24 +9,36 @@ import { config } from '../../server';
 import { ResponseErrorSummary, transformZodErrorIntoResponseError } from '../../transformers/error';
 import { joinPathsRaw } from '../../utils/resources';
 
+
+/** Generic zod schema that's used to validate general API responses from external services. */
 const RawResponseSchema = z.union([
     z.object({ status: z.literal('error'), message: z.string() }),
     z.object({ status: z.literal('ok') }).passthrough(),
 ]);
 
+/** Methods that are valid HTTP fetch specifiers */
 type RequestMethod = 'post' | 'get' | 'patch' | 'put' | 'delete';
 
+/** The response type that makeRequest and friends return */
 type ServiceResponse<T> =
     | {
-          status: 'error';
-          type: 'fetch' | 'service' | 'unknown';
-          errors: ResponseErrorSummary;
-      }
+        status: 'error';
+        type: 'fetch' | 'service' | 'unknown';
+        errors: ResponseErrorSummary;
+    }
     | {
-          status: 'ok';
-          response: T;
-      };
+        status: 'ok';
+        response: T;
+    };
 
+/**
+ * 
+ * @param baseUrl - The base service endpoint to make a request to.
+ * @param endpoint - The endpoint that's used to make the request to
+ * @param query - If the URL should contain query parameters
+ * 
+ * @returns The constructed URL
+ */
 function buildUrl(baseUrl: string, endpoint: string, query?: Record<string, string>): string {
     const url = new URL(endpoint, baseUrl);
 
@@ -41,9 +53,10 @@ function buildUrl(baseUrl: string, endpoint: string, query?: Record<string, stri
 /**
  * Function to attempt to download an octet stream from a given service.
  *
- * @param baseUrl
- * @param endpoint
- * @param additional
+ * @param baseUrl - The base service endpoint to make a request to.
+ * @param endpoint - The endpoint that's used to make the request to
+ * @param additional - Any additional parameters that the request should accept; any headers, query
+ * and which 'method' the request should use to make a call.
  *
  * @returns the file path to where it was saved.
  */
@@ -109,25 +122,27 @@ export async function downloadOctetStream(
 
         const tmpFilePath = joinPathsRaw(
             config.tempFolder,
-            `publication-${new Date().getTime()}.zip`,
+            `item-${new Date().getTime()}.zip`,
         );
 
         try {
             Logger.info(`Attempting to save file at: ${tmpFilePath}`);
-
-            // @@Wrapping: We should move this function into it's own wrapper!
-            await fs.appendFile(tmpFilePath, Buffer.from(blob));
+            await fs.writeFile(tmpFilePath, Buffer.from(blob));
 
             return { status: 'ok', response: tmpFilePath };
         } catch (e: unknown) {
-            Logger.warn('Failed to save file.');
-            return { status: 'error', type: 'fetch', errors: {} };
+            if (e instanceof Error) {
+                Logger.warn(`Failed to save file:\n${e.stack}`);
+            } else {
+                Logger.warn("Failed to save file.");
+            }
+
+            return { status: 'error', type: 'service', errors: {} };
         }
     } catch (e: unknown) {
         if (e instanceof FetchError) {
             Logger.warn(
-                `Failed to fetch: ${url.toString()}, code: ${e.code ?? 'unknown'}, reason: ${
-                    e.message
+                `Failed to fetch: ${url.toString()}, code: ${e.code ?? 'unknown'}, reason: ${e.message
                 }`,
             );
             return { status: 'error', type: 'fetch', errors: {} };
@@ -142,10 +157,18 @@ export async function downloadOctetStream(
 }
 
 /**
+ * Function to make a request to a given URL with additionally specified parameters.
+ * The function validates that the request returns a valid HTTP status code, the 
+ * response matches the provided @param schema and that the request does not timeout.
+ * This is a safe wrapper around request making and full validation of responses.
  *
- * @param baseUrl
- * @param endpoint
- * @param additional
+ * @param baseUrl - The base service endpoint to make a request to.
+ * @param endpoint - The endpoint that's used to make the request to
+ * @param schema - A @see z.Schema that is used to validate the response.
+ * @param additional - Any additional parameters that the request should accept; any headers, query
+ * and which 'method' the request should use to make a call.
+ * 
+ * @returns Validated response body from the request if it is successful, error object if not.
  */
 export async function makeRequest<I, O>(
     baseUrl: string,
@@ -193,7 +216,7 @@ export async function makeRequest<I, O>(
                 type: 'service',
                 errors: {
                     resource: {
-                        message: "Couldn't download the metadata due to non ok status code.",
+                        message: "Couldn't download response due to non ok status code.",
                     },
                 },
             };
@@ -215,11 +238,14 @@ export async function makeRequest<I, O>(
     } catch (e: unknown) {
         if (e instanceof FetchError) {
             Logger.warn(
-                `Failed to fetch: ${url.toString()}, code: ${e.code ?? 'unknown'}, reason: ${
-                    e.message
+                `Failed to fetch: ${url.toString()}, code: ${e.code ?? 'unknown'}, reason: ${e.message
                 }`,
             );
-            return { status: 'error', type: 'fetch', errors: {} };
+            return { status: 'error', type: 'fetch', errors: {
+                resource: {
+                    message: `Fetch external service failed with: '${e.message}'`,
+                },
+            } };
         }
 
         // Logger.warn(`Service request failed with: ${e}`);

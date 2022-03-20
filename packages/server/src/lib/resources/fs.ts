@@ -41,6 +41,23 @@ export async function moveResource(from: string, to: string): Promise<void> {
 }
 
 /**
+ * Wrapper function for writing data to file. If the directory that the file
+ * specifies does not exist, the function will create it,
+ * 
+ * @param pathname - The file path of where to save the file
+ * @param data - The data to be written to the file
+ */
+export async function writeFile(pathname: string, data: Buffer): Promise<void> {
+    const dirname = path.dirname(pathname);
+
+    if (!(await resourceExists(dirname))) {
+        await fs.mkdir(dirname, { recursive: true });
+    }
+
+    await fs.appendFile(pathname, data);
+}
+
+/**
  * Wrapper function for fs.rmdir. Deletes a directory/file from a source to a
  * location.
  *
