@@ -17,10 +17,10 @@ import { setupServer } from 'msw/node';
 jest.mock('react-markdown', () => (props: { children: React.ReactChildren }) => {
     return <>{props.children}</>;
 });
-
 jest.mock('remark-gfm', () => () => {});
-
 jest.mock('remark-github', () => () => {});
+jest.mock('remark-math', () => () => {});
+jest.mock('rehype-katex', () => () => {});
 
 /**
  * Setup request mock server

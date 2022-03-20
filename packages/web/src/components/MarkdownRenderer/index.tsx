@@ -4,13 +4,20 @@ import makeStyles from '@mui/styles/makeStyles';
 import { ReactElement } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 import remarkGithub, { BuildUrlValues } from 'remark-github';
 
+// We need katex styling in order to properly render math equations
+import 'katex/dist/katex.min.css';
+
+/** React Markdown renderer component */
 interface MarkdownRendererProps {
     contents: string;
     fontSize?: number;
 }
 
+/** Style overrides to fix conflicting styles within the MarkdownRenderer */
 const useStyles = makeStyles<Theme, MarkdownRendererProps>((theme) => ({
     wrapper: {
         fontSize: ({ fontSize }) => (fontSize ? `${fontSize}px !important` : 'inherit'),
@@ -42,6 +49,7 @@ export default function MarkdownRenderer(props: MarkdownRendererProps): ReactEle
         <ReactMarkdown
             remarkPlugins={[
                 [remarkGfm],
+                [remarkMath],
                 [
                     remarkGithub,
                     {
@@ -56,6 +64,7 @@ export default function MarkdownRenderer(props: MarkdownRendererProps): ReactEle
                     },
                 ],
             ]}
+            rehypePlugins={[rehypeKatex]}
             className={classes.wrapper}
             components={{
                 code({ node, inline, className, children, ...props }) {

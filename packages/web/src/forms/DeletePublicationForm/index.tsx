@@ -46,7 +46,7 @@ export default function DeletePublicationForm({ publication, onCompletion }: Pro
         }
     }, [isLoading, isError, isSuccess]);
 
-    const onConfirm = async () => await mutateAsync({ username, name, params: { draft: publication.draft } });
+    const onConfirm = async () => await mutateAsync({ username, name, params: { revision: publication.revision } });
 
     return (
         <Box>
