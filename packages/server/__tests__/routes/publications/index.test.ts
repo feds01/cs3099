@@ -140,6 +140,88 @@ describe('Publications endpoints testing', () => {
         expect(response.body.message).toBe("Request parameters didn't match the expected format.");
     });
 
+    it('should upload source code to publication', async () => {
+        const response = await request
+            .post('/publication/')
+            .auth(ownerRes.body.token, { type: 'bearer' })
+            .send({
+                revision: 'v1',
+                title: 'Source Code Test',
+                name: 'Source-Code-Test',
+                introduction: 'Introduction here',
+                collaborators: ['collabo1', 'collabo2'],
+            });
+
+        expect(response.status).toBe(201);
+
+        const pubID = response.body.publication.id;
+        const pubName = response.body.publication.name;
+
+        const sourceUpload = await request
+            .post(`/resource/upload/publication/${pubID}`)
+            .auth(ownerRes.body.token, { type: 'bearer' })
+            .attach('file', '__tests__/resources/sampleCode.zip');
+
+        expect(sourceUpload.status).toBe(200);
+
+        const pubDelete = await request
+            .delete(`/publication/owner/${pubName}`)
+            .auth(ownerRes.body.token, { type: 'bearer' });
+
+        expect(pubDelete.status).toBe(200);
+    });
+
+    it('should fail to upload source code to publication when source already there', async () => {
+        const createPub = await request
+            .post('/publication/')
+            .auth(ownerRes.body.token, { type: 'bearer' })
+            .send({
+                revision: 'v1',
+                title: 'Source Code Test',
+                name: 'Source-Code-Test',
+                introduction: 'Introduction here',
+                collaborators: ['collabo1', 'collabo2'],
+            });
+
+        expect(createPub.status).toBe(201);
+
+        const pubID = createPub.body.publication.id;
+        const pubName = createPub.body.publication.name;
+
+        const sourceUpload = await request
+            .post(`/resource/upload/publication/${pubID}`)
+            .auth(ownerRes.body.token, { type: 'bearer' })
+            .attach('file', '__tests__/resources/sampleCode.zip');
+
+        expect(sourceUpload.status).toBe(200);
+
+        const source2Upload = await request
+            .post(`/resource/upload/publication/${pubID}`)
+            .auth(ownerRes.body.token, { type: 'bearer' })
+            .attach('file', '__tests__/resources/sampleCode.zip');
+
+        expect(source2Upload.status).toBe(400);
+
+        const pubDelete = await request
+            .delete(`/publication/owner/${pubName}`)
+            .auth(ownerRes.body.token, { type: 'bearer' });
+
+        expect(pubDelete.status).toBe(200);
+    });
+
+    // Tests for GET /publication/:username/:name/:revision?/tree/:path(*)
+
+    // Tests for GET /publication/:username/
+    it('should get all publications of a user', async () => {
+        // Make a request to get all of the publications of the user 'owner'
+        const response = await request
+            .get('/publication/owner')
+            .auth(ownerRes.body.token, { type: 'bearer' });
+
+        expect(response.status).toBe(200);
+        expect(response.body.publications).toHaveLength(1);
+    });
+
     // Tests for GET /publication/:username/:name/:revision?/tree/:path(*)
 
     // Tests for GET /publication/:username/

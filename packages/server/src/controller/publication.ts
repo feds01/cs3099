@@ -274,16 +274,20 @@ export default class PublicationController {
         });
 
         if (result.status === 'error') {
-            Logger.warn(`Failed to export a publication due to '${result.type}', with errors:\n${JSON.stringify(result.errors)}`);
+            Logger.warn(
+                `Failed to export a publication due to '${
+                    result.type
+                }', with errors:\n${JSON.stringify(result.errors)}`,
+            );
 
-            // If the request failed due to that we couldn't fetch it for some reason, return the error 
+            // If the request failed due to that we couldn't fetch it for some reason, return the error
             if (result.type === 'fetch') {
                 return {
                     status: 'error',
                     code: 400,
                     message: `Failed to export review due to external service being unreachable.`,
                     errors: result.errors,
-                };    
+                };
             }
 
             // If the request failed due to the 'service' replying with an invalid format report this
