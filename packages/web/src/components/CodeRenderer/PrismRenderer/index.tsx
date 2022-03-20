@@ -18,6 +18,7 @@ import type {
 import { languages as prismLanguages, tokenize, hooks as prismHooks } from 'prismjs';
 
 import 'prismjs/components/prism-clike';
+import 'prismjs/components/prism-c';
 import 'prismjs/components/prism-haskell';
 import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-json';

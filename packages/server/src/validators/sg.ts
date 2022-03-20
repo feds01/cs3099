@@ -41,7 +41,11 @@ export type SgUser = z.infer<typeof SgUserSchema>;
  * Type representing a Supergroup publication data structure.
  */
 export const SgPublicationSchema = z.object({
-    name: z.string().min(1),
+    name: z
+        .string()
+        .min(1)
+        .regex(/^[a-zA-Z0-9._~-]*$/, { message: 'Name must be URL safe.' })
+        .transform((x) => x.toLowerCase()),
     title: z.string().min(1),
     introduction: z.string(),
     owner: SgUserIdSchema,
