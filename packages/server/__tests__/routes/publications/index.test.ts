@@ -235,6 +235,16 @@ describe('Publications endpoints testing', () => {
         expect(response.body.publications).toHaveLength(1);
     });
 
+    // Tests for DELETE /publication/:username/:name
+    it('should delete publication', async () => {
+        // Make a request to get all of the publications of the user 'owner'
+        const response = await request
+            .delete('/publication/owner/Test-name')
+            .auth(ownerRes.body.token, { type: 'bearer' });
+
+        expect(response.status).toBe(200);
+    });
+
     // Tests for GET /publication/:username/:name/revisions
     // TODO: change the implementation of API to fit this test
     // it("should get all revisions of a publication", async () => {

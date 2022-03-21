@@ -37,14 +37,11 @@ describe('Publication role tests', () => {
         });
 
         expect(loginUser.status).toBe(200);
-
-        // Save auth header
-        request.auth(loginUser.body.token, { type: 'bearer' });
-        request.set({ 'x-refresh-token': loginUser.body.refreshToken });
     
         // Create publication as main user
         const response = await request
         .post('/publication/')
+        .auth(loginUser.body.token, { type: 'bearer' })
         .send({
             revision: 'v1',
             title: 'Publication Test',
@@ -58,6 +55,18 @@ describe('Publication role tests', () => {
         // Register an 'other' user
         const registerOther = await request.post('/auth/register').send(userDto);
         expect(registerOther.status).toBe(201);
+
+        // Login as 'other' user
+        const loginOtherUser = await request.post('/auth/login').send({
+            username: userDto.username,
+            password: userDto.password,
+        });
+
+        expect(loginOtherUser.status).toBe(200);
+
+        // Save auth header
+        request.auth(loginOtherUser.body.token, { type: 'bearer' });
+        request.set({ 'x-refresh-token': loginOtherUser.body.refreshToken });
     });
 
     afterEach(async () => {
@@ -82,17 +91,6 @@ describe('Publication role tests', () => {
     });
 
     it('should handle unauthorised publication edit request', async () => {
-        // Login as 'other' user
-        const loginOther = await request.post('/auth/login').send({
-            username: userDto.username,
-            password: userDto.password,
-        });
-
-        expect(loginOther.status).toBe(200);
-
-        request.auth(loginOther.body.token, { type: 'bearer' });
-        request.set({ 'x-refresh-token': loginOther.body.refreshToken });
-
         // Send patch request
         const responsePatch = await request
             .patch(`/publication/test/Publication-Test`)
@@ -110,22 +108,12 @@ describe('Publication role tests', () => {
     });
 
     it('moderator can edit publication details', async () => {
-        // Login as 'other' user (a moderator account)
+        // Make 'other' user a moderator
         await User.findOneAndUpdate(
             { username: userDto.username },
             { role: IUserRole.Moderator },
         );
 
-        const loginOther = await request.post('/auth/login').send({
-            username: userDto.username,
-            password: userDto.password,
-        });
-
-        expect(loginOther.status).toBe(200);
-
-        request.auth(loginOther.body.token, { type: 'bearer' });
-        request.set({ 'x-refresh-token': loginOther.body.refreshToken });
-
         // Send patch request
         const responsePatch = await request
             .patch(`/publication/test/Publication-Test`)
@@ -134,31 +122,22 @@ describe('Publication role tests', () => {
                 title: 'Source Code Test',
                 name: 'Source-Code-Test',
                 introduction: 'New intro',
-                collaborators: ['collabo1', 'collabo2'],
+                collaborators: [],
         });
 
-        // Expect patch request to fail
-        expect(responsePatch.status).toBe(400);
+        //Expect patch request to succeed
+        expect(responsePatch.status).toBe(200);
+        //expect(responsePatch.body).toBeNull();
 
     });
 
     it('administrator can edit publication details', async () => {
-        // Login as 'other' user (an admin account)
+        // Make 'other' user an admin
         await User.findOneAndUpdate(
             { username: userDto.username },
             { role: IUserRole.Administrator },
         );
 
-        const loginOther = await request.post('/auth/login').send({
-            username: userDto.username,
-            password: userDto.password,
-        });
-
-        expect(loginOther.status).toBe(200);
-
-        request.auth(loginOther.body.token, { type: 'bearer' });
-        request.set({ 'x-refresh-token': loginOther.body.refreshToken });
-
         // Send patch request
         const responsePatch = await request
             .patch(`/publication/test/Publication-Test`)
@@ -167,12 +146,51 @@ describe('Publication role tests', () => {
                 title: 'Source Code Test',
                 name: 'Source-Code-Test',
                 introduction: 'New intro',
-                collaborators: ['collabo1', 'collabo2'],
+                collaborators: [],
         });
 
-        // Expect patch request to fail
-        expect(responsePatch.status).toBe(400);
+        // Expect patch request to succeed
+        expect(responsePatch.status).toBe(200);
 
     });
+
+    it('should handle unauthorised publication delete request', async () => {
+        // Send patch request
+        const responsePatch = await request.delete(`/publication/test/Publication-Test`);
+
+        // Expect patch request to fail
+        expect(responsePatch.status).toBe(401);
+
+    });
+
+    it('moderator unable to delete publication', async () => {
+       // Make 'other' user a moderator
+        await User.findOneAndUpdate(
+            { username: userDto.username },
+            { role: IUserRole.Moderator },
+        );
+
+        // Send patch request
+        const responsePatch = await request.delete(`/publication/test/Publication-Test`);
+
+        // Expect patch request to succeed
+        expect(responsePatch.status).toBe(401);
+
+    });
+
+    it('administrator can delete publication', async () => {
+        // Make 'other' user a moderator
+         await User.findOneAndUpdate(
+             { username: userDto.username },
+             { role: IUserRole.Administrator },
+         );
+ 
+         // Send patch request
+         const responsePatch = await request.delete(`/publication/test/Publication-Test`);
+ 
+         // Expect patch request to succeed
+         expect(responsePatch.status).toBe(200);
+ 
+     });
 
 });
