@@ -3,10 +3,9 @@ import { agent as supertest } from 'supertest';
 
 import app from '../../../src/app';
 //import Publication from '../../../src/models/Publication';
-import User, {IUserRole } from '../../../src/models/User';
+import User, { IUserRole } from '../../../src/models/User';
 //import User from '../../../src/models/User';
 import { createMockedUser } from '../../utils/factories/user';
-
 
 const request = supertest(app);
 
@@ -37,18 +36,18 @@ describe('Publication role tests', () => {
         });
 
         expect(loginUser.status).toBe(200);
-    
+
         // Create publication as main user
         const response = await request
-        .post('/publication/')
-        .auth(loginUser.body.token, { type: 'bearer' })
-        .send({
-            revision: 'v1',
-            title: 'Publication Test',
-            name: 'Publication-Test',
-            introduction: 'Introduction here',
-            collaborators: [],
-        });
+            .post('/publication/')
+            .auth(loginUser.body.token, { type: 'bearer' })
+            .send({
+                revision: 'v1',
+                title: 'Publication Test',
+                name: 'Publication-Test',
+                introduction: 'Introduction here',
+                collaborators: [],
+            });
 
         expect(response.status).toBe(201);
 
@@ -92,43 +91,34 @@ describe('Publication role tests', () => {
 
     it('should handle unauthorised publication edit request', async () => {
         // Send patch request
-        const responsePatch = await request
-            .patch(`/publication/test/Publication-Test`)
-            .send({
-                revision: 'v2',
-                title: 'Source Code Test',
-                name: 'Source-Code-Test',
-                introduction: 'New intro',
-                collaborators: ['collabo1', 'collabo2'],
+        const responsePatch = await request.patch(`/publication/test/Publication-Test`).send({
+            revision: 'v2',
+            title: 'Source Code Test',
+            name: 'Source-Code-Test',
+            introduction: 'New intro',
+            collaborators: ['collabo1', 'collabo2'],
         });
 
         // Expect patch request to fail
         expect(responsePatch.status).toBe(400);
-
     });
 
     it('moderator can edit publication details', async () => {
         // Make 'other' user a moderator
-        await User.findOneAndUpdate(
-            { username: userDto.username },
-            { role: IUserRole.Moderator },
-        );
+        await User.findOneAndUpdate({ username: userDto.username }, { role: IUserRole.Moderator });
 
         // Send patch request
-        const responsePatch = await request
-            .patch(`/publication/test/Publication-Test`)
-            .send({
-                revision: 'v2',
-                title: 'Source Code Test',
-                name: 'Source-Code-Test',
-                introduction: 'New intro',
-                collaborators: [],
+        const responsePatch = await request.patch(`/publication/test/Publication-Test`).send({
+            revision: 'v2',
+            title: 'Source Code Test',
+            name: 'Source-Code-Test',
+            introduction: 'New intro',
+            collaborators: [],
         });
 
         //Expect patch request to succeed
         expect(responsePatch.status).toBe(200);
         //expect(responsePatch.body).toBeNull();
-
     });
 
     it('administrator can edit publication details', async () => {
@@ -139,19 +129,16 @@ describe('Publication role tests', () => {
         );
 
         // Send patch request
-        const responsePatch = await request
-            .patch(`/publication/test/Publication-Test`)
-            .send({
-                revision: 'v2',
-                title: 'Source Code Test',
-                name: 'Source-Code-Test',
-                introduction: 'New intro',
-                collaborators: [],
+        const responsePatch = await request.patch(`/publication/test/Publication-Test`).send({
+            revision: 'v2',
+            title: 'Source Code Test',
+            name: 'Source-Code-Test',
+            introduction: 'New intro',
+            collaborators: [],
         });
 
         // Expect patch request to succeed
         expect(responsePatch.status).toBe(200);
-
     });
 
     it('should handle unauthorised publication delete request', async () => {
@@ -160,37 +147,30 @@ describe('Publication role tests', () => {
 
         // Expect patch request to fail
         expect(responsePatch.status).toBe(401);
-
     });
 
     it('moderator unable to delete publication', async () => {
-       // Make 'other' user a moderator
-        await User.findOneAndUpdate(
-            { username: userDto.username },
-            { role: IUserRole.Moderator },
-        );
+        // Make 'other' user a moderator
+        await User.findOneAndUpdate({ username: userDto.username }, { role: IUserRole.Moderator });
 
         // Send patch request
         const responsePatch = await request.delete(`/publication/test/Publication-Test`);
 
         // Expect patch request to succeed
         expect(responsePatch.status).toBe(401);
-
     });
 
     it('administrator can delete publication', async () => {
         // Make 'other' user a moderator
-         await User.findOneAndUpdate(
-             { username: userDto.username },
-             { role: IUserRole.Administrator },
-         );
- 
-         // Send patch request
-         const responsePatch = await request.delete(`/publication/test/Publication-Test`);
- 
-         // Expect patch request to succeed
-         expect(responsePatch.status).toBe(200);
- 
-     });
+        await User.findOneAndUpdate(
+            { username: userDto.username },
+            { role: IUserRole.Administrator },
+        );
 
+        // Send patch request
+        const responsePatch = await request.delete(`/publication/test/Publication-Test`);
+
+        // Expect patch request to succeed
+        expect(responsePatch.status).toBe(200);
+    });
 });
