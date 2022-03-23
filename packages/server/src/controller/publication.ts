@@ -285,7 +285,7 @@ export default class PublicationController {
                 return {
                     status: 'error',
                     code: 400,
-                    message: `Failed to export review due to external service being unreachable.`,
+                    message: 'Failed to export review due to external service being unreachable.',
                     errors: result.errors,
                 };
             }
@@ -295,7 +295,7 @@ export default class PublicationController {
                 return {
                     status: 'error',
                     code: 400,
-                    message: `Failed to export review due to external service replying with an invalid format.`,
+                    message: 'Failed to export review due to external service replying with an invalid format.',
                     errors: result.errors,
                 };
             }
@@ -304,7 +304,7 @@ export default class PublicationController {
             return {
                 status: 'error',
                 code: 500,
-                message: `Failed to export review due to unknown circumstances.`,
+                message: 'Failed to export review due to unknown circumstances.',
             };
         }
 

@@ -1,15 +1,10 @@
-//import assert from 'assert';
 import { agent as supertest } from 'supertest';
 
 import app from '../../../src/app';
-//import Publication from '../../../src/models/Publication';
 import User, { IUserRole } from '../../../src/models/User';
-//import User from '../../../src/models/User';
 import { createMockedUser } from '../../utils/factories/user';
 
 const request = supertest(app);
-
-//type PopulatedUserDocument = IUserDocument & { _id: string | undefined };
 
 describe('Publication role tests', () => {
     const UserObject = {
@@ -55,36 +50,25 @@ describe('Publication role tests', () => {
         const registerOther = await request.post('/auth/register').send(userDto);
         expect(registerOther.status).toBe(201);
 
-        // Login as 'other' user
-        const loginOtherUser = await request.post('/auth/login').send({
-            username: userDto.username,
-            password: userDto.password,
-        });
-
-        expect(loginOtherUser.status).toBe(200);
-
         // Save auth header
-        request.auth(loginOtherUser.body.token, { type: 'bearer' });
-        request.set({ 'x-refresh-token': loginOtherUser.body.refreshToken });
+        request.auth(registerOther.body.token, { type: 'bearer' });
+        request.set({ 'x-refresh-token': registerOther.body.refreshToken });
     });
 
     afterEach(async () => {
-        // Sign into userDto (as an admin), delete both accounts created for testing
-        const loginOther = await request.post('/auth/login').send({
-            username: userDto.username,
-            password: userDto.password,
-        });
+        // After each test, an admin will delete the mock accounts
 
-        expect(loginOther.status).toBe(200);
-
+        // Make the user an administrator (in order to delete other accounts)
         await User.findOneAndUpdate(
             { username: userDto.username },
             { role: IUserRole.Administrator },
         );
 
+        // Delete other account
         const registerResponse = await request.delete(`/user/${UserObject.username}`);
         expect(registerResponse.status).toBe(200);
 
+        // Delete own account
         const registerOther = await request.delete(`/user/${userDto.username}`);
         expect(registerOther.status).toBe(200);
     });
@@ -96,11 +80,11 @@ describe('Publication role tests', () => {
             title: 'Source Code Test',
             name: 'Source-Code-Test',
             introduction: 'New intro',
-            collaborators: ['collabo1', 'collabo2'],
+            collaborators: [],
         });
 
         // Expect patch request to fail
-        expect(responsePatch.status).toBe(400);
+        expect(responsePatch.status).toBe(401);
     });
 
     it('moderator can edit publication details', async () => {
@@ -118,7 +102,6 @@ describe('Publication role tests', () => {
 
         //Expect patch request to succeed
         expect(responsePatch.status).toBe(200);
-        //expect(responsePatch.body).toBeNull();
     });
 
     it('administrator can edit publication details', async () => {
