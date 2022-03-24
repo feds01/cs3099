@@ -295,7 +295,8 @@ export default class PublicationController {
                 return {
                     status: 'error',
                     code: 400,
-                    message: 'Failed to export review due to external service replying with an invalid format.',
+                    message:
+                        'Failed to export review due to external service replying with an invalid format.',
                     errors: result.errors,
                 };
             }

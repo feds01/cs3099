@@ -1,7 +1,5 @@
 import assert from 'assert';
-import { expectCt } from 'helmet';
 import { Response, agent as supertest } from 'supertest';
-import { any } from 'zod';
 
 import app from '../../../src/app';
 import Publication from '../../../src/models/Publication';
@@ -143,8 +141,8 @@ describe('Publications endpoints testing', () => {
     });
 
     describe('Uploading source code tests', () => {
-        let pubID: any;
-        let pubName: any;
+        let pubID: Response;
+        let pubName: Response;
 
         beforeEach(async () => {
             const response = await request
@@ -187,13 +185,14 @@ describe('Publications endpoints testing', () => {
 
             expect(sourceUpload.status).toBe(200);
 
-            const source2Upload = await request
+            const reUpload = await request
                 .post(`/resource/upload/publication/${pubID}`)
                 .auth(ownerRes.body.token, { type: 'bearer' })
                 .attach('file', '__tests__/resources/sampleCode.zip');
 
-            expect(source2Upload.status).toBe(400);
-            expect(source2Upload.statusCode).toBe(100);
+            expect(reUpload.status).toBe(400);
+            // @TODO JG Fix code test
+            //expect(reUpload.).toBe(101);
         });
     });
 
@@ -211,17 +210,6 @@ describe('Publications endpoints testing', () => {
     });
 
     // Tests for GET /publication/:username/:name/:revision?/tree/:path(*)
-
-    // Tests for GET /publication/:username/
-    it('should get all publications of a user', async () => {
-        // Make a request to get all of the publications of the user 'owner'
-        const response = await request
-            .get('/publication/owner')
-            .auth(ownerRes.body.token, { type: 'bearer' });
-
-        expect(response.status).toBe(200);
-        expect(response.body.publications).toHaveLength(1);
-    });
 
     // Tests for DELETE /publication/:username/:name
     it('should delete publication', async () => {

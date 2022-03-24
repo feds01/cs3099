@@ -2,21 +2,20 @@ import { agent as supertest } from 'supertest';
 
 import app from '../../../src/app';
 import User, { IUserRole } from '../../../src/models/User';
+import { createMockedPublication } from '../../utils/factories/publication';
 import { createMockedUser } from '../../utils/factories/user';
 
 const request = supertest(app);
 
 describe('Publication role tests', () => {
-    const UserObject = {
-        email: 'test@email.com',
-        username: 'test',
-        name: 'test',
-        password: 'password',
-        about: 'Nothing to say',
-    };
+    // Test account
+    const UserObject = createMockedUser({ username: 'test' });
 
     // Test account that will be used as the requester
     const userDto = createMockedUser({ username: 'a-user' });
+
+    // Test publication
+    const testPub = createMockedPublication();
 
     // Create a user test account before any test is run
     beforeEach(async () => {
@@ -36,14 +35,7 @@ describe('Publication role tests', () => {
         const response = await request
             .post('/publication/')
             .auth(loginUser.body.token, { type: 'bearer' })
-            .send({
-                revision: 'v1',
-                title: 'Publication Test',
-                name: 'Publication-Test',
-                introduction: 'Introduction here',
-                collaborators: [],
-            });
-
+            .send(testPub);
         expect(response.status).toBe(201);
 
         // Register an 'other' user
