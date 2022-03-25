@@ -14,12 +14,12 @@ import Publication, { AugmentedPublicationDocument } from '../../models/Publicat
 import Review, { IReviewStatus, PopulatedReview } from '../../models/Review';
 import { AugmentedUserDocument } from '../../models/User';
 import { config } from '../../server';
+import { convertSgId } from '../../transformers/sg';
 import { expr } from '../../utils/expr';
 import { IAuthHeaderSchema } from '../../validators/auth';
 import { ExportPublicationOptionsSchema } from '../../validators/export';
 import { ObjectIdSchema } from '../../validators/requests';
 import { SgMetadataSchema } from '../../validators/sg';
-import { convertSgId } from '../../transformers/sg';
 
 const router = express.Router();
 

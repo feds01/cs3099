@@ -249,6 +249,13 @@ export class ReviewImportManager {
         }
 
         this.computeAuthors();
+        this.constructCommentThreads();
+
+        // If no comment threads are valid, then we have to abort the operation
+        if (this.commentThreads.length === 0 || this.validComments.size === 0) {
+            return this.fail('All comments are invalid');
+        }
+
         const importedUsers = await this.importReferences();
 
         if (importedUsers.status === 'error') {
@@ -304,7 +311,7 @@ export class ReviewImportManager {
                 commentCommitOrder.push(rootComment.id);
 
                 // Now find all the comments that reference the previous batch
-                const leftComments = new Set(threadComments.keys());
+                const leftComments = new Set(threadComments.map(comment => comment.id));
                 leftComments.delete(rootComment.id);
 
                 let previousReferences = [rootComment.id];
