@@ -262,9 +262,13 @@ export class ReviewImportManager {
         const transaction = await mongoose.startSession();
 
         try {
+            transaction.startTransaction();
+
             // Save any users we need to...
             for (const user of importedUsers.data.values()) {
-                await user.doc.save();
+                if (user.toSave) {
+                    await user.doc.save();
+                }
             }
 
             const review = new Review({

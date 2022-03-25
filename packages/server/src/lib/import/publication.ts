@@ -104,6 +104,8 @@ export async function importPublication(
         let ownerId: string | undefined;
         const collaborators = new Set<mongoose.Types.ObjectId>();
 
+        transaction.startTransaction();
+
         // We need to get the owner id and collaborators from the documents
         for (const entry of users) {
             // Check if we have to save the user, and if not just return
