@@ -8,8 +8,8 @@ import Logger from '../../common/logger';
 import { verifyToken } from '../../lib/auth/auth';
 import { downloadOctetStream, makeRequest } from '../../lib/communication/fetch';
 import registerRoute from '../../lib/communication/requests';
+import { importPublication } from '../../lib/import/publication';
 import { ReviewImportIssues, ReviewImportManager } from '../../lib/import/review';
-import { importUser } from '../../lib/import/user';
 import { deleteFileResource, moveResource } from '../../lib/resources/fs';
 import Publication, { AugmentedPublicationDocument } from '../../models/Publication';
 import Review, { IReviewStatus, PopulatedReview } from '../../models/Review';
@@ -98,46 +98,6 @@ registerRoute(router, '/import', {
 
         const { publication, reviews } = metadata.response;
 
-        // So here's where it gets pretty complicated. We need to check if the publication
-        // owner which is a global id exists in our external id. If it does, then we can just
-        // use that owner as the owner of the publication we're about to create. Otherwise, we
-        // will have to make the user in addition to making the publication.
-        const userImport = await importUser(publication.owner);
-
-        if (userImport.status === 'error') {
-            return {
-                code: 400,
-                ...userImport,
-            };
-        }
-
-        // If we actually had to import the user from elsewhere, we will need to save it.
-        if (userImport.toSave) {
-            await userImport.doc.save();
-        }
-        assert(typeof userImport.doc._id !== 'undefined');
-        const ownerId = userImport.doc._id.toString();
-
-        // We have to check that the publication with 'name' and the 'ownerId' doesn't already
-        // exist, otherwise this doesn't conform to our uniqueness constraints...
-        const uniquenessCheck = await Publication.findOne({
-            owner: ownerId,
-            name: publication.name,
-        }).exec();
-
-        if (uniquenessCheck !== null) {
-            return {
-                status: 'error',
-                code: 400,
-                message: 'Publication already exists for the owner',
-                errors: {
-                    'publication.name': {
-                        message: 'Publication name must be unique for the owner',
-                    },
-                },
-            };
-        }
-
         // we also need to create a archive so that we can validate the review
         const archive = zip.loadArchiveFromPath(publicationArchive.response);
         assert(archive !== null);
@@ -159,14 +119,21 @@ registerRoute(router, '/import', {
             };
         }
 
-        const doc = await new Publication({
-            ...publication,
-            draft: false,
-            current: true,
-            owner: ownerId,
-        }).save();
+        const importedPublication = await importPublication(publication);
+
+        // If importing the publication failed for some reason, we should report this
+        if (importedPublication.status === 'error') {
+            const { message, errors } = importedPublication;
+            return {
+                status: 'error',
+                code: 400,
+                message,
+                errors,
+            };
+        }
 
         // now we need to move the file to it's home location...
+        const { doc, ownerId } = importedPublication;
         const index = {
             userId: doc.owner.toString(),
             name: doc.name,
