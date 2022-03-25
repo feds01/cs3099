@@ -11,12 +11,12 @@ import { rest } from 'msw';
 
 export const getPostAuthEmailvalidityMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
-    follow: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
+    reserved: faker.datatype.boolean(),
 });
 
 export const getPostAuthUsernamevalidityMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
-    follow: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
+    reserved: faker.datatype.boolean(),
 });
 
 export const getPostAuthSessionMock = () => ({

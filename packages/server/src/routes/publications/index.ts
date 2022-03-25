@@ -1,12 +1,16 @@
+import assert from 'assert';
 import express from 'express';
 import { z } from 'zod';
 
 import { defaultPermissionVerifier } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
+import { IActivityOperationKind, IActivityType } from '../../models/Activity';
 import Publication, { AugmentedPublicationDocument } from '../../models/Publication';
 import { IUserRole } from '../../models/User';
+import { PublicationAggregation } from '../../types/aggregation';
 import { PaginationQuerySchema } from '../../validators/pagination';
 import { IPublicationCreationSchema } from '../../validators/publications';
+import { FlagSchema } from '../../validators/requests';
 import nameRouter from './byName';
 import reviewRouter from './byName/reviews';
 
@@ -14,11 +18,6 @@ const router = express.Router();
 
 router.use('/', reviewRouter);
 router.use('/', nameRouter);
-
-type PublicationAggregation = {
-    data: AugmentedPublicationDocument[];
-    total?: number;
-};
 
 /**
  * @version v1.0.0
@@ -32,18 +31,23 @@ type PublicationAggregation = {
 registerRoute(router, '/', {
     method: 'get',
     params: z.object({}),
-    query: PaginationQuerySchema,
+    query: PaginationQuerySchema.merge(z.object({ current: FlagSchema.optional() })),
     headers: z.object({}),
     permission: { level: IUserRole.Default },
     permissionVerification: defaultPermissionVerifier,
     handler: async (req) => {
-        const { skip, take } = req.query;
+        const { skip, take, current } = req.query;
 
         const aggregation = (await Publication.aggregate([
             {
                 $facet: {
                     data: [
-                        { $match: { draft: false } },
+                        {
+                            $match: {
+                                draft: false,
+                                ...(typeof current !== 'undefined' && { current }),
+                            },
+                        },
                         { $sort: { _id: -1 } },
                         { $skip: skip },
                         { $limit: take },
@@ -103,6 +107,27 @@ registerRoute(router, '/', {
     query: z.object({}),
     headers: z.object({}),
     permission: { level: IUserRole.Default },
+    activity: {
+        kind: IActivityOperationKind.Create,
+        type: IActivityType.Publication,
+        permission: IUserRole.Default,
+    },
+    activityMetadataFn: async (
+        _requester,
+        request,
+        response: { publication: Partial<AugmentedPublicationDocument> } | undefined,
+    ) => {
+        assert(typeof response !== 'undefined'); // if this fails, the activity will be discarded
+
+        return {
+            metadata: {
+                collaborators: response.publication.collaborators?.length || 0,
+                name: request.body?.name,
+            },
+            document: response.publication.id,
+            liveness: false,
+        };
+    },
     permissionVerification: defaultPermissionVerifier,
     handler: async (req) => {
         const { name, collaborators } = req.body;

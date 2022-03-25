@@ -3,9 +3,12 @@ import PublicationRoute from '../routes/Publication';
 import CreatePublicationRoute from '../routes/Publication/Create';
 import AccountRoute from './../routes/Account';
 import ExploreRoute from './../routes/Explore';
+import NotificationsRoute from './../routes/Notifications';
 import HomeRoute from './../routes/Home';
 import ProfileRoute from './../routes/Profile';
 import ReviewRoute from './../routes/Review';
+import ReviewsRoute from './../routes/Reviews';
+import PublicationsRoute from './../routes/Publications';
 import { matchPath } from 'react-router';
 
 type RoutesShape = {
@@ -30,6 +33,11 @@ export const routes = {
         title: 'Explore',
         component: ExploreRoute,
     },
+    '/notifications': {
+        exact: true,
+        title: 'Notifications',
+        component: NotificationsRoute,
+    },
     '/profile/:id': {
         exact: false,
         title: 'Profile',
@@ -45,6 +53,16 @@ export const routes = {
         exact: true,
         title: 'Create publication',
         component: CreatePublicationRoute,
+    },
+    '/publications': {
+        exact: true,
+        title: 'Publications',
+        component: PublicationsRoute,
+    },
+    '/reviews': {
+        exact: true,
+        title: 'Reviews',
+        component: ReviewsRoute,
     },
     '/account': {
         exact: true,

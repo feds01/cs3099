@@ -1,9 +1,8 @@
-import React, { ReactElement, useState } from 'react';
+import { ReactElement, useState } from 'react';
 import IconButton from '@mui/material/IconButton';
-import Visibility from '@mui/icons-material/Visibility';
+import { MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import InputAdornment from '@mui/material/InputAdornment';
 import { Control, Path, useController } from 'react-hook-form';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import TextField, { TextFieldProps } from '@mui/material/TextField/TextField';
 
 interface Props<T> {
@@ -46,7 +45,7 @@ export default function ControlledPasswordField<T>({ name, control, textFieldPro
                             onMouseDown={(e) => e.preventDefault()}
                             edge="end"
                         >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                            {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
                         </IconButton>
                     </InputAdornment>
                 ),

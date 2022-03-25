@@ -3,7 +3,7 @@ import CodeRenderer from '../CodeRenderer';
 import CommentEditor from '../CommentEditor';
 import { Review } from '../../lib/api/models';
 import Typography from '@mui/material/Typography';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { MdMoreVert, MdArrowForwardIos } from 'react-icons/md';
 import React, { useState, useEffect, useRef } from 'react';
 import CommentThreadRenderer from '../CommentThreadRenderer';
 import { BoxProps, Button, IconButton, Menu, MenuItem, Skeleton } from '@mui/material';
@@ -12,7 +12,6 @@ import { styled } from '@mui/material/styles';
 import { CommentThread } from '../../lib/utils/comment';
 import MuiAccordionDetails from '@mui/material/AccordionDetails';
 import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
-import ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
 
 // This is used to represent the default maximum size of source files that are
@@ -62,7 +61,7 @@ const Accordion = styled((props: AccordionProps) => <MuiAccordion disableGutters
 );
 
 const AccordionSummary = styled((props: AccordionSummaryProps) => (
-    <MuiAccordionSummary expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: '0.9rem' }} />} {...props} />
+    <MuiAccordionSummary expandIcon={<MdArrowForwardIos style={{ fontSize: '0.9rem' }} />} {...props} />
 ))(({ theme }) => ({
     // backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
     flexDirection: 'row-reverse',
@@ -172,7 +171,7 @@ export default function FileViewer({ contents, filename, id, review, threads, wo
                             onClick={handleClick}
                             aria-expanded={isOpen ? 'true' : undefined}
                         >
-                            <MoreVertIcon />
+                            <MdMoreVert />
                         </IconButton>
                     </Box>
                 </AccordionSummary>

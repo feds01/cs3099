@@ -28,7 +28,12 @@ function SourceViewer({ contents, filename, basePath }: SourceViewerProps): Reac
             const { entry } = contents.data;
 
             if (entry.type === 'file') {
-                return <CodeRenderer contents={entry.contents} filename={filename} />;
+                return (
+                    <>
+                        <Divider />
+                        <CodeRenderer contents={entry.contents} filename={filename} />
+                    </>
+                );
             } else {
                 return (
                     <DirectoryViewer
@@ -43,13 +48,13 @@ function SourceViewer({ contents, filename, basePath }: SourceViewerProps): Reac
     }
 }
 
-type Props = {
+type PublicationViewSourceProps = {
     index: PublicationIndex;
     contents: ContentState<ResourceResponseResponse, any>;
     filename: string;
 };
 
-export default function PublicationViewSource({ contents, filename, index }: Props): ReactElement {
+export default function PublicationViewSource({ contents, filename, index }: PublicationViewSourceProps): ReactElement {
     const [basePath, setBasePath] = useState<string>(constructBasePath(index));
 
     useEffect(() => {
@@ -59,10 +64,7 @@ export default function PublicationViewSource({ contents, filename, index }: Pro
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
             <BreadCrumb index={index} basePath={basePath} filename={filename} />
-            <Divider />
-            <Box>
-                <SourceViewer index={index} contents={contents} basePath={basePath} filename={filename} />
-            </Box>
+            <SourceViewer index={index} contents={contents} basePath={basePath} filename={filename} />
         </Box>
     );
 }

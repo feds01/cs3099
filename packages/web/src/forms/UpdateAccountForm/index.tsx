@@ -3,7 +3,7 @@ import FieldLabel from '../../components/FieldLabel';
 import { useNotificationDispatch } from '../../contexts/notification';
 import { User } from '../../lib/api/models';
 import { usePatchUserUsername } from '../../lib/api/users/users';
-import { AccountUpdate, AccountUpdateSchema } from '../../validators/updateAccount';
+import { AccountUpdate, UserUpdateSchema } from '../../validators/user';
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
@@ -31,7 +31,7 @@ export function AccountUpdateForm({ user, isSelf, refetch }: AccountUpdateFormPr
     } = useForm<AccountUpdate>({
         reValidateMode: 'onChange',
         mode: 'onChange',
-        resolver: zodResolver(AccountUpdateSchema),
+        resolver: zodResolver(UserUpdateSchema),
         defaultValues: { ...user },
     });
 

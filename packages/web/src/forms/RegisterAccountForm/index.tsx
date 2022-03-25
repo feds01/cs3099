@@ -10,7 +10,7 @@ import ErrorBanner from '../../components/ErrorBanner';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { usePostAuthRegister } from '../../lib/api/auth/auth';
 import ControlledTextField from '../../components/ControlledTextField';
-import { IRegisterForm, RegisterSchema } from '../../validators/register';
+import { IRegisterForm, RegisterSchema } from '../../validators/user';
 import ControlledPasswordField from '../../components/ControlledPasswordField';
 import { applyErrorsToForm } from '../../lib/utils/error';
 

@@ -69,12 +69,12 @@ export default function ActivityView({ title, username, limit = 20 }: ActivityVi
                                 <Typography variant="body2">No activity yet.</Typography>
                             </Box>
                         ) : (
-                            feedResponse.data.activities.map((activity) => {
+                            feedResponse.data.activities.map((activity, index, activities) => {
                                 return (
                                     <ActivityCard
                                         key={activity.id}
-                                        message={activity.message}
-                                        references={activity.references}
+                                        activity={activity}
+                                        withDivider={index < activities.length - 1}
                                     />
                                 );
                             })

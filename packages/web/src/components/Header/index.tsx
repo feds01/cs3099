@@ -3,14 +3,16 @@ import ProfileMenu from '../ProfileMenu';
 import SearchBar from '../SearchBar';
 import UserAvatar from '../UserAvatar';
 import LogoImage from './../../static/images/logos/logo.png';
-import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
+import { MdOutlineExpandMore } from 'react-icons/md';
 import MuiAppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import React, { ReactElement } from 'react';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
+import NotificationWidget from '../NotificationWidget';
+import { useMediaQuery } from '@mui/material';
 
 const AppBar = styled(MuiAppBar)(({ theme }) => ({
     zIndex: theme.zIndex.drawer + 1,
@@ -18,6 +20,8 @@ const AppBar = styled(MuiAppBar)(({ theme }) => ({
 
 export default function Header(): ReactElement {
     const auth = useAuth();
+    const theme = useTheme();
+    const showName = useMediaQuery(theme.breakpoints.up('md'));
     const [anchor, setAnchor] = React.useState<null | HTMLElement>(null);
 
     return (
@@ -36,8 +40,9 @@ export default function Header(): ReactElement {
                     <SearchBar />
                 </Box>
                 <div>
+                    <NotificationWidget />
                     <Button
-                        endIcon={<ExpandMoreOutlinedIcon />}
+                        endIcon={<MdOutlineExpandMore />}
                         onClick={(ev) => setAnchor(ev.currentTarget)}
                         variant="text"
                         color={'secondary'}
@@ -47,7 +52,12 @@ export default function Header(): ReactElement {
                             color: (t) => t.palette.text.primary,
                         }}
                     >
-                        <UserAvatar {...auth.session} displayName position="right" />
+                        <UserAvatar
+                            {...auth.session}
+                            {...(showName
+                                ? { userLink: false, displayName: true, position: 'right' }
+                                : { displayName: false })}
+                        />
                     </Button>
                 </div>
                 <ProfileMenu

@@ -1,11 +1,11 @@
 import express from 'express';
 import { z } from 'zod';
 
-import * as userUtils from '../../utils/users';
-import { defaultPermissionVerifier } from '../../lib/communication/permissions';
+import { verifyUserPermission } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
-import Activity, { AugmentedActivityDocument } from '../../models/Activity';
+import Activity from '../../models/Activity';
 import { IUserRole } from '../../models/User';
+import { ActivityAggregation } from '../../types/aggregation';
 import { PaginationQuerySchema } from '../../validators/pagination';
 import { ModeSchema } from '../../validators/requests';
 
@@ -30,23 +30,16 @@ registerRoute(router, '/:username/feed', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     headers: z.object({}),
-    permissionVerification: defaultPermissionVerifier,
+    permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const user = await userUtils.transformUsernameIntoId(req);
-
         const { skip, take } = req.query;
-
-        type ActivityAggregation = {
-            data: AugmentedActivityDocument[];
-            total?: number;
-        };
 
         const aggregation = (await Activity.aggregate([
             {
                 $facet: {
                     data: [
-                        { $match: { isLive: true } },
+                        { $match: { isLive: true, owner: req.permissionData._id } },
                         { $sort: { _id: -1 } },
                         { $skip: skip },
                         { $limit: take },
@@ -69,7 +62,12 @@ registerRoute(router, '/:username/feed', {
             status: 'ok',
             code: 200,
             data: {
-                activities: result.data.map((activity) => Activity.projectWith(activity, user)),
+                activities: await Promise.all(
+                    result.data.map(
+                        async (activity) =>
+                            await Activity.projectWith(activity, req.permissionData),
+                    ),
+                ),
                 skip: req.query.skip,
                 take: req.query.take,
                 total: result.total ?? 0,

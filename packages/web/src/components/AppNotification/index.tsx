@@ -1,34 +1,31 @@
 import { nanoid } from 'nanoid';
 import React, { useState, ReactElement } from 'react';
-import Close from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
 import Snackbar from '@mui/material/Snackbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import WarningIcon from '@mui/icons-material/Warning';
-import ErrorIcon from '@mui/icons-material/ReportRounded';
-import SuccessIcon from '@mui/icons-material/CheckCircle';
 import {
     useNotificationState,
-    Notification,
+    AppNotification,
     useNotificationDispatch,
     NotificationSeverity,
 } from '../../contexts/notification';
+import { MdWarning, MdError, MdCheckCircle, MdClose } from 'react-icons/md';
 
+/** Simple component to derive the right icon based on notification severity */
 function NotificationIcon({ type }: { type: NotificationSeverity }): ReactElement {
     switch (type) {
         case 'warn':
-            return <WarningIcon color="warning" />;
+            return <MdWarning size={20} color="warning" />;
         case 'success':
-            return <SuccessIcon color="success" />;
+            return <MdCheckCircle size={20} color="success" />;
         case 'error':
-            return <ErrorIcon color="error" />;
+            return <MdError size={20} color="error" />;
     }
 }
 
-type NotificationContainerProps = Notification;
-
-function NotificationContainer({ message, severity }: NotificationContainerProps) {
+/** Renderer for App notifications */
+function AppNotificationContainer({ message, severity }: AppNotification) {
     const [open, setOpen] = useState(true);
     const notificationDispatcher = useNotificationDispatch();
 
@@ -60,7 +57,7 @@ function NotificationContainer({ message, severity }: NotificationContainerProps
             }
             action={
                 <IconButton size="small" aria-label="close" color="inherit" onClick={handleClose}>
-                    <Close fontSize="small" />
+                    <MdClose fontSize="small" />
                 </IconButton>
             }
         />
@@ -73,13 +70,16 @@ function NotificationContainer({ message, severity }: NotificationContainerProps
  * to access the notification state.
  * */
 export function NotificationDisplay({ children }: { children: React.ReactNode }) {
-    const notifications = useNotificationState();
+    const { appNotifications } = useNotificationState();
 
+    // @@Hack: Use nanoid() here so we avoid react 'key' issues due to the fact that
+    //         there are no unique identifiers for notifications and therefore we have
+    //         to artificially create them.
     return (
         <>
             {children}
-            {notifications.map((notification) => {
-                return <NotificationContainer {...notification} key={nanoid()} />;
+            {appNotifications.map((notification) => {
+                return <AppNotificationContainer {...notification} key={nanoid()} />;
             })}
         </>
     );

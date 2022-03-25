@@ -15,6 +15,7 @@ import morganMiddleware from './config/morganMiddleware';
 import activityRouter from './routes/activity';
 import authRouter from './routes/auth';
 import commentRouter from './routes/comment';
+import notifications from './routes/notifications';
 import publicationsRouter from './routes/publications';
 import publicationsByIdRouter from './routes/publications/byId';
 import resourcesRouter from './routes/resources';
@@ -72,6 +73,7 @@ const options = {
         './routes/publications/byName.ts',
         './routes/threads/index.ts',
         './routes/comment/index.ts',
+        './routes/notifications/index.ts',
     ],
 };
 
@@ -98,6 +100,7 @@ app.use('(/api)?/sg/resources', sgResourcesRouter);
 app.use('(/api)?/sg/users', sgUsersRouter);
 app.use('(/api)?/auth', authRouter);
 app.use('(/api)?/activity', activityRouter);
+app.use('(/api)?/notifications', notifications);
 app.use('(/api)?/user', userRouter);
 app.use('(/api)?/review', reviewsRouter);
 app.use('(/api)?/search', searchRouter);

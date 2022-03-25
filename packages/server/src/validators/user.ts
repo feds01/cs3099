@@ -3,6 +3,9 @@ import { RefinementEffect, z } from 'zod';
 import * as error from '../common/errors';
 import User, { AugmentedUserDocument, IUserRole } from '../models/User';
 
+/** Regex that is used for validating usernames */
+export const USERNAME_REGEX = /^[a-zA-Z0-9._~-]+$/;
+
 /**
  * Schema for validating login requests.
  */
@@ -27,11 +30,7 @@ export const IUserLoginRequestSchema = z
  * advanced schemas.
  */
 export const IUserSchema = z.object({
-    username: z
-        .string()
-        .nonempty()
-        .max(50)
-        .regex(/^[a-zA-Z0-9._~-]*$/, 'Username must be URL safe'),
+    username: z.string().nonempty().max(50).regex(USERNAME_REGEX, 'Username must be URL safe'),
     email: z.string().email(),
     name: z.string().max(256),
     password: z.string().min(1),
@@ -110,7 +109,7 @@ export const ExistUsernameSchema = z
     .string()
     .nonempty()
     .max(50)
-    .regex(/^[a-zA-Z0-9._~-]*$/, 'Username must be URL safe')
+    .regex(USERNAME_REGEX, 'Username must be URL safe')
     .transform(async (username) => {
         const user: AugmentedUserDocument | null = await User.findOne({ username });
 

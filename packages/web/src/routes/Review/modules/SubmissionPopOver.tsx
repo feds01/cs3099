@@ -1,4 +1,4 @@
-import CommentField from '../../../components/CommentField';
+import MarkdownField from '../../../components/MarkdownField';
 import { useNotificationDispatch } from '../../../contexts/notification';
 import { useReviewState, useReviewDispatch } from '../../../contexts/review';
 import { usePutReviewIdComment } from '../../../lib/api/reviews/reviews';
@@ -76,7 +76,7 @@ export default function SubmissionPopOver({ open, anchorEl, onClose, onSubmissio
                 <Typography variant={'body2'} sx={{ pb: 1 }}>
                     You can leave a general comment on the review
                 </Typography>
-                <CommentField contents={''} onChange={setComment} />
+                <MarkdownField contents={''} onChange={setComment} />
                 <Box sx={{ pt: 1, pb: 1 }}>
                     <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>
                         Cancel

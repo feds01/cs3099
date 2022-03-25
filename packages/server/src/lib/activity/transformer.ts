@@ -3,14 +3,23 @@ import mongoose from 'mongoose';
 import { AugmentedUserDocument } from '../../models/User';
 import { BasicRequest } from '../communication/requests';
 
+/**
+ * This type represents what a metadata collector function may collect
+ * when recording an activity.
+ */
 export interface ActivityMetadata {
+    /** Any collected metadata to aid the construction of messages when recording activities */
     metadata?: object;
-    document?: mongoose.ObjectId;
+    /** The document that the activity is referencing */
+    document?: mongoose.Types.ObjectId;
+    /** Whether or not the activity should become instantly live and visible */
+    liveness: boolean;
 }
 
-export type ActivityMetadataTransformer<P, Q, B> = (
+export type ActivityMetadataTransformer<P, Q, PermData, B, Res> = (
     requester: AugmentedUserDocument,
-    request: BasicRequest<P, Q, B, unknown>,
+    request: BasicRequest<P, Q, B, unknown> & { permissionData: PermData | null },
+    response?: Res,
 ) => Promise<ActivityMetadata>;
 
 /**
@@ -24,5 +33,7 @@ export type ActivityMetadataTransformer<P, Q, B> = (
 export const defaultActivityMetadataFn: ActivityMetadataTransformer<
     unknown,
     unknown,
+    unknown,
+    unknown,
     unknown
-> = async (_user, _req) => ({});
+> = async (_user, _req) => ({ liveness: true });

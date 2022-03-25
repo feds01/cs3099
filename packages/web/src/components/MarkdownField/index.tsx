@@ -29,7 +29,7 @@ async function loadUserSuggestions(input: string): Promise<Suggestion[]> {
     }
 }
 
-export default function CommentField({ onChange, autoFocus = true, contents = '' }: CommentFieldProps) {
+export default function MarkdownField({ onChange, autoFocus = true, contents = '' }: CommentFieldProps) {
     const [value, setValue] = useState<string>(contents);
     const [selectedTab, setSelectedTab] = useState<'write' | 'preview'>('write');
 

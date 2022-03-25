@@ -2,7 +2,8 @@ import express from 'express';
 import { z } from 'zod';
 
 import registerRoute from '../../lib/communication/requests';
-import User, { IUserDocument } from '../../models/User';
+import User from '../../models/User';
+import { UserAggregation } from '../../types/aggregation';
 import { PaginationQuerySchema } from '../../validators/pagination';
 
 const router = express.Router();
@@ -26,11 +27,6 @@ registerRoute(router, '/', {
     permissionVerification: undefined,
     handler: async (req) => {
         const { query, skip, take } = req.query;
-
-        type AggregationQuery = {
-            data: IUserDocument[];
-            total?: number;
-        };
 
         const aggregation = (await User.aggregate([
             { $match: { $text: { $search: query } } },
@@ -59,7 +55,7 @@ registerRoute(router, '/', {
                     total: { $arrayElemAt: ['$metadata.total', 0] },
                 },
             },
-        ])) as unknown as [AggregationQuery];
+        ])) as unknown as [UserAggregation];
 
         const users = aggregation[0];
 

@@ -2,14 +2,14 @@ import FollowerButton from '../../components/FollowerButton';
 import PageLayout from '../../components/PageLayout';
 import UserAvatar from '../../components/UserAvatar';
 import { User } from '../../lib/api/models';
-import { useGetUserUsername } from '../../lib/api/users/users';
+import { useGetUserUsername, useGetUserUsernameReviews } from '../../lib/api/users/users';
 import { ContentState } from '../../types/requests';
-import Activity from '../../views/Activity';
+import Activity from '../../views/Activities';
 import Follows from '../../views/Follows';
 import Overview from '../../views/Overview';
 import Publications from '../../views/Publications';
 import Reviews from '../../views/Reviews';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import { MdPersonOutline } from 'react-icons/md';
 import { Button, Divider, Skeleton, Tab, Tabs } from '@mui/material';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -19,6 +19,12 @@ import { Route, Switch, useLocation, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import { computeUserPermission } from '../../lib/utils/roles';
 import { useAuth } from '../../contexts/auth';
+
+const ReviewWidgetWrapper = ({ user }: { user: User }) => {
+    const getReviewsQuery = useGetUserUsernameReviews(user.username);
+
+    return <Reviews query={getReviewsQuery} />;
+};
 
 const TabMap = (user: User) => {
     return {
@@ -36,7 +42,7 @@ const TabMap = (user: User) => {
         },
         [`/profile/${user.username}/reviews`]: {
             label: 'Reviews',
-            component: (user: User) => <Reviews user={user} />,
+            component: (user: User) => <ReviewWidgetWrapper user={user} />,
         },
         [`/profile/${user.username}/followers`]: {
             label: 'Followers',
@@ -120,7 +126,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                                 flexDirection: 'row',
                             }}
                         >
-                            <PersonOutlineIcon />
+                            <MdPersonOutline size={20} />
                             <Typography>
                                 <Link to={`/profile/${profileData.user.username}/followers`}>
                                     {profileData.follows.followers}{' '}

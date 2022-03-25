@@ -18,3 +18,17 @@ export function reduceToDuplicates<T>(array: T[]): T[] {
 
     return [...nonUniqueElements];
 }
+
+/**
+ * Checks if two sets are equal
+ *
+ * @param left - The left hand-side set
+ * @param right - The right hand-side set
+ * @returns If the two sets have equal number of elements
+ */
+export function setsEqual<T>(left: Set<T>, right: Set<T>): boolean {
+    if (left.size !== right.size) return false;
+
+    for (const a of left) if (!right.has(a)) return false;
+    return true;
+}

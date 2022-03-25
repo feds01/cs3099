@@ -4,12 +4,14 @@ import VoidImage from '../../static/images/void.svg';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import PublicationTextWidget from '../PublicationTextWidget';
 
 type PublicationListProps = {
     publications: Publication[];
+    textual?: boolean;
 };
 
-export default function PublicationList({ publications }: PublicationListProps) {
+export default function PublicationList({ publications, textual = false }: PublicationListProps) {
     return (
         <Box
             sx={{
@@ -35,7 +37,11 @@ export default function PublicationList({ publications }: PublicationListProps) 
                     {publications.map((publication) => {
                         return (
                             <Grid key={publication.id} item xs={2} sm={3} md={3}>
-                                <PublicationCard publication={publication} />
+                                {textual ? (
+                                    <PublicationTextWidget publication={publication} />
+                                ) : (
+                                    <PublicationCard publication={publication} />
+                                )}
                             </Grid>
                         );
                     })}

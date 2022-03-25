@@ -4,7 +4,7 @@ import { ZodError, z } from 'zod';
 
 import * as errors from '../../common/errors';
 import Logger from '../../common/logger';
-import { IUserDocument } from '../../models/User';
+import { AugmentedUserDocument } from '../../models/User';
 import { transformZodErrorIntoResponseError } from '../../transformers/error';
 import { expr } from '../../utils/expr';
 import ActivityRecord, { ActivityType } from '../activity';
@@ -51,7 +51,13 @@ type RegisterRoute<
     permissionVerification: RoutePermission extends null
         ? undefined
         : PermissionVerificationFn<Params, Query, PermissionMeta>;
-    activityMetadataFn?: ActivityMetadataTransformer<Params, Query, Body | null>;
+    activityMetadataFn?: ActivityMetadataTransformer<
+        Params,
+        Query,
+        PermissionMeta,
+        Body | null,
+        Res | undefined
+    >;
     headers: z.Schema<Headers, z.ZodTypeDef, Record<string, any>>;
     params: z.Schema<Params, z.ZodTypeDef, Record<string, any>>;
     query: z.Schema<Query, z.ZodTypeDef, Record<string, any>>;
@@ -59,7 +65,7 @@ type RegisterRoute<
         req: Request<
             Params,
             Query,
-            RoutePermission extends null ? null : IUserDocument,
+            RoutePermission extends null ? null : AugmentedUserDocument,
             Headers,
             PermissionMeta,
             Method extends RequestMethodWithBody ? Body : null
@@ -190,7 +196,15 @@ export default function registerRoute<
                 if (typeof registrar.activity !== 'undefined') {
                     return new ActivityRecord(
                         registrar.activity,
-                        basicRequest,
+                        {
+                            ...basicRequest,
+                            permissionData:
+                                permissions !== null
+                                    ? 'data' in permissions
+                                        ? permissions.data
+                                        : null
+                                    : null,
+                        },
                         permissions?.user || null,
                         typeof registrar.activityMetadataFn !== 'undefined'
                             ? registrar.activityMetadataFn

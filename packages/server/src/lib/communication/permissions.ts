@@ -1,9 +1,14 @@
 import mongoose from 'mongoose';
 
 import * as errors from '../../common/errors';
-import Comment from '../../models/Comment';
-import Publication, { PopulatedPublication } from '../../models/Publication';
-import Review, { IReviewStatus } from '../../models/Review';
+import Activity, { PopulatedActivity } from '../../models/Activity';
+import Comment, { PopulatedComment } from '../../models/Comment';
+import Notification, { PopulatedNotification } from '../../models/Notification';
+import Publication, {
+    AugmentedPublicationDocument,
+    PopulatedPublication,
+} from '../../models/Publication';
+import Review, { IReviewStatus, PopulatedReview } from '../../models/Review';
 import User, { AugmentedUserDocument, IUser, IUserDocument, IUserRole } from '../../models/User';
 import { expr } from '../../utils/expr';
 import { transformUsernameIntoId } from '../../utils/users';
@@ -53,17 +58,36 @@ export type PermissionVerificationFn<P, Q, T> = (
 /**
  * Convert a permission into an integer.
  *
- * @param permission - The permission variant enum
+ * @param role - The permission variant enum
  * @returns Role represented as an integer.
  */
-export function userRoleToInt(permission: IUserRole) {
-    switch (permission) {
+export function userRoleToInt(role: IUserRole): 0 | 1 | 2 {
+    switch (role) {
         case IUserRole.Moderator:
             return 1;
         case IUserRole.Administrator:
             return 2;
         default:
             return 0;
+    }
+}
+
+/**
+ * Utility function to generate a comprehensive list of roles that a particular role
+ * matches or has higher privileges. This utility method is useful when the API
+ * needs to filter for documents that require a particular permission to be read.
+ *
+ * @param role - The role to use when generating the list
+ * @returns A list of roles
+ */
+export function generateComprehensiveRoleList(role: IUserRole): IUserRole[] {
+    switch (role) {
+        case IUserRole.Moderator:
+            return [role, IUserRole.Default];
+        case IUserRole.Administrator:
+            return [role, IUserRole.Moderator, IUserRole.Default];
+        default:
+            return [role];
     }
 }
 
@@ -154,33 +178,6 @@ interface UserQueryRequest {
 }
 
 /**
- * Method to verify that a request in regards to the user sub-system has the appropriate
- * permissions.
- *
- * @param user - The requester
- * @param req - Object representing the parameters and query of the request.
- * @returns Whether or not the request to modify user endpoints is valid
- */
-export const verifyUserPermission: PermissionVerificationFn<
-    UserParamsRequest,
-    UserQueryRequest,
-    undefined
-> = async (user, req, context): Promise<ResolvedPermission<undefined>> => {
-    if (context.satisfied) return { valid: true, user };
-
-    // Check if the user id/username is the same as the requester
-    if (req.query.mode === 'id') {
-        if (user._id.toString() === req.params.username) {
-            return { valid: true, user };
-        }
-    } else if (user.username === req.params.username) {
-        return { valid: true, user };
-    }
-
-    return { valid: false };
-};
-
-/**
  * This function is used to verify that user requests are allowed using @see verifyUserPermission but
  * with the additional constraint that the user document in question and the requester must have the same
  * or the requester has a higher permissions.
@@ -189,19 +186,19 @@ export const verifyUserPermission: PermissionVerificationFn<
  * @param req - Object representing the parameters and query of the request.
  * @returns Whether or not the request to modify user endpoints is valid
  */
-export const verifyUserWithElevatedPermission: PermissionVerificationFn<
+export const verifyUserPermission: PermissionVerificationFn<
     UserParamsRequest,
     UserQueryRequest,
-    IUserDocument
+    AugmentedUserDocument
 > = async (user, req, context) => {
     const queriedUser = await expr(async () => {
         const { mode } = req.query;
         const { username } = req.params;
 
         if (mode === 'id') {
-            return await User.findById(username).exec();
+            return (await User.findById(username).exec()) as AugmentedUserDocument | null;
         }
-        return await User.findOne({ username }).exec();
+        return (await User.findOne({ username }).exec()) as AugmentedUserDocument | null;
     });
 
     // If we couldn't find the user... just return a 404
@@ -222,33 +219,6 @@ export const verifyUserWithElevatedPermission: PermissionVerificationFn<
 };
 
 /**
- * Function to verify that the requester has permissions to perform operations
- * on the given comment.
- *
- * @param user - The requester
- * @param req - Object representing the parameters and query of the request.
- * @returns Whether or not the request to modify user endpoints is valid
- */
-export const verifyCommentPermission: PermissionVerificationFn<
-    IdRequest,
-    unknown,
-    undefined
-> = async (user, req, context) => {
-    if (context.satisfied) return { valid: true, user };
-
-    const comment = await Comment.findById(req.params.id).exec();
-
-    if (!comment) {
-        return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
-    }
-    if (comment.owner.toString() !== user._id.toString()) {
-        return { valid: false };
-    }
-
-    return { valid: true, user };
-};
-
-/**
  * Function that verifies that the requester has permissions to perform operations
  * on the given comment using @see verifyCommentPermission, and further verifies that
  * the requester has equal or elevated permissions than the owner of the comment.
@@ -257,21 +227,21 @@ export const verifyCommentPermission: PermissionVerificationFn<
  * @param req - Object representing the parameters and query of the request.
  * @returns Whether or not the request to modify user endpoints is valid
  */
-export const verifyCommentWithElevatedPermission: PermissionVerificationFn<
+export const verifyCommentPermission: PermissionVerificationFn<
     IdRequest,
     unknown,
-    undefined
+    PopulatedComment
 > = async (user, req, context) => {
-    const comment = await Comment.findById(req.params.id)
-        .populate<{ owner: IUserDocument }>('owner')
-        .exec();
+    const comment = (await Comment.findById(req.params.id)
+        .populate<{ owner: AugmentedUserDocument }>('owner')
+        .exec()) as unknown as PopulatedComment | null;
 
     if (!comment) {
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
     }
 
     if (comment.owner._id?.toString() === user._id?.toString()) {
-        return { valid: true, user };
+        return { valid: true, user, data: comment };
     }
 
     // Ensure that the user has higher or the same privileges as the queried user
@@ -279,7 +249,7 @@ export const verifyCommentWithElevatedPermission: PermissionVerificationFn<
         return { valid: false };
     }
 
-    return { valid: true, user };
+    return { valid: true, user, data: comment };
 };
 
 /**
@@ -320,9 +290,12 @@ export const verifyCommentThreadPermission: PermissionVerificationFn<
 export const verifyReviewPermission: PermissionVerificationFn<
     IdRequest,
     unknown,
-    undefined
+    PopulatedReview
 > = async (user, req, context) => {
-    const review = await Review.findById(req.params.id).exec();
+    const review = await Review.findById(req.params.id)
+        .populate<{ owner: AugmentedUserDocument }>('owner')
+        .populate<{ publication: AugmentedPublicationDocument }>('publication')
+        .exec();
 
     // prevent requesters who aren't owners viewing reviews that are currently
     // still incomplete. If the status of the review is completed, all individuals
@@ -331,20 +304,19 @@ export const verifyReviewPermission: PermissionVerificationFn<
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
     }
 
-    if (!context.satisfied && review.owner.toString() !== user._id?.toString()) {
-        return { valid: false };
-    }
-
     // If the review is incomplete, we will only allow users that have at least a moderator role set
-    if (
-        review.owner.toString() !== user._id?.toString() &&
-        review.status !== IReviewStatus.Completed &&
-        !compareUserRoles(user.role, IUserRole.Moderator)
-    ) {
-        return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
+    if (review.owner._id.toString() !== user._id?.toString()) {
+        if (
+            review.status !== IReviewStatus.Completed &&
+            !compareUserRoles(user.role, IUserRole.Moderator)
+        ) {
+            return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
+        } else if (!context.satisfied) {
+            return { valid: false };
+        }
     }
 
-    return { valid: true, user };
+    return { valid: true, user, data: review };
 };
 
 /**
@@ -456,4 +428,73 @@ export const verifyPublicationIdPermission: PermissionVerificationFn<
     }
 
     return { valid: true, user, data: publication };
+};
+
+/**
+ * Function to verify that the requester has permissions to perform operations on
+ * a given activity by using the id of the publication.
+ *
+ * @param user - The requester
+ * @param req - Object representing the parameters and query of the request.
+ * @returns Whether or not the request to modify user endpoints is valid
+ */
+export const verifyActivityPermission: PermissionVerificationFn<
+    IdRequest,
+    unknown,
+    PopulatedActivity
+> = async (user, req, context) => {
+    const activity = await Activity.findById(req.params.id)
+        .populate<{ owner: IUser }>('owner')
+        .exec();
+
+    if (!activity || !activity.isLive) {
+        return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
+    }
+
+    // if this is the owner of the activity, this is an allowed modification
+    if (activity.owner._id?.toString() === user._id.toString()) {
+        return { valid: true, user, data: activity };
+    }
+
+    // Ensure that the user has higher or the same privileges as the queried user
+    if (!context.satisfied || !compareUserRoles(user.role, activity.permission)) {
+        return { valid: false };
+    }
+
+    return { valid: true, user, data: activity };
+};
+
+/**
+ * Function to verify that the requester has permissions to perform operations on
+ * a given notification by using the id of the publication.
+ *
+ * @param user - The requester
+ * @param req - Object representing the parameters and query of the request.
+ * @returns Whether or not the request to modify user endpoints is valid
+ */
+export const verifyNotificationPermission: PermissionVerificationFn<
+    IdRequest,
+    unknown,
+    PopulatedNotification
+> = async (user, req, context) => {
+    const notification = await Notification.findById(req.params.id)
+        .populate<{ author: IUser }>('author')
+        .populate<{ tagging: IUser }>('tagging')
+        .exec();
+
+    if (!notification || !notification.isLive) {
+        return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
+    }
+
+    // if this is the owner of the publication, this is an allowed modification
+    if (notification.tagging._id?.toString() === user._id?.toString()) {
+        return { valid: true, user, data: notification };
+    }
+
+    // Ensure that the user has higher or the same privileges as the queried user
+    if (!context.satisfied || !compareUserRoles(user.role, notification.author.role)) {
+        return { valid: false };
+    }
+
+    return { valid: true, user, data: notification };
 };

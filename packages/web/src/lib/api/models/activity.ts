@@ -5,12 +5,18 @@
  * This is a REST API for interfacing with Iamus. This API provides endpoints for interacting with user information, submissions, and reviews.
  * OpenAPI spec version: 1.0.0
  */
+import type { ActivityKind } from './activityKind';
 import type { ActivityReference } from './activityReference';
+import type { ActivityType } from './activityType';
 import type { User } from './user';
 
 export interface Activity {
     id: string;
     owner: User;
+    type: ActivityType;
+    kind: ActivityKind;
+    createdAt: number;
+    updatedAt: number;
     message: string;
     references: ActivityReference[];
 }

@@ -2,7 +2,7 @@ import { useNotificationDispatch } from '../../contexts/notification';
 import { useReviewDispatch } from '../../contexts/review';
 import { usePatchCommentId } from '../../lib/api/comments/comments';
 import { usePutReviewIdComment } from '../../lib/api/reviews/reviews';
-import CommentField from '../CommentField';
+import MarkdownField from '../MarkdownField';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { Button, SxProps, Theme } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -117,7 +117,7 @@ export default function CommentEditor({
 
     return (
         <Box sx={{ width: '100%', ...sx }} onClick={(event) => event.stopPropagation()}>
-            <CommentField contents={contents} autoFocus={autoFocus} onChange={setValue} />
+            <MarkdownField contents={contents} autoFocus={autoFocus} onChange={setValue} />
             <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', pt: 1, pb: 1 }}>
                 {!uncancelable && (
                     <Button variant="outlined" sx={{ mr: 1 }} onClick={onClose}>

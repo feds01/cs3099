@@ -1,5 +1,5 @@
 import { User } from '../lib/api/models';
-import Activity from './Activity';
+import Activity from './Activities';
 import Publications from './Publications';
 import Grid from '@mui/material/Grid';
 import React, { ReactElement } from 'react';

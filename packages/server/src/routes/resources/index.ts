@@ -5,7 +5,6 @@ import { z } from 'zod';
 import * as errors from '../../common/errors';
 import * as fs from '../../lib/resources/fs';
 import * as zip from '../../lib/resources/zip';
-import * as userUtils from '../../utils/users';
 import Logger from '../../common/logger';
 import {
     verifyPublicationIdPermission,
@@ -13,6 +12,7 @@ import {
     verifyUserPermission,
 } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
+import Activity, { IActivityType } from '../../models/Activity';
 import Publication from '../../models/Publication';
 import User, { IUserRole } from '../../models/User';
 import { config } from '../../server';
@@ -41,8 +41,8 @@ registerRoute(router, '/upload/:username', {
     permission: { level: IUserRole.Moderator },
     permissionVerification: verifyUserPermission,
     handler: async (req) => {
-        const user = await userUtils.transformUsernameIntoId(req);
         const file = extractFile(req.raw);
+        const user = req.permissionData;
 
         if (!file) {
             return {
@@ -82,17 +82,19 @@ registerRoute(router, '/upload/:username', {
             };
         }
 
-        const uploadPath = joinPathsForResource('avatar', user.id, 'avatar');
+        const uploadPath = joinPathsForResource('avatar', user._id.toString(), 'avatar');
 
         // Move the file into it's appropriate storage location
         await file.mv(uploadPath);
 
         // Set the profile pictureUrl of the user with the current endpoint
         const updatedUser = await User.findByIdAndUpdate(
-            user.id,
+            user._id.toString(),
             {
                 $set: {
-                    profilePictureUrl: `${config.serviceEndpoint}/user/${user.id}/avatar?mode=id`,
+                    profilePictureUrl: `${
+                        config.serviceEndpoint
+                    }/user/${user._id.toString()}/avatar?mode=id`,
                 },
             },
             { new: true },
@@ -215,6 +217,16 @@ registerRoute(router, '/upload/publication/:id', {
 
         // Move the file into it's appropriate storage location
         await file.mv(uploadPath);
+
+        // @@Hack: we also want to mark the activity that corresponds to creating the publication as 'live' now
+        await Activity.updateOne(
+            {
+                type: IActivityType.Publication,
+                document: publication._id.toString(),
+                isLive: false,
+            },
+            { $set: { isLive: true } },
+        ).exec();
 
         // Update the publication to become live instead of draft
         await publication.updateOne({ $set: { draft: false } }).exec();

@@ -1,6 +1,6 @@
 import AppliedRoute from './components/AppliedRoute';
 import ErrorContainer from './components/ErrorContainer';
-import NotificationDisplay from './components/Notification';
+import NotificationDisplay from './components/AppNotification';
 import PrivateRoute from './components/PrivateRoute';
 import * as routeConfig from './config/routes';
 import { AuthProvider } from './contexts/auth';
