@@ -25,6 +25,8 @@
     "license": "MIT",
     "devDependencies": {
         "@faker-js/faker": "^6.0.0-beta.0",
+        "@types/node-fetch": "2",
+        "@types/prismjs": "^1.26.0",
         "@trivago/prettier-plugin-sort-imports": "^3.2.0",
         "@types/adm-zip": "^0.4.34",
         "@types/bcryptjs": "^2.4.2",
@@ -53,11 +55,10 @@
         "ts-jest": "^27.1.3",
         "ts-node-dev": "^1.1.8",
         "typescript": "^4.6.2",
-        "yamljs": "^0.3.0"
+        "yamljs": "^0.3.0",
+        "orval": "^6.6.4"
     },
     "dependencies": {
-        "@types/node-fetch": "2",
-        "@types/prismjs": "^1.26.0",
         "adm-zip": "^0.5.9",
         "bcryptjs": "^2.4.3",
         "commander": "^9.0.0",
@@ -73,7 +74,6 @@
         "morgan": "^1.10.0",
         "nanoid": "^3.3.1",
         "node-fetch": "2.6.7",
-        "orval": "^6.6.4",
         "query-string": "^7.1.1",
         "swagger-jsdoc": "^6.1.0",
         "swagger-ui-express": "^4.3.0",
