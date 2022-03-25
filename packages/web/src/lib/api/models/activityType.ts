@@ -6,10 +6,12 @@
  * OpenAPI spec version: 1.0.0
  */
 
-export type GetPublicationUsernamePinned = 'true' | 'false';
+export type ActivityType = 'user' | 'publication' | 'comment' | 'review';
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const GetPublicationUsernamePinned = {
-    true: 'true' as GetPublicationUsernamePinned,
-    false: 'false' as GetPublicationUsernamePinned,
+export const ActivityType = {
+    user: 'user' as ActivityType,
+    publication: 'publication' as ActivityType,
+    comment: 'comment' as ActivityType,
+    review: 'review' as ActivityType,
 };

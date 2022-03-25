@@ -89,10 +89,7 @@ describe('User role tests', () => {
 
     // Tests for PATCH /user/:username
     it('moderators can update other account personal info', async () => {
-        await User.findOneAndUpdate(
-            { username: userDto.username },
-            { role: IUserRole.Moderator },
-        );
+        await User.findOneAndUpdate({ username: userDto.username }, { role: IUserRole.Moderator });
         const loginOther = await request.post('/auth/login').send({
             username: userDto.username,
             password: userDto.password,
@@ -101,7 +98,7 @@ describe('User role tests', () => {
         request.set({ 'x-refresh-token': loginOther.body.refreshToken });
 
         const { email, username, name, about } = createMockedUser();
-        const requestDto = { email, username, name, about };    
+        const requestDto = { email, username, name, about };
 
         // call API to patch user details
         const response = await request.patch('/user/test').send(requestDto);
@@ -129,7 +126,7 @@ describe('User role tests', () => {
         request.set({ 'x-refresh-token': loginOther.body.refreshToken });
 
         const { email, username, name, about } = createMockedUser();
-        const requestDto = { email, username, name, about };    
+        const requestDto = { email, username, name, about };
 
         // call API to patch user details
         const response = await request.patch('/user/test').send(requestDto);
@@ -161,10 +158,7 @@ describe('User role tests', () => {
     });
 
     it('moderator should fail to delete other users account', async () => {
-        await User.findOneAndUpdate(
-            { username: userDto.username },
-            { role: IUserRole.Moderator },
-        );
+        await User.findOneAndUpdate({ username: userDto.username }, { role: IUserRole.Moderator });
         const loginOther = await request.post('/auth/login').send({
             username: userDto.username,
             password: userDto.password,

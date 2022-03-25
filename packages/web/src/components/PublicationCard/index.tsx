@@ -14,13 +14,13 @@ export default function PublicationCard({ publication }: PublicationCardProps): 
     const theme = useTheme();
 
     return (
-        <Card>
+        <Card elevation={0} sx={{ border: `1px solid ${theme.palette.divider}` }}>
             <CardHeader
                 avatar={<UserAvatar {...publication.owner} />}
                 disableTypography
                 {...(publication.reviews > 0 && {
                     subheader: (
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{ color: 'dimgray' }}>
                             Publication has {publication.reviews} {publication.reviews === 1 ? 'review' : 'reviews'} on
                             it.
                         </Typography>

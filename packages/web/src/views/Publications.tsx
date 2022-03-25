@@ -7,15 +7,30 @@ import { ContentState } from '../types/requests';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import { ReactElement, useEffect, useState } from 'react';
+import { intoFlag } from '../lib/utils/requests';
 
 interface Props {
     user: User;
     limit?: number;
+    current?: boolean;
+    asCollaborator?: boolean;
     withTitle?: boolean;
+    textual?: boolean;
 }
 
-export default function Publications({ user, limit, withTitle = true }: Props): ReactElement {
-    const getPublicationQuery = useGetPublicationUsername(user.username);
+export default function Publications({
+    user,
+    limit,
+    current = true,
+    asCollaborator = false,
+    withTitle = true,
+    textual = false,
+}: Props): ReactElement {
+    const getPublicationQuery = useGetPublicationUsername(user.username, {
+        asCollaborator: intoFlag(asCollaborator),
+        current: intoFlag(current),
+        take: limit,
+    });
 
     const [publications, setPublications] = useState<ContentState<Publication[], any>>({ state: 'loading' });
 
@@ -29,7 +44,7 @@ export default function Publications({ user, limit, withTitle = true }: Props): 
                 return a.pinned > b.pinned ? -1 : 0;
             });
 
-            setPublications({ state: 'ok', data: data.slice(0, limit) });
+            setPublications({ state: 'ok', data });
         } else if (getPublicationQuery.isError && getPublicationQuery.error) {
             setPublications({ state: 'error', error: getPublicationQuery.error });
         }
@@ -42,7 +57,7 @@ export default function Publications({ user, limit, withTitle = true }: Props): 
             case 'error':
                 return <ErrorBanner message={publications.error.message} />;
             case 'ok':
-                return <PublicationList publications={publications.data} />;
+                return <PublicationList textual={textual} publications={publications.data} />;
         }
     }
 

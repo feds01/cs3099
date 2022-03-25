@@ -10,15 +10,20 @@ import { makeRequest } from '../lib/communication/fetch';
 import { ApiResponse } from '../lib/communication/response';
 import { deleteResource, moveResource, resourceExists } from '../lib/resources/fs';
 import { PublicationPathContent } from '../lib/resources/zip';
-import Publication, { AugmentedPublicationDocument, IPublication } from '../models/Publication';
-import Review, { AugmentedReviewDocument, IReview, IReviewStatus } from '../models/Review';
-import { IUser } from '../models/User';
+import Publication, { AugmentedPublicationDocument } from '../models/Publication';
+import Review, {
+    AugmentedReviewDocument,
+    IReview,
+    IReviewStatus,
+    PopulatedReview,
+} from '../models/Review';
+import { AugmentedUserDocument } from '../models/User';
 import { config } from '../server';
 import { IUserPatchRequest } from '../validators/publications';
 import { ResourceSortOrder } from '../validators/requests';
 
 /** Response denoting the return of a publication object */
-interface PublicationResponse {
+export interface PublicationResponse {
     publication: Partial<AugmentedPublicationDocument>;
 }
 
@@ -274,16 +279,20 @@ export default class PublicationController {
         });
 
         if (result.status === 'error') {
-            Logger.warn(`Failed to export a publication due to '${result.type}', with errors:\n${JSON.stringify(result.errors)}`);
+            Logger.warn(
+                `Failed to export a publication due to '${
+                    result.type
+                }', with errors:\n${JSON.stringify(result.errors)}`,
+            );
 
-            // If the request failed due to that we couldn't fetch it for some reason, return the error 
+            // If the request failed due to that we couldn't fetch it for some reason, return the error
             if (result.type === 'fetch') {
                 return {
                     status: 'error',
                     code: 400,
-                    message: `Failed to export review due to external service being unreachable.`,
+                    message: 'Failed to export review due to external service being unreachable.',
                     errors: result.errors,
-                };    
+                };
             }
 
             // If the request failed due to the 'service' replying with an invalid format report this
@@ -291,7 +300,8 @@ export default class PublicationController {
                 return {
                     status: 'error',
                     code: 400,
-                    message: `Failed to export review due to external service replying with an invalid format.`,
+                    message:
+                        'Failed to export review due to external service replying with an invalid format.',
                     errors: result.errors,
                 };
             }
@@ -300,7 +310,7 @@ export default class PublicationController {
             return {
                 status: 'error',
                 code: 500,
-                message: `Failed to export review due to unknown circumstances.`,
+                message: 'Failed to export review due to unknown circumstances.',
             };
         }
 
@@ -411,8 +421,8 @@ export default class PublicationController {
             publication: this.publication._id.toString(),
             status: IReviewStatus.Completed,
         })
-            .populate<{ publication: IPublication }>('publication')
-            .populate<{ owner: IUser }>('owner')
+            .populate<{ publication: AugmentedPublicationDocument }>('publication')
+            .populate<{ owner: AugmentedUserDocument }>('owner')
             .exec();
 
         return {
@@ -448,8 +458,8 @@ export default class PublicationController {
         };
 
         const doc = await Review.findOne(docParams)
-            .populate<{ publication: IPublication }>('publication')
-            .populate<{ owner: IUser }>('owner')
+            .populate<{ publication: AugmentedPublicationDocument }>('publication')
+            .populate<{ owner: AugmentedUserDocument }>('owner')
             .exec();
 
         // If the user tries to creat ea new review whilst another pending review exists, that review
@@ -466,10 +476,10 @@ export default class PublicationController {
         }
 
         const newDoc = await new Review(docParams).save();
-
-        const populated = await (
-            await newDoc.populate<{ publication: IPublication }>('publication')
-        ).populate<{ owner: IUser }>('owner');
+        const populated = (await Review.populate(newDoc, [
+            { path: 'publication' },
+            { path: 'owner' },
+        ])) as unknown as PopulatedReview;
 
         return {
             status: 'ok',

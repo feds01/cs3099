@@ -10,7 +10,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 
 import { User } from '../../lib/api/models';
 import { usePostAuthLogin } from '../../lib/api/auth/auth';
-import { ILoginForm, LoginSchema } from '../../validators/login';
+import { ILoginForm, LoginSchema } from '../../validators/user';
 import ControlledTextField from '../../components/ControlledTextField';
 import ControlledPasswordField from '../../components/ControlledPasswordField';
 import ErrorBanner from '../../components/ErrorBanner';

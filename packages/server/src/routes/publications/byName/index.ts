@@ -1,9 +1,10 @@
+import assert from 'assert';
 import express from 'express';
 import { z } from 'zod';
 
 import * as zip from '../../../lib/resources/zip';
 import * as userUtils from '../../../utils/users';
-import PublicationController from '../../../controller/publication';
+import PublicationController, { PublicationResponse } from '../../../controller/publication';
 import {
     verifyPublicationPermission,
     verifyRevisonlessPublicationPermission,
@@ -11,8 +12,10 @@ import {
 } from '../../../lib/communication/permissions';
 import registerRoute from '../../../lib/communication/requests';
 import { deleteResource } from '../../../lib/resources/fs';
+import { IActivityOperationKind, IActivityType } from '../../../models/Activity';
 import Publication from '../../../models/Publication';
 import { IUserRole } from '../../../models/User';
+import { PublicationAggregation } from '../../../types/aggregation';
 import { PaginationQuerySchema } from '../../../validators/pagination';
 import { IPublicationPatchRequestSchema } from '../../../validators/publications';
 import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../../validators/requests';
@@ -35,36 +38,76 @@ registerRoute(router, '/:username', {
     method: 'get',
     params: z.object({ username: z.string() }),
     query: z
-        .object({ mode: ModeSchema, pinned: FlagSchema.optional() })
+        .object({
+            mode: ModeSchema,
+            pinned: FlagSchema.optional(),
+            asCollaborator: FlagSchema.optional(),
+            current: FlagSchema.optional().default('true'),
+        })
         .merge(PaginationQuerySchema),
     headers: z.object({}),
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const user = await userUtils.transformUsernameIntoId(req);
+        const user = req.permissionData;
+        const { pinned, skip, take, asCollaborator, current } = req.query;
 
-        const { pinned, skip, take } = req.query;
+        // We are performing an aggregation to collect all publications where the user is the
+        // owner (or a collaborator which is optionally specified in the request query), whether
+        // the publication has a `pinned` status and only current publications
+        const aggregation = (await Publication.aggregate([
+            {
+                $facet: {
+                    data: [
+                        {
+                            $match: {
+                                $or: [
+                                    { owner: user._id },
+                                    ...(typeof asCollaborator !== 'undefined' && asCollaborator
+                                        ? [
+                                              {
+                                                  collaborators: {
+                                                      $elemMatch: { $eq: user._id },
+                                                  },
+                                              },
+                                          ]
+                                        : []),
+                                ],
+                                ...(typeof pinned !== 'undefined' && {
+                                    $or: [
+                                        ...(!pinned ? [{ pinned: { $exists: false } }] : []),
+                                        { pinned },
+                                    ],
+                                }),
+                                current,
+                            },
+                        },
+                        { $sort: { _id: -1 } },
+                        { $skip: skip },
+                        { $limit: take },
+                    ],
+                    total: [{ $count: 'total' }],
+                },
+            },
+            {
+                $project: {
+                    data: 1,
+                    // Get total from the first element of the metadata array
+                    total: { $arrayElemAt: ['$total.total', 0] },
+                },
+            },
+        ])) as unknown as [PublicationAggregation];
 
-        const result = await Publication.find({
-            owner: user.id,
-            ...(typeof pinned !== 'undefined' && {
-                $or: [...(!pinned ? [{ pinned: { $exists: false } }] : []), { pinned }],
-            }),
-            current: true,
-        })
-            .skip(skip)
-            .limit(take)
-            .exec();
+        const result = aggregation[0];
 
         return {
             status: 'ok',
             code: 200,
             data: {
                 publications: await Promise.all(
-                    result.map(
-                        async (publication) => await Publication.projectWith(publication, user),
-                    ),
+                    result.data.map(async (publication) => await Publication.project(publication)),
                 ),
+                total: result.total ?? 0,
                 skip,
                 take,
             },
@@ -209,6 +252,19 @@ registerRoute(router, '/:username/:name', {
         revision: z.string().optional(),
     }),
     headers: z.object({}),
+    activity: { kind: IActivityOperationKind.Delete, type: IActivityType.Publication },
+    activityMetadataFn: async (_requester, request, _res) => {
+        assert(request.permissionData !== null);
+
+        // We want to collect the revision and name when recording the activity
+        return {
+            liveness: true,
+            metadata: {
+                name: request.permissionData.name,
+                revision: request.permissionData.revision,
+            },
+        };
+    },
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
@@ -262,6 +318,27 @@ registerRoute(router, '/:username/:name/revise', {
     body: z.object({ revision: z.string(), changelog: z.string() }),
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
+    activity: {
+        kind: IActivityOperationKind.Revise,
+        type: IActivityType.Publication,
+        permission: IUserRole.Default,
+    },
+    activityMetadataFn: async (_requester, req, response: PublicationResponse | undefined) => {
+        assert(typeof response !== 'undefined');
+        assert(req.permissionData !== null);
+
+        return {
+            document: response.publication.id,
+            metadata: {
+                oldRevision: req.permissionData.revision,
+                newRevision: req.body!.revision,
+                name: req.permissionData.name,
+                owner: req.permissionData.owner.username,
+            },
+            // This event will be flagged as live when the user uploads a publication file to it
+            liveness: false,
+        };
+    },
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {

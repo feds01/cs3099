@@ -1,7 +1,7 @@
 import { Publication, User } from '../../lib/api/models';
 import { getSearchPublication, getSearchUser } from '../../lib/api/search/search';
 import { PureUserAvatar } from '../UserAvatar';
-import SearchIcon from '@mui/icons-material/Search';
+import { MdSearch } from 'react-icons/md';
 import { Typography } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
@@ -45,7 +45,7 @@ const getOptionIcon = (option: SearchResponse) => {
         case 'user':
             return <PureUserAvatar size={28} {...option.data} />;
         case 'query':
-            return <SearchIcon />;
+            return <MdSearch />;
     }
 };
 
@@ -186,7 +186,7 @@ function SearchBar() {
                     sx={{ background: 'white' }}
                     InputProps={{
                         ...params.InputProps,
-                        startAdornment: <SearchIcon />,
+                        startAdornment: <MdSearch />,
                         endAdornment: (
                             <React.Fragment>
                                 {loading ? <CircularProgress color="inherit" size={20} /> : null}

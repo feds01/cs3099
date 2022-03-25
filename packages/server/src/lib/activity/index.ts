@@ -6,7 +6,7 @@ import Activity, {
     IActivityOperationKind,
     IActivityType,
 } from '../../models/Activity';
-import { AugmentedUserDocument } from '../../models/User';
+import { AugmentedUserDocument, IUserRole } from '../../models/User';
 import { BasicRequest } from '../communication/requests';
 import { ActivityMetadataTransformer } from './transformer';
 
@@ -14,6 +14,7 @@ import { ActivityMetadataTransformer } from './transformer';
 export interface ActivityType {
     type: IActivityType;
     kind: IActivityOperationKind;
+    permission?: IUserRole;
 }
 
 /**
@@ -24,16 +25,24 @@ export interface ActivityType {
  * request transformer that can extract relevant metadata to the request and store it in the
  * activity.
  */
-class ActivityRecord<Params, Query, Body> {
+class ActivityRecord<Params, Query, PermData, Body, Res> {
     /** The inner activity document that's created when the transaction begins */
     activity?: AugmentedActivityDocument;
 
     /** Constructor for Activity record */
     constructor(
         readonly type: ActivityType,
-        readonly request: BasicRequest<Params, Query, Body, unknown>,
+        readonly request: BasicRequest<Params, Query, Body, unknown> & {
+            permissionData: PermData | null;
+        },
         readonly requester: AugmentedUserDocument | null,
-        readonly metadataTransformFn: ActivityMetadataTransformer<Params, Query, Body>,
+        readonly metadataTransformFn: ActivityMetadataTransformer<
+            Params,
+            Query,
+            PermData,
+            Body,
+            Res
+        >,
     ) {}
 
     /** Check whether the created activity record is a valid one */
@@ -54,20 +63,22 @@ class ActivityRecord<Params, Query, Body> {
             kind: this.type.kind,
             type: this.type.type,
             owner: this.requester._id,
+            // This activity inherits the permission of the requester at the current time, this is because
+            // even if a moderator/administrator is 'demoted', the activity should persist
+            // to become an 'admin' only viewable activity.
+            permission: this.type.permission ?? this.requester.role,
             isLive: false,
         });
-
-        // If the 'type' of event is related to the user sub-system, we can instantly deduce
-        // the fact that the affected 'document' will be the id of the user...
-        const { metadata, document } = await this.metadataTransformFn(this.requester, this.request);
-        activity.metadata = metadata;
-        activity.document = document;
 
         try {
             await activity.save();
             this.activity = activity;
         } catch (e: unknown) {
-            Logger.warn('Failed saving an activity');
+            if (e instanceof Error) {
+                Logger.warn(`Failed saving an activity:\n${e.stack}`);
+            } else {
+                Logger.warn('Failed saving an activity.');
+            }
         }
     }
 
@@ -76,9 +87,30 @@ class ActivityRecord<Params, Query, Body> {
      * as 'not live', it will update the document to become live since the document should now be
      * counted as activity that did occur.
      */
-    async save() {
+    async save(response: Res) {
         assert(typeof this.activity !== 'undefined');
-        await Activity.findByIdAndUpdate(this.activity._id, { $set: { isLive: true } });
+        assert(this.requester !== null);
+
+        // If the 'type' of event is related to the user sub-system, we can instantly deduce
+        // the fact that the affected 'document' will be the id of the user...
+        try {
+            const { metadata, document, liveness } = await this.metadataTransformFn(
+                this.requester,
+                this.request,
+                response,
+            );
+
+            await Activity.findByIdAndUpdate(this.activity._id, {
+                $set: { isLive: liveness, metadata, document },
+            });
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                Logger.warn(`Failed collecting activity metadata:\n${e.stack}`);
+            }
+
+            Logger.info('Deleting orphaned activity');
+            await this.activity.deleteOne();
+        }
     }
 
     /**

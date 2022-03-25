@@ -1,11 +1,15 @@
 import express from 'express';
 import { z } from 'zod';
 
-import * as error from '../../common/errors';
-import { defaultPermissionVerifier } from '../../lib/communication/permissions';
+import {
+    defaultPermissionVerifier,
+    generateComprehensiveRoleList,
+    verifyActivityPermission,
+} from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
 import Activity from '../../models/Activity';
-import { IUserDocument, IUserRole } from '../../models/User';
+import Follower from '../../models/Follower';
+import { IUser, IUserRole } from '../../models/User';
 import { PaginationQuerySchema } from '../../validators/pagination';
 import { ObjectIdSchema } from '../../validators/requests';
 
@@ -26,25 +30,13 @@ registerRoute(router, '/:id', {
     params: z.object({ id: ObjectIdSchema }),
     headers: z.object({}),
     permission: { level: IUserRole.Default },
-    permissionVerification: defaultPermissionVerifier,
+    permissionVerification: verifyActivityPermission,
     handler: async (req) => {
-        const activity = await Activity.findById(req.params.id)
-            .populate<{ owner: IUserDocument }>('owner')
-            .exec();
-
-        if (!activity) {
-            return {
-                status: 'error',
-                code: 404,
-                message: error.RESOURCE_NOT_FOUND,
-            };
-        }
-
         return {
             status: 'ok',
             code: 200,
             data: {
-                activity: Activity.project(activity),
+                activity: await Activity.project(req.permissionData),
             },
         };
     },
@@ -55,32 +47,38 @@ registerRoute(router, '/:id', {
  * @method GET
  * @url /api/activity
  * @example
- * https://cs3099user06.host.cs.st-andrews.ac.uk/api/activity?user=89183192381293&take=200&skip=1000
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/activity
  *
  * @description This endpoint is used to get a paginated list of user activities specified
- * by the user id that's provided in the query.
+ * by the user id that's provided within the requester. This is essentially the activity feed
+ * of the user so that it can fetch the activities of the users that they follow.
  */
 registerRoute(router, '/', {
     method: 'get',
     params: z.object({}),
-    query: z.object({ user: ObjectIdSchema }).merge(PaginationQuerySchema),
+    query: PaginationQuerySchema,
     headers: z.object({}),
     permission: { level: IUserRole.Default },
     permissionVerification: defaultPermissionVerifier,
     handler: async (req) => {
-        const activities = await Activity.find({ owner: req.query.user })
-            .populate<{ owner: IUserDocument }>('owner')
-            .skip(req.query.skip)
-            .limit(req.query.take)
-            .exec();
+        const { skip, take } = req.query;
 
-        if (!activities) {
-            return {
-                status: 'error',
-                code: 404,
-                message: error.RESOURCE_NOT_FOUND,
-            };
-        }
+        // We need to find all of the users that the requester is following and we essentially
+        // treat those 'followers' as sources of activity so that we can aggregate them and
+        // then sort them by the time that they occurred from.
+        const sources = await Follower.find({ follower: req.requester._id.toString() }).exec();
+        const roles = generateComprehensiveRoleList(req.requester.role);
+
+        const activities = await Activity.find({
+            isLive: true,
+            owner: { $in: sources.map((source) => source.following) },
+            permission: { $in: roles },
+        })
+            .populate<{ owner: IUser }>('owner')
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(take)
+            .exec();
 
         return {
             status: 'ok',
@@ -89,6 +87,9 @@ registerRoute(router, '/', {
                 activities: await Promise.all(
                     activities.map(async (activity) => await Activity.project(activity)),
                 ),
+                skip,
+                take,
+                total: 0, // @@PaginationTotal: use accurate figure
             },
         };
     },

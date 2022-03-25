@@ -12,8 +12,9 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { ReactElement, useEffect } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
+import MarkdownField from '../../components/MarkdownField';
 
 export default function CreatePublicationForm(): ReactElement {
     const auth = useAuth();
@@ -74,43 +75,40 @@ export default function CreatePublicationForm(): ReactElement {
                     <ControlledTextField name="title" control={control} />
                 </Grid>
                 <Grid item xs={12} sx={{ pt: 1 }}>
-                    <FieldLabel label="About" required={false} />
-                    <Typography variant={'body2'}>Write a small about section for the publication</Typography>
-                    <ControlledTextField name="about" control={control} />
-                </Grid>
-                <Grid item xs={12} sx={{ pt: 1 }}>
-                    <FieldLabel label="Introduction" required={false} />
-                    <Typography variant={'body2'}>Write a introduction for the publication</Typography>
-                    <ControlledTextField
-                        name="introduction"
-                        control={control}
-                        textFieldProps={{
-                            rows: 4,
-                            multiline: true,
-                        }}
-                    />
-                </Grid>
-                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="Revision" />
                     <Typography variant={'body2'}>Add a revision tag to the publication</Typography>
                     <ControlledTextField name="revision" control={control} />
+                </Grid>
+                <Grid item xs={12} sx={{ pt: 1 }}>
+                    <FieldLabel label="About" required={false} />
+                    <Typography variant={'body2'}>Write a small about section for the publication</Typography>
+                    <ControlledTextField name="about" control={control} />
                 </Grid>
                 <Grid item xs={12}>
                     <FieldLabel label="Collaborators" required={false} />
                     <Typography variant={'body2'}>Add collaborators to publication</Typography>
                     <CollaboratorInput name="collaborators" control={control} />
                 </Grid>
-                <Grid item xs={12}>
-                    <Box sx={{ pt: 1 }}>
-                        <LoadingButton
-                            loading={isLoading || isSubmitting}
-                            disabled={!isValid}
-                            variant="contained"
-                            type={'submit'}
-                        >
-                            Create
-                        </LoadingButton>
-                    </Box>
+                <Grid item xs={12} sx={{ pt: 1 }}>
+                    <FieldLabel label="Introduction" required={false} />
+                    <Typography variant={'body2'}>Write a introduction for the publication</Typography>
+                    <Controller
+                        render={({ field: { value, onChange } }) => (
+                            <MarkdownField contents={value} onChange={onChange} />
+                        )}
+                        name="introduction"
+                        control={control}
+                    />
+                </Grid>
+                <Grid item xs={12} sx={{ pt: 1 }}>
+                    <LoadingButton
+                        loading={isLoading || isSubmitting}
+                        disabled={!isValid}
+                        variant="contained"
+                        type={'submit'}
+                    >
+                        Create
+                    </LoadingButton>
                     {isError && error && <ErrorBanner message={error.message} />}
                 </Grid>
             </Grid>

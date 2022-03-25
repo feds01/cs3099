@@ -16,6 +16,8 @@ import type {
     GetPublicationbyidIdReviewsParams,
     PutReviewIdComment200,
     CreateCommentRequestBody,
+    GetReview200,
+    GetReviewParams,
     GetReviewId200,
     NoContentResponse,
     GetReviewIdComments200,
@@ -239,6 +241,34 @@ export const usePutReviewIdComment = <TError = ApiErrorResponse, TContext = unkn
         TContext
     >(mutationFn, mutationOptions);
 };
+/**
+ * Get all relevant reviews for a requester
+ * @summary Paginated reviews for a requester
+ */
+export const getReview = (params?: GetReviewParams) => {
+    return customInstance<GetReview200>({ url: `/review`, method: 'get', params });
+};
+
+export const getGetReviewQueryKey = (params?: GetReviewParams) => [`/review`, ...(params ? [params] : [])];
+
+export const useGetReview = <TData = AsyncReturnType<typeof getReview>, TError = ApiErrorResponse>(
+    params?: GetReviewParams,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getReview>, TError, TData> },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+    const { query: queryOptions } = options || {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetReviewQueryKey(params);
+
+    const queryFn: QueryFunction<AsyncReturnType<typeof getReview>> = () => getReview(params);
+
+    const query = useQuery<AsyncReturnType<typeof getReview>, TError, TData>(queryKey, queryFn, queryOptions);
+
+    return {
+        queryKey,
+        ...query,
+    };
+};
+
 /**
  * get review by user id.
  * @summary Get a review.

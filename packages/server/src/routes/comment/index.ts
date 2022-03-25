@@ -1,14 +1,15 @@
+import assert from 'assert';
 import express from 'express';
 import { z } from 'zod';
 
 import * as error from '../../common/errors';
-import {
-    verifyCommentPermission,
-    verifyCommentWithElevatedPermission,
-} from '../../lib/communication/permissions';
+import { verifyCommentPermission } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
+import { createNotification, findUserMentions } from '../../lib/notification';
 import Comment from '../../models/Comment';
+import Review, { IReviewStatus } from '../../models/Review';
 import { IUserDocument, IUserRole } from '../../models/User';
+import { setsEqual } from '../../utils/array';
 import { ObjectIdSchema } from '../../validators/requests';
 
 const router = express.Router();
@@ -82,7 +83,7 @@ registerRoute(router, '/:id', {
     headers: z.object({}),
     body: z.object({ contents: z.string().min(1) }),
     params: z.object({ id: ObjectIdSchema }),
-    permissionVerification: verifyCommentWithElevatedPermission,
+    permissionVerification: verifyCommentPermission,
     permission: { level: IUserRole.Moderator },
     handler: async (req) => {
         // Patch the comment here and set the state of the comment as 'edited'
@@ -94,12 +95,28 @@ registerRoute(router, '/:id', {
             .populate<{ owner: IUserDocument }>('owner')
             .exec();
 
-        if (!updatedComment) {
-            return {
-                status: 'error',
-                code: 404,
-                message: error.RESOURCE_NOT_FOUND,
-            };
+        assert(updatedComment !== null);
+
+        const oldMentions = findUserMentions(req.permissionData.contents);
+        const mentions = findUserMentions(req.body.contents);
+
+        if (!setsEqual(oldMentions, mentions)) {
+            // we need to fetch the review to find it's status
+            const review = await Review.findById(updatedComment.review).exec();
+            assert(review !== null);
+
+            // We want to create any new notifications on the comment if they have tagged the user
+            await Promise.all(
+                [...findUserMentions(req.body.contents)].map(async (mention) => {
+                    await createNotification(
+                        mention,
+                        req.params.id,
+                        req.requester,
+                        updatedComment._id,
+                        review.status === IReviewStatus.Completed,
+                    );
+                }),
+            );
         }
 
         return {

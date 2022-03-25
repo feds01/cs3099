@@ -9,17 +9,18 @@ import TableContainer from '@mui/material/TableContainer';
 import { DirectoryResponse } from '../../lib/api/models';
 import { Box, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 
-type Props = DirectoryResponse & { basePath: string; filename: string };
+type DirectoryViewerProps = DirectoryResponse & { basePath: string; filename: string };
 
-// File Icons: https://react-icons.github.io/react-icons/icons?name=si
-export default function DirectoryViewer({ entries, basePath, filename }: Props): ReactElement {
+export default function DirectoryViewer({ entries, basePath, filename }: DirectoryViewerProps): ReactElement {
     return (
         <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
                 <TableHead>
                     <TableRow>
-                        <TableCell width={'80%'}>Filename</TableCell>
-                        <TableCell align={'right'} width={'20%'}>
+                        <TableCell sx={{ fontWeight: 'bold' }} width={'80%'}>
+                            Filename
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold' }} align={'right'} width={'20%'}>
                             Last modified
                         </TableCell>
                     </TableRow>

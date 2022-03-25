@@ -2,7 +2,8 @@ import express from 'express';
 import { z } from 'zod';
 
 import registerRoute from '../../lib/communication/requests';
-import Publication, { AugmentedPublicationDocument } from '../../models/Publication';
+import Publication from '../../models/Publication';
+import { PublicationAggregation } from '../../types/aggregation';
 import { PaginationQuerySchema } from '../../validators/pagination';
 
 const router = express.Router({ mergeParams: true });
@@ -26,11 +27,6 @@ registerRoute(router, '/', {
     permissionVerification: undefined,
     handler: async (req) => {
         const { query, take, skip } = req.query;
-
-        type AggregationQuery = {
-            data: AugmentedPublicationDocument[];
-            total?: number;
-        };
 
         // We set 'draft' to false since they aren't visible to the whole platform
         const aggregation = (await Publication.aggregate([
@@ -60,7 +56,7 @@ registerRoute(router, '/', {
                     total: { $arrayElemAt: ['$metadata.total', 0] },
                 },
             },
-        ])) as unknown as [AggregationQuery];
+        ])) as unknown as [PublicationAggregation];
 
         const publications = aggregation[0];
 

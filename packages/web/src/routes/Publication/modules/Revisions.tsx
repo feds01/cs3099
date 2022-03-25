@@ -19,16 +19,18 @@ import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import { Box, Button, Chip, Divider, Typography } from '@mui/material';
 import { formatDistance } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import RevisePublicationForm from '../../../forms/RevisePublicationForm';
 
 interface RevisionProps {
     item: Publication;
     session: User;
+    revisions: number;
     refetchRevisions: () => Promise<unknown>;
 }
 
-function Revision({ item, session, refetchRevisions }: RevisionProps) {
+function Revision({ item, session, revisions, refetchRevisions }: RevisionProps) {
+    const history = useHistory();
     const permission = computeUserPermission(item.owner.id, session);
     const { refetch } = usePublicationDispatch();
 
@@ -65,7 +67,15 @@ function Revision({ item, session, refetchRevisions }: RevisionProps) {
                             publication={item}
                             onCompletion={async () => {
                                 await refetchRevisions();
-                                refetch();
+
+                                // We want to push the user to the most current publication instead of keeping them on this
+                                // revision...
+                                if (revisions === 1) {
+                                    history.push('/');
+                                } else {
+                                    history.push(`/${item.owner.username}/${item.name}/revisions`);
+                                    refetch();
+                                }
                             }}
                         />
                     )}
@@ -130,6 +140,7 @@ export default function Revisions() {
                                         key={item.id}
                                         session={session}
                                         item={item}
+                                        revisions={revisions.length}
                                         refetchRevisions={revisionQuery.refetch}
                                     />
                                 );

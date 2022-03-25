@@ -1,15 +1,14 @@
 import { ReactElement, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import { Button, Tooltip } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
-import SearchIcon from '@mui/icons-material/Search';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { MdReviews, MdSearch } from 'react-icons/md';
+import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
 import { styled, Theme, CSSObject } from '@mui/material/styles';
 
 import { TiHome } from 'react-icons/ti';
-import { BsJournalArrowUp } from 'react-icons/bs';
+import { BsJournalArrowUp, BsJournalCode } from 'react-icons/bs';
 
 const drawerWidth = 180;
 
@@ -46,7 +45,6 @@ const SidebarContainer = styled('div', { shouldForwardProp: (prop) => prop !== '
         height: '100%',
         whiteSpace: 'nowrap',
         borderRight: 1,
-        borderColor: 'divider',
         boxSizing: 'border-box',
         ...(open && {
             ...openedMixin(theme, drawerWidth),
@@ -59,14 +57,16 @@ const SidebarContainer = styled('div', { shouldForwardProp: (prop) => prop !== '
 
 const menuMap = [
     { title: 'Home', icon: TiHome, href: '/' },
+    { title: 'Publications', icon: BsJournalCode, href: '/publications' },
+    { title: 'Reviews', icon: MdReviews, href: '/reviews' },
+    { title: 'Explore', icon: MdSearch, href: '/explore' },
     { title: 'Create publication', icon: BsJournalArrowUp, href: '/publication/create' },
-    { title: 'Explore', icon: SearchIcon, href: '/explore' },
 ];
 
 export default function Sidebar(): ReactElement {
     const [open, setOpen] = useState<boolean>(false);
+    const location = useLocation();
 
-    // @@Bug: The sidebar isn't opening properly.
     return (
         <SidebarContainer open={open}>
             <Box
@@ -77,6 +77,7 @@ export default function Sidebar(): ReactElement {
                     justifyContent: 'space-between',
                     flex: 1,
                     height: '100%',
+                    width: '41px',
                 }}
             >
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -88,6 +89,9 @@ export default function Sidebar(): ReactElement {
                                 flexDirection: 'row',
                                 alignItems: 'center',
                                 justifyContent: open ? 'left' : 'center',
+                                ...(location.pathname === entry.href && {
+                                    background: '#F4F6F9 0% 0% no-repeat padding-box',
+                                }),
                                 pt: 1,
                                 pb: 1,
                                 flex: 1,
@@ -111,12 +115,12 @@ export default function Sidebar(): ReactElement {
                     ))}
                 </Box>
                 {open ? (
-                    <Button color="inherit" startIcon={<ChevronLeftIcon />} onClick={() => setOpen(!open)}>
+                    <Button color="inherit" startIcon={<MdChevronLeft />} onClick={() => setOpen(!open)}>
                         Collapse
                     </Button>
                 ) : (
                     <IconButton color="inherit" onClick={() => setOpen(!open)}>
-                        <ChevronRightIcon color="inherit" />
+                        <MdChevronRight color="inherit" />
                     </IconButton>
                 )}
             </Box>

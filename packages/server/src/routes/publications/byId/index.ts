@@ -1,9 +1,11 @@
+import assert from 'assert';
 import express from 'express';
 import { z } from 'zod';
 
-import PublicationController from '../../../controller/publication';
+import PublicationController, { PublicationResponse } from '../../../controller/publication';
 import { verifyPublicationIdPermission } from '../../../lib/communication/permissions';
 import registerRoute from '../../../lib/communication/requests';
+import { IActivityOperationKind, IActivityType } from '../../../models/Activity';
 import { IUserRole } from '../../../models/User';
 import { IPublicationPatchRequestSchema } from '../../../validators/publications';
 import { FlagSchema, ObjectIdSchema, ResourceSortSchema } from '../../../validators/requests';
@@ -57,6 +59,18 @@ registerRoute(router, '/:id', {
     query: z.object({}),
     headers: z.object({}),
     permissionVerification: verifyPublicationIdPermission,
+    activity: { kind: IActivityOperationKind.Delete, type: IActivityType.Publication },
+    activityMetadataFn: async (_requester, request, _res) => {
+        assert(request.permissionData !== null);
+
+        return {
+            liveness: true,
+            metadata: {
+                name: request.permissionData.name,
+                revision: request.permissionData.revision,
+            },
+        };
+    },
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
         const controller = new PublicationController(req.permissionData);
@@ -110,6 +124,27 @@ registerRoute(router, '/:id/revise', {
     query: z.object({}),
     body: z.object({ revision: z.string(), changelog: z.string() }),
     headers: z.object({}),
+    activity: {
+        kind: IActivityOperationKind.Revise,
+        type: IActivityType.Publication,
+        permission: IUserRole.Default,
+    },
+    activityMetadataFn: async (_requester, req, response: PublicationResponse | undefined) => {
+        assert(typeof response !== 'undefined');
+        assert(req.permissionData !== null);
+
+        return {
+            document: response.publication._id,
+            metadata: {
+                oldRevision: req.permissionData.revision,
+                newRevision: req.body!.revision,
+                name: req.permissionData.name,
+                owner: req.permissionData.owner.username,
+            },
+            // This event will be flagged as live when the user uploads a publication file to it
+            liveness: false,
+        };
+    },
     permissionVerification: verifyPublicationIdPermission,
     permission: { level: IUserRole.Moderator },
     handler: async (req) => {

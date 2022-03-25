@@ -10,6 +10,8 @@ import type {
     ApiErrorResponse,
     GetUserUsernameFeedParams,
     GetActivityId200,
+    GetActivity200,
+    GetActivityParams,
 } from '.././models';
 import { customInstance } from '.././mutator/custom-instance';
 import { useQuery, UseQueryOptions, QueryFunction, UseQueryResult, QueryKey } from 'react-query';
@@ -77,6 +79,34 @@ export const useGetActivityId = <TData = AsyncReturnType<typeof getActivityId>, 
         enabled: !!id,
         ...queryOptions,
     });
+
+    return {
+        queryKey,
+        ...query,
+    };
+};
+
+/**
+ * Get a paginated activities for a user
+ * @summary User activity feed
+ */
+export const getActivity = (params?: GetActivityParams) => {
+    return customInstance<GetActivity200>({ url: `/activity`, method: 'get', params });
+};
+
+export const getGetActivityQueryKey = (params?: GetActivityParams) => [`/activity`, ...(params ? [params] : [])];
+
+export const useGetActivity = <TData = AsyncReturnType<typeof getActivity>, TError = ApiErrorResponse>(
+    params?: GetActivityParams,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getActivity>, TError, TData> },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+    const { query: queryOptions } = options || {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetActivityQueryKey(params);
+
+    const queryFn: QueryFunction<AsyncReturnType<typeof getActivity>> = () => getActivity(params);
+
+    const query = useQuery<AsyncReturnType<typeof getActivity>, TError, TData>(queryKey, queryFn, queryOptions);
 
     return {
         queryKey,

@@ -44,6 +44,13 @@ const Theme = createTheme({
     },
 
     components: {
+        MuiOutlinedInput: {
+            styleOverrides: {
+                root: {
+                    background: '#fff !important',
+                },
+            },
+        },
         MuiTimelineItem: {
             styleOverrides: {
                 root: {

@@ -46,14 +46,14 @@ export type ApiResponse<T> =
  * @param res - The express response object that can be used to communicate with express.
  * @param response - The response from the request handler
  */
-export async function handleResponse<T, P, Q, B>(
+export async function handleResponse<T, P, PermData, Q, B>(
     res: express.Response,
     response: ApiResponse<T>,
-    activity: ActivityRecord<P, Q, B> | null,
+    activity: ActivityRecord<P, Q, PermData, B, T | undefined> | null,
 ): Promise<void> {
     // Save the activity if it's valid and the requestHandler returned an non-error status
-    if (response.status !== 'error' && activity?.isValid) {
-        await activity.save();
+    if (response.status === 'ok' && activity?.isValid) {
+        await activity.save(response.data);
     }
 
     switch (response.status) {

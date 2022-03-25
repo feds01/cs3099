@@ -32,6 +32,8 @@ tags:
       description: Endpoints related to searching content on the platform.
     - name: activity
       description: Endpoints relating to activity information.
+    - name: notifications
+      description: Endpoints relating to user notifications.
 paths:
     /version:
         get:
@@ -256,7 +258,7 @@ paths:
                                 properties:
                                     status:
                                         $ref: '#/components/schemas/SuccessStatus'
-                                    follow:
+                                    reserved:
                                         type: boolean
                                         example: false
                 default:
@@ -287,7 +289,7 @@ paths:
                                 properties:
                                     status:
                                         $ref: '#/components/schemas/SuccessStatus'
-                                    follow:
+                                    reserved:
                                         type: boolean
                                         example: false
 
@@ -921,6 +923,11 @@ paths:
                   schema:
                       $ref: '#/components/schemas/TakeQuery'
                   description: The number of items the query should take
+                - in: query
+                  name: current
+                  schema:
+                      $ref: '#/components/schemas/FlagSchema'
+                  description: If the endpoint should only list current publications in revision sets
             responses:
                 '200':
                     description: Returns a paginated list of publications.
@@ -948,7 +955,6 @@ paths:
                                     total:
                                         type: number
                                         example: 12
-
                 default:
                     $ref: '#/components/responses/ApiError'
     /publication/{username}:
@@ -969,11 +975,9 @@ paths:
                 - in: query
                   required: false
                   name: pinned
+                  description: Filter by pinned used publications.
                   schema:
-                      type: string
-                      example: 'false'
-                      enum: ['true', 'false']
-                      description: Filter by pinned used publications.
+                      $ref: '#/components/schemas/FlagSchema'
                 - in: query
                   name: skip
                   schema:
@@ -984,6 +988,16 @@ paths:
                   schema:
                       $ref: '#/components/schemas/TakeQuery'
                   description: The number of items the query should take
+                - in: query
+                  name: asCollaborator
+                  schema:
+                      $ref: '#/components/schemas/FlagSchema'
+                  description: If publications that the requester is a collaborator should be shown
+                - in: query
+                  name: current
+                  schema:
+                      $ref: '#/components/schemas/FlagSchema'
+                  description: Filter by 'current' status on publications
             responses:
                 '200':
                     description: Returns the requested publications.
@@ -994,6 +1008,9 @@ paths:
                                 required:
                                     - status
                                     - publications
+                                    - skip
+                                    - take
+                                    - total
                                 properties:
                                     status:
                                         $ref: '#/components/schemas/SuccessStatus'
@@ -1001,6 +1018,13 @@ paths:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/Publication'
+                                    skip:
+                                        $ref: '#/components/schemas/SkipQuery'
+                                    take:
+                                        $ref: '#/components/schemas/TakeQuery'
+                                    total:
+                                        type: number
+                                        example: 12
                 default:
                     $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}:
@@ -2005,6 +2029,64 @@ paths:
                     $ref: '#/components/responses/NoContent'
                 default:
                     $ref: '#/components/responses/ApiError'
+    /review:
+        get:
+            summary: Paginated reviews for a requester
+            description: Get all relevant reviews for a requester
+            tags:
+                - reviews
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: query
+                  name: skip
+                  schema:
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
+                - in: query
+                  name: take
+                  schema:
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
+                - in: query
+                  name: asCollaborator
+                  schema:
+                      $ref: '#/components/schemas/FlagSchema'
+                  description: If reviews on publications that the requester is a collaborator should be shown
+                - in: query
+                  name: filterSelf
+                  schema:
+                      $ref: '#/components/schemas/FlagSchema'
+                  description: If reviews where the requester is the owner should be filtered out
+            responses:
+                '200':
+                    description: Returns a paginated list of reviews.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - reviews
+                                    - skip
+                                    - take
+                                    - total
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    reviews:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Review'
+                                    skip:
+                                        $ref: '#/components/schemas/SkipQuery'
+                                    take:
+                                        $ref: '#/components/schemas/TakeQuery'
+                                    total:
+                                        type: number
+                                        example: 12
+                default:
+                    $ref: '#/components/responses/ApiError'
     /review/{id}:
         get:
             summary: Get a review.
@@ -2246,6 +2328,154 @@ paths:
                                         $ref: '#/components/schemas/Activity'
                 default:
                     $ref: '#/components/responses/ApiError'
+    /activity:
+        get:
+            summary: User activity feed
+            description: Get a paginated activities for a user
+            tags:
+                - activity
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: query
+                  name: skip
+                  schema:
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
+                - in: query
+                  name: take
+                  schema:
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
+            responses:
+                '200':
+                    description: Returns a paginated list of activities.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - activities
+                                    - skip
+                                    - take
+                                    - total
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    activities:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Activity'
+                                    skip:
+                                        $ref: '#/components/schemas/SkipQuery'
+                                    take:
+                                        $ref: '#/components/schemas/TakeQuery'
+                                    total:
+                                        type: number
+                                        example: 12
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /notifications:
+        get:
+            summary: Paginated notifications
+            description: Get a paginated list of notifications for the requester
+            tags:
+                - notifications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: query
+                  name: skip
+                  schema:
+                      $ref: '#/components/schemas/SkipQuery'
+                  description: If the query should skip ahead a number of documents
+                - in: query
+                  name: take
+                  schema:
+                      $ref: '#/components/schemas/TakeQuery'
+                  description: The number of items the query should take
+            responses:
+                '200':
+                    description: Returns a paginated list of publications.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - notifications
+                                    - skip
+                                    - take
+                                    - total
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    notifications:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Notification'
+                                    skip:
+                                        $ref: '#/components/schemas/SkipQuery'
+                                    take:
+                                        $ref: '#/components/schemas/TakeQuery'
+                                    total:
+                                        type: number
+                                        example: 12
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /notifications/{id}:
+        get:
+            summary: Get a notification.
+            description: get notification by id.
+            tags:
+                - notifications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: notification id.
+            responses:
+                '200':
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - status
+                                    - notification
+                                properties:
+                                    status:
+                                        $ref: '#/components/schemas/SuccessStatus'
+                                    notification:
+                                        $ref: '#/components/schemas/Notification'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /notifications/{id}/view:
+        post:
+            summary: View notification
+            description: Mark a publication as seen
+            tags:
+                - notifications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: notification id.
+            responses:
+                '200':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
 components:
     securitySchemes:
         BearerAuth:
@@ -2445,6 +2675,10 @@ components:
             type: string
             example: 'ok'
             enum: ['ok']
+        FlagSchema:
+            type: string
+            example: 'true'
+            enum: ['true', 'false']
         SuccessStatusObject:
             type: object
             required:
@@ -2462,6 +2696,14 @@ components:
             example: 50
             minimum: 1
             maximum: 200
+        ActivityKind:
+            type: string
+            example: 'create'
+            enum: ['create', 'delete', 'update', 'revise']
+        ActivityType:
+            type: string
+            example: 'user'
+            enum: ['user', 'publication', 'comment', 'review']
         Activity:
             type: object
             required:
@@ -2469,12 +2711,26 @@ components:
                 - references
                 - id
                 - owner
+                - createdAt
+                - updatedAt
+                - type
+                - kind
             properties:
                 id:
                     type: string
                     example: '507f1f77bcf86cd799439011'
                 owner:
                     $ref: '#/components/schemas/User'
+                type:
+                    $ref: '#/components/schemas/ActivityType'
+                kind:
+                    $ref: '#/components/schemas/ActivityKind'
+                createdAt:
+                    type: number
+                    example: 2387238172812
+                updatedAt:
+                    type: number
+                    example: 2387238172812
                 message:
                     type: string
                     example: "<1> created a publication <2> with title 'x'"
@@ -2542,7 +2798,7 @@ components:
                 - message
             properties:
                 code:
-                    description: Specific error code identifier. 
+                    description: Specific error code identifier.
                     type: number
                     example: 100
                 message:
@@ -3055,5 +3311,34 @@ components:
                     type: number
                     example: 0
                 postedAt:
+                    type: number
+                    example: 1636065460
+        Notification:
+            type: object
+            required:
+                - id
+                - commentId
+                - tagging
+                - author
+                - review
+                - createdAt
+                - updatedAt
+            properties:
+                id:
+                    type: string
+                    example: 'id'
+                commentId:
+                    type: string
+                    example: 'id'
+                author:
+                    $ref: '#/components/schemas/User'
+                tagging:
+                    $ref: '#/components/schemas/User'
+                review:
+                    $ref: '#/components/schemas/Review'
+                createdAt:
+                    type: number
+                    example: 1636065460
+                updatedAt:
                     type: number
                     example: 1636065460

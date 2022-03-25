@@ -11,9 +11,9 @@ import registerRoute from '../../lib/communication/requests';
 import { ReviewImportIssues, ReviewImportManager } from '../../lib/import/review';
 import { importUser } from '../../lib/import/user';
 import { deleteFileResource, moveResource } from '../../lib/resources/fs';
-import Publication, { IPublication } from '../../models/Publication';
+import Publication, { AugmentedPublicationDocument } from '../../models/Publication';
 import Review, { IReviewStatus, PopulatedReview } from '../../models/Review';
-import { IUser } from '../../models/User';
+import { AugmentedUserDocument } from '../../models/User';
 import { config } from '../../server';
 import { expr } from '../../utils/expr';
 import { IAuthHeaderSchema } from '../../validators/auth';
@@ -259,8 +259,8 @@ registerRoute(router, '/export/:id/metadata', {
                     publication: publication.id,
                     status: IReviewStatus.Completed,
                 })
-                    .populate<{ publication: IPublication }>('publication')
-                    .populate<{ owner: IUser }>('owner')
+                    .populate<{ publication: AugmentedPublicationDocument }>('publication')
+                    .populate<{ owner: AugmentedUserDocument }>('owner')
                     .exec()) as PopulatedReview[];
             } else {
                 return [];
