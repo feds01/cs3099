@@ -1,13 +1,23 @@
 import json
 import click
 import pathlib
-from typing import Tuple
 from functools import wraps
 from urllib.parse import urljoin
+from typing import Tuple, Callable
+
 from utils.call_api import call_api
 
 
 def get_auth(auth_file: pathlib.PosixPath, base_url: str) -> Tuple[str, dict[str, str]]:
+    """Get username and tokens from and update the specified auth file.
+
+    Args:
+        auth_file (pathlib.PosixPath): Path to the auth file.
+        base_url (str): The base URL of the server.
+
+    Returns:
+        Tuple[str, dict[str, str]]: Returns username and headers.
+    """
     username, headers = None, None
     try:
         with open(auth_file, "r") as f:
@@ -45,7 +55,20 @@ def get_auth(auth_file: pathlib.PosixPath, base_url: str) -> Tuple[str, dict[str
     return username, headers
 
 
-def authenticated(func):
+def authenticated(func: Callable) -> Callable:
+    """Decorator for commands that require authentication.
+
+    It calls `get_auth` to get username and headers from auth file and pass them
+    to decorated functions.
+
+    Args:
+        func (Callable): Function to be decorated.
+
+    Returns:
+        Callable: Decorated function with additional arguments `username` and
+            `headers`.
+    """
+
     @wraps(func)
     def wrapper(ctx: click.core.Context, *args, **kwargs):
         base_url = ctx.obj["BASE_URL"]

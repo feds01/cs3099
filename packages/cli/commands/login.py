@@ -1,7 +1,9 @@
 import json
 import click
-from utils.call_api import call_api
 from urllib.parse import urljoin
+from utils.call_api import call_api
+
+from utils.base_url import pass_base_url
 
 
 @click.command()
@@ -10,7 +12,19 @@ from urllib.parse import urljoin
     "--password", prompt="Password", hide_input=True, help="Password", type=str
 )
 @click.pass_context
+@pass_base_url
 def login(ctx: click.core.Context, username: str, password: str) -> None:
+    """CLI command for user to login and get token before sending request.
+
+    Usage:
+        $ iamus login --username <username> --password <password>
+
+    Args:
+        ctx (click.core.Context): Context object to share global variables with
+            subcommands.
+        username (str): The username specified by the user.
+        password (str): The password specified by the user.
+    """
     base_url = ctx.obj["BASE_URL"]
     login_body = {"username": username, "password": password}
     try:
