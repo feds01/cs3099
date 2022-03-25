@@ -69,7 +69,7 @@ export class ReviewImportManager {
         readonly archive: AdmZip,
     ) {
         this.validComments = new Set([...this.review.comments.map((comment) => comment.id)]);
-        this.commentMap = new Map(this.review.comments.map((value, idx) => [idx, value]));
+        this.commentMap = new Map(this.review.comments.map((value) => [value.id, value]));
     }
 
     /** Helper function to exit early in certain conditions and produce an error report... */
