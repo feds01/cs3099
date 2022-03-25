@@ -1,4 +1,3 @@
-import assert from 'assert';
 import express from 'express';
 import { z } from 'zod';
 
@@ -20,6 +19,7 @@ import { IAuthHeaderSchema } from '../../validators/auth';
 import { ExportPublicationOptionsSchema } from '../../validators/export';
 import { ObjectIdSchema } from '../../validators/requests';
 import { SgMetadataSchema } from '../../validators/sg';
+import { convertSgId } from '../../transformers/sg';
 
 const router = express.Router();
 
@@ -100,12 +100,11 @@ registerRoute(router, '/import', {
 
         // we also need to create a archive so that we can validate the review
         const archive = zip.loadArchiveFromPath(publicationArchive.response);
-        assert(archive !== null);
 
-        if (!archive.test()) {
+        if (archive === null || !archive.test()) {
             Logger.warn(`Received invalid archive`);
             Logger.info('Removing malformed archive');
-            deleteFileResource(publicationArchive.response);
+            await deleteFileResource(publicationArchive.response);
 
             return {
                 status: 'error',
@@ -150,7 +149,7 @@ registerRoute(router, '/import', {
             const result = await reviewManager.save();
 
             if (result.status === 'error') {
-                Logger.info(`Failed to import review owned by user ${review.owner}`);
+                Logger.info(`Failed to import review owned by user ${convertSgId(review.owner)}`);
                 const { issues, message } = result;
                 importIssues.set(index, { issues, message });
             }

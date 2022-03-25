@@ -26,13 +26,13 @@ interface DirectoryEntry {
  * */
 export type PublicationPathContent =
     | {
-          type: 'file';
-          contents: string; // UTF8 text file
-      }
+        type: 'file';
+        contents: string; // UTF8 text file
+    }
     | {
-          type: 'directory';
-          entries: DirectoryEntry[];
-      };
+        type: 'directory';
+        entries: DirectoryEntry[];
+    };
 
 /**
  * Interface representing the physical location of an archive on the filesystem using
@@ -116,6 +116,10 @@ export function loadArchiveFromPath(filePath: string): AdmZip | null {
     try {
         return new AdmZip(filePath);
     } catch (e: unknown) {
+        if (e instanceof Error) {
+            Logger.warn(`Failed reading archive from path:\n${e.stack}`);
+        }
+
         return null;
     }
 }
