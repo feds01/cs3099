@@ -1,14 +1,16 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
+import Logger from '../common/logger';
 import { ExportSgComment, SgComment } from '../validators/sg';
-import User, { IUser } from './User';
+import Notification from './Notification';
+import User, { AugmentedUserDocument } from './User';
 
 /** A IComment document represents a comment object */
 export interface IComment {
     /** The ID of the publication that this comment refers to. */
-    owner: mongoose.ObjectId;
+    owner: mongoose.Types.ObjectId;
     /** The ID of the review that this comment belongs to. */
-    review: mongoose.ObjectId;
+    review: mongoose.Types.ObjectId;
     /** The  contents of the comment */
     contents: string;
     /** The filename that the comment is referring to */
@@ -23,9 +25,9 @@ export interface IComment {
         end: number;
     };
     /** If the comment is a reply, it has an associated 'replying' ID to another comment */
-    replying?: mongoose.ObjectId;
+    replying?: mongoose.Types.ObjectId;
     /** The thread that this comment belongs in */
-    thread?: mongoose.ObjectId;
+    thread?: mongoose.Types.ObjectId;
     /**
      * If the comment has been edited before
      * @@Future: We should make this an array to record all the modifications that the user has made */
@@ -36,15 +38,15 @@ export interface IComment {
     updatedAt: Date;
 }
 
-export type AugmentedCommentDocument = Omit<IComment, '_id'> & {
+interface ICommentDocument extends IComment, Document {}
+
+export type AugmentedCommentDocument = Omit<ICommentDocument, '_id'> & {
     _id: mongoose.Types.ObjectId;
 };
 
 export type PopulatedComment = AugmentedCommentDocument & {
-    owner: IUser;
+    owner: AugmentedUserDocument;
 };
-
-interface ICommentDocument extends IComment, Document {}
 
 interface ICommentModel extends Model<ICommentDocument> {
     project: (user: IComment) => Partial<IComment>;
@@ -66,6 +68,20 @@ const CommentSchema = new Schema<IComment, ICommentModel, IComment>(
         review: { type: mongoose.Schema.Types.ObjectId, ref: 'review' },
     },
     { timestamps: true },
+);
+
+/** Hook to perform cascade deletion in order to clear any notifications */
+CommentSchema.post(
+    /remove|deleteOne|findOneAndDelete$/,
+    { document: true, query: true },
+    async (item: AugmentedCommentDocument, next) => {
+        Logger.warn('Cleaning up comment notifications after deletion');
+
+        const id = item._id.toString();
+        await Notification.deleteMany({ comment: id }).exec();
+
+        next();
+    },
 );
 
 /**

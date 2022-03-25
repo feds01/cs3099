@@ -4,15 +4,15 @@ import { Typography } from '@mui/material';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import { PublicationIndex } from '../../lib/utils/publications';
 
-interface Props {
+interface BreadCrumbProps {
     index: PublicationIndex;
     basePath: string;
     filename: string;
 }
 
-export default function BreadCrumb({ index, basePath, filename }: Props): ReactElement {
+export default function BreadCrumb({ index, basePath, filename }: BreadCrumbProps): ReactElement {
     return (
-        <Breadcrumbs aria-label="content breadcrumbs" sx={{ m: 1 }}>
+        <Breadcrumbs aria-label="content breadcrumbs" sx={{ pb: 2 }}>
             <Link to={`${basePath}/tree/`}>
                 <Typography
                     color="text.primary"

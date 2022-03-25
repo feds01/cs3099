@@ -13,7 +13,7 @@ import { transformQueryIntoContentState } from '../../wrappers/react-query';
 import ConversationView from './modules/ConversationView';
 import FileView from './modules/FileView';
 import SubmissionPopOver from './modules/SubmissionPopOver';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { MdOutlineArrowDropDown } from 'react-icons/md';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -137,10 +137,10 @@ export default function ReviewPage(): ReactElement {
     } else if (commentResourceResponse.state === 'error' || reviewResponse.state === 'error') {
         return (
             <PageLayout>
-                {commentResourceResponse.state === 'error' && (
+                {reviewResponse.state === 'error' && <ErrorBanner message={reviewResponse.error.message} />}
+                {reviewResponse.state !== 'error' && commentResourceResponse.state === 'error' && (
                     <ErrorBanner message={commentResourceResponse.error.message} />
                 )}
-                {reviewResponse.state === 'error' && <ErrorBanner message={reviewResponse.error.message} />}
             </PageLayout>
         );
     }
@@ -223,7 +223,7 @@ export default function ReviewPage(): ReactElement {
                                     loading={completeReviewQuery.isLoading}
                                     onClick={handleClick}
                                     disabled={comments.length === 0}
-                                    endIcon={<ArrowDropDownIcon />}
+                                    endIcon={<MdOutlineArrowDropDown />}
                                 >
                                     Finish review
                                 </LoadingButton>

@@ -48,14 +48,15 @@ registerRoute(router, '/username_validity', {
     permissionVerification: undefined,
     handler: async (req) => {
         const result = await User.findOne({
-            name: req.body.username,
-            externalId: { $exists: false },
+            username: req.body.username,
         }).exec();
 
         return {
             status: 'ok',
             code: 200,
-            reserved: !!result,
+            data: {
+                reserved: result !== null,
+            },
         };
     },
 });
@@ -101,7 +102,9 @@ registerRoute(router, '/email_validity', {
         return {
             status: 'ok',
             code: 200,
-            reserved: !!result,
+            data: {
+                reserved: result !== null,
+            },
         };
     },
 });

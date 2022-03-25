@@ -1,6 +1,6 @@
 import Divider from '@mui/material/Divider';
 import React, { Component, ErrorInfo } from 'react';
-import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
+import { MdSentimentVeryDissatisfied } from 'react-icons/md';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
@@ -84,7 +84,7 @@ export default class ErrorContainer extends Component<Props, State> {
                                 alignItems: 'center',
                             }}
                         >
-                            <SentimentVeryDissatisfiedIcon style={{ fontSize: 40 }} />
+                            <MdSentimentVeryDissatisfied size={40} />
                             <h1>Something went wrong!</h1>
                         </Box>
                         <h2>Please help out and email or send us this bug string.</h2>

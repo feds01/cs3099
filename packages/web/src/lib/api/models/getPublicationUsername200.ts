@@ -6,9 +6,14 @@
  * OpenAPI spec version: 1.0.0
  */
 import type { Publication } from './publication';
+import type { SkipQuery } from './skipQuery';
 import type { SuccessStatus } from './successStatus';
+import type { TakeQuery } from './takeQuery';
 
 export type GetPublicationUsername200 = {
     status: SuccessStatus;
     publications: Publication[];
+    skip: SkipQuery;
+    take: TakeQuery;
+    total: number;
 };

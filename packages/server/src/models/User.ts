@@ -52,7 +52,6 @@ export interface IUserDocument extends IUser, Document<string> {}
 
 export type AugmentedUserDocument = Omit<IUserDocument, '_id'> & {
     _id: mongoose.Types.ObjectId;
-    id: string;
 };
 
 export interface IUserModel extends Model<IUserDocument> {

@@ -4,7 +4,7 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 import { ExportSgReview } from '../validators/sg';
 import Comment, { PopulatedComment } from './Comment';
 import Publication, { AugmentedPublicationDocument } from './Publication';
-import User, { IUser } from './User';
+import User, { AugmentedUserDocument, IUser } from './User';
 
 /**
  * Representation of whether a publication is in either 'started' mode
@@ -20,9 +20,9 @@ export enum IReviewStatus {
 /** The Review document represents a review on a particular publication */
 export interface IReview {
     /** The ID of the review publication */
-    publication: mongoose.ObjectId;
+    publication: mongoose.Types.ObjectId;
     /** The ID of the review owner */
-    owner: mongoose.ObjectId;
+    owner: mongoose.Types.ObjectId;
     /** If the review is completed or not. */
     status: IReviewStatus;
     /** When the initial document was created */
@@ -33,18 +33,17 @@ export interface IReview {
 
 interface IReviewDocument extends IReview, Document {}
 
-export type AugmentedReviewDocument = Omit<IReviewDocument, '_id'> & {
+export type AugmentedReviewDocument = IReview & {
     _id: mongoose.Types.ObjectId;
 };
 
 export type PopulatedReview = AugmentedReviewDocument & {
-    owner: IUser;
-} & {
+    owner: AugmentedUserDocument;
     publication: AugmentedPublicationDocument;
 };
 
 interface IReviewModel extends Model<IReviewDocument> {
-    project: (review: AugmentedReviewDocument) => Promise<Partial<IReview>>;
+    project: (review: PopulatedReview) => Promise<Partial<IReview>>;
     projectAsSg: (review: PopulatedReview) => Promise<ExportSgReview>;
 }
 

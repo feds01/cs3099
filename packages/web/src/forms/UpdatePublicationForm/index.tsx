@@ -15,7 +15,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Grid from '@mui/material/Grid';
 import { ReactElement, useEffect } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import MarkdownField from '../../components/MarkdownField';
 
 interface EditPublicationFormProps {
     publication: Publication;
@@ -78,36 +79,35 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%', marginTop: '8px' }}>
+        <form onSubmit={handleSubmit(onSubmit)} style={{ width: '100%' }}>
             <Grid container maxWidth={'lg'}>
                 <Grid item xs={12}>
                     <FieldLabel label="Publication title" />
                     <ControlledTextField name="title" control={control} />
                 </Grid>
-                <Grid item xs={12}>
-                    <FieldLabel label="Publication about" required={false} />
-                    <ControlledTextField name="about" control={control} />
-                </Grid>
-                <Grid item xs={12}>
-                    <FieldLabel label="Publication description" required={false} />
-                    <ControlledTextField
-                        name="introduction"
-                        control={control}
-                        textFieldProps={{
-                            rows: 4,
-                            multiline: true,
-                        }}
-                    />
-                </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="Revision" />
                     <ControlledTextField name="revision" control={control} />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
+                    <FieldLabel label="Publication about" required={false} />
+                    <ControlledTextField name="about" control={control} />
+                </Grid>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <FieldLabel label="Collaborators" required={false} />
                     <CollaboratorInput name="collaborators" control={control} />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} sx={{ pt: 1 }}>
+                    <FieldLabel label="Publication description" required={false} />
+                    <Controller
+                        render={({ field: { value, onChange } }) => (
+                            <MarkdownField contents={value} onChange={onChange} />
+                        )}
+                        name="introduction"
+                        control={control}
+                    />
+                </Grid>
+                <Grid item xs={12} sx={{ pt: 1 }}>
                     <LoadingButton
                         loading={isLoading || isSubmitting}
                         disabled={!isValid}

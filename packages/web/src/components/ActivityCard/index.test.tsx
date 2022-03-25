@@ -1,5 +1,6 @@
 import ActivityCard from '.';
-import { ActivityReference } from '../../lib/api/models';
+import { ActivityKind, ActivityReference, ActivityType } from '../../lib/api/models';
+import { mockActivity } from '../../test-utils/mocks/activity';
 import { mockPublication } from '../../test-utils/mocks/publication';
 import { mockUser } from '../../test-utils/mocks/user';
 import renderWithWrapper from '../../test-utils/render';
@@ -7,7 +8,8 @@ import renderWithWrapper from '../../test-utils/render';
 describe('ActivityCard tests', () => {
     it('renders message with no references', () => {
         const mockedMessage = 'This is an activity';
-        const { getByText } = renderWithWrapper(<ActivityCard message={mockedMessage} references={[]} />);
+        const mockedActivity = mockActivity({ message: mockedMessage, references: [] });
+        const { getByText } = renderWithWrapper(<ActivityCard activity={mockedActivity} />);
 
         // Ensure that the message in the file is rendered...
         expect(getByText(mockedMessage)).toBeInTheDocument();
@@ -22,8 +24,9 @@ describe('ActivityCard tests', () => {
                 document: mockedUser,
             },
         ];
+        const mockedActivity = mockActivity({ message: mockedMessage, references: mockedReferences });
 
-        const { getByText } = renderWithWrapper(<ActivityCard message={mockedMessage} references={mockedReferences} />);
+        const { getByText } = renderWithWrapper(<ActivityCard activity={mockedActivity} />);
 
         // Ensure that the message in the file is rendered...
         expect(getByText(`@${mockedUser.username}`)).toBeInTheDocument();
@@ -44,8 +47,9 @@ describe('ActivityCard tests', () => {
                 document: mockedPublication,
             },
         ];
+        const mockedActivity = mockActivity({ message: mockedMessage, references: mockedReferences });
 
-        const { getByText } = renderWithWrapper(<ActivityCard message={mockedMessage} references={mockedReferences} />);
+        const { getByText } = renderWithWrapper(<ActivityCard activity={mockedActivity} />);
 
         // Ensure that the message in the file is rendered...
         expect(getByText(`@${mockedUser.username}`)).toBeInTheDocument();
@@ -58,7 +62,7 @@ describe('ActivityCard tests', () => {
      */
     it('renders message with reference at the end', () => {
         // We have to get a mocked user and then redefine
-        const mockedUser = mockUser({ username: 'primary' });
+        const mockedUser = mockUser({ username: 'primary', name: 'Primary', profilePictureUrl: undefined });
 
         const mockedMessage = 'did something <0>';
         const mockedReferences: ActivityReference[] = [
@@ -67,10 +71,15 @@ describe('ActivityCard tests', () => {
                 document: mockedUser,
             },
         ];
+        const mockedActivity = mockActivity({
+            type: ActivityType.user,
+            kind: ActivityKind.create,
+            message: mockedMessage,
+            owner: mockedUser,
+            references: mockedReferences,
+        });
 
-        const { asFragment } = renderWithWrapper(
-            <ActivityCard message={mockedMessage} references={mockedReferences} />,
-        );
+        const { asFragment } = renderWithWrapper(<ActivityCard activity={mockedActivity} />);
         expect(asFragment()).toMatchSnapshot();
     });
 });

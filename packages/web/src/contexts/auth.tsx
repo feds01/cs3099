@@ -1,6 +1,6 @@
 import { usePostAuthSession } from '../lib/api/auth/auth';
 import { User } from '../lib/api/models';
-import { SessionSchema } from '../validators/session';
+import { UserSchema } from '../validators/user';
 import React, { Dispatch, FC, useContext, useEffect, useReducer } from 'react';
 
 export type AuthStateAction =
@@ -80,7 +80,7 @@ const initAuth = (state: AuthState): AuthState => {
                 const jsonSession = JSON.parse(session);
 
                 // Attempt to validate the session using Zod
-                const parsedSession = SessionSchema.parse(jsonSession);
+                const parsedSession = UserSchema.parse(jsonSession);
                 state.session = parsedSession;
             }
         } catch (e) {

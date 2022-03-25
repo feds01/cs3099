@@ -1,3 +1,4 @@
+import assert from 'assert';
 import express from 'express';
 import mongoose from 'mongoose';
 import { z } from 'zod';
@@ -6,17 +7,127 @@ import * as errors from '../../common/errors';
 import * as file from '../../lib/resources/file';
 import * as zip from '../../lib/resources/zip';
 import Logger from '../../common/logger';
-import { verifyReviewPermission } from '../../lib/communication/permissions';
+import {
+    defaultPermissionVerifier,
+    verifyReviewPermission,
+} from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
-import Comment from '../../models/Comment';
-import { IPublication, IPublicationDocument } from '../../models/Publication';
+import {
+    createNotification,
+    findUserMentions,
+    markNotificationsAsLive,
+} from '../../lib/notification';
+import { IActivityOperationKind, IActivityType } from '../../models/Activity';
+import Comment, { PopulatedComment } from '../../models/Comment';
+import Publication from '../../models/Publication';
 import Review, { IReviewStatus, PopulatedReview } from '../../models/Review';
-import { IUser, IUserDocument, IUserRole } from '../../models/User';
+import User, { AugmentedUserDocument, IUser, IUserRole } from '../../models/User';
 import { ResponseErrorSummary } from '../../transformers/error';
+import { ReviewAggregation } from '../../types/aggregation';
 import { ICommentCreationSchema } from '../../validators/comments';
-import { ObjectIdSchema } from '../../validators/requests';
+import { PaginationQuerySchema } from '../../validators/pagination';
+import { FlagSchema, ObjectIdSchema } from '../../validators/requests';
 
 const router = express.Router();
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/review
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/review
+ *
+ * @description This endpoint is used to get all the relevant reviews to a
+ * requester. This is done by checking if any of the publications that the
+ * requester is an owner of or a collaborator (optionally) has received any
+ * recent reviews.
+ */
+registerRoute(router, '/', {
+    method: 'get',
+    query: z
+        .object({ asCollaborator: FlagSchema.optional(), filterSelf: FlagSchema.optional() })
+        .merge(PaginationQuerySchema),
+    params: z.object({}),
+    headers: z.object({}),
+    permissionVerification: defaultPermissionVerifier,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const requesterId = req.requester._id;
+        const { skip, take, asCollaborator, filterSelf } = req.query;
+
+        // We want to find any recent reviews on publications that the requester
+        // owns
+        const publications = await Publication.find({
+            $or: [
+                { owner: requesterId },
+                ...(typeof asCollaborator !== 'undefined' && asCollaborator
+                    ? [
+                          {
+                              collaborators: {
+                                  $elemMatch: { $eq: requesterId },
+                              },
+                          },
+                      ]
+                    : []),
+            ],
+        }).exec();
+
+        // Perform an aggregation that will find all of the reviews that are in publications that
+        // the requester is the owner or marked as a collaborator (if specified in the request).
+        // Additionally, if the 'filterSelf' flag is specified, we have to filter out all reviews
+        // where the owner is the requester.
+        const aggregation = (await Review.aggregate([
+            {
+                $facet: {
+                    data: [
+                        {
+                            $match: {
+                                status: IReviewStatus.Completed,
+                                publication: {
+                                    $in: publications.map((publication) => publication._id),
+                                },
+                                ...(typeof filterSelf !== 'undefined' &&
+                                    filterSelf && { owner: { $ne: requesterId } }),
+                            },
+                        },
+                        { $sort: { _id: -1 } },
+                        { $skip: skip },
+                        { $limit: take },
+                    ],
+                    total: [{ $count: 'total' }],
+                },
+            },
+            {
+                $project: {
+                    data: 1,
+                    // Get total from the first element of the metadata array
+                    total: { $arrayElemAt: ['$total.total', 0] },
+                },
+            },
+        ])) as unknown as [ReviewAggregation];
+
+        const result = aggregation[0];
+
+        // Now we need to populate the reviews...
+        const hydratedResults = (await Publication.populate(result.data, [
+            { path: 'owner' },
+            { path: 'publication' },
+        ])) as unknown as PopulatedReview[];
+
+        return {
+            status: 'ok',
+            code: 200,
+            data: {
+                reviews: await Promise.all(
+                    hydratedResults.map(async (review) => await Review.project(review)),
+                ),
+                total: result.total ?? 0,
+                skip,
+                take,
+            },
+        };
+    },
+});
 
 /**
  * @version v1.0.0
@@ -41,31 +152,7 @@ registerRoute(router, '/:id/comment', {
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const { replying, filename, anchor, contents } = req.body;
-
-        const review = await Review.findById(req.params.id)
-            .populate<{ owner: IUserDocument }>('owner')
-            .populate<{ publication: IPublicationDocument }>('publication')
-            .exec();
-
-        // Check that the review exists and that the current commenter isn't trying
-        // to publish comments on a non-public review. Only a review owner can comment
-        // on a review whilst creating it.
-        if (!review || (review.status === 'started' && review.owner.id !== req.requester.id)) {
-            return {
-                status: 'error',
-                code: 404,
-                message: errors.RESOURCE_NOT_FOUND,
-            };
-        }
-
-        // check that the publication isn't in draft mode...
-        if (review.publication.draft) {
-            return {
-                status: 'error',
-                code: 400,
-                message: 'Cannot comment on a drafted publication.',
-            };
-        }
+        const review = req.permissionData;
 
         // Check if the thread is replying to another comment
         let thread = new mongoose.Types.ObjectId();
@@ -159,10 +246,25 @@ registerRoute(router, '/:id/comment', {
             review: req.params.id,
             thread,
             owner: req.requester.id,
-            publication: review.publication.id as mongoose.Schema.Types.ObjectId,
+            publication: review.publication._id.toString(),
         }).save();
 
-        const populated = await newComment.populate<{ owner: IUserDocument }>('owner');
+        const populated = (await newComment.populate<{ owner: AugmentedUserDocument }>(
+            'owner',
+        )) as unknown as PopulatedComment;
+
+        // Here, we have to create a new notification for every found 'tagging reference within the comment...
+        await Promise.all(
+            [...findUserMentions(contents)].map(async (mention) => {
+                await createNotification(
+                    mention,
+                    req.params.id,
+                    req.requester,
+                    populated._id,
+                    req.permissionData.status === IReviewStatus.Completed,
+                );
+            }),
+        );
 
         return {
             status: 'ok',
@@ -196,36 +298,10 @@ registerRoute(router, '/:id/comments', {
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const { id } = req.params;
-        const { id: ownerId } = req.requester;
-
-        const review = await Review.findById(id)
-            .populate<{ owner: IUserDocument }>('owner')
-            .populate<{ publication: IPublication }>('publication')
-            .exec();
-
-        // Check that the review exists and that the current commenter isn't trying
-        // to publish comments on a non-public review. Only a review owner can comment
-        // on a review whilst creating it.
-        if (!review || (review.status === 'started' && review.owner.id !== ownerId)) {
-            return {
-                status: 'error',
-                code: 404,
-                message: errors.RESOURCE_NOT_FOUND,
-            };
-        }
-
-        // check that the publication isn't in draft mode...
-        if (review.publication.draft) {
-            return {
-                status: 'error',
-                code: 400,
-                message: 'Cannot comment on a drafted publication.',
-            };
-        }
+        const review = req.permissionData;
 
         // Find all the comments on the current review...
-        const result = await Comment.find({ review: review.id })
+        const result = await Comment.find({ review: review._id.toString() })
             .populate<{ owner: IUser }>('owner')
             .exec();
 
@@ -258,21 +334,50 @@ registerRoute(router, '/:id/complete', {
     query: z.object({}),
     params: z.object({ id: ObjectIdSchema }),
     headers: z.object({}),
+    activity: {
+        kind: IActivityOperationKind.Create,
+        type: IActivityType.Review,
+        permission: IUserRole.Default,
+    },
+    activityMetadataFn: async (_requester, req, _response) => {
+        assert(req.permissionData !== null);
+
+        // we need to find the publication owner
+        const publicationOwner = await User.findOne(req.permissionData.publication.owner).exec();
+        assert(publicationOwner !== null);
+
+        // We want to count the number of comments that the publication has done
+        const comments = await Comment.count({ review: req.params.id });
+
+        return {
+            document: req.params.id,
+            metadata: {
+                publicationId: req.permissionData.publication._id.toString(),
+                publicationName: req.permissionData.publication.name,
+                publicationOwner: publicationOwner.username,
+                comments,
+            },
+            liveness: true,
+        };
+    },
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const review = await Review.findByIdAndUpdate(req.params.id, {
+        // We don't want to accept reviews that are already 'completed' because this then creates
+        // another activity for a review that has already been completed.
+        if (req.permissionData.status !== IReviewStatus.Started) {
+            return {
+                status: 'ok',
+                code: 200,
+            };
+        }
+
+        await Review.findByIdAndUpdate(req.params.id, {
             $set: { status: IReviewStatus.Completed },
         }).exec();
 
-        // verify that the review exists and the owner is trying to publish it...
-        if (!review) {
-            return {
-                status: 'error',
-                code: 404,
-                message: errors.RESOURCE_NOT_FOUND,
-            };
-        }
+        // We also want to mark any notifications as live
+        await markNotificationsAsLive(req.params.id);
 
         return {
             status: 'ok',
@@ -299,20 +404,7 @@ registerRoute(router, '/:id', {
     permissionVerification: verifyReviewPermission,
     permission: { level: IUserRole.Moderator },
     handler: async (req) => {
-        const { id } = req.params;
-
-        const review = (await Review.findById(id)
-            .populate<{ publication: IPublication }>('publication')
-            .populate<{ owner: IUserDocument }>('owner')
-            .exec()) as unknown as PopulatedReview;
-
-        if (!review) {
-            return {
-                status: 'error',
-                code: 404,
-                message: errors.RESOURCE_NOT_FOUND,
-            };
-        }
+        const review = req.permissionData;
 
         return {
             status: 'ok',

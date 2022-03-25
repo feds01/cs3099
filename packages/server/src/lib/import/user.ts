@@ -1,5 +1,6 @@
 import Logger from '../../common/logger';
 import User, { IUserDocument } from '../../models/User';
+import { ResponseErrorSummary } from '../../transformers/error';
 import { convertSgId, transformSgUserToInternal } from '../../transformers/sg';
 import { SgUserId, SgUserSchema } from '../../validators/sg';
 import { makeRequest } from './../communication/fetch';
@@ -17,8 +18,7 @@ export type UserImportStatus =
     | {
           status: 'error';
           message: string;
-          extra?: string;
-          error: unknown;
+          error: ResponseErrorSummary;
       }
     | {
           status: 'ok';
@@ -57,7 +57,7 @@ export async function importUser(externalUserId: SgUserId): Promise<UserImportSt
             status: 'error',
             message: 'Cannot import a user from a non-existant group',
             error: {
-                importId: externalUserId,
+                importId: { message: convertSgId(externalUserId) },
             },
         };
     }
@@ -77,8 +77,7 @@ export async function importUser(externalUserId: SgUserId): Promise<UserImportSt
         );
         return {
             status: 'error',
-            message: `request failed due to: ${userData.type}.`,
-            extra: 'Cannot import user from external service.',
+            message: `request failed due to: ${userData.type}. Cannot import user from external service.`,
             error: userData.errors,
         };
     }

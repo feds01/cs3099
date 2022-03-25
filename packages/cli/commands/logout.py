@@ -5,6 +5,15 @@ import click
 @click.command()
 @click.pass_context
 def logout(ctx: click.core.Context) -> None:
+    """CLI command for the user to clear their user session.
+
+    Usage:
+        $ iamus logout
+
+    Args:
+        ctx (click.core.Context): Context object to share global variables with
+            subcommands.
+    """
     try:
         auth_file = ctx.obj["CLI_PATH"] / "config/auth.json"
         os.remove(auth_file)

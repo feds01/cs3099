@@ -1,80 +1,37 @@
 import ErrorBanner from '../components/ErrorBanner';
-import ReviewCard from '../components/ReviewCard';
 import SkeletonList from '../components/SkeletonList';
-import { ApiErrorResponse, GetUserUsernameReviews200 as ReviewResponse, User } from '../lib/api/models';
-import { useGetUserUsernameReviews } from '../lib/api/users/users';
-import VoidImage from '../static/images/void.svg';
+import { ApiErrorResponse, GetUserUsernameReviews200 as ReviewResponse } from '../lib/api/models';
 import { ContentState } from '../types/requests';
 import { transformQueryIntoContentState } from '../wrappers/react-query';
-import { Box, Grid } from '@mui/material';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import { ReactElement, useEffect, useState } from 'react';
+import ReviewList from '../components/ReviewList';
+import { UseQueryResult } from 'react-query';
 
-interface Props {
-    user: User;
+type ReviewsViewProps = {
     withTitle?: boolean;
-}
+    textual?: boolean;
+    query: UseQueryResult<ReviewResponse, ApiErrorResponse>;
+};
 
-export default function Reviews({ user, withTitle = true }: Props): ReactElement {
-    const getReviewsQuery = useGetUserUsernameReviews(user.username);
-    const [reviews, setReviews] = useState<ContentState<ReviewResponse, ApiErrorResponse>>({ state: 'loading' });
+export default function Reviews({ withTitle = true, query, textual = false }: ReviewsViewProps): ReactElement {
+    const [reviewsQueryResult, setReviewsQueryResult] = useState<ContentState<ReviewResponse, ApiErrorResponse>>({
+        state: 'loading',
+    });
 
     useEffect(() => {
-        setReviews(transformQueryIntoContentState(getReviewsQuery));
-    }, [getReviewsQuery.data, getReviewsQuery.isLoading]);
+        setReviewsQueryResult(transformQueryIntoContentState(query));
+    }, [query.data, query.isLoading]);
 
     function renderContent() {
-        switch (reviews.state) {
+        switch (reviewsQueryResult.state) {
             case 'loading':
-                return (
-                    <>
-                        <SkeletonList rows={3} />
-                    </>
-                );
+                return <SkeletonList rows={3} />;
             case 'error':
-                return <ErrorBanner message={reviews.error.message} />;
+                return <ErrorBanner message={reviewsQueryResult.error.message} />;
             case 'ok':
-                return (
-                    <div>
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                            }}
-                        >
-                            {reviews.data.reviews.length === 0 ? (
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        width: '100%',
-                                        pt: 2,
-                                    }}
-                                >
-                                    <img src={VoidImage} height={96} width={96} alt={'nothing'} />
-                                    <Typography variant="body2">No reviews yet.</Typography>
-                                </Box>
-                            ) : (
-                                <Grid
-                                    container
-                                    spacing={1}
-                                    columns={{ xs: 1, sm: 1, md: 1 }}
-                                    sx={{ marginTop: '0.25rem' }}
-                                >
-                                    {reviews.data.reviews.map((review, index) => {
-                                        return (
-                                            <Grid key={index} item xs={2} sm={3} md={3}>
-                                                <ReviewCard review={review} />
-                                            </Grid>
-                                        );
-                                    })}
-                                </Grid>
-                            )}
-                        </Box>
-                    </div>
-                );
+                return <ReviewList textual={textual} reviews={reviewsQueryResult.data.reviews} />;
         }
     }
 

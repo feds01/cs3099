@@ -9,14 +9,14 @@ import Box from '@mui/material/Box';
 import Pagination from '@mui/material/Pagination';
 import { useEffect, useState } from 'react';
 
-type PaginatedListProps = {
+type PaginatedPublicationListProps = {
     take: number;
 };
 
-export default function PaginatedList({ take }: PaginatedListProps) {
+export default function PaginatedPublicationList({ take }: PaginatedPublicationListProps) {
     const [page, setPage] = useState(0);
 
-    const publicationQuery = useGetPublication({ skip: page * take, take });
+    const publicationQuery = useGetPublication({ skip: page * take, take, current: 'true' });
     const [queryResponse, setQueryResponse] = useState<ContentState<GetPublication200, ApiErrorResponse>>({
         state: 'loading',
     });

@@ -1,14 +1,23 @@
 import click
 from urllib.parse import urljoin
+
 from utils.call_api import call_api
 from utils.auth import authenticated
 from utils.publication import get_id_name
+from utils.base_url import pass_base_url
 from utils.mutually_exclusive_options import MutuallyExclusiveOptions
+from utils.callback import callback_wrapper, file_to_str
 
 
 @click.command()
 @click.option("--revision", prompt="Revision Number", help="Revision Number", type=str)
-@click.option("--log", "changelog", prompt="Change Log", help="Change Log", type=str)
+@click.option(
+    "--changelog",
+    prompt="File path",
+    help="Change Log File Path",
+    type=str,
+    callback=callback_wrapper(file_to_str),
+)
 @click.option(
     "--id",
     "pub_id",
@@ -27,6 +36,7 @@ from utils.mutually_exclusive_options import MutuallyExclusiveOptions
     not_required_if=["pub_id"],
 )
 @click.pass_context
+@pass_base_url
 @authenticated
 def revise(
     ctx: click.core.Context,
@@ -36,7 +46,32 @@ def revise(
     name: str = None,
     username: str = None,
     headers: dict[str, str] = None,
-) -> None:
+) -> str:
+    """CLI command for user to revise a specified publication.
+
+    Usage:
+        $ iamus revise --revision <revision> --changelog <changelog> --id <id>
+        or
+        $ iamus revise --revision <revision> --changelog <changelog> --name <name>
+
+    Args:
+        ctx (click.core.Context): Context object to share global variables with
+            subcommands.
+        revision (str): The new version number(e.g. v1.0) of the publication,
+            specified by the user.
+        changelog (str): The change log for the revision specified by the user.
+        pub_id (str, optional): The id of the publication specified by the user,
+            it is required if `name` is not specified.
+        name (str, optional): The name of the publication specified by the user,
+            it is required if `pub_id` is not specified.
+        username (str): The username obtained from the auth file.
+        headers (dict[str, str]): The headers obtained from the auth file, which
+            contains token for sending the request.
+
+    Returns:
+        str: The new publication id is returned if the revise is successful, it
+            is only used when invoked by `upload` command.
+    """
     base_url = ctx.obj["BASE_URL"]
 
     pub_id, name = get_id_name(base_url, username, headers, pub_id, name)

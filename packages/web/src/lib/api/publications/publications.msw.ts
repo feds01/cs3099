@@ -136,6 +136,9 @@ export const getGetPublicationUsernameMock = () => ({
         createdAt: faker.datatype.number(),
         updatedAt: faker.datatype.number(),
     })),
+    skip: faker.datatype.number(),
+    take: faker.datatype.number(),
+    total: faker.datatype.number(),
 });
 
 export const getDeletePublicationUsernameNameMock = () => ({

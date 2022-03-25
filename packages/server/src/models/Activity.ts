@@ -36,9 +36,9 @@ export interface IActivity {
     /** Generic kind representing how the activity affected the document in question */
     kind: IActivityOperationKind;
     /** The ID of the publication that this activity refers to. */
-    owner: mongoose.ObjectId;
+    owner: mongoose.Types.ObjectId;
     /** The document that was affected by the operation */
-    document?: mongoose.ObjectId;
+    document?: mongoose.Types.ObjectId;
     /**
      * The permission that is required to read the activity. This is automatically
      * inherited from the owner of the activity.
@@ -73,14 +73,19 @@ export type ActivityReference =
  * function defined on the @see ActivitySchema.
  */
 interface TransformedActivity {
+    id: string;
     message: string;
     owner: Partial<IUser>;
     createdAt: number;
     updatedAt: number;
+    type: IActivityType;
+    kind: IActivityOperationKind;
     references: ActivityReference[];
 }
 
-export type AugmentedActivityDocument = Omit<IActivity, '_id'> & {
+interface IActivityDocument extends IActivity, Document {}
+
+export type AugmentedActivityDocument = Omit<IActivityDocument, '_id'> & {
     _id: mongoose.Types.ObjectId;
 };
 
@@ -88,11 +93,12 @@ export type PopulatedActivity = AugmentedActivityDocument & {
     owner: IUser;
 };
 
-interface IActivityDocument extends IActivity, Document {}
-
 interface IActivityModel extends Model<IActivityDocument> {
-    project: (activity: AugmentedActivityDocument) => Partial<TransformedActivity>;
-    projectWith: (activity: AugmentedActivityDocument, user: IUser) => Partial<TransformedActivity>;
+    project: (activity: PopulatedActivity) => Promise<Partial<TransformedActivity>>;
+    projectWith: (
+        activity: AugmentedActivityDocument,
+        user: IUser,
+    ) => Promise<Partial<TransformedActivity>>;
 }
 
 const ActivitySchema = new Schema<IActivity, IActivityModel, IActivity>(
@@ -125,28 +131,21 @@ const ActivitySchema = new Schema<IActivity, IActivityModel, IActivity>(
 ActivitySchema.statics.project = async (
     activity: PopulatedActivity,
 ): Promise<TransformedActivity> => {
-    let message = '<0> '; // begin the message with the prefix that user '0' did something...
-
-    const owner = UserModel.project(activity.owner);
-    const references: ActivityReference[] = [
-        {
-            type: 'user',
-            document: owner,
-        },
-    ];
-
-    const { prefixMessage, prefixReferences } = await computeActivityPrefix(activity);
-    message += prefixMessage;
-    references.push(...prefixReferences);
+    const { kind, type } = activity;
+    const { prefixMessage, prefixReferences: references } = await computeActivityPrefix(activity);
+    const message = `${prefixMessage}.`;
 
     // before we send of the request, let's validate that the number of references in the
     // generated message is correct...
     TransformedActivitySchema.parse({ message, references });
 
     return {
+        id: activity._id.toString(),
         message,
         references,
-        owner,
+        kind,
+        type,
+        owner: UserModel.project(activity.owner),
         updatedAt: activity.updatedAt.getTime(),
         createdAt: activity.createdAt.getTime(),
     };
@@ -156,28 +155,21 @@ ActivitySchema.statics.projectWith = async (
     activity: AugmentedActivityDocument,
     user: IUserDocument,
 ): Promise<TransformedActivity> => {
-    let message = '<0> '; // begin the message with the prefix that user '0' did something...
-
-    const owner = UserModel.project(user);
-    const references: ActivityReference[] = [
-        {
-            type: 'user',
-            document: owner,
-        },
-    ];
-
-    const { prefixMessage, prefixReferences } = await computeActivityPrefix(activity);
-    message += `${prefixMessage}.`;
-    references.push(...prefixReferences);
+    const { kind, type } = activity;
+    const { prefixMessage, prefixReferences: references } = await computeActivityPrefix(activity);
+    const message = `${prefixMessage}.`;
 
     // before we send of the request, let's validate that the number of references in the
     // generated message is correct...
     TransformedActivitySchema.parse({ message, references });
 
     return {
+        id: activity._id.toString(),
         message,
         references,
-        owner,
+        kind,
+        type,
+        owner: UserModel.project(user),
         updatedAt: activity.updatedAt.getTime(),
         createdAt: activity.createdAt.getTime(),
     };

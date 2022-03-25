@@ -6,7 +6,7 @@ import CommentEditor from '../CommentEditor';
 import MarkdownRenderer from '../MarkdownRenderer';
 import UserAvatar from '../UserAvatar';
 import UserLink from '../UserLink';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { MdOutlineMoreVert } from 'react-icons/md';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
@@ -97,7 +97,7 @@ export default function CommentCard({ comment }: CommentCardProps): ReactElement
                                 size={'small'}
                                 aria-expanded={anchorEl ? 'true' : undefined}
                             >
-                                <MoreVertIcon />
+                                <MdOutlineMoreVert />
                             </IconButton>
                         )}
                     </Box>

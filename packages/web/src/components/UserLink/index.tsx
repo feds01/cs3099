@@ -28,7 +28,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 export default function UserLink({ user, noPopover = false }: Props): ReactElement {
     const classes = useStyles();
-
     const [open, setOpen] = useState(false);
 
     const handleClose = () => {

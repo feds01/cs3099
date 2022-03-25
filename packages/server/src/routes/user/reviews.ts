@@ -4,9 +4,9 @@ import { z } from 'zod';
 import * as userUtils from '../../utils/users';
 import { verifyUserPermission } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
-import { IPublication } from '../../models/Publication';
+import { AugmentedPublicationDocument } from '../../models/Publication';
 import Review, { IReviewStatus } from '../../models/Review';
-import { IUser, IUserRole } from '../../models/User';
+import { AugmentedUserDocument, IUserRole } from '../../models/User';
 import { ModeSchema } from '../../validators/requests';
 
 const router = express.Router();
@@ -41,8 +41,8 @@ registerRoute(router, '/:username/reviews', {
             owner: user.id,
             ...(!isOwner && { status: IReviewStatus.Completed }),
         })
-            .populate<{ owner: IUser }>('owner')
-            .populate<{ publication: IPublication }>('publication')
+            .populate<{ owner: AugmentedUserDocument }>('owner')
+            .populate<{ publication: AugmentedPublicationDocument }>('publication')
             .exec();
 
         const reviews = await Promise.all(result.map(Review.project));

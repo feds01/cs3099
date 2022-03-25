@@ -21,4 +21,4 @@ export const TransformedActivitySchema = z
     })
     // References are defined in the form of '<\d+>', so for the number of regex matches
     // that are present in the message, we should be able to have the same number of references.
-    .refine((value) => [...value.message.matchAll(/<\d+>/)].length === value.references.length);
+    .refine((value) => [...value.message.matchAll(/<\d+>/g)].length === value.references.length);

@@ -270,6 +270,67 @@ export const getPutReviewIdCommentMock = () => ({
     },
 });
 
+export const getGetReviewMock = () => ({
+    status: faker.helpers.randomize(Object.values(SuccessStatus)),
+    reviews: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
+        publication: {
+            id: faker.random.word(),
+            name: faker.random.word(),
+            title: faker.random.word(),
+            introduction: faker.helpers.randomize([faker.random.word(), undefined]),
+            changelog: faker.helpers.randomize([faker.random.word(), undefined]),
+            about: faker.helpers.randomize([faker.random.word(), undefined]),
+            revision: faker.random.word(),
+            pinned: faker.datatype.boolean(),
+            draft: faker.datatype.boolean(),
+            current: faker.datatype.boolean(),
+            owner: {
+                id: faker.random.word(),
+                email: faker.random.word(),
+                username: faker.random.word(),
+                role: faker.helpers.randomize(Object.values(UserRole)),
+                name: faker.helpers.randomize([faker.random.word(), undefined]),
+                createdAt: faker.datatype.number(),
+                profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+                status: faker.helpers.randomize([faker.random.word(), undefined]),
+                about: faker.helpers.randomize([faker.random.word(), undefined]),
+            },
+            attachment: faker.helpers.randomize([faker.datatype.boolean(), undefined]),
+            collaborators: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
+                id: faker.random.word(),
+                email: faker.random.word(),
+                username: faker.random.word(),
+                role: faker.helpers.randomize(Object.values(UserRole)),
+                name: faker.helpers.randomize([faker.random.word(), undefined]),
+                createdAt: faker.datatype.number(),
+                profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+                status: faker.helpers.randomize([faker.random.word(), undefined]),
+                about: faker.helpers.randomize([faker.random.word(), undefined]),
+            })),
+            createdAt: faker.datatype.number(),
+            updatedAt: faker.datatype.number(),
+        },
+        owner: {
+            id: faker.random.word(),
+            email: faker.random.word(),
+            username: faker.random.word(),
+            role: faker.helpers.randomize(Object.values(UserRole)),
+            name: faker.helpers.randomize([faker.random.word(), undefined]),
+            createdAt: faker.datatype.number(),
+            profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
+            status: faker.helpers.randomize([faker.random.word(), undefined]),
+            about: faker.helpers.randomize([faker.random.word(), undefined]),
+        },
+        createdAt: faker.datatype.number(),
+        updatedAt: faker.datatype.number(),
+        status: faker.helpers.randomize(Object.values(ReviewStatus)),
+        id: faker.random.word(),
+    })),
+    skip: faker.datatype.number(),
+    take: faker.datatype.number(),
+    total: faker.datatype.number(),
+});
+
 export const getGetReviewIdMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
     review: {
@@ -379,6 +440,9 @@ export const getReviewsMSW = () => [
     }),
     rest.put('*/review/:id/comment', (_req, res, ctx) => {
         return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPutReviewIdCommentMock()));
+    }),
+    rest.get('*/review', (_req, res, ctx) => {
+        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetReviewMock()));
     }),
     rest.get('*/review/:id', (_req, res, ctx) => {
         return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetReviewIdMock()));

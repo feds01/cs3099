@@ -8,14 +8,14 @@ import {
     compareUserRoles,
     defaultPermissionVerifier,
     verifyUserPermission,
-    verifyUserWithElevatedPermission,
 } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
 import { deleteFileResource, resourceExists } from '../../lib/resources/fs';
 import Follower from '../../models/Follower';
-import User, { AugmentedUserDocument, IUserRole } from '../../models/User';
+import User, { IUserRole } from '../../models/User';
 import { config } from '../../server';
 import { ResponseErrorSummary } from '../../transformers/error';
+import { UserAggregation } from '../../types/aggregation';
 import { expr } from '../../utils/expr';
 import { escapeRegExp } from '../../utils/regex';
 import { joinPathsForResource } from '../../utils/resources';
@@ -74,11 +74,6 @@ registerRoute(router, '/', {
             }
             return undefined;
         });
-
-        type UserAggregation = {
-            data: AugmentedUserDocument[];
-            total?: number;
-        };
 
         // We want to find all users that might match the provided search query
         // in either username or name
@@ -251,13 +246,13 @@ registerRoute(router, '/:username/avatar', {
     params: z.object({ username: z.string() }),
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
-    permissionVerification: verifyUserWithElevatedPermission,
+    permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
-        const user = await userUtils.transformUsernameIntoId(req);
+        const user = req.permissionData;
 
         if (user.profilePictureUrl) {
-            const resourcePath = joinPathsForResource('avatar', user.id, 'avatar');
+            const resourcePath = joinPathsForResource('avatar', user._id.toString(), 'avatar');
 
             // First, we want to update the database to state that the user has no avatar
             // and then we can remove the file from the disk.
@@ -306,10 +301,11 @@ registerRoute(router, '/:username', {
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     body: IUserPatchRequestSchema,
-    permissionVerification: verifyUserWithElevatedPermission,
+    permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Moderator },
     handler: async (req) => {
-        const user = await userUtils.transformUsernameIntoId(req);
+        const user = req.permissionData;
+        const userId = user._id.toString();
 
         // Verify that email and username aren't taken...
         const { username, email } = req.body;
@@ -319,7 +315,7 @@ registerRoute(router, '/:username', {
         // will fail because MongoDB disallows an empty 'or' clause.
         if (typeof username !== 'undefined' || typeof email !== 'undefined') {
             const searchQueryUser = {
-                _id: { $ne: user.id as string },
+                _id: { $ne: userId },
                 $or: [
                     ...(typeof username !== 'undefined' ? [{ username }] : []),
                     ...(typeof email !== 'undefined'
@@ -360,7 +356,7 @@ registerRoute(router, '/:username', {
         // database. If the user tries to update the username or an email that's already in use, mongo
         // will return an error because these fields have to be unique.
         const newUser = await User.findByIdAndUpdate(
-            user.id,
+            userId,
             { $set: { ...req.body } },
             { new: true },
         ).exec();
@@ -406,9 +402,8 @@ registerRoute(router, '/:username', {
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Administrator },
     handler: async (req) => {
-        const user = await userUtils.transformUsernameIntoId(req);
-
-        const deletedUser = await User.findByIdAndDelete(user.id).exec();
+        const user = req.permissionData;
+        const deletedUser = await User.findByIdAndDelete(user._id.toString()).exec();
 
         if (!deletedUser) {
             return {
@@ -489,10 +484,10 @@ registerRoute(router, '/:username/role', {
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     body: IUserRoleRequestSchema,
-    permissionVerification: verifyUserWithElevatedPermission,
+    permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Moderator },
     handler: async (req) => {
-        const user = await userUtils.transformUsernameIntoId(req);
+        const user = req.permissionData;
 
         // Verify that the user can't elevate the privilege of this user beyond theirs
         if (!compareUserRoles(req.requester.role, req.body.role)) {
@@ -509,7 +504,7 @@ registerRoute(router, '/:username/role', {
         }
 
         const newUser = await User.findByIdAndUpdate(
-            user.id,
+            user._id.toString(),
             { $set: { ...req.body } },
             { new: true },
         );
