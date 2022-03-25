@@ -85,8 +85,10 @@ PublicationSchema.index({ title: 'text', introduction: 'text', name: 'text' });
 PublicationSchema.post(
     /remove|deleteOne|findOneAndDelete$/,
     { document: true, query: true },
-    async (item: AugmentedPublicationDocument, next) => {
+    async (item: AugmentedPublicationDocument | null, next) => {
+        if (item === null) return next();
         Logger.warn('Cleaning up publication orphaned reviews (deleteOne)');
+
         await Review.deleteMany({ publication: item._id.toString() }).exec();
 
         next();

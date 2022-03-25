@@ -50,6 +50,7 @@ function validateConfig() {
             }
             Logger.error(`Server config validation failed:\n${errorMessages.join('\n')}`);
         }
+        console.log(e);
         process.exit(1);
     }
 }
