@@ -128,9 +128,11 @@ export async function downloadOctetStream(
             return { status: 'ok', response: tmpFilePath };
         } catch (e: unknown) {
             if (e instanceof Error) {
-                Logger.warn(`Failed to save file:\n${e.stack}`);
-            } else {
-                Logger.warn('Failed to save file.');
+                if (typeof e.stack !== 'undefined') {
+                    Logger.warn(`Failed to save file:\n${e.stack}`);
+                } else {
+                    Logger.warn(`Failed to save file:${e.message}`);
+                }
             }
 
             return { status: 'error', type: 'service', errors: {} };
@@ -142,7 +144,16 @@ export async function downloadOctetStream(
                     e.message
                 }`,
             );
-            return { status: 'error', type: 'fetch', errors: {} };
+
+            return {
+                status: 'error',
+                type: 'fetch',
+                errors: {
+                    resource: {
+                        message: `Fetch external service failed with: '${e.message}'`,
+                    },
+                },
+            };
         }
 
         if (e instanceof Error) {
