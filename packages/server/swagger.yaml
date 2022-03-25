@@ -104,8 +104,8 @@ paths:
                     $ref: '#/components/responses/ApiError'
     /sg/sso/verify:
         post:
-            summary: Refresh user session
-            description: Endpoint to refresh a JWT token
+            summary: Fetch user information
+            description: Endpoint verify a user session
             tags:
                 - external
             parameters:
@@ -140,8 +140,8 @@ paths:
                       type: string
                       description: Session state
             responses:
-                '204':
-                    description: No Content
+                '302':
+                    $ref: '#/components/responses/NoContent'
                 default:
                     $ref: '#/components/responses/ApiError'
     /sg/resources/import:
@@ -2611,13 +2611,13 @@ components:
                         type: object
                         required:
                             - status
-                            - user_id
+                            - id
                             - name
                             - email
                         properties:
                             status:
                                 $ref: '#/components/schemas/SuccessStatus'
-                            user_id:
+                            id:
                                 type: string
                                 example: 'ABCDE921312DAB23AE:t06'
                             name:

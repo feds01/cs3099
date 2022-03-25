@@ -38,18 +38,14 @@ paths:
                       type: string
                       description: Session state
             responses:
-                '200':
-                    $ref: '#/components/responses/UserAuthResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                '302':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /api/sg/sso/verify:
         post:
-            summary: Refresh user session
-            description: Endpoint to refresh a JWT token
+            summary: Fetch user information
+            description: Endpoint verify a user session
             tags:
                 - authentication
             parameters:
@@ -62,12 +58,8 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/TokenVerificationResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /api/sg/sso/callback:
         get:
             summary: Successful external login endpoint.
@@ -95,42 +87,40 @@ paths:
                       type: string
                       description: Generated token
             responses:
-                '204':
+                '302':
                     $ref: '#/components/responses/NoContent'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /api/sg/resources/import:
-        post:
-            summary: Endpoint to initiate an import of a submission
-            parameters:
-                - in: query
-                  required: true
-                  name: from
-                  schema:
-                      type: string
-                      description: Callback URL of where to respond
-                      example: https://t01.example.com
-                - in: query
-                  required: true
-                  name: token
-                  schema:
-                      type: string
-                      description: JWT to check
-                - in: query
-                  required: true
-                  name: id
-                  schema:
-                      type: string
-                      description: ID of the submission to import.
-            tags:
-                - resources
-            responses:
-                '204':
-                    $ref: '#/components/responses/NoContent'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+      post:
+        summary: Endpoint to initiate an import of a submission
+        parameters:
+          - in: query
+            required: true
+            name: from
+            schema:
+                type: string
+                description: Callback URL of where to respond
+                example: https://t01.example.com
+          - in: query
+            required: true
+            name: token
+            schema:
+                type: string
+                description: JWT to check
+          - in: query
+            required: true
+            name: id
+            schema:
+                type: string
+                description: ID of the submission to import.
+        tags:
+          - resources
+        responses:
+                '200':
+                    $ref: '#/components/responses/Ok'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /api/sg/resources/export/{id}:
         get:
             summary: Endpoint to download an archive representing the publication sources.
@@ -148,12 +138,8 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/PublicationExportResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /api/sg/resources/export/{id}/metadata:
         get:
             summary: Endpoint to download the publication metadata
@@ -171,35 +157,27 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/PublicationMetadataResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /api/sg/users/{id}:
-        get:
-            summary: Endpoint to fetch user information about a particular user.
-            tags:
-                - users
-            parameters:
-                - in: path
-                  name: id
-                  schema:
-                      type: string
-                      example: 'ABCDE921312DAB23AE:t06'
-                  required: true
-                  description: The identifier of the publication.
-            responses:
-                '200':
-                    $ref: '#/components/responses/UserDataResponse'
-                '400':
-                    $ref: '#/components/responses/BadRequest'
-                '401':
-                    $ref: '#/components/responses/Unauthorized'
-                '500':
-                    $ref: '#/components/responses/InternalServerError'
-
+      get:
+        summary: Endpoint to fetch user information about a particular user.
+        tags:
+            - users
+        parameters:
+            - in: path
+              name: id
+              schema:
+                  type: string
+                  example: "ABCDE921312DAB23AE:t06"
+              required: true
+              description: The identifier of the publication.
+        responses:
+            '200':
+                $ref: '#/components/responses/UserDataResponse'
+            default:
+                $ref: '#/components/responses/ApiError'
+      
 components:
     securitySchemes:
         BearerAuth:
@@ -208,8 +186,21 @@ components:
     responses:
         NoContent:
             description: No Content. Server acknowledges request but has no return body.
-        BadRequest:
-            description: Bad Request. Provided request parameters were invalid.
+        Ok:
+            description: Server responds with an OK status.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                        properties:
+                            status:
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
+        ApiError:
+            description: General Error response from the API.
             content:
                 application/json:
                     schema:
@@ -224,58 +215,11 @@ components:
                                 enum: ['error']
                             message:
                                 type: string
-                                example: 'Malformed request'
-        Unauthorized:
-            description: Unauthorized. Requester doesn't have sufficient permissions to perform this action.
-            content:
-                application/json:
-                    schema:
-                        type: object
-                        required:
-                            - status
-                            - message
-                        properties:
-                            status:
-                                type: string
-                                example: 'error'
-                                enum: ['error']
-                            message:
-                                type: string
-                                example: 'Unauthorized'
-        InternalServerError:
-            description: Internal Server Error. Information retrieval failed, server unexpectedly returned an error.
-            content:
-                application/json:
-                    schema:
-                        type: object
-                        required:
-                            - status
-                            - message
-                        properties:
-                            status:
-                                type: string
-                                example: 'error'
-                                enum: ['error']
-                            message:
-                                type: string
-                                example: 'Internal Server Error'
-        NotFound:
-            description: Specified resource does not exist in the scope of the requesters permissions.
-            content:
-                application/json:
-                    schema:
-                        type: object
-                        required:
-                            - status
-                            - message
-                        properties:
-                            status:
-                                type: string
-                                example: 'error'
-                                enum: ['error']
-                            message:
-                                type: string
-                                example: 'Not Found'
+                                example: 'Message describing the error.'
+                            errors:
+                                type: object
+                                additionalProperties:
+                                    $ref: '#/components/schemas/ResponseError'
         PublicationExportResponse:
             description: Response archive file.
             content:
@@ -310,18 +254,17 @@ components:
             content:
                 application/json:
                     schema:
-                        $ref: '#/components/schemas/UserData'
+                      $ref: '#/components/schemas/UserData'
         UserAuthResponse:
             description: Authentication tokens with user information.
             content:
                 application/json:
                     schema:
                         type: object
-                        description: Successful authentication, returning a token, and a refreshToken.
+                        description: Successful authentication, returning a token.
                         required:
                             - user
                             - token
-                            - refreshToken
                         properties:
                             status:
                                 type: string
@@ -330,47 +273,52 @@ components:
                             token:
                                 type: string
                                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-                            refreshToken:
-                                type: string
-                                example: ABCDE921312DAB23AE
                             user:
                                 $ref: '#/components/schemas/User'
         UserDataResponse:
-            description: Information about the user.
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/components/schemas/UserData'
+          description: Information about the user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserData'
     schemas:
+        ResponseError:
+            type: object
+            required:
+                - message
+            properties:
+                message:
+                    type: string
+                    example: 'This field is invalid'
         User:
             type: string
-            example: 'ABCDE921312DAB23AE:t06'
-
+            example: "ABCDE921312DAB23AE:t06"
+            
         UserData:
             type: object
-            description: 'User information object'
+            description: "User information object"
             required:
-                - name
-                - email
-                - id
-                - status
+              - name
+              - email
+              - id
+              - status
             properties:
-                status:
-                    type: string
-                    example: 'ok'
-                    enum: ['ok']
-                name:
-                    type: string
-                    example: 'John Smith'
-                profilePictureUrl:
-                    type: string
-                    example: 'https://example.com/some-avatar.jpg'
-                email:
-                    type: string
-                    example: 'john.smith@example.com'
-                id:
-                    type: string
-                    example: 'ABCDE921312DAB23AE:t06'
+              status:
+                type: string
+                example: 'ok'
+                enum: ['ok']
+              name:
+                type: string
+                example: 'John Smith'
+              profilePictureUrl:
+                type: string
+                example: "https://example.com/some-avatar.jpg"
+              email:
+                type: string
+                example: 'john.smith@example.com'
+              id:
+                type: string
+                example: 'ABCDE921312DAB23AE:t06'
         Publication:
             type: object
             required:
@@ -408,7 +356,7 @@ components:
             properties:
                 owner:
                     type: string
-                    example: 'ABCDE921312DAB23AE:t06'
+                    example:  "ABCDE921312DAB23AE:t06"
                 createdAt:
                     type: number
                     example: 1636065460
@@ -426,11 +374,11 @@ components:
                 - postedAt
             properties:
                 id:
-                    type: number
-                    example: 1
+                  type: number
+                  example: 1
                 replying:
-                    type: number
-                    example: 0
+                  type: number
+                  example: 0
                 filename:
                     type: string
                     example: 'src/server.ts'
