@@ -116,6 +116,10 @@ export function loadArchiveFromPath(filePath: string): AdmZip | null {
     try {
         return new AdmZip(filePath);
     } catch (e: unknown) {
+        if (e instanceof Error) {
+            Logger.warn(`Failed reading archive from path:\n${e.stack}`);
+        }
+
         return null;
     }
 }
