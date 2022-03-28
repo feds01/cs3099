@@ -69,17 +69,13 @@ registerRoute(router, '/upload/:username', {
         }
 
         // check file size is no bigger than 300kb
-        if (file.size > 300000) {
-            return {
-                status: 'error',
-                code: 400,
-                message: errors.BAD_REQUEST,
-                errors: {
-                    file: {
-                        message: 'File size too large. Must be less than 300Kb',
-                    },
+        if (file.size > 1024 * 300) {
+            throw new errors.ApiError(413, 'The file size is too large, limit is 300Kb.', {
+                file: {
+                    message: 'File size too large. Must be less than 300Kb',
+                    code: errors.CODES.RESOURCE_UPLOAD_TOO_LARGE,
                 },
-            };
+            });
         }
 
         const uploadPath = joinPathsForResource('avatar', user._id.toString(), 'avatar');
@@ -144,6 +140,16 @@ registerRoute(router, '/upload/publication/:id', {
                     },
                 },
             };
+        }
+
+        // check file size is no bigger than 25MiB
+        if (file.size > 1024 * 1024 * 25) {
+            throw new errors.ApiError(413, 'The file size is too large, limit is 25MiB.', {
+                file: {
+                    message: 'File size too large. Must be less than 25MiB',
+                    code: errors.CODES.RESOURCE_UPLOAD_TOO_LARGE,
+                },
+            });
         }
 
         // @Security: Ensure that the actual uploaded file is sane and don't just rely on mimetype.

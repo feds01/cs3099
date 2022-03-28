@@ -1,5 +1,6 @@
 import AdmZip from 'adm-zip';
 import assert from 'assert';
+import FileType from 'file-type/browser';
 import { z } from 'zod';
 
 import * as errors from '../common/errors';
@@ -318,22 +319,20 @@ export default class PublicationController {
     }
 
     /**
-     * Method to get a resource by path from a publication archive.
+     * Method to download a raw file from a publication by specifying the path
+     * within the archive.
      *
      * @param path - The string that represents a path within the ZIP archive.
-     * @param sortBy - Order of which to sort publication entries by
+     * @returns Raw file response
      */
-    async tree(
-        path: string,
-        sortBy: ResourceSortOrder,
-    ): Promise<ApiResponse<PublicationArchiveEntryResponse>> {
+    async getPathRawContent(path: string): Promise<ApiResponse<Buffer>> {
         const archive = {
             userId: this.publication.owner._id.toString(),
             name: this.publication.name,
             ...(!this.publication.current && { revision: this.publication.revision }),
         };
 
-        const entry = zip.getEntry(archive, path);
+        const entry = await zip.getEntryAsRaw(archive, path);
 
         if (!entry) {
             return {
@@ -342,6 +341,44 @@ export default class PublicationController {
                 message: errors.RESOURCE_NOT_FOUND,
             };
         }
+
+        const buffer = entry.getData();
+
+        return {
+            status: 'file-raw',
+            code: 200,
+            mimeType: (await FileType.fromBuffer(buffer))?.mime,
+            file: buffer,
+        };
+    }
+
+    /**
+     * Method to get a resource by path from a publication archive.
+     *
+     * @param path - The string that represents a path within the ZIP archive.
+     * @param sortBy - Order of which to sort publication entries by
+     */
+    async getPathFromArchive(
+        path: string,
+        sortBy: ResourceSortOrder,
+        noContent: boolean,
+    ): Promise<ApiResponse<PublicationArchiveEntryResponse>> {
+        const archive = {
+            userId: this.publication.owner._id.toString(),
+            name: this.publication.name,
+            ...(!this.publication.current && { revision: this.publication.revision }),
+        };
+
+        const entry = await zip.getEntry(archive, path, noContent);
+
+        if (!entry) {
+            return {
+                status: 'error',
+                code: 404,
+                message: errors.RESOURCE_NOT_FOUND,
+            };
+        }
+
         // Here we need to apply sorting to the particular entry if the entry is a directory type
         if (entry.type === 'directory') {
             const sortEntry = sortBy ?? 'directory';
@@ -394,19 +431,25 @@ export default class PublicationController {
             status: 'ok',
             code: 200,
             data: {
-                entries: archive
-                    .getEntries()
-                    .filter((entry) => !entry.isDirectory)
-                    .map((entry) => {
-                        const contents = entry.getData();
+                entries: await Promise.all(
+                    archive
+                        .getEntries()
+                        .filter((entry) => !entry.isDirectory)
+                        .map(async (entry) => {
+                            const buffer = entry.getData();
 
-                        return {
-                            type: 'file',
-                            updatedAt: entry.header.time.getTime(),
-                            contents: contents.toString(),
-                            filename: entry.entryName,
-                        };
-                    }),
+                            // attempt to compute the mime type from the buffer
+                            const mimeType = await FileType.fromBuffer(buffer);
+
+                            return {
+                                type: 'file',
+                                mimeType: mimeType ?? 'text/plain',
+                                updatedAt: entry.header.time.getTime(),
+                                contents: buffer.toString(),
+                                filename: entry.entryName,
+                            };
+                        }),
+                ),
             },
         };
     }

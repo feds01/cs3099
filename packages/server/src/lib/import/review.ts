@@ -311,7 +311,7 @@ export class ReviewImportManager {
                 commentCommitOrder.push(rootComment.id);
 
                 // Now find all the comments that reference the previous batch
-                const leftComments = new Set(threadComments.map(comment => comment.id));
+                const leftComments = new Set(threadComments.map((comment) => comment.id));
                 leftComments.delete(rootComment.id);
 
                 let previousReferences = [rootComment.id];

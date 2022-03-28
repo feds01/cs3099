@@ -1,4 +1,5 @@
 import AdmZip, { IZipEntry } from 'adm-zip';
+import FileType from 'file-type/browser';
 import { promises as fs } from 'fs';
 
 import { ApiError } from '../../common/errors';
@@ -28,6 +29,9 @@ export type PublicationPathContent =
     | {
           type: 'file';
           contents: string; // UTF8 text file
+          updatedAt: number;
+          mimeType: string;
+          filename: string;
       }
     | {
           type: 'directory';
@@ -203,12 +207,52 @@ function findEntry(zip: AdmZip, path: string) {
  *
  * @param archive - The entry describing the archives location in the file system.
  * @param path - Path in the archive to the actual folder
- * @returns The transformed entry or null if the entry doesn't exist.
+ * @returns The entry or null if the entry doesn't exist.
  */
-export function getEntry(
+export async function getEntryAsRaw(
     archive: ArchiveIndex | string,
     path: string,
-): PublicationPathContent | null {
+): Promise<AdmZip.IZipEntry | null> {
+    const zip = expr(() => {
+        if (typeof archive === 'string') {
+            return loadArchiveFromPath(archive);
+        }
+        return loadArchive(archive);
+    });
+
+    if (!zip) return null;
+
+    try {
+        const entry = findEntry(zip, path);
+        console.log(entry, path);
+
+        if (!entry || entry.isDirectory) return null;
+
+        return entry;
+    } catch (e: unknown) {
+        if (e instanceof Error) {
+            Logger.error(`Encountered invalid zip file:\n${e.message}`);
+        }
+
+        throw new ApiError(400, 'Invalid ZIP Archive');
+    }
+}
+
+/**
+ * Function to get an entry from the a archive index. The function will generate
+ * information about the entry if it is either a file or a directory, returning a
+ * @see{PublicationPathContent} describing the entry.
+ *
+ * @param archive - The entry describing the archives location in the file system.
+ * @param path - Path in the archive to the actual folder
+ * @param noContent - Omit sending the content
+ * @returns The transformed entry or null if the entry doesn't exist.
+ */
+export async function getEntry(
+    archive: ArchiveIndex | string,
+    path: string,
+    noContent: boolean,
+): Promise<PublicationPathContent | null> {
     const zip = expr(() => {
         if (typeof archive === 'string') {
             return loadArchiveFromPath(archive);
@@ -249,11 +293,17 @@ export function getEntry(
         }
 
         // Extract the contents of the file and return it...
-        const contents = entry.getData().toString();
+        const buffer = entry.getData();
+
+        // attempt to compute the mime type from the buffer
+        const mimeType = await FileType.fromBuffer(buffer);
 
         return {
             type: 'file',
-            contents,
+            filename: path,
+            mimeType: mimeType?.mime ?? 'text/plain',
+            updatedAt: entry.header.time.getTime(),
+            contents: noContent ? '' : buffer.toString(),
         };
     } catch (e: unknown) {
         if (e instanceof Error) {

@@ -1,23 +1,20 @@
-import Box from '@mui/material/Box/Box';
-import CodeRenderer from '../CodeRenderer';
-import CommentEditor from '../CommentEditor';
-import { Review } from '../../lib/api/models';
+import { SxProps, Theme } from '@mui/material';
+import Box, { BoxProps } from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
-import { MdMoreVert, MdArrowForwardIos } from 'react-icons/md';
-import React, { useState, useEffect, useRef } from 'react';
-import CommentThreadRenderer from '../CommentThreadRenderer';
-import { BoxProps, Button, IconButton, Menu, MenuItem, Skeleton } from '@mui/material';
-
-import { styled } from '@mui/material/styles';
+import React, { useState } from 'react';
+import { Review } from '../../lib/api/models';
 import { CommentThread } from '../../lib/utils/comment';
-import MuiAccordionDetails from '@mui/material/AccordionDetails';
-import MuiAccordion, { AccordionProps } from '@mui/material/Accordion';
-import MuiAccordionSummary, { AccordionSummaryProps } from '@mui/material/AccordionSummary';
+import { constructBasePath, PublicationIndex } from '../../lib/utils/publications';
+import CodeRenderer from '../CodeRenderer';
+import ImageViewer from './ImageViewer';
 
 // This is used to represent the default maximum size of source files that are
 // rendered without the user explicitly asking them to be rendered.
 const DEFAULT_SOURCE_FILE_LIMIT = 500;
 
+/** Function to check whether contents of a file should be automatically rendered. */
 function shouldRenderByDefault(contents: string): boolean {
     return contents.split(/\r\n|\r|\n/).length < DEFAULT_SOURCE_FILE_LIMIT;
 }
@@ -48,202 +45,122 @@ const FileSkeleton = (props: BoxProps) => {
     );
 };
 
-const Accordion = styled((props: AccordionProps) => <MuiAccordion disableGutters elevation={0} square {...props} />)(
-    ({ theme }) => ({
-        border: `1px solid ${theme.palette.divider}`,
-        '&:not(:last-child)': {
-            borderBottom: 0,
-        },
-        '&:before': {
-            display: 'none',
-        },
-    }),
-);
-
-const AccordionSummary = styled((props: AccordionSummaryProps) => (
-    <MuiAccordionSummary expandIcon={<MdArrowForwardIos style={{ fontSize: '0.9rem' }} />} {...props} />
-))(({ theme }) => ({
-    // backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, .05)' : 'rgba(0, 0, 0, .03)',
-    flexDirection: 'row-reverse',
-    '& .MuiAccordionSummary-expandIconWrapper.Mui-expanded': {
-        transform: 'rotate(90deg)',
-    },
-    '& .MuiAccordionSummary-content': {
-        marginLeft: theme.spacing(1),
-    },
-}));
-
-const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
-    padding: theme.spacing(2),
-    borderTop: '1px solid rgba(0, 0, 0, .125)',
-}));
-
-type FileViewerProps = {
+type FileViewProps = {
     contents: string;
     filename: string;
-    id?: string;
-    language?: string;
-    review: Review;
-    threads?: CommentThread[];
+    mimeType: string;
+    publicationIndex: PublicationIndex;
+    review?: Review;
+    commentMap?: Map<number, CommentThread[]>;
     worker?: Worker;
+    renderLargeFiles?: boolean;
+    rendererSx?: SxProps<Theme>;
 };
 
-export default function FileViewer({ contents, filename, id, review, threads, worker, language }: FileViewerProps) {
-    const [expanded, setExpanded] = useState<boolean>(true);
-    const [renderSources, setRenderSources] = useState<boolean>(shouldRenderByDefault(contents));
+export default function FileViewer({
+    contents,
+    filename,
+    mimeType,
+    worker,
+    review,
+    commentMap,
+    renderLargeFiles = true,
+    publicationIndex,
+    rendererSx,
+}: FileViewProps) {
+    const [renderSources, setRenderSources] = useState<boolean>(
+        renderLargeFiles && mimeType.startsWith('text') ? true : shouldRenderByDefault(contents),
+    );
 
-    const [editingComment, setEditingComment] = useState<boolean>(false);
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    const isOpen = Boolean(anchorEl);
-
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-        event.stopPropagation();
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    const [commentMap, setCommentMap] = useState<Map<number, CommentThread[]>>(new Map([]));
-    const [fileComments, setFileComments] = useState<CommentThread[]>();
-
-    const editCommentRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (editingComment) {
-            /// We need to scroll to the end of the file so the user can start editing the file
-            /// comment...
-            editCommentRef.current?.scrollIntoView({
-                block: 'end',
-            });
-        }
-    }, [editingComment]);
-
-    const handleEditComment = () => {
-        setEditingComment(true);
-        handleClose();
-    };
-
-    // Let's compute where the comments are to be placed once once we get them
-    useEffect(() => {
-        if (typeof threads !== 'undefined') {
-            const newMap = new Map<number, CommentThread[]>();
-            const collectedFileComments: CommentThread[] = [];
-
-            threads.forEach((thread) => {
-                // Essentially, if no anchor is present on the comment, we put it on the file comments
-                if (typeof thread.anchor === 'undefined') {
-                    collectedFileComments.push(thread);
-                } else {
-                    const insertionIndex = thread.anchor.end - 1;
-
-                    if (newMap.has(insertionIndex)) {
-                        let originalArr = newMap.get(insertionIndex)!;
-                        originalArr.push(thread);
-                    } else {
-                        newMap.set(insertionIndex, [thread]);
-                    }
-                }
-            });
-
-            setCommentMap(newMap);
-            setFileComments(collectedFileComments);
-        }
-    }, [threads, renderSources]);
-
-    return (
-        <>
-            <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
-                <AccordionSummary>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            width: '100%',
-                            justifyContent: 'space-between',
-                        }}
-                    >
-                        <Typography {...(typeof id !== 'undefined' && { id })}>{filename}</Typography>
-                        <IconButton
-                            aria-label="file-settings"
-                            onClick={handleClick}
-                            aria-expanded={isOpen ? 'true' : undefined}
+    if (mimeType.startsWith('text')) {
+        return (
+            <>
+                {renderSources ? (
+                    <CodeRenderer
+                        sx={rendererSx}
+                        worker={worker}
+                        contents={contents}
+                        filename={filename}
+                        commentMap={commentMap}
+                        review={review}
+                    />
+                ) : (
+                    <>
+                        <FileSkeleton sx={{ p: 1, zIndex: 10, width: '100%' }} />
+                        <Box
+                            sx={{
+                                p: 2,
+                                zIndex: 20,
+                                display: 'flex',
+                                alignItems: 'center',
+                                flexDirection: 'column',
+                            }}
                         >
-                            <MdMoreVert />
-                        </IconButton>
-                    </Box>
-                </AccordionSummary>
-                <AccordionDetails>
-                    {renderSources ? (
-                        <CodeRenderer
-                            worker={worker}
-                            contents={contents}
-                            filename={filename}
-                            commentMap={commentMap}
-                            review={review}
-                        />
-                    ) : (
-                        <>
-                            <FileSkeleton sx={{ p: 1, zIndex: 10, width: '100%' }} />
-                            <Box
-                                sx={{
-                                    p: 2,
-                                    zIndex: 20,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    flexDirection: 'column',
+                            <Button
+                                variant="contained"
+                                sx={{ fontWeight: 'bold' }}
+                                size={'small'}
+                                color="primary"
+                                onClick={() => {
+                                    setRenderSources(true);
                                 }}
                             >
-                                <Button
-                                    variant="contained"
-                                    sx={{ fontWeight: 'bold' }}
-                                    size={'small'}
-                                    color="primary"
-                                    onClick={() => {
-                                        setRenderSources(true);
-                                    }}
-                                >
-                                    Load file
-                                </Button>
-                                <Typography variant={'body1'}>Large files aren't rendered by default</Typography>
-                            </Box>
-                        </>
-                    )}
-                </AccordionDetails>
-                <Menu
-                    id="comment-settings"
-                    MenuListProps={{
-                        'aria-labelledby': 'long-button',
-                    }}
-                    anchorEl={anchorEl}
-                    open={isOpen}
-                    onClose={handleClose}
-                >
-                    <MenuItem disabled={editingComment} onClick={handleEditComment} disableRipple>
-                        Add comment
-                    </MenuItem>
-                </Menu>
-            </Accordion>
-            {typeof review !== 'undefined' &&
-                fileComments?.map((thread) => {
-                    return (
-                        <Box key={thread.id} sx={{ pt: 1, pb: 1 }}>
-                            <CommentThreadRenderer thread={thread} />
+                                Load file
+                            </Button>
+                            <Typography variant={'body1'}>Large files aren't rendered by default</Typography>
                         </Box>
-                    );
-                })}
-            {typeof review !== 'undefined' && editingComment && (
-                <div ref={editCommentRef}>
-                    <CommentEditor
-                        type="post"
-                        filename={filename}
-                        reviewId={review.id}
-                        onClose={() => setEditingComment(false)}
-                    />
-                </div>
+                    </>
+                )}
+            </>
+        );
+    }
+
+    // Construct a download URI from the publication index and filename
+    const downloadUri =
+        `${process.env.REACT_APP_API_URI}/publication${constructBasePath(
+            publicationIndex,
+            true,
+        )}/download/${filename}` +
+        (typeof publicationIndex.revision !== 'undefined' ? `?revision=${publicationIndex.revision}` : '');
+
+    return (
+        <Box
+            sx={{
+                height: '100%',
+                width: '100%',
+                background: 'rgb(246, 248, 250)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                ...rendererSx,
+            }}
+        >
+            {mimeType.startsWith('image') ? (
+                <ImageViewer filename={filename} downloadUri={downloadUri} />
+            ) : (
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        p: 2,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography variant={'body1'}>Binary file - view not supported</Typography>
+                    <Button
+                        variant="contained"
+                        sx={{ fontWeight: 'bold', mt: `8px !important` }}
+                        size={'small'}
+                        color="primary"
+                        target={'_blank'}
+                        href={downloadUri}
+                        component="a"
+                    >
+                        Open file
+                    </Button>
+                </Box>
             )}
-        </>
+        </Box>
     );
 }

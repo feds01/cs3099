@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from '@jest/globals';
 import { agent as supertest } from 'supertest';
 
 import app from '../../../src/app';
+import { CODES } from '../../../src/common/errors';
 import { createMockedUser } from '../../utils/factories/user';
 import { registerUserAndAuthenticate } from '../../utils/requests/createUser';
 
@@ -48,6 +49,8 @@ describe('Profile avatar tests', () => {
             .post('/resource/upload/test')
             .attach('file', '__tests__/resources/largeLogoFile.png');
 
-        expect(avatarUpload.status).toBe(400);
+        expect(avatarUpload.status).toBe(413);
+        expect(avatarUpload.body.errors).toHaveProperty('file');
+        expect(avatarUpload.body.errors.file.code).toBe(CODES.RESOURCE_UPLOAD_TOO_LARGE);
     });
 });

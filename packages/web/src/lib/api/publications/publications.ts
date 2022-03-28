@@ -25,6 +25,8 @@ import type {
     GetPublicationUsernameNameRevisionsParams,
     ResourceResponseResponse,
     GetPublicationUsernameNameTreePathParams,
+    RawFileResponseResponse,
+    GetPublicationUsernameNameDownloadPathParams,
     GetPublicationUsernameNameSources200,
     GetPublicationUsernameNameSourcesParams,
     DeletePublicationUsernameNameAll200,
@@ -472,6 +474,62 @@ export const useGetPublicationUsernameNameTreePath = <
 };
 
 /**
+ * Get a publication resource raw file.
+ * @summary Get a file from a publication
+ */
+export const getPublicationUsernameNameDownloadPath = (
+    username: string,
+    name: string,
+    path: string,
+    params?: GetPublicationUsernameNameDownloadPathParams,
+) => {
+    return customInstance<RawFileResponseResponse>({
+        url: `/publication/${username}/${name}/download/${path}`,
+        method: 'get',
+        params,
+    });
+};
+
+export const getGetPublicationUsernameNameDownloadPathQueryKey = (
+    username: string,
+    name: string,
+    path: string,
+    params?: GetPublicationUsernameNameDownloadPathParams,
+) => [`/publication/${username}/${name}/download/${path}`, ...(params ? [params] : [])];
+
+export const useGetPublicationUsernameNameDownloadPath = <
+    TData = AsyncReturnType<typeof getPublicationUsernameNameDownloadPath>,
+    TError = ApiErrorResponse,
+>(
+    username: string,
+    name: string,
+    path: string,
+    params?: GetPublicationUsernameNameDownloadPathParams,
+    options?: {
+        query?: UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameDownloadPath>, TError, TData>;
+    },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+    const { query: queryOptions } = options || {};
+
+    const queryKey =
+        queryOptions?.queryKey ?? getGetPublicationUsernameNameDownloadPathQueryKey(username, name, path, params);
+
+    const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameDownloadPath>> = () =>
+        getPublicationUsernameNameDownloadPath(username, name, path, params);
+
+    const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameDownloadPath>, TError, TData>(
+        queryKey,
+        queryFn,
+        { enabled: !!(username && name && path), ...queryOptions },
+    );
+
+    return {
+        queryKey,
+        ...query,
+    };
+};
+
+/**
  * @summary Get a paginated list of sources for a publication
  */
 export const getPublicationUsernameNameSources = (
@@ -752,6 +810,44 @@ export const useGetPublicationbyidIdTreePath = <
         getPublicationbyidIdTreePath(id, path);
 
     const query = useQuery<AsyncReturnType<typeof getPublicationbyidIdTreePath>, TError, TData>(queryKey, queryFn, {
+        enabled: !!(id && path),
+        ...queryOptions,
+    });
+
+    return {
+        queryKey,
+        ...query,
+    };
+};
+
+/**
+ * Get a publication resource raw file.
+ * @summary Get a file from a publication
+ */
+export const getPublicationbyidIdDownloadPath = (id: string, path: string) => {
+    return customInstance<RawFileResponseResponse>({ url: `/publication-by-id/${id}/download/${path}`, method: 'get' });
+};
+
+export const getGetPublicationbyidIdDownloadPathQueryKey = (id: string, path: string) => [
+    `/publication-by-id/${id}/download/${path}`,
+];
+
+export const useGetPublicationbyidIdDownloadPath = <
+    TData = AsyncReturnType<typeof getPublicationbyidIdDownloadPath>,
+    TError = ApiErrorResponse,
+>(
+    id: string,
+    path: string,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getPublicationbyidIdDownloadPath>, TError, TData> },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+    const { query: queryOptions } = options || {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetPublicationbyidIdDownloadPathQueryKey(id, path);
+
+    const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationbyidIdDownloadPath>> = () =>
+        getPublicationbyidIdDownloadPath(id, path);
+
+    const query = useQuery<AsyncReturnType<typeof getPublicationbyidIdDownloadPath>, TError, TData>(queryKey, queryFn, {
         enabled: !!(id && path),
         ...queryOptions,
     });

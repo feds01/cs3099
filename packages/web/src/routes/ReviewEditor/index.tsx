@@ -10,8 +10,8 @@ import { useGetReviewId, useGetReviewIdComments, usePostReviewIdComplete } from 
 import { computeUserPermission } from '../../lib/utils/roles';
 import { ContentState } from '../../types/requests';
 import { transformQueryIntoContentState } from '../../wrappers/react-query';
-import ConversationView from './modules/ConversationView';
-import FileView from './modules/FileView';
+import ConversationView from './modules/Conversation';
+import FileView from './modules/File';
 import SubmissionPopOver from './modules/SubmissionPopOver';
 import { MdOutlineArrowDropDown } from 'react-icons/md';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -90,7 +90,7 @@ export default function ReviewPage(): ReactElement {
 
             // This is a hack to prevent us jumping from '/' in conversation view
             // and file view...
-            window.history.replaceState(null, '', `/review/${params.id}/files`);
+            // window.history.replaceState(null, '', `/review/${params.id}/files`);
 
             getReview.refetch();
         } else if (completeReviewQuery.isError && completeReviewQuery.error) {

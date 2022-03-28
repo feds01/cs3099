@@ -1306,9 +1306,52 @@ paths:
                   schema:
                       type: string
                       description: Revision number of the publication.
+                - in: query
+                  required: false
+                  name: noContent
+                  schema:
+                        $ref: '#/components/schemas/FlagSchema'
             responses:
                 '200':
                     $ref: '#/components/responses/ResourceResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication/{username}/{name}/download/{path}:
+        get:
+            summary: Get a file from a publication
+            description: Get a publication resource raw file.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: path
+                  name: path
+                  schema:
+                      type: string
+                      example: 'src/server.ts'
+                  required: true
+                - in: query
+                  required: false
+                  name: revision
+                  schema:
+                      type: string
+                      description: Revision number of the publication.
+            responses:
+                '200':
+                    $ref: '#/components/responses/RawFileResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/sources:
@@ -1650,6 +1693,32 @@ paths:
             responses:
                 '200':
                     $ref: '#/components/responses/ResourceResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication-by-id/{id}/download/{path}:
+        get:
+            summary: Get a file from a publication
+            description: Get a publication resource raw file.
+            tags:
+                - publications
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: Publication ID.
+                - in: path
+                  name: path
+                  schema:
+                      type: string
+                      example: 'src/server.ts'
+                  required: true
+            responses:
+                '200':
+                    $ref: '#/components/responses/RawFileResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
     /publication-by-id/{id}/sources:
@@ -2538,6 +2607,13 @@ components:
                                 type: object
                                 additionalProperties:
                                     $ref: '#/components/schemas/ResponseError'
+        RawFileResponse:
+            description: Raw file response.
+            content:
+                application/json:
+                    schema:
+                        type: string
+                        format: binary
         FollowerList:
             description: OK
             content:
@@ -3099,11 +3175,15 @@ components:
                 - updatedAt
                 - contents
                 - filename
+                - mimeType
             properties:
                 type:
                     type: string
                     enum: ['file']
                     example: 'file'
+                mimeType:
+                    type: string
+                    example: 'text/plain'
                 filename:
                     type: string
                     example: 'src/server.ts'
