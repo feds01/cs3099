@@ -1,5 +1,4 @@
 import CommentThreadRenderer from '../../../../components/CommentThreadRenderer';
-import FileViewer from '../../../../components/FileViewer';
 import { useReviewState } from '../../../../contexts/review';
 import { SelectionProvider } from '../../../../contexts/selection';
 import { FileResponse } from '../../../../lib/api/models';
@@ -11,6 +10,7 @@ import {
 } from '../../../../lib/utils/comment';
 import Box from '@mui/material/Box';
 import { useEffect, useState } from 'react';
+import FileAccordion from '../../../../components/FileAccordion';
 
 interface CodeSourceListProps {
     entries: FileResponse[];
@@ -53,10 +53,11 @@ export default function SourceList({ entries }: CodeSourceListProps) {
 
                     return (
                         <Box key={entry.filename} sx={{ pb: 0.5, pt: index === 0 ? 1 : 0.5 }}>
-                            <FileViewer
+                            <FileAccordion
                                 worker={worker}
                                 review={review}
                                 id={`file-${index}`}
+                                mimeType={entry.mimeType}
                                 filename={entry.filename}
                                 contents={entry.contents}
                                 threads={fileComments}

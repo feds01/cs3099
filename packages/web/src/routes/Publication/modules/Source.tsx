@@ -6,7 +6,7 @@ import Void from './../../../static/images/void.svg';
 import { ContentState } from '../../../types/requests';
 import { ReactElement, useEffect, useState } from 'react';
 import UploadAttachment from '../../../views/UploadAttachment';
-import { ResourceResponseResponse } from '../../../lib/api/models';
+import { ApiErrorResponse, ResourceResponseResponse } from '../../../lib/api/models';
 import PublicationViewSource from '../../../components/PublicationSourceView';
 import { transformQueryIntoContentState } from '../../../wrappers/react-query';
 import { usePublicationState, usePublicationDispatch } from '../../../contexts/publication';
@@ -22,7 +22,9 @@ export default function Source(): ReactElement {
     const { refetch } = usePublicationDispatch();
 
     const [path, setPath] = useState<string>('');
-    const [publicationSource, setPublicationSource] = useState<ContentState<ResourceResponseResponse, any>>({
+    const [publicationSource, setPublicationSource] = useState<
+        ContentState<ResourceResponseResponse, ApiErrorResponse>
+    >({
         state: 'loading',
     });
 

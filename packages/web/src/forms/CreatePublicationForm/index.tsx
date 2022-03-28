@@ -8,7 +8,6 @@ import { applyErrorsToForm } from '../../lib/utils/error';
 import { ICreatePublication, CreatePublicationSchema } from '../../validators/publication';
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
-import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { ReactElement, useEffect } from 'react';

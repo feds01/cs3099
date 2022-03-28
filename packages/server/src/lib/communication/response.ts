@@ -37,6 +37,13 @@ export type ApiResponse<T> =
           code: 200;
           /** The path of the file that is to be sent to the server */
           file: string;
+      }
+    /** Request was successful, but the handler will send a raw buffer */
+    | {
+          status: 'file-raw';
+          code: 200;
+          mimeType?: string;
+          file: Buffer;
       };
 
 /**
@@ -94,6 +101,14 @@ export async function handleResponse<T, P, PermData, Q, B>(
         }
         case 'file': {
             res.status(response.code).sendFile(response.file);
+            return;
+        }
+        case 'file-raw': {
+            if (typeof response.mimeType !== 'undefined') {
+                res.contentType(response.mimeType);
+            }
+
+            res.status(response.code).send(response.file);
             return;
         }
         default: {

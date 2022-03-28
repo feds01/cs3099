@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CodeRenderer tests Code is rendered 1`] = `
+exports[`CodeRenderer tests CodeRender displays text with highlighting 1`] = `
 <DocumentFragment>
   <pre
     class="css-11fbl0n"
@@ -42,6 +42,32 @@ exports[`CodeRenderer tests Code is rendered 1`] = `
           style="color: rgb(57, 58, 52);"
         >
           ;
+        </span>
+      </span>
+    </div>
+  </pre>
+</DocumentFragment>
+`;
+
+exports[`CodeRenderer tests CodeRender displays text with no highlighting 1`] = `
+<DocumentFragment>
+  <pre
+    class="css-11fbl0n"
+    style="color: rgb(57, 58, 52); background-color: rgb(246, 248, 250);"
+  >
+    <div
+      class="token-line css-1j6x6lr"
+    >
+      <span
+        class="css-8xmhzg"
+      >
+        6
+      </span>
+      <span
+        class="css-f5iui0"
+      >
+        <span>
+          let x = 5;
         </span>
       </span>
     </div>

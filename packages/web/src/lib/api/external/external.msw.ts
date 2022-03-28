@@ -28,7 +28,7 @@ export const getGetSgSsoLoginMock = () => ({
 
 export const getPostSgSsoVerifyMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
-    user_id: faker.random.word(),
+    id: faker.random.word(),
     name: faker.random.word(),
     email: faker.random.word(),
     profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),
@@ -67,7 +67,7 @@ export const getGetSgResourcesExportIdMetadataMock = () => ({
 
 export const getGetSgUsersIdMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
-    user_id: faker.random.word(),
+    id: faker.random.word(),
     name: faker.random.word(),
     email: faker.random.word(),
     profilePictureUrl: faker.helpers.randomize([faker.random.word(), undefined]),

@@ -11,8 +11,8 @@ import type {
     GetSgSsoLoginParams,
     TokenVerificationResponseResponse,
     PostSgSsoVerifyParams,
-    GetSgSsoCallbackParams,
     NoContentResponse,
+    GetSgSsoCallbackParams,
     PostSgResourcesImportParams,
     PublicationExportResponseResponse,
     PublicationMetadataResponseResponse,
@@ -64,8 +64,8 @@ export const useGetSgSsoLogin = <TData = AsyncReturnType<typeof getSgSsoLogin>, 
 };
 
 /**
- * Endpoint to refresh a JWT token
- * @summary Refresh user session
+ * Endpoint verify a user session
+ * @summary Fetch user information
  */
 export const postSgSsoVerify = (params?: PostSgSsoVerifyParams) => {
     return customInstance<TokenVerificationResponseResponse>({ url: `/sg/sso/verify`, method: 'post', params });
@@ -99,7 +99,7 @@ export const usePostSgSsoVerify = <TError = ApiErrorResponse, TContext = unknown
  * @summary Successful external login endpoint.
  */
 export const getSgSsoCallback = (params?: GetSgSsoCallbackParams) => {
-    return customInstance<void>({ url: `/sg/sso/callback`, method: 'get', params });
+    return customInstance<unknown>({ url: `/sg/sso/callback`, method: 'get', params });
 };
 
 export const getGetSgSsoCallbackQueryKey = (params?: GetSgSsoCallbackParams) => [
@@ -107,7 +107,10 @@ export const getGetSgSsoCallbackQueryKey = (params?: GetSgSsoCallbackParams) => 
     ...(params ? [params] : []),
 ];
 
-export const useGetSgSsoCallback = <TData = AsyncReturnType<typeof getSgSsoCallback>, TError = ApiErrorResponse>(
+export const useGetSgSsoCallback = <
+    TData = AsyncReturnType<typeof getSgSsoCallback>,
+    TError = NoContentResponse | ApiErrorResponse,
+>(
     params?: GetSgSsoCallbackParams,
     options?: { query?: UseQueryOptions<AsyncReturnType<typeof getSgSsoCallback>, TError, TData> },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {

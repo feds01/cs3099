@@ -6,7 +6,7 @@ import ExploreRoute from './../routes/Explore';
 import NotificationsRoute from './../routes/Notifications';
 import HomeRoute from './../routes/Home';
 import ProfileRoute from './../routes/Profile';
-import ReviewRoute from './../routes/Review';
+import ReviewRoute from '../routes/ReviewEditor';
 import ReviewsRoute from './../routes/Reviews';
 import PublicationsRoute from './../routes/Publications';
 import { matchPath } from 'react-router';

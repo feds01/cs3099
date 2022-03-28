@@ -47,4 +47,5 @@ export const INTERNAL_SERVER_ERROR = 'Internal Server Error.';
 // Error codes map for specific cases
 export const CODES = {
     PUBLICATION_ARCHIVE_EXISTS: 100,
+    RESOURCE_UPLOAD_TOO_LARGE: 101,
 };

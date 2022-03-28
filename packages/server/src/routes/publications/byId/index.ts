@@ -172,13 +172,43 @@ registerRoute(router, '/:id/tree/:path(*)', {
     }),
     query: z.object({
         sortBy: ResourceSortSchema,
+        noContent: FlagSchema.default('false'),
     }),
     headers: z.object({}),
     permissionVerification: verifyPublicationIdPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const controller = new PublicationController(req.permissionData);
-        return await controller.tree(req.params.path ?? '', req.query.sortBy);
+        return await controller.getPathFromArchive(
+            req.params.path ?? '',
+            req.query.sortBy,
+            req.query.noContent,
+        );
+    },
+});
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/publication-by-id/:id/download/:path*
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication-by-id/507f1f77bcf86cd799439011/download/blahblah
+ *
+ * @description This endpoint is used to download a raw file as a binary blob.
+ */
+registerRoute(router, '/:id/download/:path(*)', {
+    method: 'get',
+    params: z.object({
+        id: ObjectIdSchema,
+        path: z.string().optional(),
+    }),
+    query: z.object({}),
+    headers: z.object({}),
+    permissionVerification: verifyPublicationIdPermission,
+    permission: { level: IUserRole.Default },
+    handler: async (req) => {
+        const controller = new PublicationController(req.permissionData);
+        return await controller.getPathRawContent(req.params.path ?? '');
     },
 });
 

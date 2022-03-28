@@ -2,6 +2,7 @@ import assert from 'assert';
 import express from 'express';
 import { z } from 'zod';
 
+import * as errors from '../../../common/errors';
 import * as zip from '../../../lib/resources/zip';
 import * as userUtils from '../../../utils/users';
 import PublicationController, { PublicationResponse } from '../../../controller/publication';
@@ -14,7 +15,7 @@ import registerRoute from '../../../lib/communication/requests';
 import { deleteResource } from '../../../lib/resources/fs';
 import { IActivityOperationKind, IActivityType } from '../../../models/Activity';
 import Publication from '../../../models/Publication';
-import { IUserRole } from '../../../models/User';
+import { IUser, IUserRole } from '../../../models/User';
 import { PublicationAggregation } from '../../../types/aggregation';
 import { PaginationQuerySchema } from '../../../validators/pagination';
 import { IPublicationPatchRequestSchema } from '../../../validators/publications';
@@ -368,6 +369,7 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
     query: z.object({
         mode: ModeSchema,
         sortBy: ResourceSortSchema,
+        noContent: FlagSchema.default('false'),
         revision: z.string().optional(),
     }),
     headers: z.object({}),
@@ -375,7 +377,55 @@ registerRoute(router, '/:username/:name/tree/:path(*)', {
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const controller = new PublicationController(req.permissionData);
-        return await controller.tree(req.params.path ?? '', req.query.sortBy);
+        return await controller.getPathFromArchive(
+            req.params.path ?? '',
+            req.query.sortBy,
+            req.query.noContent,
+        );
+    },
+});
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /publication/:username/:name/download/:path*
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap/download/blahblah
+ *
+ * @description This endpoint is used to download a raw file as a binary blob.
+ */
+registerRoute(router, '/:username/:name/download/:path(*)', {
+    method: 'get',
+    params: z.object({
+        username: z.string(),
+        name: z.string(),
+        path: z.string().optional(),
+    }),
+    query: z.object({
+        mode: ModeSchema,
+        revision: z.string().optional(),
+    }),
+    headers: z.object({}),
+    permissionVerification: undefined,
+    permission: null,
+    handler: async (req) => {
+        const { revision } = req.query;
+
+        const owner = await userUtils.transformUsernameIntoId(req);
+        const publication = await Publication.findOne({
+            owner: owner._id.toString(),
+            name: req.params.name.toLowerCase(),
+            ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
+        })
+            .populate<{ owner: IUser }>('owner')
+            .exec();
+
+        if (!publication) {
+            return { status: 'error', message: errors.RESOURCE_NOT_FOUND, code: 404 };
+        }
+
+        const controller = new PublicationController(publication);
+        return await controller.getPathRawContent(req.params.path ?? '');
     },
 });
 

@@ -322,6 +322,7 @@ export const getGetPublicationUsernameNameTreePathMock = () => ({
     entry: faker.helpers.randomize([
         {
             type: faker.helpers.randomize(['file']),
+            mimeType: faker.random.word(),
             filename: faker.random.word(),
             contents: faker.random.word(),
             updatedAt: faker.datatype.number(),
@@ -337,10 +338,13 @@ export const getGetPublicationUsernameNameTreePathMock = () => ({
     ]),
 });
 
+export const getGetPublicationUsernameNameDownloadPathMock = () => faker.random.word();
+
 export const getGetPublicationUsernameNameSourcesMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
     entries: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
         type: faker.helpers.randomize(['file']),
+        mimeType: faker.random.word(),
         filename: faker.random.word(),
         contents: faker.random.word(),
         updatedAt: faker.datatype.number(),
@@ -488,6 +492,7 @@ export const getGetPublicationbyidIdTreePathMock = () => ({
     entry: faker.helpers.randomize([
         {
             type: faker.helpers.randomize(['file']),
+            mimeType: faker.random.word(),
             filename: faker.random.word(),
             contents: faker.random.word(),
             updatedAt: faker.datatype.number(),
@@ -503,10 +508,13 @@ export const getGetPublicationbyidIdTreePathMock = () => ({
     ]),
 });
 
+export const getGetPublicationbyidIdDownloadPathMock = () => faker.random.word();
+
 export const getGetPublicationbyidIdSourcesMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
     entries: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
         type: faker.helpers.randomize(['file']),
+        mimeType: faker.random.word(),
         filename: faker.random.word(),
         contents: faker.random.word(),
         updatedAt: faker.datatype.number(),
@@ -560,6 +568,13 @@ export const getPublicationsMSW = () => [
             ctx.json(getGetPublicationUsernameNameTreePathMock()),
         );
     }),
+    rest.get('*/publication/:username/:name/download/:path', (_req, res, ctx) => {
+        return res(
+            ctx.delay(1000),
+            ctx.status(200, 'Mocked status'),
+            ctx.json(getGetPublicationUsernameNameDownloadPathMock()),
+        );
+    }),
     rest.get('*/publication/:username/:name/sources', (_req, res, ctx) => {
         return res(
             ctx.delay(1000),
@@ -591,6 +606,13 @@ export const getPublicationsMSW = () => [
     }),
     rest.get('*/publication-by-id/:id/tree/:path', (_req, res, ctx) => {
         return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetPublicationbyidIdTreePathMock()));
+    }),
+    rest.get('*/publication-by-id/:id/download/:path', (_req, res, ctx) => {
+        return res(
+            ctx.delay(1000),
+            ctx.status(200, 'Mocked status'),
+            ctx.json(getGetPublicationbyidIdDownloadPathMock()),
+        );
     }),
     rest.get('*/publication-by-id/:id/sources', (_req, res, ctx) => {
         return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetPublicationbyidIdSourcesMock()));

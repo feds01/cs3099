@@ -3,8 +3,8 @@ import { CommentThread } from '../../lib/utils/comment';
 import { coerceExtensionToLanguage, getExtension } from '../../lib/utils/file';
 import CommentButton from '../CommentButton';
 import CommentThreadRenderer from '../CommentThreadRenderer';
-import Highlight from './PrismRenderer';
-import { styled } from '@mui/material';
+import PrismRenderer from './PrismRenderer';
+import { styled, SxProps, Theme } from '@mui/material';
 import Box from '@mui/material/Box';
 import React, { ReactElement } from 'react';
 import { useSelectionState } from '../../contexts/selection';
@@ -51,6 +51,7 @@ interface CodeRendererProps {
     lineNumbers?: boolean;
     lineOffset?: number;
     worker?: Worker;
+    sx?: SxProps<Theme>;
 }
 
 export default function CodeRenderer({
@@ -62,14 +63,15 @@ export default function CodeRenderer({
     lineNumbers = true,
     lineOffset = 0,
     worker,
+    sx,
 }: CodeRendererProps): ReactElement {
     const extension = coerceExtensionToLanguage(getExtension(filename) ?? language ?? '');
     const selectionState = useSelectionState();
 
     return (
-        <Highlight code={contents} language={extension ?? 'text'} worker={worker}>
-            {({ style, tokens, getLineProps, getTokenProps }) => (
-                <Pre style={style}>
+        <PrismRenderer code={contents} language={extension ?? 'text'} worker={worker}>
+            {({ style, tokens, ref, getLineProps, getTokenProps }) => (
+                <Pre sx={sx} style={style} ref={ref}>
                     {tokens.map((line, i) => (
                         <React.Fragment key={i}>
                             {typeof review !== 'undefined' && review.status === 'started' ? (
@@ -105,6 +107,6 @@ export default function CodeRenderer({
                     ))}
                 </Pre>
             )}
-        </Highlight>
+        </PrismRenderer>
     );
 }

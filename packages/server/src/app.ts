@@ -37,16 +37,6 @@ app.use(
         useTempFiles: true,
         tempFileDir: path.join(__dirname, '..', 'tmp'),
         createParentPath: true,
-        limits: {
-            fileSize: 1024 * 1024 * 10,
-        },
-        limitHandler: (_, res) => {
-            res.sendStatus(413).json({
-                status: 'error',
-                message: 'The file sent is too large; limit is 10MiB.',
-                errors: {},
-            });
-        },
     }),
 );
 
@@ -125,6 +115,15 @@ app.use((err: any, _req: express.Request, res: express.Response, next: express.N
         return res.status(400).json({
             status: 'error',
             message: errors.BAD_REQUEST,
+        });
+    }
+
+    // If an API error occurred and it wasn't caught within the requestHandler, then handle it here
+    if (err instanceof errors.ApiError) {
+        return res.status(err.code).json({
+            status: 'error',
+            message: err.message,
+            ...(err.errors && { errors: err.errors }),
         });
     }
 
