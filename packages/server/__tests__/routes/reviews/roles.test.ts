@@ -23,7 +23,11 @@ describe('Review roles tests', () => {
     let requesterResponse: AuthenticationResponse;
 
     // Test publication
-    const mockedPublication = createMockedPublication({ name: 'requester', collaborators: [], revision: 'v1' });
+    const mockedPublication = createMockedPublication({
+        name: 'requester',
+        collaborators: [],
+        revision: 'v1',
+    });
     let pubID = '';
     let reviewID = '';
 

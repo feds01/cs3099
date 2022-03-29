@@ -214,7 +214,7 @@ export default function Account() {
                                                 </Typography>
                                             </li>
                                         </Box>
-                                        <DeleteUserAccountForm username={user.username} />
+                                        <DeleteUserAccountForm username={user.username} isSelf={isSelf} />
                                     </Grid>
                                 </Grid>
                             </Grid>

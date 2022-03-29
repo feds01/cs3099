@@ -38,29 +38,30 @@ registerRoute(router, '/', {
     handler: async (req) => {
         const { skip, take, current } = req.query;
 
+        const filterQuery = {
+            draft: false,
+            ...(typeof current !== 'undefined' && { current }),
+        };
+
+        // Separately count the number of publications that match the query since the aggregation will count the
+        // total number of documents without applying the query.
+        const total = await Publication.count(filterQuery).exec();
+
         const aggregation = (await Publication.aggregate([
             {
                 $facet: {
                     data: [
                         {
-                            $match: {
-                                draft: false,
-                                ...(typeof current !== 'undefined' && { current }),
-                            },
+                            $match: filterQuery,
                         },
                         { $sort: { _id: -1 } },
                         { $skip: skip },
                         { $limit: take },
                     ],
-                    total: [{ $count: 'total' }],
                 },
             },
             {
-                $project: {
-                    data: 1,
-                    // Get total from the first element of the metadata array
-                    total: { $arrayElemAt: ['$total.total', 0] },
-                },
+                $project: { data: 1 },
             },
         ])) as unknown as [PublicationAggregation];
 
@@ -73,7 +74,7 @@ registerRoute(router, '/', {
                 publications: await Promise.all(
                     result.data.map(async (publication) => await Publication.project(publication)),
                 ),
-                total: result.total ?? 0,
+                total,
                 skip,
                 take,
             },
