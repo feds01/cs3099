@@ -27,7 +27,8 @@ export default function DirectoryViewer({ entries, basePath, filename }: Directo
                 </TableHead>
                 <TableBody>
                     {entries.map((entry) => {
-                        const fullPath = `${basePath}/tree/${filename}/${entry.filename}`.replace(/([^:]\/)\/+/g, '$1');
+                        const parts = [...filename.split('/'), entry.filename].map((part) => encodeURIComponent(part));
+                        const fullPath = `${basePath}/tree/${parts.join('/')}`.replace(/([^:]\/)\/+/g, '$1');
 
                         return (
                             <TableRow key={fullPath}>
