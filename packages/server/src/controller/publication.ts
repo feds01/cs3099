@@ -452,7 +452,7 @@ export default class PublicationController {
 
                             return {
                                 type: 'file',
-                                mimeType: mimeType ?? 'text/plain',
+                                mimeType: mimeType?.mime ?? 'text/plain',
                                 updatedAt: entry.header.time.getTime(),
                                 contents: buffer.toString(),
                                 filename: entry.entryName,
