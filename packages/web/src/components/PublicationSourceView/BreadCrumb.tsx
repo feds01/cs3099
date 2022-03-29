@@ -16,7 +16,7 @@ export default function BreadCrumb({ index, basePath, filename }: BreadCrumbProp
             <Link to={`${basePath}/tree/`}>
                 <Typography
                     color="text.primary"
-                    sx={{ fontWeight: 'bold', fontSize: 18, '&:hover': { textDecoration: 'underline ' } }}
+                    sx={{ fontWeight: 'bold', fontSize: 18, '&:hover': { textDecoration: 'underline' } }}
                 >
                     {index.name}
                 </Typography>
@@ -30,7 +30,7 @@ export default function BreadCrumb({ index, basePath, filename }: BreadCrumbProp
                         <Link key={index} to={`${basePath}/tree/${subPath}`}>
                             <Typography
                                 color="text.primary"
-                                sx={{ fontSize: 18, '&:hover': { textDecoration: 'underline ' } }}
+                                sx={{ fontSize: 18, '&:hover': { textDecoration: 'underline' } }}
                             >
                                 {component}
                             </Typography>

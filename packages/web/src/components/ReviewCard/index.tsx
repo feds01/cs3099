@@ -40,12 +40,14 @@ export default function ReviewCard({ review }: Props): ReactElement {
                             {isComplete ? (
                                 <>
                                     {' '}
-                                    reviewed <PublicationLink {...review.publication} /> publication{' '}
+                                    reviewed <PublicationLink publication={review.publication} /> publication{' '}
                                 </>
                             ) : (
                                 <>
                                     {' '}
-                                    began reviewing <PublicationLink {...review.publication} /> publication{' '}
+                                    began reviewing <PublicationLink
+                                        publication={review.publication}
+                                    /> publication{' '}
                                 </>
                             )}
                             {formatDistance(review.updatedAt, new Date(), { addSuffix: true })}.
