@@ -11,3 +11,11 @@ describe('Thread endpoints testing', () => {
         expect(request).toBeDefined();
     });
 });
+
+/* TODO:
+
+ - Add comment to someone else's review (hence making a thread)
+ - Test what happens when a top level comment is deleted
+ - Mod/Admin abilities to edit/ delete a thread
+
+*/

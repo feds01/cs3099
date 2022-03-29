@@ -1,6 +1,7 @@
 import assert from 'assert';
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
+import Logger from '../common/logger';
 import { ExportSgReview } from '../validators/sg';
 import Comment, { PopulatedComment } from './Comment';
 import Publication, { AugmentedPublicationDocument } from './Publication';
@@ -69,7 +70,9 @@ ReviewSchema.post(
     /remove|deleteOne|findOneAndDelete$/,
     { document: true, query: true },
     async (item: AugmentedReviewDocument, next) => {
-        await Comment.deleteMany({ review: item._id.toString() });
+        Logger.warn('Cleaning up orphaned review comments (deleteOne)');
+
+        await Comment.deleteMany({ review: item._id.toString() }).exec();
 
         next();
     },
@@ -77,8 +80,10 @@ ReviewSchema.post(
 
 ReviewSchema.post(
     'deleteMany',
-    { document: true },
-    async (items: AugmentedReviewDocument[], next) => {
+    { document: true, query: true },
+    async (_: unknown, items: AugmentedReviewDocument[], next: () => void) => {
+        Logger.warn('Cleaning up orphaned review comments (deleteMany)');
+
         await Promise.all(
             items.map(async (item) => {
                 await Comment.deleteMany({ review: item._id.toString() }).exec();

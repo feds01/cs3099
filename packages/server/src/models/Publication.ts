@@ -112,7 +112,19 @@ PublicationSchema.post(
         if (item === null) return next();
         Logger.warn('Cleaning up publication orphaned reviews (deleteOne)');
 
-        await Review.deleteMany({ publication: item._id.toString() }).exec();
+        const reviews = await Review.find({ publication: item._id.toString() }).exec();
+
+        // @@Bug: Mongoose doesn't seem to fire the `deleteMany` hook when we use
+        //        the `Review.deleteMany(...)` call. Specifically, defining the .post()
+        //        with accepting the query result, deleted items and the next() function.
+        //
+        //        Oddly enough, this post hook definition does work for this Publication
+        //        schema as it is defined below.
+        await Promise.all(
+            reviews.map(async (review) => {
+                await review.deleteOne();
+            }),
+        );
 
         next();
     },

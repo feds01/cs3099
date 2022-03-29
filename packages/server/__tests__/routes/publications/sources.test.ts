@@ -83,7 +83,6 @@ describe('Publication tests that involve revisions', () => {
             `/publication/${mockedOwner.username}/${mockedPublication.name}/tree/file.txt`,
         );
 
-        console.log(response.body.entry);
         expect(response.status).toBe(200);
         expect(response.body.entry).toStrictEqual(mockedFiles[0]);
     });

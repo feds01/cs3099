@@ -402,7 +402,7 @@ registerRoute(router, '/:id', {
     params: z.object({ id: ObjectIdSchema }),
     headers: z.object({}),
     permissionVerification: verifyReviewPermission,
-    permission: { level: IUserRole.Moderator },
+    permission: { level: IUserRole.Default },
     handler: async (req) => {
         const review = req.permissionData;
 

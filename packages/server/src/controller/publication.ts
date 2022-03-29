@@ -8,6 +8,7 @@ import * as zip from '../lib/resources/zip';
 import Logger from '../common/logger';
 import { createTokens } from '../lib/auth/auth';
 import { makeRequest } from '../lib/communication/fetch';
+import { compareUserRoles } from '../lib/communication/permissions';
 import { ApiResponse } from '../lib/communication/response';
 import { deleteResource, moveResource, resourceExists } from '../lib/resources/fs';
 import { PublicationPathContent } from '../lib/resources/zip';
@@ -21,7 +22,7 @@ import Review, {
     IReviewStatus,
     PopulatedReview,
 } from '../models/Review';
-import { AugmentedUserDocument } from '../models/User';
+import { AugmentedUserDocument, IUserRole } from '../models/User';
 import { config } from '../server';
 import { IUserPatchRequest } from '../validators/publications';
 import { ResourceSortOrder } from '../validators/requests';
@@ -94,7 +95,7 @@ export default class PublicationController {
     }
 
     async delete(): Promise<ApiResponse<undefined>> {
-        await this.publication.delete();
+        await this.publication.deleteOne();
 
         const publicationPath = zip.archiveIndexToPath({
             userId: this.publication.owner._id.toString(),
@@ -463,14 +464,31 @@ export default class PublicationController {
     }
 
     /**
-     * Method to list reviews on a publication
+     * Method to list reviews on a publication. This also accounts for if the requester is
+     * the owner of the 'review' and or if the requester has moderator privileges which
+     * implies that they are able to see the reviews
+     *
+     * @param requester: The requester user object
+     *
      *
      * @returns A list of reviews that exist on the specific publication
      */
-    async reviews(): Promise<ApiResponse<ReviewList>> {
+    async reviews(requester: AugmentedUserDocument): Promise<ApiResponse<ReviewList>> {
         const result = await Review.find({
             publication: this.publication._id.toString(),
-            status: IReviewStatus.Completed,
+            $or: [
+                {
+                    status: {
+                        $in: [
+                            IReviewStatus.Completed,
+                            ...(compareUserRoles(requester.role, IUserRole.Moderator)
+                                ? [IReviewStatus.Started]
+                                : []),
+                        ],
+                    },
+                },
+                { owner: requester._id.toString() },
+            ],
         })
             .populate<{ publication: AugmentedPublicationDocument }>('publication')
             .populate<{ owner: AugmentedUserDocument }>('owner')
