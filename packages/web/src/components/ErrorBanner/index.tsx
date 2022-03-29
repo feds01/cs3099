@@ -12,12 +12,12 @@ export default function ErrorBanner({ message, errors }: Props): ReactElement {
     return (
         <Alert severity="error">
             <AlertTitle>Error</AlertTitle>
-            <strong style={{lineBreak: 'anywhere'}}>{message}</strong>
+            <strong style={{ lineBreak: 'anywhere' }}>{message}</strong>
             {typeof errors !== 'undefined' && Object.keys(errors).length > 0 && (
                 <ul>
                     {Object.entries(errors).map(([key, value]) => {
                         return (
-                            <li style={{lineBreak: 'anywhere'}}>
+                            <li style={{ lineBreak: 'anywhere' }}>
                                 <strong>{key}</strong>: {value.message}
                             </li>
                         );
