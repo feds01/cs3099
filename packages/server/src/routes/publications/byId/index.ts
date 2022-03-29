@@ -7,7 +7,11 @@ import { verifyPublicationIdPermission } from '../../../lib/communication/permis
 import registerRoute from '../../../lib/communication/requests';
 import { IActivityOperationKind, IActivityType } from '../../../models/Activity';
 import { IUserRole } from '../../../models/User';
-import { IPublicationPatchRequestSchema } from '../../../validators/publications';
+import {
+    IPublicationPatchRequestSchema,
+    IRevisionSchema,
+    PublicationRevisionSchema,
+} from '../../../validators/publications';
 import { FlagSchema, ObjectIdSchema, ResourceSortSchema } from '../../../validators/requests';
 import reviewRouter from './reviews';
 
@@ -122,7 +126,7 @@ registerRoute(router, '/:id/revise', {
         id: ObjectIdSchema,
     }),
     query: z.object({}),
-    body: z.object({ revision: z.string(), changelog: z.string() }),
+    body: IRevisionSchema,
     headers: z.object({}),
     activity: {
         kind: IActivityOperationKind.Revise,
@@ -134,7 +138,7 @@ registerRoute(router, '/:id/revise', {
         assert(req.permissionData !== null);
 
         return {
-            document: response.publication._id,
+            document: response.publication.id,
             metadata: {
                 oldRevision: req.permissionData.revision,
                 newRevision: req.body!.revision,
@@ -261,7 +265,9 @@ registerRoute(router, '/:id/sources', {
         id: ObjectIdSchema,
     }),
     headers: z.object({}),
-    query: z.object({ revision: z.string() }),
+    query: z.object({
+        revision: PublicationRevisionSchema,
+    }),
     permissionVerification: verifyPublicationIdPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {

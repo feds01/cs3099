@@ -38,6 +38,9 @@ export class ApiError extends Error {
 export const MISMATCHING_LOGIN = "password or email fields incorrect/don't match.";
 export const NON_EXISTENT_USER = 'No user with the given username or id exists';
 
+// Publication API error messages
+export const NON_LIVE_PUBLICATION = 'Publication is still drafted';
+
 // General request errors
 export const UNAUTHORIZED = "User doesn't have permissions to perform this action.";
 export const BAD_REQUEST = 'The API request is malformed or invalid';

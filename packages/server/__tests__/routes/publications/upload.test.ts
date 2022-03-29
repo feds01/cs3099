@@ -12,7 +12,11 @@ const request = supertest(app);
 describe('Uploading source code tests', () => {
     const mockedOwner = createMockedUser({ username: 'owner' });
 
-    const mockedPublication = createMockedPublication({ name: 'test', collaborators: [] });
+    const mockedPublication = createMockedPublication({
+        name: 'test',
+        collaborators: [],
+        revision: 'v1',
+    });
     let pubID = '';
 
     /** Setup all the test by creating the publication owner */
@@ -35,9 +39,7 @@ describe('Uploading source code tests', () => {
 
     /** Delete the publication after each test to clean up all resources */
     afterEach(async () => {
-        const pubDelete = await request.delete(`/publication/owner/${mockedPublication.name}`);
-
-        expect(pubDelete.status).toBe(200);
+        await request.delete(`/publication/${mockedOwner.username}/${mockedPublication.name}`);
     });
 
     it('should upload source code to publication', async () => {

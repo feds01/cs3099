@@ -11,7 +11,7 @@ export interface ActivityMetadata {
     /** Any collected metadata to aid the construction of messages when recording activities */
     metadata?: object;
     /** The document that the activity is referencing */
-    document?: mongoose.Types.ObjectId;
+    document?: mongoose.Types.ObjectId | string;
     /** Whether or not the activity should become instantly live and visible */
     liveness: boolean;
 }

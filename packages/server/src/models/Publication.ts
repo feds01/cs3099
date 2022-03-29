@@ -4,7 +4,7 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 import Logger from '../common/logger';
 import { ExportSgPublication } from '../validators/sg';
 import Review, { IReviewStatus } from './Review';
-import User, { AugmentedUserDocument, IUser, IUserDocument } from './User';
+import User, { AugmentedUserDocument, IUser, IUserDocument, TransformedUser } from './User';
 
 /** The publication document represents a publication object */
 export interface IPublication {
@@ -36,6 +36,29 @@ export interface IPublication {
     updatedAt: Date;
 }
 
+/** Internal type that represents a project publication that is sent to the requester */
+export interface TransformedPublication {
+    /** The internal id of the publication */
+    id: string;
+    revision: string;
+    owner: TransformedUser;
+    title: string;
+    name: string;
+    introduction?: string;
+    changelog?: string;
+    about?: string;
+    draft: boolean;
+    current: boolean;
+    pinned: boolean;
+    collaborators: TransformedUser[];
+    createdAt: number;
+    updatedAt: number;
+    /** Whether the system knows or not that the publication has sources */
+    attachment?: boolean;
+    /** Number of reviews on the publication */
+    reviews: number;
+}
+
 export interface IPublicationDocument extends IPublication, Document {}
 
 export type AugmentedPublicationDocument = Omit<IPublicationDocument, '_id'> & {
@@ -50,11 +73,11 @@ interface IPublicationModel extends Model<IPublicationDocument> {
     project: (
         publication: AugmentedPublicationDocument,
         attachment?: boolean,
-    ) => Promise<Partial<IPublication>>;
+    ) => Promise<TransformedPublication>;
     projectWith: (
         publication: AugmentedPublicationDocument,
         user: IUserDocument | AugmentedUserDocument,
-    ) => Promise<Partial<IPublication>>;
+    ) => Promise<TransformedPublication>;
     projectAsSg: (publication: IPublicationDocument) => Promise<ExportSgPublication>;
 }
 
@@ -114,7 +137,7 @@ PublicationSchema.post(
 PublicationSchema.statics.project = async (
     publication: AugmentedPublicationDocument,
     attachment?: boolean,
-) => {
+): Promise<TransformedPublication> => {
     const { name, title, introduction, changelog, about, draft, owner: ownerId } = publication;
 
     // Resolve the owner name...
@@ -149,9 +172,7 @@ PublicationSchema.statics.project = async (
         draft,
         createdAt: publication.createdAt.getTime(),
         updatedAt: publication.updatedAt.getTime(),
-        // add the revision to the structure
         revision: publication.revision,
-        // If the publication is the current version or not
         current: publication.current,
         // Any collaborators that are attached to the publication
         collaborators,
@@ -166,8 +187,17 @@ PublicationSchema.statics.project = async (
 PublicationSchema.statics.projectWith = async (
     publication: AugmentedPublicationDocument,
     owner: IUserDocument,
-) => {
-    const { name, title, introduction, about, changelog, draft, owner: ownerId } = publication;
+): Promise<TransformedPublication> => {
+    const {
+        name,
+        title,
+        introduction,
+        pinned,
+        about,
+        changelog,
+        draft,
+        owner: ownerId,
+    } = publication;
 
     assert(owner.id === ownerId._id.toString(), 'Owner ids mismatch');
 
@@ -196,11 +226,10 @@ PublicationSchema.statics.projectWith = async (
         changelog,
         owner: User.project(owner),
         draft,
+        pinned,
         createdAt: publication.createdAt.getTime(),
         updatedAt: publication.updatedAt.getTime(),
-        // add the revision to the structure
         revision: publication.revision,
-        // If the publication is the current version or not
         current: publication.current,
         // Any collaborators that are attached to the publication
         collaborators,

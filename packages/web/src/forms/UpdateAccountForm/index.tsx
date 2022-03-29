@@ -12,8 +12,9 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { useEffect } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { applyErrorsToForm } from '../../lib/utils/error';
+import { useDispatchAuth } from '../../contexts/auth';
 
 interface AccountUpdateFormProps {
     user: User;
@@ -22,7 +23,10 @@ interface AccountUpdateFormProps {
 }
 
 export function AccountUpdateForm({ user, isSelf, refetch }: AccountUpdateFormProps) {
+    const history = useHistory();
+    const authDispatcher = useDispatchAuth();
     const notificationDispatcher = useNotificationDispatch();
+
     const {
         control,
         handleSubmit,
@@ -56,6 +60,18 @@ export function AccountUpdateForm({ user, isSelf, refetch }: AccountUpdateFormPr
             });
 
             refetch();
+
+            // If the user is a moderator/administrator and they are updating their
+            // own account, we want to propagate the change to the state update
+            // because they might change a critical user session and that might mean
+            // we have to rebuild some parts of the UI
+            if (isSelf) {
+                authDispatcher({ type: 'data', data: response.user });
+            } else {
+                // In this case, if the user changes the username then we have to
+                // re-direct the user to the 'new' page
+                history.replace(`/account/${response.user.username}`);
+            }
         }
     }, [isLoading, isError]);
 

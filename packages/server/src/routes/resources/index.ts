@@ -18,7 +18,9 @@ import User, { IUserRole } from '../../models/User';
 import { config } from '../../server';
 import { ResponseErrorSummary } from '../../transformers/error';
 import { extractFile, joinPathsForResource, joinPathsRaw } from '../../utils/resources';
+import { PublicationRevisionSchema } from '../../validators/publications';
 import { ModeSchema, ObjectIdSchema } from '../../validators/requests';
+import { UserByUsernameRequestSchema } from '../../validators/user';
 
 const router = express.Router();
 
@@ -33,7 +35,7 @@ const router = express.Router();
  * @description Endpoint for uploading avatar to the server.
  */
 registerRoute(router, '/upload/:username', {
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }),
     body: z.any(),
     headers: z.object({}),
@@ -120,7 +122,7 @@ registerRoute(router, '/upload/:username', {
  */
 registerRoute(router, '/upload/publication/:id', {
     params: z.object({ id: ObjectIdSchema }),
-    query: z.object({ revision: z.string().optional() }),
+    query: z.object({ revision: PublicationRevisionSchema.optional() }),
     body: z.any(),
     headers: z.object({}),
     method: 'post',

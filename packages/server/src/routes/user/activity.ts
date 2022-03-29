@@ -8,6 +8,7 @@ import { IUserRole } from '../../models/User';
 import { ActivityAggregation } from '../../types/aggregation';
 import { PaginationQuerySchema } from '../../validators/pagination';
 import { ModeSchema } from '../../validators/requests';
+import { UserByUsernameRequestSchema } from '../../validators/user';
 
 const router = express.Router({ mergeParams: true });
 
@@ -27,7 +28,7 @@ const router = express.Router({ mergeParams: true });
  * */
 registerRoute(router, '/:username/feed', {
     method: 'get',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     headers: z.object({}),
     permissionVerification: verifyUserPermission,

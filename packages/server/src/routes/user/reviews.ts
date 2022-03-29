@@ -8,6 +8,7 @@ import { AugmentedPublicationDocument } from '../../models/Publication';
 import Review, { IReviewStatus } from '../../models/Review';
 import { AugmentedUserDocument, IUserRole } from '../../models/User';
 import { ModeSchema } from '../../validators/requests';
+import { UserByUsernameRequestSchema } from '../../validators/user';
 
 const router = express.Router();
 
@@ -24,7 +25,7 @@ const router = express.Router();
  */
 registerRoute(router, '/:username/reviews', {
     method: 'get',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     permissionVerification: verifyUserPermission,

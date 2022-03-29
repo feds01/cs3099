@@ -75,8 +75,32 @@ describe('Publications endpoints testing', () => {
         // Verify that the owner has been projected...
         expect(response.body.publication.owner).toStrictEqual(User.project(owner!));
 
-        const publication = await Publication.count({ name: 'test-name', revision: 'v1' });
-        expect(publication).toBe(1);
+        // Verify that it exists in the database
+        const publication = await Publication.findOne({
+            username: 'owner',
+            name: 'test-name',
+            revision: 'v1',
+        });
+        expect(publication).not.toBeNull();
+    });
+
+    it('should return bad request when using an invalid name', async () => {
+        const badUsername = encodeURIComponent('ålπha^');
+        const badPublicationName = encodeURIComponent('µniverse^');
+
+        const usernameResponse = await request.get(`/publication/${badUsername}`);
+        expect(usernameResponse.status).toBe(400);
+        expect(usernameResponse.body.errors).toStrictEqual({
+            username: { message: 'Username must be URL safe' },
+        });
+
+        const nameResponse = await request.get(`/publication/${badUsername}/${badPublicationName}`);
+        expect(nameResponse.status).toBe(400);
+
+        expect(nameResponse.body.errors).toStrictEqual({
+            username: { message: 'Username must be URL safe' },
+            name: { message: 'Name must be URL safe.' },
+        });
     });
 
     it('should return a bad request when creating a publication with the same name and different revision', async () => {
@@ -107,7 +131,7 @@ describe('Publications endpoints testing', () => {
     });
 
     it('should not create a publication with a non-existent collaborator', async () => {
-        const response = await request.post('/publication/').send({
+        const response = await request.post('/publication').send({
             revision: 'v1',
             title: 'Test title',
             name: 'Test-name-2',
@@ -116,10 +140,10 @@ describe('Publications endpoints testing', () => {
         });
 
         expect(response.status).toBe(400);
-        expect(response.body.message).toBe("Request parameters didn't match the expected format.");
+        expect(response.body.errors).toStrictEqual({
+            'collaborators.1': { message: 'No user with the given username or id exists' },
+        });
     });
-
-    // Tests for GET /publication/:username/:name/:revision?/tree/:path(*)
 
     // Tests for GET /publication/:username/
     it('should get all publications of a user', async () => {
@@ -130,8 +154,6 @@ describe('Publications endpoints testing', () => {
         expect(response.body.publications).toHaveLength(1);
     });
 
-    // Tests for GET /publication/:username/:name/:revision?/tree/:path(*)
-
     // Tests for DELETE /publication/:username/:name
     it('should delete publication', async () => {
         // Make a request to get all of the publications of the user 'owner'
@@ -139,16 +161,4 @@ describe('Publications endpoints testing', () => {
 
         expect(response.status).toBe(200);
     });
-
-    // Tests for GET /publication/:username/:name/revisions
-    // TODO: change the implementation of API to fit this test
-    // it("should get all revisions of a publication", async () => {
-    //     const response = await request.get('/publication/owner/test-name').auth(ownerRes.body.token, {type: 'bearer'});
-    //     expect(response.status).toBe(200);
-    //     expect(response.body.data).toHaveLength(2);
-    //     expect(response.body.data[0].revision).toBe('v1');
-    //     expect(response.body.data[1].revision).toBe('v2');
-    // });
-
-    // Tests for GET /publication/:username/:revision?
 });

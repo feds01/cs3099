@@ -18,8 +18,14 @@ import Publication from '../../../models/Publication';
 import { IUser, IUserRole } from '../../../models/User';
 import { PublicationAggregation } from '../../../types/aggregation';
 import { PaginationQuerySchema } from '../../../validators/pagination';
-import { IPublicationPatchRequestSchema } from '../../../validators/publications';
+import {
+    IPublicationPatchRequestSchema,
+    IRevisionSchema,
+    PublicationByNameRequestSchema,
+    PublicationRevisionSchema,
+} from '../../../validators/publications';
 import { FlagSchema, ModeSchema, ResourceSortSchema } from '../../../validators/requests';
+import { UsernameSchema } from '../../../validators/user';
 import reviewRouter from './reviews';
 
 const router = express.Router();
@@ -37,7 +43,7 @@ router.use('/', reviewRouter);
  */
 registerRoute(router, '/:username', {
     method: 'get',
-    params: z.object({ username: z.string() }),
+    params: z.object({ username: UsernameSchema }),
     query: z
         .object({
             mode: ModeSchema,
@@ -127,7 +133,7 @@ registerRoute(router, '/:username', {
  */
 registerRoute(router, '/:username/:name/revisions', {
     method: 'get',
-    params: z.object({ username: z.string(), name: z.string() }),
+    params: PublicationByNameRequestSchema,
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     headers: z.object({}),
     permissionVerification: verifyRevisonlessPublicationPermission,
@@ -173,10 +179,7 @@ registerRoute(router, '/:username/:name/revisions', {
  */
 registerRoute(router, '/:username/:name/all', {
     method: 'delete',
-    params: z.object({
-        username: z.string().nonempty(),
-        name: z.string().nonempty(),
-    }),
+    params: PublicationByNameRequestSchema,
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
@@ -213,13 +216,10 @@ registerRoute(router, '/:username/:name/all', {
  */
 registerRoute(router, '/:username/:name', {
     method: 'get',
-    params: z.object({
-        username: z.string().nonempty(),
-        name: z.string().nonempty(),
-    }),
+    params: PublicationByNameRequestSchema,
     query: z.object({
         mode: ModeSchema,
-        revision: z.string().optional(),
+        revision: PublicationRevisionSchema.optional(),
     }),
     headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
@@ -244,13 +244,10 @@ registerRoute(router, '/:username/:name', {
  */
 registerRoute(router, '/:username/:name', {
     method: 'delete',
-    params: z.object({
-        username: z.string().nonempty(),
-        name: z.string().nonempty(),
-    }),
+    params: PublicationByNameRequestSchema,
     query: z.object({
         mode: ModeSchema,
-        revision: z.string().optional(),
+        revision: PublicationRevisionSchema.optional(),
     }),
     headers: z.object({}),
     activity: { kind: IActivityOperationKind.Delete, type: IActivityType.Publication },
@@ -285,11 +282,11 @@ registerRoute(router, '/:username/:name', {
  */
 registerRoute(router, '/:username/:name', {
     method: 'patch',
-    params: z.object({
-        username: z.string().nonempty(),
-        name: z.string().nonempty(),
+    params: PublicationByNameRequestSchema,
+    query: z.object({
+        mode: ModeSchema,
+        revision: PublicationRevisionSchema.optional(),
     }),
-    query: z.object({ mode: ModeSchema, revision: z.string().optional() }),
     body: IPublicationPatchRequestSchema,
     headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
@@ -315,8 +312,8 @@ registerRoute(router, '/:username/:name', {
  */
 registerRoute(router, '/:username/:name/revise', {
     method: 'post',
-    params: z.object({ username: z.string(), name: z.string() }),
-    body: z.object({ revision: z.string(), changelog: z.string() }),
+    params: PublicationByNameRequestSchema,
+    body: IRevisionSchema,
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     activity: {
@@ -361,16 +358,14 @@ registerRoute(router, '/:username/:name/revise', {
  */
 registerRoute(router, '/:username/:name/tree/:path(*)', {
     method: 'get',
-    params: z.object({
-        username: z.string(),
-        name: z.string(),
+    params: PublicationByNameRequestSchema.extend({
         path: z.string().optional(),
     }),
     query: z.object({
         mode: ModeSchema,
         sortBy: ResourceSortSchema,
+        revision: PublicationRevisionSchema.optional(),
         noContent: FlagSchema.default('false'),
-        revision: z.string().optional(),
     }),
     headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
@@ -442,16 +437,13 @@ registerRoute(router, '/:username/:name/download/:path(*)', {
  */
 registerRoute(router, '/:username/:name/export', {
     method: 'post',
-    params: z.object({
-        username: z.string().nonempty(),
-        name: z.string().nonempty(),
-    }),
+    params: PublicationByNameRequestSchema,
     headers: z.object({}),
     body: z.object({}),
     query: z.object({
         mode: ModeSchema,
         to: z.string().url(),
-        revision: z.string().optional(),
+        revision: PublicationRevisionSchema.optional(),
         exportReviews: FlagSchema,
     }),
     permissionVerification: verifyPublicationPermission,
@@ -477,12 +469,9 @@ registerRoute(router, '/:username/:name/export', {
  */
 registerRoute(router, '/:username/:name/sources', {
     method: 'get',
-    params: z.object({
-        username: z.string(),
-        name: z.string(),
-    }),
+    params: PublicationByNameRequestSchema,
     headers: z.object({}),
-    query: z.object({ mode: ModeSchema, revision: z.string() }),
+    query: z.object({ mode: ModeSchema, revision: PublicationRevisionSchema.optional() }),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {

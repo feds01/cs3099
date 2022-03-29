@@ -1,12 +1,12 @@
 import assert from 'assert';
 import supertest from 'supertest';
 
-import { IUser } from '../../../src/models/User';
+import { IUser, TransformedUser } from '../../../src/models/User';
 
 export type AuthenticationResponse = {
     token: string;
     refreshToken: string;
-    user: IUser & { id: string }; // @@Hack: we should use TransformedUser or something
+    user: Omit<TransformedUser, 'id'> & { id: string };
 };
 
 /**
@@ -33,6 +33,7 @@ export async function registerUserAndAuthenticate(
         password: user.password,
     });
 
+    assert(typeof loginResponse.body.user.id !== 'undefined');
     return {
         token: loginResponse.body.token,
         refreshToken: loginResponse.body.refreshToken,

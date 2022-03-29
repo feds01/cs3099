@@ -21,7 +21,11 @@ import { escapeRegExp } from '../../utils/regex';
 import { joinPathsForResource } from '../../utils/resources';
 import { PaginationQuerySchema } from '../../validators/pagination';
 import { ModeSchema } from '../../validators/requests';
-import { IUserPatchRequestSchema, IUserRoleRequestSchema } from '../../validators/user';
+import {
+    IUserPatchRequestSchema,
+    IUserRoleRequestSchema,
+    UserByUsernameRequestSchema,
+} from '../../validators/user';
 import activityRouter from './activity';
 import followerRouter from './followers';
 import reviewRouter from './reviews';
@@ -150,7 +154,7 @@ registerRoute(router, '/', {
  * */
 registerRoute(router, '/:username', {
     method: 'get',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     permissionVerification: verifyUserPermission,
@@ -191,7 +195,7 @@ registerRoute(router, '/:username', {
  * */
 registerRoute(router, '/:username/avatar', {
     method: 'get',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     permission: null,
@@ -243,7 +247,7 @@ registerRoute(router, '/:username/avatar', {
  * */
 registerRoute(router, '/:username/avatar', {
     method: 'delete',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     permissionVerification: verifyUserPermission,
@@ -297,7 +301,7 @@ registerRoute(router, '/:username/avatar', {
  * */
 registerRoute(router, '/:username', {
     method: 'patch',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     body: IUserPatchRequestSchema,
@@ -396,7 +400,7 @@ registerRoute(router, '/:username', {
  * */
 registerRoute(router, '/:username', {
     method: 'delete',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     permissionVerification: verifyUserPermission,
@@ -436,7 +440,7 @@ registerRoute(router, '/:username', {
  * */
 registerRoute(router, '/:username/role', {
     method: 'get',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     permissionVerification: verifyUserPermission,
@@ -480,7 +484,7 @@ registerRoute(router, '/:username/role', {
  * */
 registerRoute(router, '/:username/role', {
     method: 'patch',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     body: IUserRoleRequestSchema,
