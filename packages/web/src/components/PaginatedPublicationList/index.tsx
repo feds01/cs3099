@@ -44,7 +44,7 @@ export default function PaginatedPublicationList({ take }: PaginatedPublicationL
                         <Pagination
                             count={Math.ceil(total / take)}
                             page={page + 1}
-                            onChange={(event, newPage) => setPage(newPage)}
+                            onChange={(event, newPage) => setPage(newPage - 1)}
                             variant="outlined"
                             shape="rounded"
                         />
