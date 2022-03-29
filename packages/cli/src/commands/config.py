@@ -17,9 +17,11 @@ from utils.callback import callback_wrapper, url_validator
 def config(ctx: click.core.Context, base_url: str) -> None:
     """CLI command for the user to configure the base url of the server.
 
+    \b
     Usage:
-        $ iamus config --base-url <base-url>
+        $ iamus config --base-url <url>
 
+    \f
     Args:
         ctx (click.core.Context): Context object to share global variables with
             subcommands.

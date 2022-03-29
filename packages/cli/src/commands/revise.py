@@ -1,22 +1,25 @@
+import sys
 import click
-from urllib.parse import urljoin
+from posixpath import join as urljoin
 
 from utils.call_api import call_api
 from utils.auth import authenticated
 from utils.publication import get_id_name
 from utils.base_url import pass_base_url
 from utils.mutually_exclusive_options import MutuallyExclusiveOptions
-from utils.callback import callback_wrapper, file_to_str
+from utils.callback import callback_wrapper, changelog_editor
 
 
 @click.command()
 @click.option("--revision", prompt="Revision Number", help="Revision Number", type=str)
 @click.option(
     "--changelog",
-    prompt="File path",
+    is_flag=False,
+    flag_value="NOFILE",
+    default="DEFAULT",
     help="Change Log File Path",
     type=str,
-    callback=callback_wrapper(file_to_str),
+    callback=callback_wrapper(changelog_editor),
 )
 @click.option(
     "--id",
@@ -49,11 +52,17 @@ def revise(
 ) -> str:
     """CLI command for user to revise a specified publication.
 
+    \b
     Usage:
         $ iamus revise --revision <revision> --changelog <changelog> --id <id>
         or
         $ iamus revise --revision <revision> --changelog <changelog> --name <name>
 
+    \b
+        To avoid the need to specify the changelog file, use:
+        $ iamus revise --revision <revision> --changelog --id <id>
+
+    \f
     Args:
         ctx (click.core.Context): Context object to share global variables with
             subcommands.
@@ -92,7 +101,7 @@ def revise(
         return new_id
     except KeyError:
         click.echo(f"Response Error: {revise_res['message']}")
-        click.echo(revise_res["errors"])
+        click.echo(revise_res["errors"]["revision"]["message"])
     except Exception as e:
         click.echo(f"Unexpected error occurs: {e}")
-        exit(1)
+        sys.exit(1)

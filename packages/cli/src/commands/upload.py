@@ -1,12 +1,13 @@
+import sys
 import click
-from urllib.parse import urljoin
+from posixpath import join as urljoin
 
 from utils.call_api import call_api
 from utils.auth import authenticated
 from utils.base_url import pass_base_url
 from utils.publication import get_id_name
 from utils.mutually_exclusive_options import MutuallyExclusiveOptions
-from utils.callback import callback_wrapper, zipfile_validator, file_to_str
+from utils.callback import callback_wrapper, zipfile_validator, changelog_editor
 
 from commands.revise import revise
 
@@ -34,12 +35,12 @@ def call_upload_api(
         upload_res = call_api("POST", upload_api, files=upload_body, headers=headers)
     except Exception as e:
         click.echo(f"Unexpected error occurs: {e}")
-        exit(1)
+        sys.exit(1)
 
     if upload_res["status"] == "ok":
         pub_url = urljoin(base_url, f"publication/{pub_id}")
         click.echo(f"Success: File uploaded to {name}({pub_url})")
-        exit(0)
+        sys.exit(1)
 
     click.echo(f"Response Error: {upload_res['message']}")
     return upload_res
@@ -83,11 +84,13 @@ def upload(
 ) -> None:
     """CLI command for the user to upload a zipfile to a specified publication.
 
+    \b
     Usage:
         $ iamus upload --file <file> --id <id>
         or
         $ iamus upload --file <file> --name <name>
 
+    \f
     Args:
         ctx (click.core.Context): Context object to share global variables with
             subcommands.
@@ -116,12 +119,18 @@ def upload(
         click.echo(f"Error: {upload_res['errors']['file']['message']}")
         return
 
-    click.echo(upload_res['errors']['file']['message'])
+    click.echo(upload_res["errors"]["file"]["message"])
     click.confirm("Do you want to upload it to a new revision?", abort=True)
 
     # revise
     revision = click.prompt("Revision number", type=str)
-    changelog = click.prompt("Change log file path", type=str, value_proc=file_to_str)
+    while True:
+        try:
+            changelog = changelog_editor("DEFAULT")
+            break
+        except click.BadParameter as e:
+            click.echo(f"Error: {e}")
+            continue
 
     new_id = ctx.invoke(
         revise, pub_id=pub_id, name=name, revision=revision, changelog=changelog

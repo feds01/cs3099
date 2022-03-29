@@ -1,3 +1,4 @@
+import sys
 import click
 from pathlib import Path
 
@@ -9,7 +10,12 @@ from commands.revise import revise
 from commands.config import config
 
 
-cli_path = Path(__file__).parent
+if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+    # running in a pyinstall bundle
+
+    cli_path = Path(sys.executable).parent
+else:
+    cli_path = Path(__file__).parent
 
 
 @click.group()
@@ -17,10 +23,12 @@ cli_path = Path(__file__).parent
 def cli(ctx: click.core.Context) -> None:
     """Main CLI command which reads the config file and set the global variables.
 
+    \b
     This command is the main entry point which sets the global variables for any 
     other subcommands to use. It also checks if the base url specified in the 
     config file is reachable.
 
+    \f
     Args:
         ctx (click.core.Context): Context object to share global variables with
             subcommands.
@@ -30,6 +38,9 @@ def cli(ctx: click.core.Context) -> None:
     ctx.ensure_object(dict)
 
     ctx.obj["CLI_PATH"] = cli_path
+
+    # create config directory if it doesn't exist
+    Path(cli_path / "config").mkdir(exist_ok=True)
 
 
 cli.add_command(show)

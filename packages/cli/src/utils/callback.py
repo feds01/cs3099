@@ -44,27 +44,45 @@ def url_validator(value: str) -> str:
     return value
 
 
-def file_to_str(value: str) -> str:
-    """Custom validation function.
-
-    It checks if a change log file of the given path(`value`) exists.
+def changelog_editor(value: str) -> str:
+    """Callback function to edit the change log in a given file.
 
     Args:
-        value (str): The path of the change log file specified by the user.
+        value (str): The path of the change log file specified by the user. If
+            its value is NOFILE the user can edit change log directly in an
+            editor.
 
     Raises:
-        click.BadParameter: Error raised if the given file path does not exist.
+        click.BadParameter: Error raised if change log file is neither provided
+            nor edited and saved.
 
     Returns:
-        str: Return the file content if it exists.
+        str: Return the changelog content.
     """
-    try:
-        with open(value) as f:
-            return f.read()
-    except FileNotFoundError:
-        raise click.BadParameter("File of the given path does not exist.")
-    except Exception:
-        raise click.BadParameter("File of the given path is malformed.")
+    if value == "DEFAULT":
+        value = click.prompt(
+            "Change log file or edit directly", default="NOFILE"
+        )
+
+    # file path is not provided, edit directly
+    if value == "NOFILE":
+        MARKER = "### Please edit the change log above this marker ###"
+        changelog = click.edit("\n\n" + MARKER)
+        if changelog is None:
+            raise click.BadParameter("No change log provided.")
+        changelog = changelog.split(MARKER, 1)[0].rstrip("\n")
+    else:
+        # file path is provided, edit the corresponding file
+        click.edit(filename=value)
+        try:
+            with open(value) as f:
+                changelog = f.read()
+        except FileNotFoundError:
+            raise click.BadParameter("No change log provided.")
+        except Exception:
+            raise click.BadParameter("File of the given path is malformed.")
+
+    return changelog
 
 
 def zipfile_validator(value: str) -> str:

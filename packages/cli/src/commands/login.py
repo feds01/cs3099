@@ -1,8 +1,9 @@
+import sys
 import json
 import click
-from urllib.parse import urljoin
-from utils.call_api import call_api
+from posixpath import join as urljoin
 
+from utils.call_api import call_api
 from utils.base_url import pass_base_url
 
 
@@ -16,9 +17,11 @@ from utils.base_url import pass_base_url
 def login(ctx: click.core.Context, username: str, password: str) -> None:
     """CLI command for user to login and get token before sending request.
 
+    \b
     Usage:
         $ iamus login --username <username> --password <password>
 
+    \f
     Args:
         ctx (click.core.Context): Context object to share global variables with
             subcommands.
@@ -32,11 +35,11 @@ def login(ctx: click.core.Context, username: str, password: str) -> None:
         login_res = call_api("POST", login_api, data=login_body)
     except Exception as e:
         click.echo(f"Unexpected error occurs: {e}")
-        exit(1)
+        sys.exit(1)
 
     if login_res["status"] == "ok":
         data = {
-            "username": username,
+            "username": login_res["user"]["username"],
             "token": login_res["token"],
             "refreshToken": login_res["refreshToken"],
         }
