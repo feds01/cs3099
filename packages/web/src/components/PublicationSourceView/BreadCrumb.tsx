@@ -16,7 +16,7 @@ export default function BreadCrumb({ index, basePath, filename }: BreadCrumbProp
             <Link to={`${basePath}/tree/`}>
                 <Typography
                     color="text.primary"
-                    sx={{ fontWeight: 'bold', fontSize: 18, '&:hover': { textDecoration: 'underline ' } }}
+                    sx={{ fontWeight: 'bold', fontSize: 18, '&:hover': { textDecoration: 'underline' } }}
                 >
                     {index.name}
                 </Typography>
@@ -25,14 +25,18 @@ export default function BreadCrumb({ index, basePath, filename }: BreadCrumbProp
                 .split('/')
                 .filter((x) => x !== '')
                 .map((component, index, parts) => {
-                    const subPath = parts.slice(0, index + 1).join('/');
+                    const subPath = parts
+                        .slice(0, index + 1)
+                        .map((part) => encodeURIComponent(part))
+                        .join('/');
+
                     return (
                         <Link key={index} to={`${basePath}/tree/${subPath}`}>
                             <Typography
                                 color="text.primary"
-                                sx={{ fontSize: 18, '&:hover': { textDecoration: 'underline ' } }}
+                                sx={{ fontSize: 18, '&:hover': { textDecoration: 'underline' } }}
                             >
-                                {component}
+                                {decodeURIComponent(component)}
                             </Typography>
                         </Link>
                     );

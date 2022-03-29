@@ -5,6 +5,8 @@ import UserAvatar from '../UserAvatar';
 import { Box, Card, CardContent, CardHeader, Chip, Typography, useTheme } from '@mui/material';
 import truncateMarkdown from 'markdown-truncate';
 import { ReactElement } from 'react';
+import { constructBasePathFromPublication } from '../../lib/utils/publications';
+import { Link } from 'react-router-dom';
 
 interface PublicationCardProps {
     publication: Publication;
@@ -12,6 +14,7 @@ interface PublicationCardProps {
 
 export default function PublicationCard({ publication }: PublicationCardProps): ReactElement {
     const theme = useTheme();
+    const basename = constructBasePathFromPublication(publication);
 
     return (
         <Card elevation={0} sx={{ border: `1px solid ${theme.palette.divider}` }}>
@@ -20,10 +23,15 @@ export default function PublicationCard({ publication }: PublicationCardProps): 
                 disableTypography
                 {...(publication.reviews > 0 && {
                     subheader: (
-                        <Typography variant="body2" sx={{ color: 'dimgray' }}>
-                            Publication has {publication.reviews} {publication.reviews === 1 ? 'review' : 'reviews'} on
-                            it.
-                        </Typography>
+                        <Link to={`${basename}/reviews`}>
+                            <Typography
+                                variant="body2"
+                                sx={{ color: 'dimgray', '&:hover': { textDecoration: 'underline' } }}
+                            >
+                                Publication has {publication.reviews} {publication.reviews === 1 ? 'review' : 'reviews'}{' '}
+                                on it.
+                            </Typography>
+                        </Link>
                     ),
                 })}
                 title={
@@ -36,7 +44,7 @@ export default function PublicationCard({ publication }: PublicationCardProps): 
                         }}
                     >
                         <Typography variant={'h5'} sx={{ fontWeight: 'bold', display: 'inline-block' }}>
-                            <PublicationLink style={{ color: theme.palette.text.primary }} {...publication} />
+                            <PublicationLink style={{ color: theme.palette.text.primary }} publication={publication} />
                         </Typography>
                         {publication.draft && (
                             <Chip

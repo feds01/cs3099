@@ -27,7 +27,7 @@ export default function PaginatedPublicationList({ take }: PaginatedPublicationL
 
     useEffect(() => {
         publicationQuery.refetch();
-    }, [page]);
+    }, [page, take]);
 
     switch (queryResponse.state) {
         case 'loading':

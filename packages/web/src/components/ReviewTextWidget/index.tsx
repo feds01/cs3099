@@ -15,7 +15,7 @@ export default function ReviewTextWidget({ review }: ReviewTextWidgetProps) {
             &nbsp;left a&nbsp;
             <ReviewLink {...review} />
             &nbsp;on&nbsp;
-            <PublicationLink style={{ fontWeight: 'bold', color: 'dimgray' }} {...review.publication} />
+            <PublicationLink style={{ fontWeight: 'bold', color: 'dimgray' }} publication={review.publication} />
         </Box>
     );
 }

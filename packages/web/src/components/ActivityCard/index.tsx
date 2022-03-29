@@ -50,7 +50,7 @@ function ActivityIcon({ kind, type, iconProps }: ActivityIconProps): ReactElemen
 function LinkWrapper({ reference }: LinkWrapperProps): ReactElement {
     switch (reference.type) {
         case 'publication':
-            return <PublicationLink {...reference.document} />;
+            return <PublicationLink publication={reference.document} />;
         case 'user':
             return <UserLink user={reference.document} />;
         case 'review':
