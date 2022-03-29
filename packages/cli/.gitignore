@@ -1,5 +1,6 @@
 # Python cache files
 __pycache__/
 
-# CLI config files
-config/
+# CLI auth config files
+src/config/
+

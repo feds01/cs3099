@@ -1,3 +1,4 @@
+import sys
 import click
 import requests
 
@@ -21,6 +22,6 @@ def call_api(method: str, api_url: str, **kwargs) -> dict[str, object]:
         return res.json()
     except requests.exceptions.RequestException as e:
         click.echo(f"Error occurs when sending request: {e}")
-        exit(1)
+        sys.exit(1)
     except Exception as e:
         raise

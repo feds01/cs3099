@@ -1,9 +1,10 @@
+import sys
 import json
 import click
 import requests
 from typing import Callable
 from functools import wraps
-from urllib.parse import urljoin
+from posixpath import join as urljoin
 
 
 def pass_base_url(func: Callable) -> Callable:
@@ -43,6 +44,6 @@ def pass_base_url(func: Callable) -> Callable:
         else:
             return func(ctx, *args, **kwargs)  # return if no error occurs
 
-        exit(1)
+        sys.exit(1)
 
     return wrapper

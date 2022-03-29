@@ -1,5 +1,6 @@
+import sys
 import click
-from urllib.parse import urljoin
+from posixpath import join as urljoin
 
 from utils.call_api import call_api
 from utils.auth import authenticated
@@ -15,12 +16,15 @@ def show(
 ) -> None:
     """CLI command showing all publications the current user is owning.
 
+    \b
     The publications are shown in the following format:
-    <title> (<revision>) - <url>
+    <name> (<revision>) - <url>
 
+    \b
     Usage:
         $ iamus show
 
+    \f
     Args:
         ctx (click.core.Context): Context object to share global variables with
             subcommands.
@@ -35,13 +39,13 @@ def show(
         show_res = call_api("GET", show_api, headers=headers)
     except Exception as e:
         click.echo(f"Unexpected error occurs: {e}")
-        exit(1)
+        sys.exit(1)
 
     if show_res["status"] == "ok":
         publications = show_res["publications"]
-        print("Listing all publications of the latest version:")
+        click.echo("Listing all publications of the latest version:")
         for pub in publications:
             pub_url = urljoin(base_url, f"publication/{pub['id']}")
-            print(f"{pub['title']} ({pub['revision']}) - {pub_url}")
+            click.echo(f"{pub['name']} ({pub['revision']}) - {pub_url}")
     else:
-        print("No publications found")
+        click.echo("No publications found")

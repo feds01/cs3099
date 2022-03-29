@@ -1,8 +1,9 @@
+import sys
 import json
 import click
 import pathlib
 from functools import wraps
-from urllib.parse import urljoin
+from posixpath import join as urljoin
 from typing import Tuple, Callable
 
 from utils.call_api import call_api
@@ -45,12 +46,12 @@ def get_auth(auth_file: pathlib.PosixPath, base_url: str) -> Tuple[str, dict[str
                 f,
             )
     except FileNotFoundError:
-        print("Auth file not found")
+        click.echo("Auth file not found")
     except KeyError:
-        print("Refresh token expired")
+        click.echo("Refresh token expired")
     except Exception as e:
-        print(f"Unexpected error occurs: {e}")
-        exit(1)
+        click.echo(f"Unexpected error occurs: {e}")
+        sys.exit(1)
 
     return username, headers
 
@@ -75,7 +76,7 @@ def authenticated(func: Callable) -> Callable:
         auth_file = ctx.obj["CLI_PATH"] / "config/auth.json"
         username, headers = get_auth(auth_file, base_url)
         if username is None or headers is None:
-            print("Please login first")
+            click.echo("Please login first")
             return
 
         kwargs["username"] = username

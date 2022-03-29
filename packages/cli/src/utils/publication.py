@@ -1,5 +1,8 @@
+import sys
+import click
 from typing import Tuple
-from urllib.parse import urljoin
+from posixpath import join as urljoin
+
 from utils.call_api import call_api
 
 
@@ -38,9 +41,9 @@ def get_id_name(
             get_pub_res["publication"]["name"],
         )
     except KeyError:
-        print(f"Response Error: {get_pub_res['message']}")
+        click.echo(f"Response Error: {get_pub_res['message']}")
     except Exception as e:
-        print(f"Unexpected error occurs: {e}")
-        exit(1)
+        click.echo(f"Unexpected error occurs: {e}")
+        sys.exit(1)
 
     return pub_id, name

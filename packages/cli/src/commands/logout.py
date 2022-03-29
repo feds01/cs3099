@@ -7,9 +7,11 @@ import click
 def logout(ctx: click.core.Context) -> None:
     """CLI command for the user to clear their user session.
 
+    \b
     Usage:
         $ iamus logout
 
+    \f
     Args:
         ctx (click.core.Context): Context object to share global variables with
             subcommands.
