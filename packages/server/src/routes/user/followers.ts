@@ -9,6 +9,7 @@ import Follower from '../../models/Follower';
 import User, { IUser, IUserRole } from '../../models/User';
 import { PaginationQuerySchema } from '../../validators/pagination';
 import { ModeSchema } from '../../validators/requests';
+import { UserByUsernameRequestSchema } from '../../validators/user';
 
 const router = express.Router({ mergeParams: true });
 
@@ -31,7 +32,7 @@ const router = express.Router({ mergeParams: true });
  * */
 registerRoute(router, '/:username/follow', {
     method: 'post',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     body: z.object({}),
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
@@ -94,7 +95,7 @@ registerRoute(router, '/:username/follow', {
  * */
 registerRoute(router, '/:username/follow', {
     method: 'delete',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     permissionVerification: verifyUserPermission,
@@ -137,7 +138,7 @@ registerRoute(router, '/:username/follow', {
  * */
 registerRoute(router, '/:username/follow', {
     method: 'get',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }),
     headers: z.object({}),
     permissionVerification: verifyUserPermission,
@@ -185,7 +186,7 @@ registerRoute(router, '/:username/follow', {
  * */
 registerRoute(router, '/:username/followers', {
     method: 'get',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     headers: z.object({}),
     permissionVerification: verifyUserPermission,
@@ -220,7 +221,7 @@ registerRoute(router, '/:username/followers', {
  * */
 registerRoute(router, '/:username/following', {
     method: 'get',
-    params: z.object({ username: z.string() }),
+    params: UserByUsernameRequestSchema,
     query: z.object({ mode: ModeSchema }).merge(PaginationQuerySchema),
     headers: z.object({}),
     permissionVerification: verifyUserPermission,

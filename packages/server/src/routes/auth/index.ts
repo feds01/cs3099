@@ -9,7 +9,11 @@ import registerRoute from '../../lib/communication/requests';
 import { ApiResponse } from '../../lib/communication/response';
 import State from '../../models/State';
 import User from '../../models/User';
-import { IUserLoginRequestSchema, IUserRegisterRequestSchema } from '../../validators/user';
+import {
+    IUserLoginRequestSchema,
+    IUserRegisterRequestSchema,
+    UsernameSchema,
+} from '../../validators/user';
 import { config } from './../../server';
 
 const router = express.Router();
@@ -39,7 +43,7 @@ const router = express.Router();
 registerRoute(router, '/username_validity', {
     method: 'post',
     body: z.object({
-        username: z.string().regex(/^[a-zA-Z0-9_]*$/, 'Username must be alphanumeric'),
+        username: UsernameSchema,
     }),
     params: z.object({}),
     query: z.object({}),

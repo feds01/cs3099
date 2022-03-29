@@ -5,6 +5,10 @@ import PublicationController from '../../../controller/publication';
 import { verifyPublicationPermission } from '../../../lib/communication/permissions';
 import registerRoute from '../../../lib/communication/requests';
 import { IUserRole } from '../../../models/User';
+import {
+    PublicationByNameRequestSchema,
+    PublicationRevisionSchema,
+} from '../../../validators/publications';
 import { ModeSchema } from '../../../validators/requests';
 
 const router = express.Router();
@@ -22,8 +26,8 @@ const router = express.Router();
  */
 registerRoute(router, '/:username/:name/reviews', {
     method: 'get',
-    params: z.object({ username: z.string(), name: z.string() }),
-    query: z.object({ mode: ModeSchema, revision: z.string() }),
+    params: PublicationByNameRequestSchema,
+    query: z.object({ mode: ModeSchema, revision: PublicationRevisionSchema }),
     headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
@@ -47,12 +51,9 @@ registerRoute(router, '/:username/:name/reviews', {
 registerRoute(router, '/:username/:name/review', {
     method: 'post',
     body: z.object({}),
-    query: z.object({ mode: ModeSchema, revision: z.string() }),
+    query: z.object({ mode: ModeSchema, revision: PublicationRevisionSchema }),
     headers: z.object({}),
-    params: z.object({
-        username: z.string(),
-        name: z.string(),
-    }),
+    params: PublicationByNameRequestSchema,
     permissionVerification: verifyPublicationPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {

@@ -45,7 +45,22 @@ export interface IUser {
     /** When the initial document was created */
     createdAt: Date;
     /** When the document was last updated */
-    updatedAt: Date;
+    updatedAt?: Date;
+}
+
+/** Type that represents a project user which is sent to requester */
+export interface TransformedUser {
+    id?: string;
+    email: string;
+    username: string;
+    name?: string;
+    profilePictureUrl?: string;
+    role: IUserRole;
+    about?: string;
+    status?: string;
+    externalId?: string;
+    updatedAt: number;
+    createdAt: number;
 }
 
 export interface IUserDocument extends IUser, Document<string> {}
@@ -55,7 +70,7 @@ export type AugmentedUserDocument = Omit<IUserDocument, '_id'> & {
 };
 
 export interface IUserModel extends Model<IUserDocument> {
-    project: (user: IUser, omitId?: boolean) => Partial<IUser>;
+    project: (user: IUser, omitId?: boolean) => TransformedUser;
     projectAsSg: (user: IUser) => { name: string; email: string };
     getExternalId: (user: IUser) => string;
 }
@@ -118,7 +133,7 @@ UserSchema.post(
  * @param user The user Document that is to be projected.
  * @returns A partial user object with selected fields that are to be projected.
  */
-UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
+UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false): TransformedUser => {
     const { profilePictureUrl, about, name, status } = user;
     assert(typeof user._id !== 'undefined');
 
@@ -127,6 +142,7 @@ UserSchema.statics.project = (user: IUserDocument, omitId: boolean = false) => {
         email: user.email,
         username: user.username,
         createdAt: user.createdAt.getTime(),
+        updatedAt: (user.updatedAt ?? user.createdAt).getTime(),
         role: user.role,
         ...(typeof profilePictureUrl !== 'undefined' && { profilePictureUrl }),
         ...(typeof about !== 'undefined' && { about }),

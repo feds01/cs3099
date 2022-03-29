@@ -11,7 +11,10 @@ import { makeRequest } from '../lib/communication/fetch';
 import { ApiResponse } from '../lib/communication/response';
 import { deleteResource, moveResource, resourceExists } from '../lib/resources/fs';
 import { PublicationPathContent } from '../lib/resources/zip';
-import Publication, { AugmentedPublicationDocument } from '../models/Publication';
+import Publication, {
+    AugmentedPublicationDocument,
+    TransformedPublication,
+} from '../models/Publication';
 import Review, {
     AugmentedReviewDocument,
     IReview,
@@ -25,7 +28,7 @@ import { ResourceSortOrder } from '../validators/requests';
 
 /** Response denoting the return of a publication object */
 export interface PublicationResponse {
-    publication: Partial<AugmentedPublicationDocument>;
+    publication: TransformedPublication;
 }
 
 /** Response denoting the return of a publication archive entry */
@@ -146,6 +149,11 @@ export default class PublicationController {
      * @returns
      */
     async revise(revision: string, changelog: string): Promise<ApiResponse<PublicationResponse>> {
+        // Draft publications cannot be revised.
+        if (this.publication.draft) {
+            throw new errors.ApiError(400, errors.NON_LIVE_PUBLICATION);
+        }
+
         if (await this.performRevisionCheck(revision)) {
             return {
                 status: 'error',

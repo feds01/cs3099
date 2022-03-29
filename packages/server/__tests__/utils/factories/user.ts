@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import mongoose from 'mongoose';
 
 import { IUser, IUserRole } from '../../../src/models/User';
 
@@ -24,4 +25,20 @@ export function createMockedUser(baseDto?: Partial<IUser>): IUser {
     };
 
     return { ...dto, ...baseDto };
+}
+
+/**
+ * Function to extend an @see IUser object to contain the internal MongoDB
+ * id so that it can be projected using the defined static method.
+ *
+ * @param user - The user object
+ *
+ * @return Returns an extended user object with an `_id` field
+ */
+export function extendUserObject(dto: IUser, id: string): IUser {
+    return {
+        ...dto,
+        // @ts-ignore
+        _id: new mongoose.Types.ObjectId(id),
+    };
 }

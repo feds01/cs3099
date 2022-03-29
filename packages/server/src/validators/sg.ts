@@ -2,6 +2,7 @@ import assert from 'assert';
 import { z } from 'zod';
 
 import { ICommentAnchor } from './comments';
+import { PublicationRevisionSchema } from './publications';
 
 const SG_ID_REGEX = /(.+?(?=:)):(t\d{2})$/;
 
@@ -49,7 +50,7 @@ export const SgPublicationSchema = z.object({
     title: z.string().min(1),
     introduction: z.string(),
     owner: SgUserIdSchema,
-    revision: z.string().min(1).optional(),
+    revision: PublicationRevisionSchema.optional(),
     collaborators: z.array(SgUserIdSchema),
 });
 

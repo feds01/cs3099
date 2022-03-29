@@ -3,9 +3,9 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 import { computeActivityPrefix } from '../lib/activity/message';
 import { TransformedActivitySchema } from '../validators/activity';
 import { IComment } from './Comment';
-import { IPublication } from './Publication';
+import { TransformedPublication } from './Publication';
 import { IReview } from './Review';
-import UserModel, { IUser, IUserDocument, IUserRole } from './User';
+import UserModel, { IUser, IUserDocument, IUserRole, TransformedUser } from './User';
 
 /**
  * The sub-system that an activity is referencing to.
@@ -63,8 +63,8 @@ export interface IActivity {
  * displayed in whatever appropriate format.
  */
 export type ActivityReference =
-    | { type: 'user'; document: Partial<IUser> }
-    | { type: 'publication'; document: Partial<IPublication> }
+    | { type: 'user'; document: TransformedUser }
+    | { type: 'publication'; document: TransformedPublication }
     | { type: 'review'; document: Partial<IReview> }
     | { type: 'comment'; document: Partial<IComment> };
 
@@ -75,7 +75,7 @@ export type ActivityReference =
 interface TransformedActivity {
     id: string;
     message: string;
-    owner: Partial<IUser>;
+    owner: TransformedUser;
     createdAt: number;
     updatedAt: number;
     type: IActivityType;

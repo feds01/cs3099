@@ -1,6 +1,5 @@
-# Node modules for backend and frontend.
+# Installed dependencies
 node_modules/
-frontend/node_modules/*
 
 # VS-Code settings
 .vscode/*
@@ -19,5 +18,5 @@ dist/
 swagger.json
 
 # Server saved files
-/resources/
+resources/
 tmp/

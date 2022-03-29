@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { defaultPermissionVerifier } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
 import { IActivityOperationKind, IActivityType } from '../../models/Activity';
-import Publication, { AugmentedPublicationDocument } from '../../models/Publication';
+import Publication, { TransformedPublication } from '../../models/Publication';
 import { IUserRole } from '../../models/User';
 import { PublicationAggregation } from '../../types/aggregation';
 import { PaginationQuerySchema } from '../../validators/pagination';
@@ -115,7 +115,7 @@ registerRoute(router, '/', {
     activityMetadataFn: async (
         _requester,
         request,
-        response: { publication: Partial<AugmentedPublicationDocument> } | undefined,
+        response: { publication: TransformedPublication } | undefined,
     ) => {
         assert(typeof response !== 'undefined'); // if this fails, the activity will be discarded
 

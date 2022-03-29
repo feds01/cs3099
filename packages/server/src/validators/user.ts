@@ -5,6 +5,11 @@ import User, { AugmentedUserDocument, IUserRole } from '../models/User';
 
 /** Regex that is used for validating usernames */
 export const USERNAME_REGEX = /^[a-zA-Z0-9._~-]+$/;
+export const UsernameSchema = z
+    .string()
+    .nonempty()
+    .max(50)
+    .regex(USERNAME_REGEX, 'Username must be URL safe');
 
 /**
  * Schema for validating login requests.
@@ -30,7 +35,7 @@ export const IUserLoginRequestSchema = z
  * advanced schemas.
  */
 export const IUserSchema = z.object({
-    username: z.string().nonempty().max(50).regex(USERNAME_REGEX, 'Username must be URL safe'),
+    username: UsernameSchema,
     email: z.string().email(),
     name: z.string().max(256),
     password: z.string().min(1),
@@ -122,3 +127,8 @@ export const ExistUsernameSchema = z
     .refine((id) => id !== null, {
         message: error.NON_EXISTENT_USER,
     });
+
+/** Schema for validating requests that fetch publications by name and username */
+export const UserByUsernameRequestSchema = z.object({
+    username: UsernameSchema,
+});
