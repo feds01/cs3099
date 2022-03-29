@@ -8,6 +8,9 @@ node_modules/
 # Produces server files
 dist/
 
+# test coverage
+coverage/
+
 
 # Environment files
 .env

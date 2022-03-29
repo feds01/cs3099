@@ -29,7 +29,7 @@ registerRoute(router, '/:id/reviews', {
     permission: { level: IUserRole.Default },
     handler: async (req) => {
         const controller = new PublicationController(req.permissionData);
-        return await controller.reviews();
+        return await controller.reviews(req.requester);
     },
 });
 

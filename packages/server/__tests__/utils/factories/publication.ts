@@ -15,7 +15,7 @@ import { IPublication } from '../../../src/models/Publication';
 export function createMockedPublication(baseDto?: Partial<IPublication>): IPublication {
     const dto = {
         owner: new mongoose.Types.ObjectId(),
-        revision: faker.company.companyName(),
+        revision: faker.internet.domainWord(),
         pinned: faker.datatype.boolean(),
         current: faker.datatype.boolean(),
         draft: faker.datatype.boolean(),

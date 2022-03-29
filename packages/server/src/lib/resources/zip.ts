@@ -224,8 +224,6 @@ export async function getEntryAsRaw(
 
     try {
         const entry = findEntry(zip, path);
-        console.log(entry, path);
-
         if (!entry || entry.isDirectory) return null;
 
         return entry;
