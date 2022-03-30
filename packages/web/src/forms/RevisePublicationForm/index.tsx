@@ -13,9 +13,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { useEffect } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { applyErrorsToForm } from '../../lib/utils/error';
+import MarkdownField from '../../components/MarkdownField';
 
 type RevisePublicationFormProps = {
     onClose: () => void;
@@ -77,14 +78,29 @@ export default function RevisePublicationForm({ isOpen, onClose, onCompletion }:
                             <Typography variant={'body2'}>
                                 This will be used to publicly identify the publication.
                             </Typography>
-                            <ControlledTextField name="revision" control={control} />
+                            <ControlledTextField
+                                name="revision"
+                                control={control}
+                                textFieldProps={{ placeholder: 'v1-next' }}
+                            />
                         </Grid>
                         <Grid item xs={12} sx={{ pt: 1 }}>
                             <FieldLabel label="Changelog" />
                             <Typography variant={'body2'}>
                                 This is a summary of what changed between this revision and the current.
                             </Typography>
-                            <ControlledTextField name="changelog" control={control} />
+                            <Controller
+                                render={({ field: { value, onChange } }) => (
+                                    <MarkdownField
+                                        placeholder="Add changelog"
+                                        contents={value}
+                                        onChange={onChange}
+                                        autoFocus={false}
+                                    />
+                                )}
+                                name="changelog"
+                                control={control}
+                            />
                         </Grid>
                     </Grid>
                 </DialogContent>

@@ -93,7 +93,12 @@ export default function CreatePublicationForm(): ReactElement {
                     <Typography variant={'body2'}>Write a introduction for the publication</Typography>
                     <Controller
                         render={({ field: { value, onChange } }) => (
-                            <MarkdownField contents={value} onChange={onChange} />
+                            <MarkdownField
+                                autoFocus={false}
+                                placeholder="Add introduction"
+                                contents={value}
+                                onChange={onChange}
+                            />
                         )}
                         name="introduction"
                         control={control}
