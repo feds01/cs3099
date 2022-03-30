@@ -1,7 +1,7 @@
 /* eslint no-constant-condition: ["error", { "checkLoops": false }] */
 import { Config, adjectives, animals, colors, uniqueNamesGenerator } from 'unique-names-generator';
 
-import User, { IUserDocument } from '../models/User';
+import User from '../models/User';
 import { expr } from '../utils/expr';
 import { SgUser, SgUserId } from '../validators/sg';
 
@@ -13,6 +13,15 @@ import { SgUser, SgUserId } from '../validators/sg';
  */
 export function convertSgId(external: SgUserId): string {
     return `${external.id}:${external.group}`;
+}
+
+interface TransformedSgUser {
+    username: string;
+    email: string;
+    name: string;
+    password: string;
+    profilePictureUrl?: string;
+    externalId: string;
 }
 
 /**
@@ -27,7 +36,7 @@ export function convertSgId(external: SgUserId): string {
 export async function transformSgUserToInternal(
     user: SgUser,
     username?: string,
-): Promise<Partial<IUserDocument> & { username: string; email: string }> {
+): Promise<TransformedSgUser> {
     const { name, email, id, profilePictureUrl } = user;
 
     // We will generate a username and then check if that username is taken, we
