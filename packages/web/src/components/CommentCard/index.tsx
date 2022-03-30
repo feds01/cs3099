@@ -16,7 +16,8 @@ import Typography from '@mui/material/Typography';
 import { format } from 'date-fns';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/auth';
-import { Permission, computeUserPermission } from '../../lib/utils/roles';
+import { Permission, computeUserPermission, computeReviewRole } from '../../lib/utils/roles';
+import RoleChip from '../RoleChip';
 
 interface CommentCardProps {
     comment: Comment;
@@ -89,6 +90,7 @@ export default function CommentCard({ comment }: CommentCardProps): ReactElement
                                     <Typography variant={'body1'}>edited</Typography>
                                 </>
                             )}
+                            <RoleChip sx={{ fontSize: 12, ml: 1 }} role={computeReviewRole(review, comment.author)} />
                         </Box>
                         {permissions.modify && (
                             <IconButton
