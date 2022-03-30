@@ -4,8 +4,8 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 import Logger from '../common/logger';
 import { ExportSgReview } from '../validators/sg';
 import Comment, { PopulatedComment } from './Comment';
-import Publication, { AugmentedPublicationDocument } from './Publication';
-import User, { AugmentedUserDocument, IUser } from './User';
+import Publication, { AugmentedPublicationDocument, TransformedPublication } from './Publication';
+import User, { AugmentedUserDocument, IUser, TransformedUser } from './User';
 
 /**
  * Representation of whether a publication is in either 'started' mode
@@ -32,6 +32,22 @@ export interface IReview {
     updatedAt: Date;
 }
 
+/** Resultant data structure when reviews are projected */
+export interface TransformedReview {
+    /** Internal ID of the review */
+    id: string;
+    /** The publication in reference */
+    publication: TransformedPublication;
+    /** Owner of the review */
+    owner: TransformedUser;
+    /** The status of the review */
+    status: IReviewStatus;
+    /** When the review was created */
+    createdAt: number;
+    /** When the review was last updated */
+    updatedAt: number;
+}
+
 interface IReviewDocument extends IReview, Document {}
 
 export type AugmentedReviewDocument = IReview & {
@@ -44,7 +60,7 @@ export type PopulatedReview = AugmentedReviewDocument & {
 };
 
 interface IReviewModel extends Model<IReviewDocument> {
-    project: (review: PopulatedReview) => Promise<Partial<IReview>>;
+    project: (review: PopulatedReview) => Promise<TransformedReview>;
     projectAsSg: (review: PopulatedReview) => Promise<ExportSgReview>;
 }
 
@@ -101,7 +117,7 @@ ReviewSchema.post(
  * @param review The comment Document that is to be projected.
  * @returns A partial comment object with selected fields that are to be projected.
  */
-ReviewSchema.statics.project = async (review: PopulatedReview) => {
+ReviewSchema.statics.project = async (review: PopulatedReview): Promise<TransformedReview> => {
     const { publication, owner, status } = review;
 
     return {

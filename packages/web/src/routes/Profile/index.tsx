@@ -19,6 +19,7 @@ import { Route, Switch, useLocation, useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import { computeUserPermission } from '../../lib/utils/roles';
 import { useAuth } from '../../contexts/auth';
+import RoleChip from '../../components/RoleChip';
 
 const ReviewWidgetWrapper = ({ user }: { user: User }) => {
     const getReviewsQuery = useGetUserUsernameReviews(user.username);
@@ -102,6 +103,7 @@ function ProfileLayout({ content }: IProfileLayout): ReactElement {
                         <FollowerButton username={profileData.user.username} />
                     </Box>
                     <UserAvatar {...profileData.user} size={80}>
+                        <RoleChip role={profileData.user.role} sx={{ mt: `4px !important` }} />
                         <Typography sx={{ fontWeight: 'bold', fontSize: 28 }} color="text" component="h1">
                             {profileData.user.name}
                         </Typography>

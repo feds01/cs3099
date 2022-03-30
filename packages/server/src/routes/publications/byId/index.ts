@@ -100,7 +100,7 @@ registerRoute(router, '/:id', {
     body: IPublicationPatchRequestSchema,
     headers: z.object({}),
     permissionVerification: verifyPublicationIdPermission,
-    permission: { level: IUserRole.Moderator },
+    permission: { level: IUserRole.Moderator, hierarchy: true },
     handler: async (req) => {
         const controller = new PublicationController(req.permissionData);
         return await controller.patch(req.body);

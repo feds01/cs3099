@@ -148,6 +148,7 @@ describe('Publication tests that involve revisions', () => {
             `/publication/${mockedOwner.username}/${mockedPublication.name}/revisions`,
         );
         expect(revisionResponse.status).toBe(200);
+        expect(revisionsResponse.body.revisions).toHaveLength(2);
 
         // @@Hack: we need to omit the attachment data because it might not be returned by the endpoint
         const { attachment: _, ...revisedPublication } = revisionResponse.body.publication;
@@ -159,6 +160,50 @@ describe('Publication tests that involve revisions', () => {
                 current: false,
                 draft: false,
                 updatedAt: revisionsResponse.body.revisions[1].updatedAt,
+            },
+        ]);
+    });
+
+    /**
+     * List revisions on a specific publication without being an owner or a collaborator
+     * should not show the revised publication because it's still in draft mode.
+     */
+    it('List revisions of a publication after revising', async () => {
+        // Make a new 'requester' user that is not associated with the publication
+        const requester = await registerUserAndAuthenticate(
+            request,
+            createMockedUser({ username: 'requester' }),
+        );
+
+        // Upload sources to the original publication from the perspective of the 'owner'
+        await request
+            .post(`/resource/upload/publication/${publication.id}`)
+            .attach('file', '__tests__/resources/sampleCode.zip');
+
+        const requestDto = {
+            revision: 'v2',
+            changelog: 'Revised publication',
+        };
+
+        const revisionResponse = await request
+            .post(`/publication/${mockedOwner.username}/${mockedPublication.name}/revise`)
+            .send(requestDto);
+        expect(revisionResponse.status).toBe(200);
+
+        // Listing the revisions should return two almost identical revisions with the
+        // second one having a new revision field and a different id...
+        const revisionsResponse = await request
+            .get(`/publication/${mockedOwner.username}/${mockedPublication.name}/revisions`)
+            .auth(requester.token, { type: 'bearer' });
+
+        expect(revisionResponse.status).toBe(200);
+        expect(revisionsResponse.body.revisions).toHaveLength(1);
+        expect(revisionsResponse.body.revisions).toStrictEqual([
+            {
+                ...publication,
+                current: false,
+                draft: false,
+                updatedAt: revisionsResponse.body.revisions[0].updatedAt,
             },
         ]);
     });

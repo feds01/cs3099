@@ -5,6 +5,7 @@ import { usePatchUserUsernameRole } from '../../lib/api/users/users';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { useEffect } from 'react';
+import { computeUserPermission } from '../../lib/utils/roles';
 
 type UpdateAccountRoleFormProps = {
     user: User;
@@ -34,7 +35,12 @@ export default function UpdateAccountRoleForm({ user, refetch }: UpdateAccountRo
     };
 
     return (
-        <Select size="small" value={user.role} onChange={handleChange}>
+        <Select
+            size="small"
+            value={user.role}
+            disabled={!computeUserPermission(user.id, session)}
+            onChange={handleChange}
+        >
             <MenuItem value="default">Default</MenuItem>
             {session.role !== 'default' && <MenuItem value="moderator">Moderator</MenuItem>}
             {session.role === 'administrator' && <MenuItem value="administrator">Administrator</MenuItem>}

@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/auth';
 import { PublicationProvider } from '../../contexts/publication';
 import { GetPublicationUsernameName200 as PublicationResponse } from '../../lib/api/models';
 import { useGetPublicationUsernameName as useGetPublication } from '../../lib/api/publications/publications';
-import { computeUserPermission } from '../../lib/utils/roles';
+import { computeUserOnPublicationPermission } from '../../lib/utils/roles';
 import { ContentState } from '../../types/requests';
 import { transformQueryIntoContentState } from '../../wrappers/react-query';
 import Collaborators from './modules/Collaborators';
@@ -222,7 +222,7 @@ function PublicationView() {
             const basename = `/${username}/${name}` + (canonicalName[1] !== '' ? `/${canonicalName[1]}` : '');
 
             // Calculate the permissions of the current user in regards to the current publication
-            const permission = computeUserPermission(publication.owner.id, session);
+            const permission = computeUserOnPublicationPermission(publication, session);
 
             const tabMap = TabMap({
                 viewSettings: permission.modify,

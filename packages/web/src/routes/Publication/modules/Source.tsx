@@ -11,6 +11,7 @@ import PublicationViewSource from '../../../components/PublicationSourceView';
 import { transformQueryIntoContentState } from '../../../wrappers/react-query';
 import { usePublicationState, usePublicationDispatch } from '../../../contexts/publication';
 import { useGetPublicationUsernameNameTreePath as useGetPublicationSource } from '../../../lib/api/publications/publications';
+import { computeUserOnPublicationPermission } from '../../../lib/utils/roles';
 
 export default function Source(): ReactElement {
     const { session } = useAuth();
@@ -27,6 +28,9 @@ export default function Source(): ReactElement {
     >({
         state: 'loading',
     });
+
+    // Calculate the permissions of the current user in regards to the current publication
+    const permission = computeUserOnPublicationPermission(publication, session);
 
     const getPublicationSourceQuery = useGetPublicationSource(owner.username, name, path, { revision });
 
@@ -58,7 +62,7 @@ export default function Source(): ReactElement {
                     filename={path || '/'}
                     contents={publicationSource}
                 />
-            ) : publication.owner.id === session.id ? (
+            ) : permission.modify ? (
                 <UploadAttachment
                     refetchData={() => {
                         refetch();
