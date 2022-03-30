@@ -206,7 +206,7 @@ export const verifyUserPermission: PermissionVerificationFn<
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
     }
 
-    if (queriedUser._id?.toString() === user._id?.toString()) {
+    if (queriedUser._id.toString() === user._id.toString()) {
         return { valid: true, user, data: queriedUser };
     }
 
@@ -240,7 +240,7 @@ export const verifyCommentPermission: PermissionVerificationFn<
         return { valid: false, code: 404, message: errors.RESOURCE_NOT_FOUND };
     }
 
-    if (comment.owner._id?.toString() === user._id?.toString()) {
+    if (comment.owner._id.toString() === user._id.toString()) {
         return { valid: true, user, data: comment };
     }
 
@@ -305,7 +305,7 @@ export const verifyReviewPermission: PermissionVerificationFn<
     }
 
     // If the review is incomplete, we will only allow users that have at least a moderator role set
-    if (review.owner._id.toString() !== user._id?.toString()) {
+    if (review.owner._id.toString() !== user._id.toString()) {
         if (
             review.status !== IReviewStatus.Completed &&
             !compareUserRoles(user.role, IUserRole.Moderator)
@@ -333,7 +333,7 @@ export const verifyReviewPermission: PermissionVerificationFn<
 export const verifyRevisonlessPublicationPermission: PermissionVerificationFn<
     PublicationRequest & UserParamsRequest,
     UserQueryRequest,
-    undefined
+    { filterDrafts: boolean }
 > = async (user, req, context) => {
     const owner = await transformUsernameIntoId(req);
     const publication = await Publication.findOne({
@@ -347,11 +347,23 @@ export const verifyRevisonlessPublicationPermission: PermissionVerificationFn<
         return { valid: false, message: errors.RESOURCE_NOT_FOUND, code: 404 };
     }
 
-    if (!context.satisfied && publication.owner._id.toString() !== user._id.toString()) {
+    // if this is the owner of the publication, this is an allowed modification
+    if (
+        publication.owner._id.toString() === user._id.toString() ||
+        publication.collaborators.find((id) => id.toString() === user._id.toString())
+    ) {
+        return { valid: true, user, data: { filterDrafts: false } };
+    }
+
+    if (!context.satisfied && !compareUserRoles(user.role, publication.owner.role)) {
         return { valid: false };
     }
 
-    return { valid: true, user };
+    return {
+        valid: true,
+        user,
+        data: { filterDrafts: compareUserRoles(user.role, IUserRole.Moderator) },
+    };
 };
 
 /**
@@ -384,13 +396,26 @@ export const verifyPublicationPermission: PermissionVerificationFn<
     }
 
     // if this is the owner of the publication, this is an allowed modification
-    if (publication.owner._id?.toString() === user._id?.toString()) {
+    if (publication.owner._id.toString() === user._id.toString()) {
         return { valid: true, user, data: publication };
+    }
+
+    // If this is a collaborator, they can perform all the actions as long as the
+    // required permission level is below 'admin'. This means that collaborators
+    // should be able to revise/patch and upload sources to publications.
+    if (publication.collaborators.find((id) => id.toString() === user._id.toString())) {
+        if (context.minimum !== IUserRole.Administrator) {
+            return { valid: true, user, data: publication };
+        }
+    }
+
+    // If the publication is marked as draft, default users cannot view it yet!
+    if (publication.draft && !compareUserRoles(user.role, IUserRole.Moderator)) {
+        return { valid: false };
     }
 
     // Ensure that the user has higher or the same privileges as the queried user
     if (!context.satisfied && !compareUserRoles(user.role, publication.owner.role)) {
-        console.log('here');
         return { valid: false };
     }
 
@@ -421,6 +446,20 @@ export const verifyPublicationIdPermission: PermissionVerificationFn<
     // if this is the owner of the publication, this is an allowed modification
     if (publication.owner._id?.toString() === user._id?.toString()) {
         return { valid: true, user, data: publication };
+    }
+
+    // If this is a collaborator, they can perform all the actions as long as the
+    // required permission level is below 'admin'. This means that collaborators
+    // should be able to revise/patch and upload sources to publications.
+    if (publication.collaborators.find((id) => id.toString() === user._id.toString())) {
+        if (context.minimum !== IUserRole.Administrator) {
+            return { valid: true, user, data: publication };
+        }
+    }
+
+    // If the publication is marked as draft, default users cannot view it yet!
+    if (publication.draft && !compareUserRoles(user.role, IUserRole.Moderator)) {
+        return { valid: false };
     }
 
     // Ensure that the user has higher or the same privileges as the queried user

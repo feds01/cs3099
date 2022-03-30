@@ -7,6 +7,7 @@ import * as zip from '../../../lib/resources/zip';
 import * as userUtils from '../../../utils/users';
 import PublicationController, { PublicationResponse } from '../../../controller/publication';
 import {
+    compareUserRoles,
     verifyPublicationPermission,
     verifyRevisonlessPublicationPermission,
     verifyUserPermission,
@@ -59,6 +60,13 @@ registerRoute(router, '/:username', {
         const user = req.permissionData;
         const { pinned, skip, take, asCollaborator, current } = req.query;
 
+        // We need to check if we have to filter out 'drafts' based on if the requester
+        // is a moderator. If they are, then only the owner and collaborators can see the
+        // draft publication.
+        const filterDrafts =
+            user._id.toString() !== req.requester._id.toString() &&
+            !compareUserRoles(req.requester.role, IUserRole.Moderator);
+
         // We are performing an aggregation to collect all publications where the user is the
         // owner (or a collaborator which is optionally specified in the request query), whether
         // the publication has a `pinned` status and only current publications
@@ -68,25 +76,53 @@ registerRoute(router, '/:username', {
                     data: [
                         {
                             $match: {
-                                $or: [
-                                    { owner: user._id },
-                                    ...(typeof asCollaborator !== 'undefined' && asCollaborator
+                                $and: [
+                                    {
+                                        $or: [
+                                            { owner: user._id },
+                                            ...(typeof asCollaborator !== 'undefined' &&
+                                            asCollaborator
+                                                ? [
+                                                      {
+                                                          collaborators: {
+                                                              $elemMatch: { $eq: user._id },
+                                                          },
+                                                      },
+                                                  ]
+                                                : []),
+                                        ],
+                                    },
+                                    ...(filterDrafts
                                         ? [
                                               {
-                                                  collaborators: {
-                                                      $elemMatch: { $eq: user._id },
-                                                  },
+                                                  $or: [
+                                                      { draft: false },
+                                                      {
+                                                          draft: true,
+                                                          collaborators: {
+                                                              $elemMatch: {
+                                                                  $eq: req.requester._id,
+                                                              },
+                                                          },
+                                                      },
+                                                  ],
                                               },
                                           ]
                                         : []),
+                                    ...(typeof pinned !== 'undefined'
+                                        ? [
+                                              {
+                                                  $or: [
+                                                      ...(!pinned
+                                                          ? [{ pinned: { $exists: false } }]
+                                                          : []),
+                                                      { pinned },
+                                                  ],
+                                              },
+                                          ]
+                                        : []),
+                                    { current },
                                 ],
-                                ...(typeof pinned !== 'undefined' && {
-                                    $or: [
-                                        ...(!pinned ? [{ pinned: { $exists: false } }] : []),
-                                        { pinned },
-                                    ],
-                                }),
-                                current,
                             },
                         },
                         { $sort: { _id: -1 } },
@@ -145,6 +181,7 @@ registerRoute(router, '/:username/:name/revisions', {
         const result = await Publication.find({
             owner: user.id,
             name: req.params.name,
+            ...(!req.permissionData.filterDrafts && { draft: false }),
         })
             .sort({ _id: -1 })
             .skip(skip)
