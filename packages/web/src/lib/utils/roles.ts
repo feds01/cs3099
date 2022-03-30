@@ -1,4 +1,7 @@
-import { User, UserRole } from '../api/models';
+import { Review, User, UserRole } from '../api/models';
+
+/** Extended user role used to provide more context about reviewers */
+export type ExtendedRole = UserRole | 'owner' | 'collaborator' | 'reviewer';
 
 /** Type represents the permissions of a user for a given context */
 export type Permission = {
@@ -6,6 +9,12 @@ export type Permission = {
     delete: boolean;
 };
 
+/**
+ * Function to convert a role into a numeric value.
+ *
+ * @param role
+ * @returns
+ */
 function convertRoleToNumber(role: UserRole): number {
     switch (role) {
         case 'administrator':
@@ -17,6 +26,14 @@ function convertRoleToNumber(role: UserRole): number {
     }
 }
 
+/**
+ * Function to verify that the user has a sufficient permission to perform an
+ * operation as specified by the `expectedRole` argument.
+ *
+ * @param givenRole - The role that the user currently has.
+ * @param expectedRole - The minimum role that is required.
+ * @returns If the user has sufficient permissions.
+ */
 export function ensureElevatedPermission(givenRole: UserRole, expectedRole: UserRole): boolean {
     const expectedValue = convertRoleToNumber(expectedRole);
     const givenValue = convertRoleToNumber(givenRole);
@@ -43,4 +60,28 @@ export function computeUserPermission(ownerId: string, user: User): Permission {
     if (user.role === 'administrator') permission.delete = true;
 
     return permission;
+}
+
+/**
+ * Function to compute a role in the context of a review and a comment author.
+ * This function is used to compute whether the comment author is the owner
+ * of the publication, publication collaborator or if they are a the original
+ * reviewer.
+ */
+export function computeReviewRole(review: Review, author: User): ExtendedRole {
+    if (author.id === review.owner.id) {
+        return 'reviewer';
+    }
+
+    // Check if the user is the owner of the publication
+    if (author.id === review.publication.owner.id) {
+        return 'owner';
+    }
+
+    // Check if the user is a collaborator of the publication
+    if (review.publication.collaborators.map((user) => user.id).find((id) => id === author.id)) {
+        return 'collaborator';
+    }
+
+    return 'default';
 }
