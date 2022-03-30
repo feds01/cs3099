@@ -2,7 +2,7 @@ import assert from 'assert';
 import express from 'express';
 import { z } from 'zod';
 
-import * as error from '../../common/errors';
+import * as errors from '../../common/errors';
 import * as userUtils from './../../utils/users';
 import {
     compareUserRoles,
@@ -216,7 +216,7 @@ registerRoute(router, '/:username/avatar', {
                 return {
                     status: 'error',
                     code: 404,
-                    message: error.RESOURCE_NOT_FOUND,
+                    message: errors.RESOURCE_NOT_FOUND,
                 };
             }
 
@@ -229,7 +229,7 @@ registerRoute(router, '/:username/avatar', {
             return {
                 status: 'error',
                 code: 404,
-                message: error.RESOURCE_NOT_FOUND,
+                message: errors.RESOURCE_NOT_FOUND,
             };
         }
     },
@@ -334,7 +334,7 @@ registerRoute(router, '/:username', {
                 return {
                     status: 'error',
                     code: 400,
-                    message: error.BAD_REQUEST,
+                    message: errors.BAD_REQUEST,
                     errors: {
                         username: {
                             message: 'Username already taken',
@@ -345,7 +345,7 @@ registerRoute(router, '/:username', {
                 return {
                     status: 'error',
                     code: 400,
-                    message: error.BAD_REQUEST,
+                    message: errors.BAD_REQUEST,
                     errors: {
                         email: {
                             message: 'Email already taken',
@@ -370,7 +370,7 @@ registerRoute(router, '/:username', {
             return {
                 status: 'error',
                 code: 404,
-                message: error.RESOURCE_NOT_FOUND,
+                message: errors.RESOURCE_NOT_FOUND,
             };
         }
 
@@ -413,7 +413,7 @@ registerRoute(router, '/:username', {
             return {
                 status: 'error',
                 code: 404,
-                message: error.RESOURCE_NOT_FOUND,
+                message: errors.RESOURCE_NOT_FOUND,
             };
         }
 
@@ -498,13 +498,26 @@ registerRoute(router, '/:username/role', {
             return {
                 status: 'error',
                 code: 401,
-                message: error.UNAUTHORIZED,
+                message: errors.UNAUTHORIZED,
                 errors: {
                     role: {
                         message: `Can't elevate privilege to ${req.body.role}`,
                     },
                 },
             };
+        }
+
+        // Verify that the requester cannot modify the permission of a user that has a higher privilege
+        if (!compareUserRoles(req.requester.role, req.permissionData.role)) {
+            throw new errors.ApiError(
+                400,
+                'User cannot modify permissions of higher privileged users',
+            );
+        }
+
+        // Verify that the requester cannot modify their own privilege
+        if (req.requester.id === req.permissionData._id.toString()) {
+            throw new errors.ApiError(400, 'User cannot modify own permission');
         }
 
         const newUser = await User.findByIdAndUpdate(

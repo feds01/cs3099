@@ -10,7 +10,7 @@ import { ApiErrorResponse, GetUserUsername200, User } from '../../lib/api/models
 import { PostResourceUploadUsername200 } from '../../lib/api/models/postResourceUploadUsername200';
 import { usePostResourceUploadUsername } from '../../lib/api/resources/resources';
 import { useDeleteUserUsernameAvatar, useGetUserUsername } from '../../lib/api/users/users';
-import { computeUserPermission } from '../../lib/utils/roles';
+import { computeUserPermission, ensureElevatedPermission } from '../../lib/utils/roles';
 import { ContentState } from '../../types/requests';
 import { transformMutationIntoContentState, transformQueryIntoContentState } from '../../wrappers/react-query';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -219,7 +219,7 @@ export default function Account() {
                                 </Grid>
                             </Grid>
                         )}
-                        {session.role !== 'default' && (
+                        {ensureElevatedPermission(session.role, user.role) && !isSelf && (
                             <Grid item xs={12}>
                                 <Grid
                                     container

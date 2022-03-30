@@ -211,7 +211,7 @@ export const verifyUserPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user;
-    if (!context.satisfied || !compareUserRoles(user.role, queriedUser.role)) {
+    if (!context.satisfied && !compareUserRoles(user.role, queriedUser.role)) {
         return { valid: false };
     }
 
@@ -245,7 +245,7 @@ export const verifyCommentPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user
-    if (!context.satisfied || !compareUserRoles(user.role, comment.owner.role)) {
+    if (!context.satisfied && !compareUserRoles(user.role, comment.owner.role)) {
         return { valid: false };
     }
 
@@ -389,7 +389,8 @@ export const verifyPublicationPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user
-    if (!context.satisfied || !compareUserRoles(user.role, publication.owner.role)) {
+    if (!context.satisfied && !compareUserRoles(user.role, publication.owner.role)) {
+        console.log('here');
         return { valid: false };
     }
 
@@ -423,7 +424,7 @@ export const verifyPublicationIdPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user
-    if (!context.satisfied || !compareUserRoles(user.role, publication.owner.role)) {
+    if (!context.satisfied && !compareUserRoles(user.role, publication.owner.role)) {
         return { valid: false };
     }
 
@@ -457,7 +458,7 @@ export const verifyActivityPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user
-    if (!context.satisfied || !compareUserRoles(user.role, activity.permission)) {
+    if (!context.satisfied && !compareUserRoles(user.role, activity.permission)) {
         return { valid: false };
     }
 
@@ -492,7 +493,7 @@ export const verifyNotificationPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user
-    if (!context.satisfied || !compareUserRoles(user.role, notification.author.role)) {
+    if (!context.satisfied && !compareUserRoles(user.role, notification.author.role)) {
         return { valid: false };
     }
 
