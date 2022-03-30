@@ -101,7 +101,12 @@ export default function EditPublicationForm({ publication }: EditPublicationForm
                     <FieldLabel label="Publication description" required={false} />
                     <Controller
                         render={({ field: { value, onChange } }) => (
-                            <MarkdownField contents={value} onChange={onChange} />
+                            <MarkdownField
+                                autoFocus={false}
+                                placeholder="Add introduction"
+                                contents={value}
+                                onChange={onChange}
+                            />
                         )}
                         name="introduction"
                         control={control}

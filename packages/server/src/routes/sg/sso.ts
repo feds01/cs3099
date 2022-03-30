@@ -107,10 +107,10 @@ registerRoute(router, '/callback', {
         // try to find the user, if the user is marked as deleted, we essentially
         // have to revert this because we can't create a new document for them.
         // If, we can't find them, then we create a new document with the specified values.
-        const user = await User.findOneAndUpdate({
+        const user = await User.findOne({
             email,
             externalId: convertSgId(id),
-        });
+        }).exec();
 
         const transformedUser = await transformSgUserToInternal(userData.response, user?.username);
 

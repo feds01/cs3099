@@ -155,6 +155,7 @@ export default function FileViewer({ contents, filename, mimeType, id, review, t
                             name: review.publication.name,
                             revision: review.publication.revision,
                         }}
+                        renderLargeFiles={false}
                         contents={contents}
                         mimeType={mimeType}
                         filename={filename}
