@@ -6,7 +6,9 @@ import { SgUserId, SgUserSchema } from '../../validators/sg';
 import { makeRequest } from './../communication/fetch';
 
 const GROUP_URI_MAP: Record<string, string> = {
+    t03: 'https://cs3099user03.host.cs.st-andrews.ac.uk/',
     t06: 'https://cs3099user06.host.cs.st-andrews.ac.uk/',
+    t09: 'https://cs3099user09.host.cs.st-andrews.ac.uk/',
     t12: 'https://cs3099user12.host.cs.st-andrews.ac.uk/',
     t15: 'https://cs3099user15.host.cs.st-andrews.ac.uk/',
     t21: 'https://cs3099user21.host.cs.st-andrews.ac.uk/',
