@@ -1,9 +1,11 @@
-import { beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
 import { agent as supertest } from 'supertest';
 
 import app from '../../../src/app';
+import Activity from '../../../src/models/Activity';
 import Publication, { TransformedPublication } from '../../../src/models/Publication';
-import User, { AugmentedUserDocument } from '../../../src/models/User';
+import { TransformedReview } from '../../../src/models/Review';
+import { createMockedPublication } from '../../utils/factories/publication';
 import { createMockedUser } from '../../utils/factories/user';
 import {
     AuthenticationResponse,
@@ -14,59 +16,106 @@ const request = supertest(app);
 
 describe('Activity endpoints testing', () => {
     let userResponse: AuthenticationResponse;
-    let user: AugmentedUserDocument | null;
-    let publication: TransformedPublication | null;
-    
+    let publicationResponse: TransformedPublication;
+
+    const mockedPublication = createMockedPublication({
+        revision: 'v1',
+        name: 'test',
+        collaborators: [],
+    });
+
     beforeAll(async () => {
         userResponse = await registerUserAndAuthenticate(
             request,
             createMockedUser({ username: 'user' }),
         );
-        user = (await User.findById(
-            userResponse.user.id,
-        ).exec()) as unknown as AugmentedUserDocument;
-    })
 
-    beforeEach(async () => {
         request.auth(userResponse.token, { type: 'bearer' });
-    })
+    });
 
-    it("should create activity after a publication is created and resource uploaded", async () => {
-        await request.post('/publication').send({
-            revision: 'v1',
-            title: 'Test title',
-            name: 'Test-name',
-            introduction: 'Introduction here',
-            collaborators: [],
-        });
-        publication = await Publication.findOne({ name: 'test-name', revision: 'v1' });
+    /** Create the publication before each request */
+    beforeEach(async () => {
+        const response = await request.post('/publication').send(mockedPublication);
+        expect(response.status).toBe(201);
+
+        // extract the publication
+        publicationResponse = response.body.publication;
+    });
+
+    /** Delete the publication after each test */
+    afterEach(async () => {
+        await Publication.findByIdAndDelete(publicationResponse.id).exec();
+
+        // Clear all activities for the user after each test
+        await Activity.deleteMany({}).exec();
+    });
+
+    it('should create activity after a publication is created and resource uploaded', async () => {
+        const { user } = userResponse;
 
         // before uploading resource to the publication, the activity should not appear
-        const getActivityResponseBeforeUpload = await request.get(`/user/${user!.username}/feed`);
+        const getActivityResponseBeforeUpload = await request.get(`/user/${user.username}/feed`);
         expect(getActivityResponseBeforeUpload.status).toBe(200);
         expect(getActivityResponseBeforeUpload.body.activities.length).toBe(0);
 
-        await request.post(`/resource/upload/publication/${publication!.id}`).attach('file', '__tests__/resources/sampleCode.zip');
-        const getActivityResponseAfterUpload = await request.get(`/user/${user!.username}/feed`);
-        expect(getActivityResponseAfterUpload.status).toBe(200);
-        expect(getActivityResponseAfterUpload.body.activities.length).toBe(1);
-        expect(getActivityResponseAfterUpload.body.activities[0].type).toBe('publication');
-        expect(getActivityResponseAfterUpload.body.activities[0].kind).toBe('create');
-        expect(getActivityResponseAfterUpload.body.activities[0].owner.id).toBe(user!.id);
-        expect(getActivityResponseAfterUpload.body.activities[0].references[0].document.id).toBe(publication!.id);
+        // Upload the source file to publication, marking it as non-drafted and the
+        // activity as live
+        await request
+            .post(`/resource/upload/publication/${publicationResponse.id}`)
+            .attach('file', '__tests__/resources/sampleCode.zip');
+
+        // Verify that the activity now appears to be in the 'feed'
+        const activityFeedResponse = await request.get(`/user/${user!.username}/feed`);
+        expect(activityFeedResponse.status).toBe(200);
+
+        expect(activityFeedResponse.body.activities.length).toBe(1);
+        expect(activityFeedResponse.body.activities[0]).toEqual(
+            expect.objectContaining({
+                type: 'publication',
+                kind: 'create',
+                owner: expect.objectContaining({
+                    id: user.id,
+                }),
+                references: expect.arrayContaining([
+                    expect.objectContaining({ type: 'publication' }),
+                ]),
+            }),
+        );
     });
 
-    it("should create activity after a review is created", async () => {
-        const reviewRes = await request.post(`/publication/${user!.username}/${publication!.name}/review`).query({ revision: publication!.revision });
-        await request.post(`/review/${reviewRes.body.review.id}/complete`);
-        const getActivityResponse = await request.get(`/user/${user!.username}/feed`);
-        
-        expect(getActivityResponse.status).toBe(200);
-        expect(getActivityResponse.body.activities.length).toBe(2);
-        expect(getActivityResponse.body.activities[0].type).toBe('review');
-        expect(getActivityResponse.body.activities[0].kind).toBe('create');
-        expect(getActivityResponse.body.activities[0].owner.id).toBe(user!.id);
-        expect(getActivityResponse.body.activities[0].references[0].type).toBe("review");
-        expect(getActivityResponse.body.activities[0].references[1].type).toBe("publication");
+    it('should create activity after a review is created', async () => {
+        const { user } = userResponse;
+
+        // Upload the source file to publication, marking it as non-drafted
+        await request
+            .post(`/resource/upload/publication/${publicationResponse.id}`)
+            .attach('file', '__tests__/resources/sampleCode.zip');
+
+        const reviewRes = await request.post(`/publication-by-id/${publicationResponse.id}/review`);
+        expect(reviewRes.status).toBe(201);
+
+        const { review }: { review: TransformedReview } = reviewRes.body;
+
+        await request.post(`/review/${review.id}/complete`);
+
+        const activityFeedResponse = await request.get(`/user/${user.username}/feed`);
+        expect(activityFeedResponse.status).toBe(200);
+
+        // Verify that the activity feed now has two activities, but the most
+        // recent will be the completion of the review
+        expect(activityFeedResponse.body.activities.length).toBe(2);
+        expect(activityFeedResponse.body.activities[0]).toEqual(
+            expect.objectContaining({
+                type: 'review',
+                kind: 'create',
+                owner: expect.objectContaining({
+                    id: user.id,
+                }),
+                references: expect.arrayContaining([
+                    expect.objectContaining({ type: 'review' }),
+                    expect.objectContaining({ type: 'publication' }),
+                ]),
+            }),
+        );
     });
 });
