@@ -17,7 +17,7 @@ class ShowTest(unittest.TestCase):
         with open(cls.test_dir / "config/test_config.json", "r") as f:
             cls.test_config = json.load(f)
         cls.auth_file = cls.test_dir / "config/auth.json"
-        cls.obj = {"CLI_PATH": cls.test_dir, "BASE_URL": cls.test_config["baseUrl"]}
+        cls.obj = {"CLI_PATH": cls.test_dir}
         cls.runner = CliRunner()
 
         # Login to get token file
