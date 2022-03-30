@@ -21,11 +21,14 @@ import { BasicRequest } from './requests';
 export interface Permission {
     /** The expected level of permissions that the endpoint requires */
     level: IUserRole;
+    /** Hierarchy in terms of if lower permission users can perform modifications */
+    hierarchy?: boolean;
 }
 
 export interface PermissionContext {
     minimum: IUserRole;
     satisfied: boolean;
+    hierarchy: boolean;
 }
 
 type BodylessBasicRequest<P, Q> = Omit<BasicRequest<P, Q, unknown, unknown>, 'body'>;
@@ -127,6 +130,7 @@ export async function ensureValidPermissions<P, Q, T>(
     const context = {
         minimum: permission.level,
         satisfied: compareUserRoles(user.role, permission.level),
+        hierarchy: permission.hierarchy ?? false,
     };
 
     return await verifyPermission(user, req, context);
@@ -211,7 +215,7 @@ export const verifyUserPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user;
-    if (!context.satisfied && !compareUserRoles(user.role, queriedUser.role)) {
+    if (!context.satisfied || !compareUserRoles(user.role, queriedUser.role)) {
         return { valid: false };
     }
 
@@ -245,7 +249,10 @@ export const verifyCommentPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user
-    if (!context.satisfied && !compareUserRoles(user.role, comment.owner.role)) {
+    if (
+        !context.satisfied ||
+        (context.hierarchy && !compareUserRoles(user.role, comment.owner.role))
+    ) {
         return { valid: false };
     }
 
@@ -355,14 +362,17 @@ export const verifyRevisonlessPublicationPermission: PermissionVerificationFn<
         return { valid: true, user, data: { filterDrafts: false } };
     }
 
-    if (!context.satisfied && !compareUserRoles(user.role, publication.owner.role)) {
+    if (
+        !context.satisfied ||
+        (context.hierarchy && !compareUserRoles(user.role, publication.owner.role))
+    ) {
         return { valid: false };
     }
 
     return {
         valid: true,
         user,
-        data: { filterDrafts: compareUserRoles(user.role, IUserRole.Moderator) },
+        data: { filterDrafts: !compareUserRoles(user.role, IUserRole.Moderator) },
     };
 };
 
@@ -415,7 +425,10 @@ export const verifyPublicationPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user
-    if (!context.satisfied && !compareUserRoles(user.role, publication.owner.role)) {
+    if (
+        !context.satisfied ||
+        (context.hierarchy && !compareUserRoles(user.role, publication.owner.role))
+    ) {
         return { valid: false };
     }
 
@@ -463,7 +476,10 @@ export const verifyPublicationIdPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user
-    if (!context.satisfied && !compareUserRoles(user.role, publication.owner.role)) {
+    if (
+        !context.satisfied ||
+        (context.hierarchy && !compareUserRoles(user.role, publication.owner.role))
+    ) {
         return { valid: false };
     }
 
@@ -497,7 +513,7 @@ export const verifyActivityPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user
-    if (!context.satisfied && !compareUserRoles(user.role, activity.permission)) {
+    if (!context.satisfied || !compareUserRoles(user.role, activity.permission)) {
         return { valid: false };
     }
 
@@ -532,7 +548,10 @@ export const verifyNotificationPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user
-    if (!context.satisfied && !compareUserRoles(user.role, notification.author.role)) {
+    if (
+        !context.satisfied ||
+        (context.hierarchy && !compareUserRoles(user.role, notification.tagging.role))
+    ) {
         return { valid: false };
     }
 

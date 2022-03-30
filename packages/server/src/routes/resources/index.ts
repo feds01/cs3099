@@ -13,7 +13,6 @@ import {
 } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
 import Activity, { IActivityType } from '../../models/Activity';
-import Publication from '../../models/Publication';
 import User, { IUserRole } from '../../models/User';
 import { config } from '../../server';
 import { ResponseErrorSummary } from '../../transformers/error';
@@ -130,6 +129,7 @@ registerRoute(router, '/upload/publication/:id', {
     permissionVerification: verifyPublicationIdPermission,
     handler: async (req) => {
         const file = extractFile(req.raw);
+        const publication = req.permissionData;
 
         if (!file) {
             return {
@@ -188,17 +188,11 @@ registerRoute(router, '/upload/publication/:id', {
             };
         }
 
-        const publication = await Publication.findById(req.params.id).exec();
-
-        if (!publication) {
-            return {
-                status: 'error',
-                code: 404,
-                message: errors.RESOURCE_NOT_FOUND,
-            };
-        }
-
-        let uploadPath = joinPathsForResource('publication', req.requester.id, publication.name);
+        let uploadPath = joinPathsForResource(
+            'publication',
+            publication.owner._id.toString(),
+            publication.name,
+        );
 
         // now we need to append the revision number if it actually exists...
         if (req.query.revision && !publication.current) {
@@ -250,6 +244,7 @@ registerRoute(router, '/upload/publication/:id', {
  *
  * @url /api/resources/upload/review/:id
  * @example
+ * @deprecated
  * https://af268.cs.st-andrews.ac.uk/api/resources/upload/review/617ec2675afcca834c21b5fd
  *
  * Endpoint for uploading attachments on review comments, items such as images/files or even

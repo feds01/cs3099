@@ -306,7 +306,7 @@ registerRoute(router, '/:username', {
     headers: z.object({}),
     body: IUserPatchRequestSchema,
     permissionVerification: verifyUserPermission,
-    permission: { level: IUserRole.Moderator },
+    permission: { level: IUserRole.Moderator, hierarchy: true },
     handler: async (req) => {
         const user = req.permissionData;
         const userId = user._id.toString();

@@ -181,7 +181,7 @@ registerRoute(router, '/:username/:name/revisions', {
         const result = await Publication.find({
             owner: user.id,
             name: req.params.name,
-            ...(!req.permissionData.filterDrafts && { draft: false }),
+            ...(req.permissionData.filterDrafts && { draft: false }),
         })
             .sort({ _id: -1 })
             .skip(skip)
@@ -327,7 +327,7 @@ registerRoute(router, '/:username/:name', {
     body: IPublicationPatchRequestSchema,
     headers: z.object({}),
     permissionVerification: verifyPublicationPermission,
-    permission: { level: IUserRole.Moderator },
+    permission: { level: IUserRole.Moderator, hierarchy: true },
     handler: async (req) => {
         const controller = new PublicationController(req.permissionData);
         return await controller.patch(req.body);
@@ -375,7 +375,7 @@ registerRoute(router, '/:username/:name/revise', {
         };
     },
     permissionVerification: verifyPublicationPermission,
-    permission: { level: IUserRole.Administrator },
+    permission: { level: IUserRole.Moderator },
     handler: async (req) => {
         const controller = new PublicationController(req.permissionData);
         return await controller.revise(req.body.revision, req.body.changelog);
