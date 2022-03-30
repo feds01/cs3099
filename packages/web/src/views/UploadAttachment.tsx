@@ -6,6 +6,7 @@ import { ContentState } from '../types/requests';
 import { transformMutationIntoContentState } from '../wrappers/react-query';
 import { Box, Button, LinearProgress, Typography } from '@mui/material';
 import React, { ReactElement, useEffect, useState } from 'react';
+import LoadingButton from '@mui/lab/LoadingButton';
 
 interface Props {
     publication: Publication;
@@ -31,44 +32,41 @@ export default function UploadAttachment({ publication, refetchData }: Props): R
 
     useEffect(() => {
         setUpload(transformMutationIntoContentState(uploadFileQuery));
+    }, [uploadFileQuery.isError, uploadFileQuery.isSuccess]);
 
-        if (!uploadFileQuery.isError && uploadFileQuery.data) {
+    useEffect(() => {
+        if (upload.state === 'ok') {
             refetchData();
         }
-    }, [uploadFileQuery.isError, uploadFileQuery.isSuccess]);
+    }, [upload]);
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-            {uploadFileQuery.isLoading ? (
-                <LinearProgress />
-            ) : (
-                <>
-                    <img src={Upload} width={128} height={128} alt="upload" />
-                    <Typography variant={'h4'} sx={{ paddingInlineStart: 1 }}>
-                        Upload publication
-                    </Typography>
+            <img src={Upload} width={128} height={128} alt="upload" />
+            <Typography variant={'h4'} sx={{ paddingInlineStart: 1 }}>
+                Upload publication
+            </Typography>
 
-                    <input
-                        style={{ display: 'none' }}
-                        accept={'application/zip, text/plain'}
-                        onChange={handleChange}
-                        id="contained-button-file"
-                        type="file"
-                    />
-                    <Box component={'label'} sx={{ pt: 1, pb: 1 }} htmlFor="contained-button-file">
-                        <Button
-                            variant="contained"
-                            sx={{ fontWeight: 'bold' }}
-                            size={'small'}
-                            color="primary"
-                            component="span"
-                        >
-                            Choose file...
-                        </Button>
-                    </Box>
-                    {upload.state === 'error' && <ErrorBanner message={upload.error.message} />}
-                </>
-            )}
+            <input
+                style={{ display: 'none' }}
+                accept={'application/zip, text/plain'}
+                onChange={handleChange}
+                id="contained-button-file"
+                type="file"
+            />
+            <Box component={'label'} sx={{ pt: 1, pb: 1 }} htmlFor="contained-button-file">
+                <LoadingButton
+                    variant="contained"
+                    sx={{ fontWeight: 'bold' }}
+                    size={'small'}
+                    loading={uploadFileQuery.isLoading}
+                    color="primary"
+                    component="span"
+                >
+                    Choose file...
+                </LoadingButton>
+            </Box>
+            {upload.state === 'error' && <ErrorBanner message={upload.error.message} />}
         </Box>
     );
 }
