@@ -1,4 +1,4 @@
-import { Review, User, UserRole } from '../api/models';
+import { Publication, Review, User, UserRole } from '../api/models';
 
 /** Extended user role used to provide more context about reviewers */
 export type ExtendedRole = UserRole | 'owner' | 'collaborator' | 'reviewer';
@@ -39,6 +39,43 @@ export function ensureElevatedPermission(givenRole: UserRole, expectedRole: User
     const givenValue = convertRoleToNumber(givenRole);
 
     return givenValue >= expectedValue;
+}
+
+
+/**
+ * Function to compute the permissions of a user given that the publication. There are 
+ * special rules for a publication if the user is a owner, or if they are a collaborator
+ * with the added rule set for moderators.
+ * 
+ * @param publication - The publication that is viewed by the user
+ * @param requester - The current user
+ */
+export function computeUserOnPublicationPermission(publication: Publication, requester: User): Permission {
+    const permission = {
+        modify: false,
+        delete: false,
+    };
+
+    // If the user is the owner of the document, then we can be sure that they
+    // can perform modification/deletion operations on the object.
+    if (publication.owner.id === requester.id) {
+        return {
+            modify: true,
+            delete: true,
+        };
+    }
+
+    if (requester.role !== 'default') permission.modify = true;
+    if (requester.role === 'administrator') permission.delete = true;
+
+    // Check if the user is a collaborator... If they are, then the requester
+    // is allowed to perform permissions that allow for the requester to 
+    // 'modify' content.
+    if (publication.collaborators.map((user) => user.id).find((id) => id === requester.id)) {
+        permission.modify = true;
+    }
+
+    return permission;
 }
 
 export function computeUserPermission(ownerId: string, user: User): Permission {

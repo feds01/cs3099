@@ -7,7 +7,7 @@ import { useAuth } from '../../../contexts/auth';
 import { usePublicationDispatch, usePublicationState } from '../../../contexts/publication';
 import { ApiErrorResponse, GetPublicationUsernameNameRevisions200, Publication, User } from '../../../lib/api/models';
 import { useGetPublicationUsernameNameRevisions } from '../../../lib/api/publications/publications';
-import { computeUserPermission } from '../../../lib/utils/roles';
+import { computeUserOnPublicationPermission } from '../../../lib/utils/roles';
 import { ContentState } from '../../../types/requests';
 import { transformQueryIntoContentState } from '../../../wrappers/react-query';
 import Timeline from '@mui/lab/Timeline';
@@ -31,7 +31,7 @@ interface RevisionProps {
 
 function Revision({ item, session, revisions, refetchRevisions }: RevisionProps) {
     const history = useHistory();
-    const permission = computeUserPermission(item.owner.id, session);
+    const permission = computeUserOnPublicationPermission(item, session);
     const { refetch } = usePublicationDispatch();
 
     return (
@@ -125,7 +125,7 @@ export default function Revisions() {
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                         <Typography variant="h4">Revision history</Typography>
-                        {permission.delete && (
+                        {permission.modify && (
                             <Box>
                                 <Button onClick={() => setRevisePublicationDialogOpen(true)}>Revise</Button>
                             </Box>
