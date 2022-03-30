@@ -31,7 +31,7 @@ function getRoleColour(role: ExtendedRole, theme: Theme): string | undefined {
             return theme.palette.primary.main;
         case 'collaborator':
         case 'owner':
-            return theme.palette.secondary.main;
+            return '#90EE90';
         case 'reviewer':
             return '#581845';
         default:

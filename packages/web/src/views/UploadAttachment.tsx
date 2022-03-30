@@ -4,7 +4,7 @@ import { usePostResourceUploadPublicationId } from '../lib/api/resources/resourc
 import Upload from '../static/images/upload.svg';
 import { ContentState } from '../types/requests';
 import { transformMutationIntoContentState } from '../wrappers/react-query';
-import { Box, Button, LinearProgress, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import React, { ReactElement, useEffect, useState } from 'react';
 import LoadingButton from '@mui/lab/LoadingButton';
 
