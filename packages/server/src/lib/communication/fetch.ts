@@ -104,10 +104,8 @@ export async function downloadOctetStream(
             };
         }
 
-        if (meta.mime !== 'application/zip' && !meta.mime.startsWith('text')) {
-            Logger.warn(
-                "The mime-type from downloaded stream isn't an `application/zip` or `text/*`.",
-            );
+        if (meta.mime !== 'application/zip') {
+            Logger.warn("The mime-type from downloaded stream isn't an `application/zip`.");
             return {
                 status: 'error',
                 type: 'service',

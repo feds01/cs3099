@@ -64,7 +64,9 @@ registerRoute(router, '/import', {
         );
 
         if (publicationArchive.status === 'error') {
-            Logger.warn(publicationArchive.errors);
+            Logger.warn(
+                `Archive download failed due to: ${JSON.stringify(publicationArchive.errors)}`,
+            );
 
             return {
                 status: 'error',
