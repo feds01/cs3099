@@ -1,7 +1,6 @@
 import express from 'express';
 import { z } from 'zod';
 
-import * as userUtils from '../../utils/users';
 import { verifyUserPermission } from '../../lib/communication/permissions';
 import registerRoute from '../../lib/communication/requests';
 import { AugmentedPublicationDocument } from '../../models/Publication';
@@ -31,7 +30,7 @@ registerRoute(router, '/:username/reviews', {
     permissionVerification: verifyUserPermission,
     permission: { level: IUserRole.Default },
     handler: async (req) => {
-        const user = await userUtils.transformUsernameIntoId(req);
+        const user = req.permissionData;
 
         // We don't want to return all of the reviews if it isn't the owner. We
         // filter out un-completed reviews if the requester isn't the owner, but
@@ -46,7 +45,7 @@ registerRoute(router, '/:username/reviews', {
             .populate<{ publication: AugmentedPublicationDocument }>('publication')
             .exec();
 
-        const reviews = await Promise.all(result.map(Review.project));
+        const reviews = await Promise.all(result.map(async (review) => await Review.project(review)));
 
         return {
             status: 'ok',

@@ -6,6 +6,7 @@ import { config } from '../server';
 import Activity from './Activity';
 import Follower from './Follower';
 import Publication from './Publication';
+import Review from './Review';
 
 /**
  * A role represents what level of permissions a user has in the system.
@@ -108,7 +109,24 @@ UserSchema.post(
         Logger.warn('Cleaning up user resources after account deletion');
 
         const id = item._id.toString();
-        await Publication.deleteMany({ owner: id }).exec();
+
+        // Delete all of the publications in order
+        const publications = await Publication.find({ owner: id }).exec();
+
+        await Promise.all(
+            publications.map(async (publication) => {
+                await publication.deleteOne();
+            }),
+        );
+
+        // Now delete all of the reviews in order
+        const reviews = await Review.find({ publication: item._id.toString() }).exec();
+
+        await Promise.all(
+            reviews.map(async (review) => {
+                await review.deleteOne();
+            }),
+        );
 
         // Now we need to delete any follower entries that contain the current user's id
         await Follower.deleteMany({ $or: [{ following: id }, { follower: id }] }).exec();
