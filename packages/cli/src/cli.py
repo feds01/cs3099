@@ -12,7 +12,6 @@ from commands.config import config
 
 if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
     # running in a pyinstall bundle
-
     cli_path = Path(sys.executable).parent
 else:
     cli_path = Path(__file__).parent
@@ -25,8 +24,7 @@ def cli(ctx: click.core.Context) -> None:
 
     \b
     This command is the main entry point which sets the global variables for any 
-    other subcommands to use. It also checks if the base url specified in the 
-    config file is reachable.
+    other subcommands to use. 
 
     \f
     Args:

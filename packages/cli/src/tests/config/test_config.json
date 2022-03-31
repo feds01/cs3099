@@ -1,5 +1,4 @@
 {
     "username": "Example",
-    "password": "Passwordexample123!",
-    "baseUrl": "http://localhost:5000"
+    "password": "Passwordexample123!"
 }

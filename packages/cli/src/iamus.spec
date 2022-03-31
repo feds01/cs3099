@@ -1,16 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
-import certifi
+
 
 block_cipher = None
 
-data_files = [('extra/config.json', 'config'), (certifi.where(), 'certifi')]
 
 a = Analysis(['cli.py'],
              pathex=[],
              binaries=[],
-             datas=data_files,
+             datas=[('extra/config.json', 'config')],
              hiddenimports=[],
-             hookspath=[],
+             hookspath=['extra'],
              hooksconfig={},
              runtime_hooks=[],
              excludes=[],

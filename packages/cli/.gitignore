@@ -4,3 +4,5 @@ __pycache__/
 # CLI auth config files
 src/config/
 
+# Distribution folder
+dist/
