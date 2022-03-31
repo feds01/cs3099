@@ -146,21 +146,21 @@ describe('User endpoint tests ', () => {
 
     // Tests for PATCH /user/:username/role
 
-    it("Updating user's role to default and check if user's role is updated", async () => {
+    it("Updating user's role is disallowed", async () => {
         const response = await request.patch('/user/test/role').send({
             role: IUserRole.Default,
         });
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(400);
 
         const user = await User.findOne({ username: 'test' });
-        expect(user?.role).toBe(IUserRole.Default);
+        expect(user?.role).toBe(IUserRole.Administrator);
     });
 
     it("Updating user's role using default privilege and check if it fails", async () => {
         const response = await request.patch('/user/test/role').send({
             role: IUserRole.Administrator,
         });
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(400);
     });
 
     // User deletion tests

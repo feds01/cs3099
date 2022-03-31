@@ -4,7 +4,7 @@ import { computeActivityPrefix } from '../lib/activity/message';
 import { TransformedActivitySchema } from '../validators/activity';
 import { IComment } from './Comment';
 import { TransformedPublication } from './Publication';
-import { IReview } from './Review';
+import { TransformedReview } from './Review';
 import UserModel, { IUser, IUserDocument, IUserRole, TransformedUser } from './User';
 
 /**
@@ -65,7 +65,7 @@ export interface IActivity {
 export type ActivityReference =
     | { type: 'user'; document: TransformedUser }
     | { type: 'publication'; document: TransformedPublication }
-    | { type: 'review'; document: Partial<IReview> }
+    | { type: 'review'; document: TransformedReview }
     | { type: 'comment'; document: Partial<IComment> };
 
 /**

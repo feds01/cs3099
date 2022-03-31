@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { ReactElement, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -61,7 +60,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
             >
                 <Grid container spacing={1}>
                     <Grid item xs={12}>
-                        <FieldLabel label="Username" />
+                        <FieldLabel label="Username/Email" />
                         <ControlledTextField name="username" control={control} />
                     </Grid>
                     <Grid item xs={12}>
@@ -94,7 +93,6 @@ export default function LoginForm({ onSuccess }: LoginFormProps): ReactElement {
                         }
                         label="Remember me"
                     />
-                    <Link to="/auth/forgot-password">Forgot Password?</Link>
                 </Box>
                 <LoadingButton
                     type={'submit'}

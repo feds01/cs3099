@@ -7,6 +7,11 @@ module.exports = {
     collectCoverageFrom: [
         'src/**/*.{js,jsx,ts,tsx}',
         '!**/*.d.ts',
+        '!src/config/**/*',
+        // So we disable coverage statistics on 'supergroup' specific code for now
+        '!src/lib/import/**/*',
+        '!src/routes/sg/**/*',
+        '!src/transformers/sg.ts'
     ],
     modulePathIgnorePatterns: ['<rootDir>/dist/',],
 

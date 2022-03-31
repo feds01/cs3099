@@ -16,12 +16,7 @@ import Publication, {
     AugmentedPublicationDocument,
     TransformedPublication,
 } from '../models/Publication';
-import Review, {
-    AugmentedReviewDocument,
-    IReview,
-    IReviewStatus,
-    PopulatedReview,
-} from '../models/Review';
+import Review, { IReviewStatus, PopulatedReview, TransformedReview } from '../models/Review';
 import { AugmentedUserDocument, IUserRole } from '../models/User';
 import { config } from '../server';
 import { IUserPatchRequest } from '../validators/publications';
@@ -49,12 +44,12 @@ interface PublicationArchiveResponse {
 
 /** Response returned when listing reviews on a publication */
 interface ReviewList {
-    reviews: Partial<AugmentedReviewDocument>[];
+    reviews: TransformedReview[];
 }
 
 /** Data returned when creating a review */
 interface CreateReview {
-    review: Partial<IReview>;
+    review: TransformedReview;
 }
 
 export default class PublicationController {
