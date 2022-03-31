@@ -60,7 +60,9 @@ def changelog_editor(value: str) -> str:
         str: Return the changelog content.
     """
     if value == "DEFAULT":
-        value = click.prompt("Change log file or edit directly", default="NOFILE")
+        value = click.prompt(
+            "Change log file or enter to edit directly", default="NOFILE"
+        )
 
     # file path is not provided, edit directly
     if value == "NOFILE":
