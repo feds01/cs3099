@@ -215,7 +215,10 @@ export const verifyUserPermission: PermissionVerificationFn<
     }
 
     // Ensure that the user has higher or the same privileges as the queried user;
-    if (!context.satisfied || !compareUserRoles(user.role, queriedUser.role)) {
+    if (
+        !context.satisfied ||
+        (context.hierarchy && !compareUserRoles(user.role, user.role))
+    ) {
         return { valid: false };
     }
 

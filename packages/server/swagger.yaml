@@ -1223,6 +1223,36 @@ paths:
                     $ref: '#/components/responses/CreatePublicationResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
+    /publication/{username}/{name}/zip:
+        get:
+            summary: Get the publication archive
+            description: Get a publication archive for a given username, name, and revision.
+            tags:
+                - publications
+            parameters:
+                - in: path
+                  name: username
+                  schema:
+                      type: string
+                  required: true
+                  description: Username.
+                - in: path
+                  name: name
+                  schema:
+                      type: string
+                  required: true
+                  description: The name of the publication for the current user.
+                - in: query
+                  required: false
+                  name: revision
+                  schema:
+                      type: string
+                      description: Revision number of the publication.
+            responses:
+                '200':
+                    $ref: '#/components/responses/RawFileResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
     /publication/{username}/{name}/revisions:
         get:
             summary: Get a list of revisions for a publication
@@ -1608,6 +1638,24 @@ paths:
                                         $ref: '#/components/schemas/SuccessStatus'
                                     publication:
                                         $ref: '#/components/schemas/Publication'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /publication-by-id/{id}/zip:
+        get:
+            summary: Get the publication archive
+            description: Get a publication archive by id.
+            tags:
+                - publications
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: Publication ID.
+            responses:
+                '200':
+                    $ref: '#/components/responses/RawFileResponse'
                 default:
                     $ref: '#/components/responses/ApiError'
     /publication-by-id/{id}/export:

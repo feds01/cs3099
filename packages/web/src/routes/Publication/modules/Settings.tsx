@@ -22,7 +22,7 @@ export default function Settings(): ReactElement {
                     <Typography variant={'h5'}>Delete Publication</Typography>
                     <Typography variant={'body2'}>Delete the current publication</Typography>
                     <Divider />
-                    <DeletePublicationForm publication={publication} />
+                    <DeletePublicationForm publication={publication} deleteAll />
                 </Box>
             )}
         </Box>

@@ -53,7 +53,7 @@ interface CreateReview {
 }
 
 export default class PublicationController {
-    constructor(readonly publication: AugmentedPublicationDocument) {}
+    constructor(readonly publication: AugmentedPublicationDocument) { }
 
     /**
      * Helper method to verify that if a publication document wishes to modify a revision
@@ -87,6 +87,23 @@ export default class PublicationController {
         };
 
         return zip.loadArchive(archiveIndex);
+    }
+
+    /**
+     * Endpoint to send the archive of the publication to the frontend.
+     */
+    async getArchive(): Promise<ApiResponse<undefined>> {
+        const publicationPath = zip.archiveIndexToPath({
+            userId: this.publication.owner._id.toString(),
+            name: this.publication.name,
+            ...(!this.publication.current && { revision: this.publication.revision }),
+        });
+
+        if (!resourceExists(publicationPath)) {
+            return { status: 'error', code: 404, message: errors.RESOURCE_NOT_FOUND };
+        }
+
+        return { status: 'file', code: 200, file: publicationPath }
     }
 
     async delete(): Promise<ApiResponse<undefined>> {
@@ -285,8 +302,7 @@ export default class PublicationController {
 
         if (result.status === 'error') {
             Logger.warn(
-                `Failed to export a publication due to '${
-                    result.type
+                `Failed to export a publication due to '${result.type
                 }', with errors:\n${JSON.stringify(result.errors)}`,
             );
 

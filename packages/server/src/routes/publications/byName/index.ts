@@ -81,45 +81,45 @@ registerRoute(router, '/:username', {
                                         $or: [
                                             { owner: user._id },
                                             ...(typeof asCollaborator !== 'undefined' &&
-                                            asCollaborator
+                                                asCollaborator
                                                 ? [
-                                                      {
-                                                          collaborators: {
-                                                              $elemMatch: { $eq: user._id },
-                                                          },
-                                                      },
-                                                  ]
+                                                    {
+                                                        collaborators: {
+                                                            $elemMatch: { $eq: user._id },
+                                                        },
+                                                    },
+                                                ]
                                                 : []),
                                         ],
                                     },
                                     ...(filterDrafts
                                         ? [
-                                              {
-                                                  $or: [
-                                                      { draft: false },
-                                                      {
-                                                          draft: true,
-                                                          collaborators: {
-                                                              $elemMatch: {
-                                                                  $eq: req.requester._id,
-                                                              },
-                                                          },
-                                                      },
-                                                  ],
-                                              },
-                                          ]
+                                            {
+                                                $or: [
+                                                    { draft: false },
+                                                    {
+                                                        draft: true,
+                                                        collaborators: {
+                                                            $elemMatch: {
+                                                                $eq: req.requester._id,
+                                                            },
+                                                        },
+                                                    },
+                                                ],
+                                            },
+                                        ]
                                         : []),
                                     ...(typeof pinned !== 'undefined'
                                         ? [
-                                              {
-                                                  $or: [
-                                                      ...(!pinned
-                                                          ? [{ pinned: { $exists: false } }]
-                                                          : []),
-                                                      { pinned },
-                                                  ],
-                                              },
-                                          ]
+                                            {
+                                                $or: [
+                                                    ...(!pinned
+                                                        ? [{ pinned: { $exists: false } }]
+                                                        : []),
+                                                    { pinned },
+                                                ],
+                                            },
+                                        ]
                                         : []),
                                     { current },
                                 ],
@@ -201,6 +201,47 @@ registerRoute(router, '/:username/:name/revisions', {
                 take,
             },
         };
+    },
+});
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/publication/:username/:name/zip
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap/zip
+ *
+ * @description This endpoint is used to get the specific zip file for the publication.
+ */
+registerRoute(router, '/:username/:name/zip', {
+    method: 'get',
+    params: PublicationByNameRequestSchema,
+    query: z.object({
+        mode: ModeSchema,
+        revision: PublicationRevisionSchema.optional()
+    }),
+    headers: z.object({}),
+    permissionVerification: undefined,
+    permission: null,
+    handler: async (req) => {
+        const owner = await userUtils.transformUsernameIntoId(req);
+        const { revision } = req.query;
+
+        const publication = await Publication.findOne({
+            owner: owner._id.toString(),
+            name: req.params.name.toLowerCase(),
+            draft: false,
+            ...(typeof revision !== 'undefined' ? { revision } : { current: true }),
+        })
+            .populate<{ owner: IUser }>('owner')
+            .exec();
+
+        if (!publication) {
+            return { status: "error", message: errors.RESOURCE_NOT_FOUND, code: 404 }
+        }
+
+        const controller = new PublicationController(publication);
+        return await controller.getArchive();
     },
 });
 

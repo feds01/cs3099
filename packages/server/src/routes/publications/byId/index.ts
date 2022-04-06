@@ -2,11 +2,13 @@ import assert from 'assert';
 import express from 'express';
 import { z } from 'zod';
 
+import * as errors from '../../../common/errors';
+import Publication from "../../../models/Publication";
 import PublicationController, { PublicationResponse } from '../../../controller/publication';
 import { verifyPublicationIdPermission } from '../../../lib/communication/permissions';
 import registerRoute from '../../../lib/communication/requests';
 import { IActivityOperationKind, IActivityType } from '../../../models/Activity';
-import { IUserRole } from '../../../models/User';
+import { IUser, IUserRole } from '../../../models/User';
 import {
     IPublicationPatchRequestSchema,
     IRevisionSchema,
@@ -106,6 +108,39 @@ registerRoute(router, '/:id', {
         return await controller.patch(req.body);
     },
 });
+
+/**
+ * @version v1.0.0
+ * @method GET
+ * @url /api/publication/:username/:name/zip
+ * @example
+ * https://cs3099user06.host.cs.st-andrews.ac.uk/api/publication/feds01/zap/zip
+ *
+ * @description This endpoint is used to get the specific zip file for the publication.
+ */
+ registerRoute(router, '/:id/zip', {
+    method: 'get',
+    params: z.object({
+        id: ObjectIdSchema,
+    }),
+    query: z.object({}),
+    headers: z.object({}),
+    permissionVerification: undefined,
+    permission: null,
+    handler: async (req) => {
+        const publication = await Publication.findById(req.params.id)
+            .populate<{ owner: IUser }>('owner')
+            .exec();
+
+        if (!publication || publication.draft) {
+            return { status: "error", message: errors.RESOURCE_NOT_FOUND, code: 404 }
+        }
+
+        const controller = new PublicationController(publication);
+        return await controller.getArchive();
+    },
+});
+
 
 /**
  * @version v1.0.0

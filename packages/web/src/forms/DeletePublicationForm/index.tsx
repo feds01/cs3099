@@ -1,18 +1,23 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { useHistory } from 'react-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Publication } from '../../lib/api/models';
 import { useNotificationDispatch } from '../../contexts/notification';
 import ConfirmationDialogue from '../../components/ConfirmationDialogue';
-import { useDeletePublicationUsernameName } from '../../lib/api/publications/publications';
+import { useDeletePublicationUsernameName, useDeletePublicationUsernameNameAll } from '../../lib/api/publications/publications';
+import { expr } from '../../lib/utils/expr';
 
-type Props = {
+type DeletePublicationFormProps = {
+    /** The publication that is being referenced when it is deleted. */
     publication: Publication;
+    /** Whether or not the entire publication is deleted when the user confirms the operation */
+    deleteAll?: boolean;
+    /** Function to call when the operation completes */
     onCompletion?: () => void;
 };
 
-export default function DeletePublicationForm({ publication, onCompletion }: Props) {
+export default function DeletePublicationForm({ publication, deleteAll = false, onCompletion }: DeletePublicationFormProps) {
     const {
         name,
         owner: { username },
@@ -23,7 +28,13 @@ export default function DeletePublicationForm({ publication, onCompletion }: Pro
     const history = useHistory();
     const notificationDispatcher = useNotificationDispatch();
 
-    const { isLoading, isSuccess, isError, mutateAsync } = useDeletePublicationUsernameName();
+    const { isLoading, isSuccess, isError, mutateAsync } = expr(() => {
+      if (deleteAll) {
+        return useDeletePublicationUsernameNameAll;
+      } else {
+        return useDeletePublicationUsernameName;
+      }
+    })();
 
     useEffect(() => {
         if (isError) {
