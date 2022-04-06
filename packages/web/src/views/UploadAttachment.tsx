@@ -66,7 +66,7 @@ export default function UploadAttachment({ publication, refetchData }: Props): R
                     Choose file...
                 </LoadingButton>
             </Box>
-            {upload.state === 'error' && <ErrorBanner message={upload.error.message} />}
+            {upload.state === 'error' && <ErrorBanner message={upload.error.message} errors={upload.error.errors} />}
         </Box>
     );
 }

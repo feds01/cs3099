@@ -154,24 +154,6 @@ registerRoute(router, '/upload/publication/:id', {
             });
         }
 
-        // @Security: Ensure that the actual uploaded file is sane and don't just rely on mimetype.
-        // Check that the mime-type of the file upload is either a plain text file or an
-        // "application/zip" representing an archive. Other mime-types are currently banned
-        // and we don't allow binary data uploads (at the moment).
-        if (file.mimetype !== 'application/zip') {
-            return {
-                status: 'error',
-                code: 415,
-                message: errors.BAD_REQUEST,
-                errors: {
-                    file: {
-                        message:
-                            "Invalid file mimetype sent. Publication uploads only accepts 'application/zip' mime-type.",
-                    },
-                },
-            };
-        }
-
         // Verify that the zip file isn't corrupted by loading it using the zip file
         // library. We will try to list the root entries of the archive to see if there
         // are any problems with the archive
