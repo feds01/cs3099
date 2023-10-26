@@ -1,0 +1,404 @@
+openapi: 3.0.0
+servers:
+    - description: Local development
+      url: https://localhost:5000
+info:
+    description: A REST API for communicating between groups within the Supergroup C. This aims to standardise authentication, and communication between the services.
+    version: '1.0.0'
+    title: Supergroup C API
+    license:
+        name: MIT
+        url: https://spdx.org/licenses/MIT.html
+tags:
+    - name: authentication
+      description: SSO Authentication endpoints.
+    - name: resources
+      description: Resource management endpoints.
+    - name: users
+      description: User information endpoints.
+paths:
+    /api/sg/sso/login:
+        get:
+            summary: External login endpoint
+            description: Endpoint for external services to authenticate with this service.
+            tags:
+                - authentication
+            parameters:
+                - in: query
+                  required: true
+                  name: from
+                  schema:
+                      type: string
+                      description: Callback URL of where to respond
+                      example: https://t01.example.com
+                - in: query
+                  required: true
+                  name: state
+                  schema:
+                      type: string
+                      description: Session state
+            responses:
+                '302':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /api/sg/sso/verify:
+        post:
+            summary: Fetch user information
+            description: Endpoint verify a user session
+            tags:
+                - authentication
+            parameters:
+                - in: query
+                  required: true
+                  name: token
+                  schema:
+                      type: string
+                      description: JWT to check
+            responses:
+                '200':
+                    $ref: '#/components/responses/TokenVerificationResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /api/sg/sso/callback:
+        get:
+            summary: Successful external login endpoint.
+            description: This endpoint is used to notify the journal that the external login was successful and we should proceed with authenticating the external user. This might mean that there is an internal process of registering the user on the platform.
+            tags:
+                - authentication
+            parameters:
+                - in: query
+                  required: true
+                  name: from
+                  schema:
+                      type: string
+                      description: Callback URL of where to respond
+                      example: https://t01.example.com
+                - in: query
+                  required: true
+                  name: state
+                  schema:
+                      type: string
+                      description: Session state
+                - in: query
+                  required: true
+                  name: token
+                  schema:
+                      type: string
+                      description: Generated token
+            responses:
+                '302':
+                    $ref: '#/components/responses/NoContent'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /api/sg/resources/import:
+      post:
+        summary: Endpoint to initiate an import of a submission
+        parameters:
+          - in: query
+            required: true
+            name: from
+            schema:
+                type: string
+                description: Callback URL of where to respond
+                example: https://t01.example.com
+          - in: query
+            required: true
+            name: token
+            schema:
+                type: string
+                description: JWT to check
+          - in: query
+            required: true
+            name: id
+            schema:
+                type: string
+                description: ID of the submission to import.
+        tags:
+          - resources
+        responses:
+                '200':
+                    $ref: '#/components/responses/Ok'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /api/sg/resources/export/{id}:
+        get:
+            summary: Endpoint to download an archive representing the publication sources.
+            tags:
+                - resources
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: The identifier of the publication.
+            responses:
+                '200':
+                    $ref: '#/components/responses/PublicationExportResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /api/sg/resources/export/{id}/metadata:
+        get:
+            summary: Endpoint to download the publication metadata
+            tags:
+                - resources
+            security:
+                - BearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  schema:
+                      type: string
+                  required: true
+                  description: The identifier of the publication.
+            responses:
+                '200':
+                    $ref: '#/components/responses/PublicationMetadataResponse'
+                default:
+                    $ref: '#/components/responses/ApiError'
+    /api/sg/users/{id}:
+      get:
+        summary: Endpoint to fetch user information about a particular user.
+        tags:
+            - users
+        parameters:
+            - in: path
+              name: id
+              schema:
+                  type: string
+                  example: "ABCDE921312DAB23AE:t06"
+              required: true
+              description: The identifier of the publication.
+        responses:
+            '200':
+                $ref: '#/components/responses/UserDataResponse'
+            default:
+                $ref: '#/components/responses/ApiError'
+      
+components:
+    securitySchemes:
+        BearerAuth:
+            type: http
+            scheme: bearer
+    responses:
+        NoContent:
+            description: No Content. Server acknowledges request but has no return body.
+        Ok:
+            description: Server responds with an OK status.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                        properties:
+                            status:
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
+        ApiError:
+            description: General Error response from the API.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - message
+                        properties:
+                            status:
+                                type: string
+                                example: 'error'
+                                enum: ['error']
+                            message:
+                                type: string
+                                example: 'Message describing the error.'
+                            errors:
+                                type: object
+                                additionalProperties:
+                                    $ref: '#/components/schemas/ResponseError'
+        PublicationExportResponse:
+            description: Response archive file.
+            content:
+                application/zip:
+                    schema:
+                        type: string
+                        format: binary
+                        example: 56 50 26 50 80 57 4e 4a 12 04
+        PublicationMetadataResponse:
+            description: Response from fetching publication information.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        required:
+                            - status
+                            - publication
+                            - reviews
+                        properties:
+                            status:
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
+                            publication:
+                                $ref: '#/components/schemas/Publication'
+                            reviews:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Review'
+        TokenVerificationResponse:
+            description: Response from fetching publication information.
+            content:
+                application/json:
+                    schema:
+                      $ref: '#/components/schemas/UserData'
+        UserAuthResponse:
+            description: Authentication tokens with user information.
+            content:
+                application/json:
+                    schema:
+                        type: object
+                        description: Successful authentication, returning a token.
+                        required:
+                            - user
+                            - token
+                        properties:
+                            status:
+                                type: string
+                                example: 'ok'
+                                enum: ['ok']
+                            token:
+                                type: string
+                                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                            user:
+                                $ref: '#/components/schemas/User'
+        UserDataResponse:
+          description: Information about the user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserData'
+    schemas:
+        ResponseError:
+            type: object
+            required:
+                - message
+            properties:
+                message:
+                    type: string
+                    example: 'This field is invalid'
+        User:
+            type: string
+            example: "ABCDE921312DAB23AE:t06"
+            
+        UserData:
+            type: object
+            description: "User information object"
+            required:
+              - name
+              - email
+              - id
+              - status
+            properties:
+              status:
+                type: string
+                example: 'ok'
+                enum: ['ok']
+              name:
+                type: string
+                example: 'John Smith'
+              profilePictureUrl:
+                type: string
+                example: "https://example.com/some-avatar.jpg"
+              email:
+                type: string
+                example: 'john.smith@example.com'
+              id:
+                type: string
+                example: 'ABCDE921312DAB23AE:t06'
+        Publication:
+            type: object
+            required:
+                - name
+                - title
+                - owner
+                - introduction
+                - collaborators
+                - createdAt
+            properties:
+                name:
+                    type: string
+                    example: 'some-url-safe-name'
+                title:
+                    type: string
+                    example: 'Journal: A code journals.'
+                owner:
+                    $ref: '#/components/schemas/User'
+                introduction:
+                    type: string
+                    example: 'This is a platform for managing code journals...'
+                revision:
+                    type: string
+                    example: 'v1.0.0'
+                collaborators:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/User'
+        Review:
+            type: object
+            required:
+                - owner
+                - threads
+                - createdAt
+            properties:
+                owner:
+                    type: string
+                    example:  "ABCDE921312DAB23AE:t06"
+                createdAt:
+                    type: number
+                    example: 1636065460
+                comments:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Comment'
+        Comment:
+            type: object
+            required:
+                - id
+                - contents
+                - thread
+                - author
+                - postedAt
+            properties:
+                id:
+                  type: number
+                  example: 1
+                replying:
+                  type: number
+                  example: 0
+                filename:
+                    type: string
+                    example: 'src/server.ts'
+                anchor:
+                    type: object
+                    required:
+                        - start
+                        - end
+                    properties:
+                        start:
+                            type: number
+                            example: 1
+                        end:
+                            type: number
+                            example: 2
+                contents:
+                    type: string
+                    example: 'This is a comment'
+                author:
+                    $ref: '#/components/schemas/User'
+                postedAt:
+                    type: number
+                    example: 1636065460
