@@ -1,0 +1,25 @@
+# Installed dependencies
+node_modules/
+
+# VS-Code settings
+.vscode/*
+.idea/*
+
+# Produces server files
+dist/
+
+# test coverage
+coverage/
+
+
+# Environment files
+.env
+.env.*
+!.env.test
+
+# Generated Swagger JSON file
+swagger.json
+
+# Server saved files
+resources/
+tmp/

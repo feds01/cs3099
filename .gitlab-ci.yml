@@ -1,18 +1,17 @@
 workflow:
   rules:
-    - if: $CI_MERGE_REQUEST_IID
-    - if: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     
 stages:
   - install
   - quality
   - test
 
-install:
+install_backend:
   image: node:14.17.0
   stage: install
   script:
+    - cd packages/server
     - yarn install
     - yarn transform-yaml
   artifacts:
@@ -20,19 +19,68 @@ install:
     untracked: true
     expire_in: 30 mins
     paths:
-      - .npm/
-      - node_modules/
-      - swagger.json
-linting:
-  extends: install
+      - packages/server/node_modules/
+      - packages/server/swagger.json
+  rules:
+    - changes:
+        - packages/server/*
+  
+lint_backend:
   stage: quality
+  extends: install_backend
+  needs:
+    - job: install_backend
+      artifacts: true
   script:
-    - yarn lint
+    - cd packages/server
+    - yarn --version
+    - yarn run lint
+    - yarn run fmt-check
 
-tests:
-  extends: install
+test_backend:
   stage: test
+  extends: install_backend
+  needs:
+    - job: install_backend
+      artifacts: true
   script:
+    - cd packages/server
     - yarn test
+
+# Since the school GitLab CI runner has a archive size limit which is smaller
+# than the generated node_modules size, the CI job cannot succeed and therefore
+# we have to run all of the stages within one single job 
+frontend:
+  image: node:14.17.0
+  stage: install
+  script:
+    - cd packages/web
+    - yarn install
+    - yarn run fmt-check
+    - yarn run test
+
+  rules:
+    - changes:
+        - packages/web/*
+
+# lint_frontend:
+#   stage: quality
+#   extends: install_frontend
+#   needs:
+#     - job: install_frontend
+#       artifacts: true
+#   script:
+#     - cd packages/web
+#     - yarn run fmt-check
+
+# test_frontend:
+#   stage: test
+#   extends: install_frontend
+#   needs:
+#     - job: install_frontend
+#       artifacts: true
+#   script:
+#     - cd packages/web
+#     - yarn run test
 
 
