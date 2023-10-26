@@ -3,7 +3,6 @@ import PageLayout from '../../components/PageLayout';
 import SkeletonList from '../../components/SkeletonList';
 import UserAvatar, { PureUserAvatar } from '../../components/UserAvatar';
 import UserLink from '../../components/UserLink';
-import ExportDialog from '../../forms/ExportPublicationForm';
 import { useAuth } from '../../contexts/auth';
 import { PublicationProvider } from '../../contexts/publication';
 import { GetPublicationUsernameName200 as PublicationResponse } from '../../lib/api/models';
@@ -17,7 +16,8 @@ import Reviews from './modules/Reviews';
 import Revisions from './modules/Revisions';
 import Settings from './modules/Settings';
 import Source from './modules/Source';
-import { Alert, AlertTitle, AvatarGroup, Button, Tabs } from '@mui/material';
+import ExportDropdown from './modules/ExportDropdown';
+import { Alert, AlertTitle, AvatarGroup, Tabs } from '@mui/material';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
@@ -188,9 +188,6 @@ function PublicationView() {
         ...(canonicalName[1] !== '' && { revision: canonicalName[1] }),
     });
 
-    //setting constants for the export dialog
-    const [exportDialogOpen, setExportDialogOpen] = useState(false);
-
     useEffect(() => {
         setCanonicalName(getCanonicalName(location.pathname, username, name));
     }, [location.pathname]);
@@ -246,18 +243,7 @@ function PublicationView() {
                                     {publication.title}
                                 </Typography>
                             </Box>
-                            <Box>
-                                {!publication.draft && (
-                                    <Button onClick={() => setExportDialogOpen(true)}>Export</Button>
-                                )}
-                                <ExportDialog
-                                    username={username}
-                                    name={name}
-                                    revision={publication.revision}
-                                    open={exportDialogOpen}
-                                    onClose={() => setExportDialogOpen(false)}
-                                />
-                            </Box>
+                            <Box>{!publication.draft && <ExportDropdown />}</Box>
                         </Box>
                         <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', lineHeight: '28px' }}>
                             <Typography sx={{ lineHeight: '28px !important' }}>by </Typography>

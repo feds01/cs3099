@@ -21,11 +21,12 @@ import type {
     GetPublicationUsernameNameParams,
     PostPublicationUsernameNameExportParams,
     RevisePublicationRequest,
+    RawFileResponseResponse,
+    GetPublicationUsernameNameZipParams,
     GetPublicationUsernameNameRevisions200,
     GetPublicationUsernameNameRevisionsParams,
     ResourceResponseResponse,
     GetPublicationUsernameNameTreePathParams,
-    RawFileResponseResponse,
     GetPublicationUsernameNameDownloadPathParams,
     GetPublicationUsernameNameSources200,
     GetPublicationUsernameNameSourcesParams,
@@ -370,6 +371,55 @@ export const usePostPublicationUsernameNameRevise = <TError = ApiErrorResponse, 
     >(mutationFn, mutationOptions);
 };
 /**
+ * Get a publication archive for a given username, name, and revision.
+ * @summary Get the publication archive
+ */
+export const getPublicationUsernameNameZip = (
+    username: string,
+    name: string,
+    params?: GetPublicationUsernameNameZipParams,
+) => {
+    return customInstance<RawFileResponseResponse>({
+        url: `/publication/${username}/${name}/zip`,
+        method: 'get',
+        params,
+    });
+};
+
+export const getGetPublicationUsernameNameZipQueryKey = (
+    username: string,
+    name: string,
+    params?: GetPublicationUsernameNameZipParams,
+) => [`/publication/${username}/${name}/zip`, ...(params ? [params] : [])];
+
+export const useGetPublicationUsernameNameZip = <
+    TData = AsyncReturnType<typeof getPublicationUsernameNameZip>,
+    TError = ApiErrorResponse,
+>(
+    username: string,
+    name: string,
+    params?: GetPublicationUsernameNameZipParams,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getPublicationUsernameNameZip>, TError, TData> },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+    const { query: queryOptions } = options || {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetPublicationUsernameNameZipQueryKey(username, name, params);
+
+    const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationUsernameNameZip>> = () =>
+        getPublicationUsernameNameZip(username, name, params);
+
+    const query = useQuery<AsyncReturnType<typeof getPublicationUsernameNameZip>, TError, TData>(queryKey, queryFn, {
+        enabled: !!(username && name),
+        ...queryOptions,
+    });
+
+    return {
+        queryKey,
+        ...query,
+    };
+};
+
+/**
  * Get a paginated list of publication revisions.
  * @summary Get a list of revisions for a publication
  */
@@ -700,6 +750,40 @@ export const useGetPublicationbyidId = <
     const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationbyidId>> = () => getPublicationbyidId(id);
 
     const query = useQuery<AsyncReturnType<typeof getPublicationbyidId>, TError, TData>(queryKey, queryFn, {
+        enabled: !!id,
+        ...queryOptions,
+    });
+
+    return {
+        queryKey,
+        ...query,
+    };
+};
+
+/**
+ * Get a publication archive by id.
+ * @summary Get the publication archive
+ */
+export const getPublicationbyidIdZip = (id: string) => {
+    return customInstance<RawFileResponseResponse>({ url: `/publication-by-id/${id}/zip`, method: 'get' });
+};
+
+export const getGetPublicationbyidIdZipQueryKey = (id: string) => [`/publication-by-id/${id}/zip`];
+
+export const useGetPublicationbyidIdZip = <
+    TData = AsyncReturnType<typeof getPublicationbyidIdZip>,
+    TError = ApiErrorResponse,
+>(
+    id: string,
+    options?: { query?: UseQueryOptions<AsyncReturnType<typeof getPublicationbyidIdZip>, TError, TData> },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+    const { query: queryOptions } = options || {};
+
+    const queryKey = queryOptions?.queryKey ?? getGetPublicationbyidIdZipQueryKey(id);
+
+    const queryFn: QueryFunction<AsyncReturnType<typeof getPublicationbyidIdZip>> = () => getPublicationbyidIdZip(id);
+
+    const query = useQuery<AsyncReturnType<typeof getPublicationbyidIdZip>, TError, TData>(queryKey, queryFn, {
         enabled: !!id,
         ...queryOptions,
     });

@@ -275,6 +275,8 @@ export const getPostPublicationUsernameNameReviseMock = () => ({
     },
 });
 
+export const getGetPublicationUsernameNameZipMock = () => faker.random.word();
+
 export const getGetPublicationUsernameNameRevisionsMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
     revisions: [...Array(faker.datatype.number({ min: 1, max: 10 }))].map(() => ({
@@ -441,6 +443,8 @@ export const getGetPublicationbyidIdMock = () => ({
     },
 });
 
+export const getGetPublicationbyidIdZipMock = () => faker.random.word();
+
 export const getPostPublicationbyidIdExportMock = () => ({
     status: faker.helpers.randomize(Object.values(SuccessStatus)),
 });
@@ -554,6 +558,9 @@ export const getPublicationsMSW = () => [
             ctx.json(getPostPublicationUsernameNameReviseMock()),
         );
     }),
+    rest.get('*/publication/:username/:name/zip', (_req, res, ctx) => {
+        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetPublicationUsernameNameZipMock()));
+    }),
     rest.get('*/publication/:username/:name/revisions', (_req, res, ctx) => {
         return res(
             ctx.delay(1000),
@@ -597,6 +604,9 @@ export const getPublicationsMSW = () => [
     }),
     rest.get('*/publication-by-id/:id', (_req, res, ctx) => {
         return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetPublicationbyidIdMock()));
+    }),
+    rest.get('*/publication-by-id/:id/zip', (_req, res, ctx) => {
+        return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetPublicationbyidIdZipMock()));
     }),
     rest.post('*/publication-by-id/:id/export', (_req, res, ctx) => {
         return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getPostPublicationbyidIdExportMock()));
